@@ -15,6 +15,15 @@
   */
 package org.sonatype.appBooter;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.UnknownHostException;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
@@ -24,15 +33,6 @@ import org.codehaus.plexus.util.interpolation.MapBasedValueSource;
 import org.codehaus.plexus.util.interpolation.RegexBasedInterpolator;
 import org.sonatype.appBooter.ctl.OutOfProcessController;
 import org.sonatype.appBooter.ctl.Service;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.UnknownHostException;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
 
 /**
  * Main class for booting plexus apps in standalone model

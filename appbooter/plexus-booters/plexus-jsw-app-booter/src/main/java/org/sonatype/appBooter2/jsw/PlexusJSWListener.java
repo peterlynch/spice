@@ -18,7 +18,7 @@ package org.sonatype.appBooter.jsw;
 import java.io.File;
 
 import org.codehaus.plexus.classworlds.ClassWorld;
-import org.sonatype.appBooter.PlexusContainerHost;
+import org.sonatype.appBooter2.PlexusContainerHost;
 import org.tanukisoftware.wrapper.WrapperListener;
 import org.tanukisoftware.wrapper.WrapperManager;
 

@@ -22,8 +22,6 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
-import org.sonatype.appBooter.ctl.OutOfProcessController;
-
 import junit.framework.TestCase;
 
 public class OutOfProcessControllerTest
