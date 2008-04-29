@@ -13,12 +13,12 @@
   * specific language governing permissions and limitations
   * under the License.
   */
-package org.sonatype.appBooter.jsw;
+package org.sonatype.appbooter.jsw;
 
 import java.io.File;
 
 import org.codehaus.plexus.classworlds.ClassWorld;
-import org.sonatype.appBooter2.PlexusContainerHost;
+import org.sonatype.appbooter.PlexusContainerHost;
 import org.tanukisoftware.wrapper.WrapperListener;
 import org.tanukisoftware.wrapper.WrapperManager;
 

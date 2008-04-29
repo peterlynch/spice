@@ -13,7 +13,7 @@
   * specific language governing permissions and limitations
   * under the License.
   */
-package org.sonatype.appBooter;
+package org.sonatype.appbooter;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,8 +31,8 @@ import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.util.interpolation.MapBasedValueSource;
 import org.codehaus.plexus.util.interpolation.RegexBasedInterpolator;
-import org.sonatype.appBooter.ctl.OutOfProcessController;
-import org.sonatype.appBooter.ctl.Service;
+import org.sonatype.appbooter.ctl.OutOfProcessController;
+import org.sonatype.appbooter.ctl.Service;
 
 /**
  * Main class for booting plexus apps in standalone model

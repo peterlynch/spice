@@ -13,28 +13,14 @@
   * specific language governing permissions and limitations
   * under the License.
   */
-package org.sonatype.appBooter.ctl;
+package org.sonatype.appbooter.ctl;
 
-import java.io.IOException;
-import java.nio.channels.Channel;
-
-public final class ChannelUtil
+public final class ControllerVocabulary
 {
 
-    private ChannelUtil(){}
+    public static final byte STOP_SERVICE = 0x1;
+    public static final byte ACK = 0xf;
 
-    public static void close( Channel channel )
-    {
-        if ( channel != null && channel.isOpen() )
-        {
-            try
-            {
-                channel.close();
-            }
-            catch ( IOException closeError )
-            {
-            }
-        }
-    }
+    private ControllerVocabulary(){}
 
 }

@@ -13,14 +13,21 @@
   * specific language governing permissions and limitations
   * under the License.
   */
-package org.sonatype.appBooter.ctl;
+package org.sonatype.appbooter.ctl;
 
-public final class ControllerVocabulary
+import java.io.IOException;
+
+public class ControlConnectionException
+    extends IOException
 {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 535790489407505217L;
 
-    public static final byte STOP_SERVICE = 0x1;
-    public static final byte ACK = 0xf;
-
-    private ControllerVocabulary(){}
+    public ControlConnectionException( IOException embedded )
+    {
+        initCause( embedded );
+    }
 
 }
