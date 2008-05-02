@@ -1,7 +1,7 @@
  /**
-  * Copyright (C) 2008 Sonatype Inc. 
+  * Copyright (C) 2008 Sonatype Inc.
   * Sonatype Inc, licenses this file to you under the Apache License,
-  * Version 2.0 (the "License"); you may not use this file except in 
+  * Version 2.0 (the "License"); you may not use this file except in
   * compliance with the License.  You may obtain a copy of the License at
   *
   * http://www.apache.org/licenses/LICENSE-2.0
@@ -31,6 +31,8 @@ public class OutOfProcessControllerTest
     public void testThreadInterruption()
         throws UnknownHostException
     {
+        printTestStart();
+
         TestService svc = new TestService();
 
         Thread managementThread = OutOfProcessController.manage( svc, 32001 );
@@ -39,13 +41,17 @@ public class OutOfProcessControllerTest
         {
             managementThread.interrupt();
 
-            try
+            if ( managementThread.isAlive() )
             {
-                managementThread.join( 5000 );
-            }
-            catch ( InterruptedException e )
-            {
-                System.out.println( "Interrupted." );
+                try
+                {
+                    System.out.println( "Joining management thread." );
+                    managementThread.join( /*OutOfProcessController.SLEEP_PERIOD + 1000*/ );
+                }
+                catch ( InterruptedException e )
+                {
+                    System.out.println( "Interrupted." );
+                }
             }
         }
 
@@ -53,9 +59,17 @@ public class OutOfProcessControllerTest
         assertTrue( "Service should have been closed.", svc.closed );
     }
 
+    private void printTestStart()
+    {
+        StackTraceElement element = new Throwable().getStackTrace()[1];
+        System.out.println( "\n\n\nRunning test: " + element.getMethodName() + "\n\n" );
+    }
+
     public void testStopCommand()
         throws IOException, InterruptedException
     {
+        printTestStart();
+
         TestService svc = new TestService();
 
         int port = 32001;
@@ -83,13 +97,17 @@ public class OutOfProcessControllerTest
 
         synchronized ( managementThread )
         {
-            try
+            if ( managementThread.isAlive() )
             {
-                managementThread.join( 5000 );
-            }
-            catch ( InterruptedException e )
-            {
-                System.out.println( "Interrupted." );
+                try
+                {
+                    System.out.println( "Joining management thread." );
+                    managementThread.join( /*OutOfProcessController.SLEEP_PERIOD + 1000*/ );
+                }
+                catch ( InterruptedException e )
+                {
+                    System.out.println( "Interrupted." );
+                }
             }
         }
 
@@ -100,6 +118,8 @@ public class OutOfProcessControllerTest
     public void testUnknownCommand()
         throws IOException, InterruptedException
     {
+        printTestStart();
+
         TestService svc = new TestService();
 
         int port = 32001;
@@ -130,13 +150,17 @@ public class OutOfProcessControllerTest
         {
             managementThread.interrupt();
 
-            try
+            if ( managementThread.isAlive() )
             {
-                managementThread.join( 5000 );
-            }
-            catch ( InterruptedException e )
-            {
-                System.out.println( "Interrupted." );
+                try
+                {
+                    System.out.println( "Joining management thread." );
+                    managementThread.join( /*OutOfProcessController.SLEEP_PERIOD + 1000*/ );
+                }
+                catch ( InterruptedException e )
+                {
+                    System.out.println( "Interrupted." );
+                }
             }
         }
 

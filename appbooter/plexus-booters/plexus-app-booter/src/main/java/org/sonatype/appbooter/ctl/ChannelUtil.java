@@ -1,7 +1,7 @@
  /**
-  * Copyright (C) 2008 Sonatype Inc. 
+  * Copyright (C) 2008 Sonatype Inc.
   * Sonatype Inc, licenses this file to you under the Apache License,
-  * Version 2.0 (the "License"); you may not use this file except in 
+  * Version 2.0 (the "License"); you may not use this file except in
   * compliance with the License.  You may obtain a copy of the License at
   *
   * http://www.apache.org/licenses/LICENSE-2.0
@@ -17,6 +17,7 @@ package org.sonatype.appbooter.ctl;
 
 import java.io.IOException;
 import java.nio.channels.Channel;
+import java.nio.channels.Selector;
 
 public final class ChannelUtil
 {
@@ -32,6 +33,20 @@ public final class ChannelUtil
                 channel.close();
             }
             catch ( IOException closeError )
+            {
+            }
+        }
+    }
+
+    public static void close( Selector selector )
+    {
+        if ( selector != null && selector.isOpen() )
+        {
+            try
+            {
+                selector.close();
+            }
+            catch ( IOException e )
             {
             }
         }
