@@ -22,13 +22,20 @@ under the License.
 	<parent>
 		<groupId>org.sonatype.spice</groupId>
 		<artifactId>spice-parent</artifactId>
-		<version>1-SNAPSHOT</version>
+		<version>1</version>
 	</parent>
     <groupId>org.sonatype.plexus</groupId>
 	<artifactId>plexus-jetty-testsuite</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<name>Plexus Jetty Testsuite</name>
-	<dependencies>
+	
+    <scm>
+        <connection>scm:svn:http://svn.sonatype.org/spice/trunk/plexus-jetty-testsuite</connection>
+        <url>http://svn.sonatype.org/spice/trunk/plexus-jetty-testsuite</url>
+        <developerConnection>scm:svn:https://svn.sonatype.org/spice/trunk/plexus-jetty-testsuite</developerConnection>
+    </scm>
+    
+    <dependencies>
 		<dependency>
 			<groupId>org.codehaus.plexus</groupId>
 			<artifactId>plexus-container-default</artifactId>

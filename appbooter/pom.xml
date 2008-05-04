@@ -22,7 +22,7 @@ under the License.
     <parent>
         <groupId>org.sonatype.spice</groupId>
         <artifactId>spice-parent</artifactId>
-        <version>1-SNAPSHOT</version>
+        <version>1</version>
     </parent>
     <groupId>org.sonatype.appbooter</groupId>
     <artifactId>appbooter</artifactId>
@@ -30,6 +30,12 @@ under the License.
     <packaging>pom</packaging>
     <name>Sonatype AppBooter</name>
 
+    <scm>
+        <connection>scm:svn:http://svn.sonatype.org/spice/trunk/appbooter</connection>
+        <url>http://svn.sonatype.org/spice/trunk/appbooter</url>
+        <developerConnection>scm:svn:https://svn.sonatype.org/spice/trunk/appbooter</developerConnection>
+    </scm>
+    
     <modules>
         <module>plexus-booters</module>
         <module>plexus-platforms</module>
