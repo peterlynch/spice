@@ -24,13 +24,13 @@ under the License.
 	</parent>  
   <groupId>org.sonatype.plexus</groupId>
   <artifactId>plexus-jetty6</artifactId>
-  <version>1.0</version>
+  <version>1.1-SNAPSHOT</version>
   <name>Plexus Jetty6 Component</name>
   
     <scm>
-        <connection>scm:svn:http://svn.sonatype.org/spice/tags/plexus-jetty6-1.0</connection>
-        <url>http://svn.sonatype.org/spice/tags/plexus-jetty6-1.0</url>
-        <developerConnection>scm:svn:https://svn.sonatype.org/spice/tags/plexus-jetty6-1.0</developerConnection>
+        <connection>scm:svn:http://svn.sonatype.org/spice/trunk/plexus-jetty6</connection>
+        <url>http://svn.sonatype.org/spice/trunk/plexus-jetty6</url>
+        <developerConnection>scm:svn:https://svn.sonatype.org/spice/trunk/plexus-jetty6</developerConnection>
     </scm>
   
   <dependencies>
