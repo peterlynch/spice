@@ -89,6 +89,12 @@ under the License.
                 <relocations>
                   <relocation>
                     <pattern>org.codehaus.plexus.util</pattern>
+                    <excludes>
+                      <exclude>org.codehaus.plexus.util.xml.Xpp3Dom</exclude>
+                      <exclude>org.codehaus.plexus.util.xml.Xpp3DomBuilder</exclude>
+                      <exclude>org.codehaus.plexus.util.xml.Xpp3DomUtils</exclude>
+                      <exclude>org.codehaus.plexus.util.xml.Xpp3DomWriter</exclude>
+                    </excludes>
                   </relocation>
                 </relocations>
                 <keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
