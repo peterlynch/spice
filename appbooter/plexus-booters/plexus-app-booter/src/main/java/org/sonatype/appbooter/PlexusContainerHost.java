@@ -46,6 +46,8 @@ public class PlexusContainerHost
     public static final String CONFIGURATION_FILE_PROPERTY = "plexus.configuration";
 
     public static final String ENABLE_CONTROL_SOCKET = "plexus.host.control.socket.enabled";
+    
+    public static final String DISABLE_BLOCKING = "plexus.blocking.disabled";
 
     public static final int CONTROL_PORT = 32001;
 
@@ -217,7 +219,22 @@ public class PlexusContainerHost
             Runtime.getRuntime().addShutdownHook( new Thread( shutdownHook ) );
         }
 
-        containerHost.start();
+        if ( Boolean.getBoolean( DISABLE_BLOCKING ) )
+        {
+            try
+            {
+                containerHost.startContainer();
+            }
+            catch ( Exception e )
+            {
+                e.printStackTrace();
+                System.exit( 2 );
+            }              
+        }
+        else
+        {
+            containerHost.start();
+        }
     }
 
     private static final class ShutdownRunnable
