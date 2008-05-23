@@ -103,6 +103,7 @@ public class PlexusContainerHost
             try
             {
                 managementThread = OutOfProcessController.manage( this, CONTROL_PORT );
+                System.out.println( "\n\nStarted control socket on port: " + CONTROL_PORT + "\n" );
             }
             catch ( UnknownHostException e )
             {
@@ -169,8 +170,11 @@ public class PlexusContainerHost
 
     public void stopContainer()
     {
-        container.dispose();
-        container = null;
+        if ( container != null )
+        {
+            container.dispose();
+            container = null;
+        }
     }
 
     public void start()
@@ -190,14 +194,8 @@ public class PlexusContainerHost
                 }
                 catch ( InterruptedException e )
                 {
-                    if ( managementThread != null && managementThread.isAlive() )
-                    {
-                        synchronized( managementThread )
-                        {
-                            managementThread.interrupt();
-                            managementThread.join( MANAGEMENT_THREAD_JOIN_TIMEOUT );
-                        }
-                    }
+                    stopContainer();
+                    stopManagementThread();
                 }
             }
         }
@@ -212,15 +210,10 @@ public class PlexusContainerHost
                              ClassWorld classWorld )
     {
         PlexusContainerHost containerHost = new PlexusContainerHost( classWorld );
-
-        if ( Boolean.getBoolean( ENABLE_CONTROL_SOCKET ) )
-        {
-            Runnable shutdownHook = new ShutdownRunnable( containerHost );
-            Runtime.getRuntime().addShutdownHook( new Thread( shutdownHook ) );
-        }
-
+        
         if ( Boolean.getBoolean( DISABLE_BLOCKING ) )
         {
+            System.out.println( "Starting container in non-blocking mode" );
             try
             {
                 containerHost.startContainer();
@@ -232,7 +225,13 @@ public class PlexusContainerHost
             }              
         }
         else
-        {
+        {   
+            System.out.println( "Starting container in blocking mode" );
+            if ( Boolean.getBoolean( ENABLE_CONTROL_SOCKET ) )
+            {
+                Runnable shutdownHook = new ShutdownRunnable( containerHost );
+                Runtime.getRuntime().addShutdownHook( new Thread( shutdownHook ) );
+            }
             containerHost.start();
         }
     }
@@ -249,21 +248,7 @@ public class PlexusContainerHost
 
         public void run()
         {
-            if ( host.managementThread != null && host.managementThread.isAlive() )
-            {
-                synchronized( host.managementThread )
-                {
-                    host.managementThread.interrupt();
-
-                    try
-                    {
-                        host.managementThread.join( PlexusContainerHost.MANAGEMENT_THREAD_JOIN_TIMEOUT );
-                    }
-                    catch ( InterruptedException e )
-                    {
-                    }
-                }
-            }
+            host.stopManagementThread();
         }
     }
 
@@ -273,11 +258,39 @@ public class PlexusContainerHost
     }
 
     public void shutdown()
-    {
-        synchronized ( waitObj )
-        {
-            waitObj.notify();
-        }
+    {   
         isStopped = true;
+        if ( Boolean.getBoolean( DISABLE_BLOCKING ) )
+        {
+            System.out.println( "Stopping non-blocking container" );
+            stopContainer();   
+        }
+        else
+        {
+            System.out.println( "Stopping blocking container" );
+            synchronized ( waitObj )
+            {
+                waitObj.notify();
+            }   
+        }
+    }
+    
+    private void stopManagementThread()
+    {
+        if ( managementThread != null && managementThread.isAlive() )
+        {
+            synchronized( managementThread )
+            {
+                managementThread.interrupt();
+
+                try
+                {
+                    managementThread.join( PlexusContainerHost.MANAGEMENT_THREAD_JOIN_TIMEOUT );
+                }
+                catch ( InterruptedException e )
+                {
+                }
+            }
+        }
     }
 }

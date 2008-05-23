@@ -69,7 +69,7 @@ public class OutOfProcessController
         OutOfProcessController ctl = new OutOfProcessController( service,
                                                                  InetAddress.getLocalHost(), port );
         Thread t = new Thread( ctl );
-//        t.setDaemon( true );
+        //t.setDaemon( true );
         t.setPriority( Thread.MIN_PRIORITY );
 
         t.start();
@@ -79,7 +79,7 @@ public class OutOfProcessController
 
     public void run()
     {
-        System.out.println( "Starting server connection." );
+        System.out.println( "Port " + port + " Controller Thread Started" );
         if ( openServerChannel() )
         {
             all:
@@ -145,12 +145,12 @@ public class OutOfProcessController
                         {
                             case ( ControllerVocabulary.STOP_SERVICE ):
                             {
-                                System.out.println( "Received stop command. Stopping application." );
+                                System.out.println( "Port " + port + " Received stop command. Stopping application." );
                                 break all;
                             }
                             default:
                             {
-                                System.out.println( "Received unknown command: 0x" + Integer.toHexString( cmd & 0x0f ) );
+                                System.out.println( "Port " + port + " Received unknown command: 0x" + Integer.toHexString( cmd & 0x0f ) );
                             }
                         }
                     }
@@ -162,13 +162,14 @@ public class OutOfProcessController
             }
         }
 
-        System.out.println( "Stopping plexus application." );
         close();
+        
+        System.out.println( "Port " + port + " Controller Thread Complete" );
     }
 
     private boolean readCommand( SocketChannel channel, SelectionKey key )
     {
-        System.out.println( "Accepted control connection from: "
+        System.out.println( "Port " + port + " accepted control connection from: "
                             + channel.socket().getRemoteSocketAddress() );
 
         buffer.rewind();
@@ -263,8 +264,6 @@ public class OutOfProcessController
             e.printStackTrace( System.out );
             System.out.println( "\n\n\nERROR: Cannot open control socket on: " + bindAddress + ":"
                                 + port + "\nSee stacktrace above for more information.\n" );
-
-            close();
             return false;
         }
 
@@ -273,6 +272,7 @@ public class OutOfProcessController
 
     private void close()
     {
+        System.out.println( "Controller Closing, requesting controlled service shutdown" );
         service.shutdown();
 
         ChannelUtil.close( serverChannel );

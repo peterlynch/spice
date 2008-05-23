@@ -57,10 +57,16 @@ public class ControllerClient
     {
         return closed;
     }
+    
+    public void close()
+    {
+        this.closed = true;
+    }
 
     public void shutdown()
         throws ControlConnectionException, IOException
     {
+        System.out.println( "Requesting Shutdown on Port " + port + "..." );
         SocketChannel channel = null;
 
         try
@@ -97,6 +103,9 @@ public class ControllerClient
         {
             ChannelUtil.close( channel );
         }
+        
+        System.out.println( "...Requested Shutdown on Port " + port + " Completed" );
+
     }
 
 }
