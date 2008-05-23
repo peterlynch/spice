@@ -46,8 +46,6 @@ public class PlexusContainerHost
     public static final String CONFIGURATION_FILE_PROPERTY = "plexus.configuration";
 
     public static final String ENABLE_CONTROL_SOCKET = "plexus.host.control.socket.enabled";
-    
-    public static final String DISABLE_BLOCKING = "plexus.blocking.disabled";
 
     public static final int CONTROL_PORT = 32001;
 
@@ -211,29 +209,13 @@ public class PlexusContainerHost
     {
         PlexusContainerHost containerHost = new PlexusContainerHost( classWorld );
         
-        if ( Boolean.getBoolean( DISABLE_BLOCKING ) )
+        System.out.println( "Starting container" );
+        if ( Boolean.getBoolean( ENABLE_CONTROL_SOCKET ) )
         {
-            System.out.println( "Starting container in non-blocking mode" );
-            try
-            {
-                containerHost.startContainer();
-            }
-            catch ( Exception e )
-            {
-                e.printStackTrace();
-                System.exit( 2 );
-            }              
+            Runnable shutdownHook = new ShutdownRunnable( containerHost );
+            Runtime.getRuntime().addShutdownHook( new Thread( shutdownHook ) );
         }
-        else
-        {   
-            System.out.println( "Starting container in blocking mode" );
-            if ( Boolean.getBoolean( ENABLE_CONTROL_SOCKET ) )
-            {
-                Runnable shutdownHook = new ShutdownRunnable( containerHost );
-                Runtime.getRuntime().addShutdownHook( new Thread( shutdownHook ) );
-            }
-            containerHost.start();
-        }
+        containerHost.start();
     }
 
     private static final class ShutdownRunnable
@@ -260,18 +242,10 @@ public class PlexusContainerHost
     public void shutdown()
     {   
         isStopped = true;
-        if ( Boolean.getBoolean( DISABLE_BLOCKING ) )
+        System.out.println( "Stopping container" );
+        synchronized ( waitObj )
         {
-            System.out.println( "Stopping non-blocking container" );
-            stopContainer();   
-        }
-        else
-        {
-            System.out.println( "Stopping blocking container" );
-            synchronized ( waitObj )
-            {
-                waitObj.notify();
-            }   
+            waitObj.notify();
         }
     }
     
