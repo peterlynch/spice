@@ -22,13 +22,20 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
+/**
+ * Using a defined port, the ControllerClient can communicate with a service 
+ * that is managed by an OutOfProcessController.
+ *
+ */
 public class ControllerClient
 {
-
+    // Port that this client will attempt to connect to
     private final int port;
 
+    // Address of the remote host (defaults to localhost)
     private final InetAddress address;
 
+    // State of the remote Controller
     private boolean closed;
 
     public ControllerClient( String host,
@@ -58,16 +65,27 @@ public class ControllerClient
         return closed;
     }
     
+    /**
+     * Close the Client without accessing the server
+     */
     public void close()
     {
         this.closed = true;
     }
 
+    /**
+     * Shutdown the remote Controller
+     * 
+     * @throws ControlConnectionException
+     * @throws IOException
+     */
     public void shutdown()
         throws ControlConnectionException, IOException
     {
         System.out.println( "Requesting Shutdown on Port " + port + "..." );
         SocketChannel channel = null;
+        
+        byte response = ControllerVocabulary.ACK;
 
         try
         {
@@ -84,6 +102,7 @@ public class ControllerClient
 
             ByteBuffer buffer = ByteBuffer.allocate( 1 );
 
+            // Just send out the STOP command, Controller takes care of the rest
             buffer.put( ControllerVocabulary.STOP_SERVICE );
             buffer.rewind();
 
@@ -93,8 +112,10 @@ public class ControllerClient
 
             channel.read( buffer );
             buffer.flip();
+            
+            response = buffer.get();
 
-            if ( (byte) 0x0 == buffer.get() )
+            if ( ControllerVocabulary.ACK == response )
             {
                 closed = true;
             }
@@ -104,7 +125,14 @@ public class ControllerClient
             ChannelUtil.close( channel );
         }
         
-        System.out.println( "...Requested Shutdown on Port " + port + " Completed" );
+        if ( closed )
+        {
+            System.out.println( "...Requested Shutdown on Port " + port + " Completed" );
+        }
+        else
+        {
+            System.out.println( "...Requested Shutdown on Port " + port + " Completed without ACK from server - " + response );
+        }
 
     }
 

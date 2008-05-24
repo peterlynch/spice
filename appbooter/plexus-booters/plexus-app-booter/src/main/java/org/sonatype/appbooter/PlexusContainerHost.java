@@ -154,6 +154,10 @@ public class PlexusContainerHost
         return containerContext;
     }
 
+    /**
+     * This method will start the container, this is a non-blocking method, and will return once container has started
+     * @throws Exception
+     */
     public void startContainer()
         throws Exception
     {
@@ -166,6 +170,9 @@ public class PlexusContainerHost
 
     }
 
+    /**
+     * Destroy the running container
+     */
     public void stopContainer()
     {
         if ( container != null )
@@ -175,6 +182,9 @@ public class PlexusContainerHost
         }
     }
 
+    /**
+     * This method will start the container, this is a blocking method, and will return once interrupted and told to shutdown
+     */
     public void start()
     {
         try

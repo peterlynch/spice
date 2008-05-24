@@ -29,6 +29,10 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Set;
 
+/**
+ * Manages Service implementations, giving some access to the Service on an open port.
+ *
+ */
 public class OutOfProcessController
     implements Runnable
 {
@@ -62,6 +66,15 @@ public class OutOfProcessController
         this.port = port;
     }
 
+    /**
+     * Retrieve a new Thread object that will handle notifying the service when requests are made from other applications.
+     * It is expected that the Thread object returned will be maintained manually.
+     * 
+     * @param service Service implementation that will be managed
+     * @param port TCP/IP Port number to listen on
+     * @return new Thread object that will listen for, and react to messages.  When the object is returned, it will already be running
+     * @throws UnknownHostException
+     */
     public static Thread manage( Service service,
                                  int port )
         throws UnknownHostException
@@ -69,7 +82,6 @@ public class OutOfProcessController
         OutOfProcessController ctl = new OutOfProcessController( service,
                                                                  InetAddress.getLocalHost(), port );
         Thread t = new Thread( ctl );
-        //t.setDaemon( true );
         t.setPriority( Thread.MIN_PRIORITY );
 
         t.start();
@@ -77,11 +89,15 @@ public class OutOfProcessController
         return t;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Runnable#run()
+     */
     public void run()
     {
         System.out.println( "Port " + port + " Controller Thread Started" );
         if ( openServerChannel() )
         {
+            //TODO: need to get rid of these labels
             all:
             while ( !Thread.currentThread().isInterrupted() )
             {
@@ -162,6 +178,7 @@ public class OutOfProcessController
             }
         }
 
+        //When we are done managing, time to go ahead and stop the Service as well
         close();
         
         System.out.println( "Port " + port + " Controller Thread Complete" );
