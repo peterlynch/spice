@@ -1,18 +1,18 @@
- /**
-  * Copyright (C) 2008 Sonatype Inc. 
-  * Sonatype Inc, licenses this file to you under the Apache License,
-  * Version 2.0 (the "License"); you may not use this file except in 
-  * compliance with the License.  You may obtain a copy of the License at
-  *
-  * http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing,
-  * software distributed under the License is distributed on an
-  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-  * KIND, either express or implied.  See the License for the
-  * specific language governing permissions and limitations
-  * under the License.
-  */
+/**
+ * Copyright (C) 2008 Sonatype Inc. 
+ * Sonatype Inc, licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in 
+ * compliance with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.sonatype.appbooter.jsw;
 
 import java.io.File;
@@ -47,6 +47,12 @@ public class PlexusJSWListener
         super( world );
     }
 
+    /**
+     * Constructor with File configuration.
+     * 
+     * @param world instance of classworlds passed to the container
+     * @param configuration file of the plexus configuration
+     */
     public PlexusJSWListener( ClassWorld world, File configuration )
     {
         super( world, configuration );
@@ -64,15 +70,18 @@ public class PlexusJSWListener
             // Ignore
             if ( WrapperManager.isDebugEnabled() )
             {
-                System.out.println( "PlexusJSWListener: controlEvent(" + event + ") Ignored" );
+                WrapperManager.log( WrapperManager.WRAPPER_LOG_LEVEL_DEBUG, "PlexusJSWListener: controlEvent(" + event
+                    + ") Ignored" );
             }
         }
         else
         {
             if ( WrapperManager.isDebugEnabled() )
             {
-                System.out.println( "PlexusJSWListener: controlEvent(" + event + ") Stopping" );
+                WrapperManager.log( WrapperManager.WRAPPER_LOG_LEVEL_DEBUG, "PlexusJSWListener: controlEvent(" + event
+                    + ") Stopping" );
             }
+
             WrapperManager.stop( 0 );
             // Will not get here.
         }
@@ -83,14 +92,19 @@ public class PlexusJSWListener
      */
     public Integer start( String[] arg0 )
     {
-        System.out.println( "Starting the Plexus Container." );
+        WrapperManager.log( WrapperManager.WRAPPER_LOG_LEVEL_INFO, "Starting the Plexus Container." );
+
         try
         {
+            WrapperManager.signalStarting( 30000 );
+
             startContainer();
         }
         catch ( Exception e )
         {
-            System.out.println( "Unable to start the Container: " + e.getMessage() );
+            WrapperManager.log( WrapperManager.WRAPPER_LOG_LEVEL_FATAL, "Unable to start the Container: "
+                + e.getMessage() );
+
             return ( 2 );
         }
         return null;
@@ -101,9 +115,12 @@ public class PlexusJSWListener
      */
     public int stop( int arg0 )
     {
-        System.out.println( "Stopping the Plexus Container." );
+        WrapperManager.log( WrapperManager.WRAPPER_LOG_LEVEL_INFO, "Stopping the Plexus Container." );
+
         stopContainer();
-        System.out.println( "Plexus Container stopped." );
+
+        WrapperManager.log( WrapperManager.WRAPPER_LOG_LEVEL_INFO, "Plexus Container stopped." );
+
         return 0;
     }
 
