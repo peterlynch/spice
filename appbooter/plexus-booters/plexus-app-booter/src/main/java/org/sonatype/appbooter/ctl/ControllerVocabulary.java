@@ -18,7 +18,9 @@ package org.sonatype.appbooter.ctl;
 public final class ControllerVocabulary
 {
 
-    public static final byte STOP_SERVICE = 0x1;
+    public static final byte SHUTDOWN_SERVICE = 0x1;
+    public static final byte STOP_SERVICE = 0x2;
+    public static final byte START_SERVICE = 0x3;
     public static final byte ACK = 0xf;
 
     private ControllerVocabulary(){}

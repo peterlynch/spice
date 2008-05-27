@@ -57,6 +57,8 @@ public class PlexusContainerHost
 
     private ClassWorld world;
 
+    private boolean isShutdown;
+    
     private boolean isStopped;
 
     private PlexusContainer container;
@@ -185,7 +187,7 @@ public class PlexusContainerHost
     /**
      * This method will start the container, this is a blocking method, and will return once interrupted and told to shutdown
      */
-    public void start()
+    public void startPlexusContainer()
     {
         try
         {
@@ -198,12 +200,45 @@ public class PlexusContainerHost
                     synchronized ( waitObj )
                     {
                         waitObj.wait();
+                        
+                        //If a stop was requested, just stop the container, not everything
+                        //as we will have the ability to start at a later time
+                        if ( isStopped() )
+                        {
+                            stopContainer();
+                        }
+                        //On a shutodwn, we need to take everything down
+                        else if ( isShutdown() )
+                        {
+                            stopContainer();
+                            stopManagementThread();
+                        }
+                        //If neither, we have been notified to start the container
+                        else
+                        {
+                            startContainer();
+                        }
                     }
                 }
                 catch ( InterruptedException e )
                 {
-                    stopContainer();
-                    stopManagementThread();
+                    //If a stop was requested, just stop the container, not everything
+                    //as we will have the ability to start at a later time
+                    if ( isStopped() )
+                    {
+                        stopContainer();
+                    }
+                    //On a shutodwn, we need to take everything down
+                    else if ( isShutdown() )
+                    {
+                        stopContainer();
+                        stopManagementThread();
+                    }
+                    //If neither, we have been notified to start the container
+                    else
+                    {
+                        startContainer();
+                    }
                 }
             }
         }
@@ -225,7 +260,7 @@ public class PlexusContainerHost
             Runnable shutdownHook = new ShutdownRunnable( containerHost );
             Runtime.getRuntime().addShutdownHook( new Thread( shutdownHook ) );
         }
-        containerHost.start();
+        containerHost.startPlexusContainer();
     }
 
     private static final class ShutdownRunnable
@@ -241,21 +276,6 @@ public class PlexusContainerHost
         public void run()
         {
             host.stopManagementThread();
-        }
-    }
-
-    public boolean isShutdown()
-    {
-        return isStopped;
-    }
-
-    public void shutdown()
-    {   
-        isStopped = true;
-        System.out.println( "Stopping container" );
-        synchronized ( waitObj )
-        {
-            waitObj.notify();
         }
     }
     
@@ -275,6 +295,43 @@ public class PlexusContainerHost
                 {
                 }
             }
+        }
+    }
+
+    public boolean isShutdown()
+    {
+        return isShutdown;
+    }
+
+    public void shutdown()
+    {   
+        isShutdown = true;
+        synchronized ( waitObj )
+        {
+            waitObj.notify();
+        }
+    }
+    
+    public boolean isStopped()
+    {
+        return isStopped;
+    }
+    
+    public void stop()
+    {
+        isStopped = true;
+        synchronized ( waitObj )
+        {
+            waitObj.notify();
+        }
+    }
+    
+    public void start()
+    {
+        isStopped = false;
+        synchronized ( waitObj )
+        {
+            waitObj.notify();
         }
     }
 }

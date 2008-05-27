@@ -22,5 +22,10 @@ public interface Service
     boolean isShutdown();
 
     void shutdown();
-
+    
+    boolean isStopped();
+    
+    void stop();
+    
+    void start();
 }

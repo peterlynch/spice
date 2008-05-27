@@ -27,6 +27,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -97,14 +98,13 @@ public class OutOfProcessController
         System.out.println( "Port " + port + " Controller Thread Started" );
         if ( openServerChannel() )
         {
-            //TODO: need to get rid of these labels
-            all:
-            while ( !Thread.currentThread().isInterrupted() )
+            boolean stop = false;
+            while ( !Thread.currentThread().isInterrupted() && !stop)
             {
                 if ( !serverChannel.isOpen() || !selector.isOpen() )
                 {
                     System.out.println( "Server socket or selector is closed. Stopping." );
-                    break all;
+                    break;
                 }
 
                 int numberReady;
@@ -114,11 +114,11 @@ public class OutOfProcessController
                 }
                 catch ( ClosedSelectorException e )
                 {
-                    break all;
+                    break;
                 }
                 catch ( ClosedByInterruptException e )
                 {
-                    continue all;
+                    continue;
                 }
                 catch ( IOException e )
                 {
@@ -129,40 +129,54 @@ public class OutOfProcessController
                                         + port
                                         + "\nSee stacktrace above for more information.\n" );
 
-                    break all;
+                    break;
                 }
 
                 if ( numberReady < 1 )
                 {
-                    continue all;
+                    continue;
                 }
 
                 Set<SelectionKey> keys = selector.selectedKeys();
-                keyProcessing:
-                for ( SelectionKey key : keys )
+                for ( Iterator<SelectionKey> keyIter = keys.iterator(); keyIter.hasNext(); )
                 {
-                    SocketChannel channel = accept( key );
+                    SelectionKey sKey = (SelectionKey) keyIter.next();
+                    keyIter.remove();
+                    SocketChannel channel = accept( sKey );
 
                     if ( channel == null )
                     {
-                        continue keyProcessing;
+                        continue;
                     }
 
                     try
                     {
-                        if ( !readCommand( channel, key ) )
+                        if ( !readCommand( channel, sKey ) )
                         {
-                            continue keyProcessing;
+                            continue;
                         }
 
                         buffer.flip();
                         byte cmd = buffer.get();
                         switch ( cmd )
                         {
+                            case ( ControllerVocabulary.SHUTDOWN_SERVICE ):
+                            {
+                                System.out.println( "Port " + port + " Received shutdown command. Shutting down application." );
+                                stop = true;
+                                break;
+                            }
                             case ( ControllerVocabulary.STOP_SERVICE ):
                             {
-                                System.out.println( "Port " + port + " Received stop command. Stopping application." );
-                                break all;
+                                System.out.println( "Port " + port + " Received stop command.  Stopping application." );
+                                service.stop();
+                                continue;
+                            }
+                            case ( ControllerVocabulary.START_SERVICE ):
+                            {
+                                System.out.println( "Port " + port + " Received start command.  Starting application." );
+                                service.start();
+                                continue;
                             }
                             default:
                             {
@@ -198,6 +212,7 @@ public class OutOfProcessController
             if ( read > 0 )
             {
                 channel.write( ackBuffer );
+                ackBuffer.rewind();
 //                if ( key.isWritable() )
 //                {
 //                }
@@ -228,7 +243,6 @@ public class OutOfProcessController
 
         try
         {
-            key = selector.selectedKeys().iterator().next();
             if ( key.isAcceptable() )
             {
                 channel = ( (ServerSocketChannel) key.channel() ).accept();
