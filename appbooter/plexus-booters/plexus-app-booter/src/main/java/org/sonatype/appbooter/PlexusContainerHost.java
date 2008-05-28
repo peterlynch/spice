@@ -46,6 +46,8 @@ public class PlexusContainerHost
     public static final String CONFIGURATION_FILE_PROPERTY = "plexus.configuration";
 
     public static final String ENABLE_CONTROL_SOCKET = "plexus.host.control.socket.enabled";
+    
+    public static final String DEV_MODE = "plexus.container.dev.mode";
 
     public static final int CONTROL_PORT = 32001;
 
@@ -166,7 +168,8 @@ public class PlexusContainerHost
         ContainerConfiguration cc = new DefaultContainerConfiguration()
             .setClassWorld( world )
             .setContainerConfiguration( configuration.getAbsolutePath() )
-            .setContext( createContainerContext() );
+            .setContext( createContainerContext() )
+            .setDevMode( Boolean.getBoolean( DEV_MODE ) );
 
         container = new DefaultPlexusContainer( cc );
 
