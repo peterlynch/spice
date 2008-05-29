@@ -17,10 +17,8 @@ package org.sonatype.appbooter.ctl;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
 
 import junit.framework.TestCase;
 
@@ -78,66 +76,20 @@ public class OutOfProcessControllerTest
 
         Thread.sleep( 100 );
 
-        SocketChannel channel = SocketChannel.open( new InetSocketAddress( InetAddress.getLocalHost(), port ) );
-        ByteBuffer buffer = ByteBuffer.allocate( 1 );
-
-        buffer.put( ControllerVocabulary.STOP_SERVICE );
-        buffer.rewind();
-
-        channel.write( buffer );
-
-        buffer.rewind();
-        
-        Thread.sleep( 100 );
-
-        channel.read( buffer );
-        buffer.flip();
-
-        assertEquals( "ACK not received", ControllerVocabulary.ACK, buffer.get() );
+        sendCommand( port, ControllerVocabulary.STOP_SERVICE );
         assertTrue( "Service should be stopped.", svc.stopped );
-        
-        channel.close();
 
         Thread.sleep( 100 );
 
-        channel = SocketChannel.open( new InetSocketAddress( InetAddress.getLocalHost(), port ) );
-        buffer = ByteBuffer.allocate( 1 );
-
-        buffer.put( ControllerVocabulary.START_SERVICE );
-        buffer.rewind();
-
-        channel.write( buffer );
-
-        buffer.rewind();
-        
-        Thread.sleep( 100 );
-
-        channel.read( buffer );
-        buffer.flip();
-
-        assertEquals( "ACK not received", ControllerVocabulary.ACK, buffer.get() );
+        sendCommand( port, ControllerVocabulary.START_SERVICE );
         assertFalse( "Service should not be stopped.", svc.stopped );
-        
-        channel.close();
-        
-        Thread.sleep( 100 );
-
-        channel = SocketChannel.open( new InetSocketAddress( InetAddress.getLocalHost(), port ) );
-        buffer = ByteBuffer.allocate( 1 );
-
-        buffer.put( ControllerVocabulary.SHUTDOWN_SERVICE );
-        buffer.rewind();
-
-        channel.write( buffer );
-
-        buffer.rewind();
 
         Thread.sleep( 100 );
-        
-        channel.read( buffer );
-        buffer.flip();
 
-        assertEquals( "ACK not received", ControllerVocabulary.ACK, buffer.get() );
+        sendCommand( port, ControllerVocabulary.SHUTDOWN_SERVICE );
+
+        Thread.sleep( 100 );
+
         assertTrue( "Service should be shutdown.", svc.shutdown );
 
         synchronized ( managementThread )
@@ -159,6 +111,24 @@ public class OutOfProcessControllerTest
         assertFalse( "Thread should have died.", managementThread.isAlive() );
     }
 
+    private void sendCommand( int port,
+                              byte command )
+        throws IOException
+    {
+        Socket sock = new Socket( InetAddress.getLocalHost(), port );
+        sock.setTcpNoDelay( true );
+        sock.setSoLinger( true, 0 );
+
+        byte[] data = {command};
+        sock.getOutputStream().write( data, 0, 1 );
+
+        sock.getInputStream().read( data );
+
+        assertEquals( "ACK not received", command, data[0] );
+
+        sock.close();
+    }
+
     public void testShutdownCommand()
         throws IOException, InterruptedException
     {
@@ -172,20 +142,7 @@ public class OutOfProcessControllerTest
 
         Thread.sleep( 100 );
 
-        SocketChannel channel = SocketChannel.open( new InetSocketAddress( InetAddress.getLocalHost(), port ) );
-        ByteBuffer buffer = ByteBuffer.allocate( 1 );
-
-        buffer.put( ControllerVocabulary.SHUTDOWN_SERVICE );
-        buffer.rewind();
-
-        channel.write( buffer );
-
-        buffer.rewind();
-
-        channel.read( buffer );
-        buffer.flip();
-
-        assertEquals( ControllerVocabulary.ACK, buffer.get() );
+        sendCommand( port, ControllerVocabulary.SHUTDOWN_SERVICE );
 
         synchronized ( managementThread )
         {
@@ -207,6 +164,120 @@ public class OutOfProcessControllerTest
         assertTrue( "Service should have been shutdown.", svc.shutdown );
     }
 
+    public void testShutdownOnCloseCommand()
+        throws IOException, InterruptedException
+    {
+        printTestStart();
+
+        TestService svc = new TestService();
+
+        int port = 32001;
+
+        Thread managementThread = OutOfProcessController.manage( svc, port );
+
+        Thread.sleep( 100 );
+
+        Socket sock = new Socket( InetAddress.getLocalHost(), port );
+        sock.setTcpNoDelay( true );
+        sock.setSoLinger( true, 0 );
+
+        byte[] data = {ControllerVocabulary.SHUTDOWN_ON_CLOSE};
+        sock.getOutputStream().write( data, 0, 1 );
+
+        sock.getInputStream().read( data );
+
+        assertEquals( "ACK not received", ControllerVocabulary.SHUTDOWN_ON_CLOSE, data[0] );
+
+        assertFalse( "Service should not shutdown until socket is closed.", svc.shutdown );
+
+        sock.close();
+
+        Thread.sleep( 100 );
+
+        assertTrue( "Service should have been shutdown when socket was closed.", svc.shutdown );
+
+        synchronized ( managementThread )
+        {
+            if ( managementThread.isAlive() )
+            {
+                try
+                {
+                    System.out.println( "Joining management thread." );
+                    managementThread.join( /* OutOfProcessController.SLEEP_PERIOD + 1000 */);
+                }
+                catch ( InterruptedException e )
+                {
+                    System.out.println( "Interrupted." );
+                }
+            }
+        }
+
+        assertFalse( "Thread should have died.", managementThread.isAlive() );
+    }
+
+    public void testDetachOnCloseCommand()
+        throws IOException, InterruptedException
+    {
+        printTestStart();
+
+        TestService svc = new TestService();
+
+        int port = 32001;
+
+        Thread managementThread = OutOfProcessController.manage( svc, port );
+
+        Thread.sleep( 100 );
+
+        Socket sock = new Socket( InetAddress.getLocalHost(), port );
+        sock.setTcpNoDelay( true );
+        sock.setSoLinger( true, 0 );
+
+        byte[] data = {ControllerVocabulary.SHUTDOWN_ON_CLOSE};
+        sock.getOutputStream().write( data, 0, 1 );
+
+        sock.getInputStream().read( data );
+
+        assertEquals( "ACK not received", ControllerVocabulary.SHUTDOWN_ON_CLOSE, data[0] );
+
+        // now, cancel the shutdown-on-close command, to allow the service to persist after the socket closes.
+        data[0] = ControllerVocabulary.DETACH_ON_CLOSE;
+        sock.getOutputStream().write( data, 0, 1 );
+
+        sock.getInputStream().read( data );
+
+        assertEquals( "ACK not received", ControllerVocabulary.DETACH_ON_CLOSE, data[0] );
+
+        sock.close();
+
+        Thread.sleep( 100 );
+
+        assertFalse( "Service should not be shutdown until shutdown command is given.", svc.shutdown );
+
+        sendCommand( port, ControllerVocabulary.SHUTDOWN_SERVICE );
+
+        Thread.sleep( 100 );
+
+        assertTrue( "Service should have been shutdown when socket was closed.", svc.shutdown );
+
+        synchronized ( managementThread )
+        {
+            if ( managementThread.isAlive() )
+            {
+                try
+                {
+                    System.out.println( "Joining management thread." );
+                    managementThread.join( /* OutOfProcessController.SLEEP_PERIOD + 1000 */);
+                }
+                catch ( InterruptedException e )
+                {
+                    System.out.println( "Interrupted." );
+                }
+            }
+        }
+
+        assertFalse( "Thread should have died.", managementThread.isAlive() );
+    }
+
     public void testUnknownCommand()
         throws IOException, InterruptedException
     {
@@ -220,20 +291,10 @@ public class OutOfProcessControllerTest
 
         Thread.sleep( 100 );
 
-        SocketChannel channel = SocketChannel.open( new InetSocketAddress( InetAddress.getLocalHost(), port ) );
-        ByteBuffer buffer = ByteBuffer.allocate( 1 );
+        sendCommand( port, (byte) 0x0 );
 
-        buffer.put( (byte) 0x0 );
-        buffer.rewind();
+        Thread.sleep( 100 );
 
-        channel.write( buffer );
-
-        buffer.rewind();
-
-        channel.read( buffer );
-        buffer.flip();
-
-        assertEquals( ControllerVocabulary.ACK, buffer.get() );
         assertFalse( "Service should NOT have been shutdown.", svc.shutdown );
 
         synchronized ( managementThread )
@@ -253,6 +314,8 @@ public class OutOfProcessControllerTest
                 }
             }
         }
+
+        System.out.println( "management thread should have died." );
 
         assertFalse( "Thread should have died.", managementThread.isAlive() );
         assertTrue( "Service should have been shutdown.", svc.shutdown );

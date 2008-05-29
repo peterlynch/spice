@@ -17,18 +17,11 @@ package org.sonatype.appbooter.ctl;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousCloseException;
-import java.nio.channels.ClosedByInterruptException;
-import java.nio.channels.ClosedSelectorException;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
-import java.util.Iterator;
-import java.util.Set;
 
 /**
  * Manages Service implementations, giving some access to the Service on an open port.
@@ -48,15 +41,7 @@ public class OutOfProcessController
 
     private final int port;
 
-    private ServerSocketChannel serverChannel;
-
-    private Selector selector;
-
-    private ByteBuffer buffer = ByteBuffer.allocate( 1 );
-
-    private ByteBuffer ackBuffer = ByteBuffer.wrap( new byte[] {
-        ControllerVocabulary.ACK
-    } );
+    private ServerSocket serverSocket;
 
     private OutOfProcessController( Service service,
                                     InetAddress bindAddress,
@@ -70,7 +55,7 @@ public class OutOfProcessController
     /**
      * Retrieve a new Thread object that will handle notifying the service when requests are made from other applications.
      * It is expected that the Thread object returned will be maintained manually.
-     * 
+     *
      * @param service Service implementation that will be managed
      * @param port TCP/IP Port number to listen on
      * @return new Thread object that will listen for, and react to messages.  When the object is returned, it will already be running
@@ -96,199 +81,110 @@ public class OutOfProcessController
     public void run()
     {
         System.out.println( "Port " + port + " Controller Thread Started" );
-        if ( openServerChannel() )
+        if ( openServerSocket() )
         {
             boolean stop = false;
             while ( !Thread.currentThread().isInterrupted() && !stop)
             {
-                if ( !serverChannel.isOpen() || !selector.isOpen() )
-                {
-                    System.out.println( "Server socket or selector is closed. Stopping." );
-                    break;
-                }
-
-                int numberReady;
+                Socket socket = null;
                 try
                 {
-                    numberReady = selector.select();
-                }
-                catch ( ClosedSelectorException e )
-                {
-                    break;
-                }
-                catch ( ClosedByInterruptException e )
-                {
-                    continue;
-                }
-                catch ( IOException e )
-                {
-                    e.printStackTrace( System.out );
-                    System.out.println( "\n\n\nERROR: Cannot select active keys for control on: "
-                                        + bindAddress
-                                        + ":"
-                                        + port
-                                        + "\nSee stacktrace above for more information.\n" );
-
-                    break;
-                }
-
-                if ( numberReady < 1 )
-                {
-                    continue;
-                }
-
-                Set<SelectionKey> keys = selector.selectedKeys();
-                for ( Iterator<SelectionKey> keyIter = keys.iterator(); keyIter.hasNext(); )
-                {
-                    SelectionKey sKey = (SelectionKey) keyIter.next();
-                    keyIter.remove();
-                    SocketChannel channel = accept( sKey );
-
-                    if ( channel == null )
+                    try
                     {
+                        socket = serverSocket.accept();
+                    }
+                    catch ( SocketTimeoutException e )
+                    {
+                        System.out.println( "Port " + port + " Socket timed out on accept." );
                         continue;
                     }
 
-                    try
+                    socket.setTcpNoDelay( true );
+
+                    while ( true )
                     {
-                        if ( !readCommand( channel, sKey ) )
+                        byte command = 0x0;
+                        try
                         {
-                            continue;
+                            command = (byte) socket.getInputStream().read();
+                        }
+                        catch ( SocketException e )
+                        {
+                            System.out.println( "Port " + port + ": " + e.getMessage() + "...Closing connection." );
+                            break;
                         }
 
-                        buffer.flip();
-                        byte cmd = buffer.get();
-                        switch ( cmd )
+                        if ( command > -1 )
                         {
-                            case ( ControllerVocabulary.SHUTDOWN_SERVICE ):
+                            switch ( command )
                             {
-                                System.out.println( "Port " + port + " Received shutdown command. Shutting down application." );
-                                stop = true;
-                                break;
+                                case ( ControllerVocabulary.SHUTDOWN_SERVICE ):
+                                {
+                                    System.out.println( "Port " + port + " Received shutdown command. Shutting down application." );
+                                    stop = true;
+                                    break;
+                                }
+                                case ( ControllerVocabulary.STOP_SERVICE ):
+                                {
+                                    System.out.println( "Port " + port + " Received stop command.  Stopping application." );
+                                    service.stop();
+                                    break;
+                                }
+                                case ( ControllerVocabulary.START_SERVICE ):
+                                {
+                                    System.out.println( "Port " + port + " Received start command.  Starting application." );
+                                    service.start();
+                                    break;
+                                }
+                                case ( ControllerVocabulary.SHUTDOWN_ON_CLOSE ):
+                                {
+                                    System.out.println( "Port " + port + " Received shutdown-on-close command. Application will be terminated if socket is closed." );
+                                    stop = true;
+                                    break;
+                                }
+                                case ( ControllerVocabulary.DETACH_ON_CLOSE ):
+                                {
+                                    System.out.println( "Port " + port + " Received detach-on-close command. Application will -NOT- be terminated if socket is closed." );
+                                    stop = false;
+                                    break;
+                                }
+                                default:
+                                {
+                                    System.out.println( "Unknown command: 0x" + Integer.toHexString( command & 0xf ));
+                                }
                             }
-                            case ( ControllerVocabulary.STOP_SERVICE ):
-                            {
-                                System.out.println( "Port " + port + " Received stop command.  Stopping application." );
-                                service.stop();
-                                continue;
-                            }
-                            case ( ControllerVocabulary.START_SERVICE ):
-                            {
-                                System.out.println( "Port " + port + " Received start command.  Starting application." );
-                                service.start();
-                                continue;
-                            }
-                            default:
-                            {
-                                System.out.println( "Port " + port + " Received unknown command: 0x" + Integer.toHexString( cmd & 0x0f ) );
-                            }
+
+                            socket.getOutputStream().write( command );
                         }
                     }
-                    finally
-                    {
-                        ChannelUtil.close( channel );
-                    }
+                }
+                catch ( IOException e )
+                {
+                    e.printStackTrace();
+                    System.out.println( "Port " + port + " Error while servicing control socket: " + e.getMessage() + "\nKilling connection." );
+                }
+                finally
+                {
+                    ControllerUtil.close( socket );
                 }
             }
         }
 
         //When we are done managing, time to go ahead and stop the Service as well
         close();
-        
+
         System.out.println( "Port " + port + " Controller Thread Complete" );
     }
 
-    private boolean readCommand( SocketChannel channel, SelectionKey key )
-    {
-        System.out.println( "Port " + port + " accepted control connection from: "
-                            + channel.socket().getRemoteSocketAddress() );
-
-        buffer.rewind();
-        try
-        {
-//            channel.configureBlocking( false );
-//            channel.register( selector, SelectionKey.OP_WRITE );
-            int read = channel.read( buffer );
-            if ( read > 0 )
-            {
-                channel.write( ackBuffer );
-                ackBuffer.rewind();
-//                if ( key.isWritable() )
-//                {
-//                }
-//                else
-//                {
-//                    System.out.println( "Cannot write ACK. Skipping, and closing channel." );
-//                }
-
-                return true;
-            }
-        }
-        catch ( AsynchronousCloseException e )
-        {
-            System.out.println( "Control channel was closed asynchronously." );
-        }
-        catch ( IOException e )
-        {
-            e.printStackTrace( System.out );
-            System.out.println( "\n\n\nERROR: Failed to read command byte from incoming control connection.\nSee stacktrace above for more information.\n" );
-        }
-
-        return false;
-    }
-
-    private SocketChannel accept( SelectionKey key )
-    {
-        SocketChannel channel = null;
-
-        try
-        {
-            if ( key.isAcceptable() )
-            {
-                channel = ( (ServerSocketChannel) key.channel() ).accept();
-            }
-            else
-            {
-                System.out.println( "Control connection cannot be accepted. Ignoring." );
-            }
-        }
-        catch ( IOException e )
-        {
-            e.printStackTrace( System.out );
-            System.out.println( "\n\n\nERROR: Cannot accept connection from control socket on: "
-                                + bindAddress
-                                + ":"
-                                + port
-                                + "\nSee stacktrace above for more information.\n" );
-
-            ChannelUtil.close( channel );
-        }
-
-        return channel;
-    }
-
-    private boolean openServerChannel()
+    private boolean openServerSocket()
     {
         try
         {
-            InetSocketAddress addr = new InetSocketAddress( bindAddress, port );
-
-            System.out.println( "Opening socket channel." );
-            serverChannel = ServerSocketChannel.open();
-
-            System.out.println( "Binding to: " + addr );
-            serverChannel.socket().bind( addr );
-
-            System.out.println( "Opening selector." );
-            selector = Selector.open();
+            System.out.println( "Port " + port + " Opening socket channel for port." );
+            serverSocket = new ServerSocket( port );
 
             System.out.println( "Setting socket parameters." );
-            serverChannel.configureBlocking( false );
-            serverChannel.socket().setSoTimeout( DEFAULT_TIMEOUT );
-            serverChannel.socket().setReceiveBufferSize( 1 );
-
-            System.out.println( "Registering selector." );
-            serverChannel.register( selector, SelectionKey.OP_ACCEPT );
+            serverSocket.setSoTimeout( DEFAULT_TIMEOUT );
         }
         catch ( IOException e )
         {
@@ -306,8 +202,7 @@ public class OutOfProcessController
         System.out.println( "Controller Closing, requesting controlled service shutdown" );
         service.shutdown();
 
-        ChannelUtil.close( serverChannel );
-        ChannelUtil.close( selector );
+        ControllerUtil.close( serverSocket );
     }
 
 }

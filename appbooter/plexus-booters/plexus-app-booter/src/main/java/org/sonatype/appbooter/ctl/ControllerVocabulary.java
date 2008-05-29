@@ -1,7 +1,7 @@
  /**
-  * Copyright (C) 2008 Sonatype Inc. 
+  * Copyright (C) 2008 Sonatype Inc.
   * Sonatype Inc, licenses this file to you under the Apache License,
-  * Version 2.0 (the "License"); you may not use this file except in 
+  * Version 2.0 (the "License"); you may not use this file except in
   * compliance with the License.  You may obtain a copy of the License at
   *
   * http://www.apache.org/licenses/LICENSE-2.0
@@ -21,7 +21,8 @@ public final class ControllerVocabulary
     public static final byte SHUTDOWN_SERVICE = 0x1;
     public static final byte STOP_SERVICE = 0x2;
     public static final byte START_SERVICE = 0x3;
-    public static final byte ACK = 0xf;
+    public static final byte SHUTDOWN_ON_CLOSE = 0x4;
+    public static final byte DETACH_ON_CLOSE = 0x5;
 
     private ControllerVocabulary(){}
 

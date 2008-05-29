@@ -15,22 +15,23 @@
   */
 package org.sonatype.appbooter.ctl;
 
+import java.io.Closeable;
 import java.io.IOException;
-import java.nio.channels.Channel;
-import java.nio.channels.Selector;
+import java.net.ServerSocket;
+import java.net.Socket;
 
-public final class ChannelUtil
+public final class ControllerUtil
 {
 
-    private ChannelUtil(){}
+    private ControllerUtil(){}
 
-    public static void close( Channel channel )
+    public static void close( Closeable closeable )
     {
-        if ( channel != null && channel.isOpen() )
+        if ( closeable != null )
         {
             try
             {
-                channel.close();
+                closeable.close();
             }
             catch ( IOException closeError )
             {
@@ -38,15 +39,29 @@ public final class ChannelUtil
         }
     }
 
-    public static void close( Selector selector )
+    public static void close( ServerSocket socket )
     {
-        if ( selector != null && selector.isOpen() )
+        if ( socket != null )
         {
             try
             {
-                selector.close();
+                socket.close();
             }
-            catch ( IOException e )
+            catch ( IOException closeError )
+            {
+            }
+        }
+    }
+
+    public static void close( Socket socket )
+    {
+        if ( socket != null )
+        {
+            try
+            {
+                socket.close();
+            }
+            catch ( IOException closeError )
             {
             }
         }
