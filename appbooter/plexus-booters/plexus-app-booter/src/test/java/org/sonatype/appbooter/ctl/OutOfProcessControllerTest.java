@@ -77,14 +77,16 @@ public class OutOfProcessControllerTest
         Thread.sleep( 100 );
 
         sendCommand( port, ControllerVocabulary.STOP_SERVICE );
+
+        Thread.sleep( 100 );
+
         assertTrue( "Service should be stopped.", svc.stopped );
 
-        Thread.sleep( 100 );
-
         sendCommand( port, ControllerVocabulary.START_SERVICE );
-        assertFalse( "Service should not be stopped.", svc.stopped );
 
         Thread.sleep( 100 );
+
+        assertFalse( "Service should not be stopped.", svc.stopped );
 
         sendCommand( port, ControllerVocabulary.SHUTDOWN_SERVICE );
 
