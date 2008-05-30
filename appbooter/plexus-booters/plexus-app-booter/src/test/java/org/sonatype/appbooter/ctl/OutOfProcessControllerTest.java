@@ -119,7 +119,9 @@ public class OutOfProcessControllerTest
         sock.setTcpNoDelay( true );
         sock.setSoLinger( true, 0 );
 
-        byte[] data = {command};
+        byte[] data = {
+            command
+        };
         sock.getOutputStream().write( data, 0, 1 );
 
         sock.getInputStream().read( data );
@@ -181,7 +183,9 @@ public class OutOfProcessControllerTest
         sock.setTcpNoDelay( true );
         sock.setSoLinger( true, 0 );
 
-        byte[] data = {ControllerVocabulary.SHUTDOWN_ON_CLOSE};
+        byte[] data = {
+            ControllerVocabulary.SHUTDOWN_ON_CLOSE
+        };
         sock.getOutputStream().write( data, 0, 1 );
 
         sock.getInputStream().read( data );
@@ -232,7 +236,9 @@ public class OutOfProcessControllerTest
         sock.setTcpNoDelay( true );
         sock.setSoLinger( true, 0 );
 
-        byte[] data = {ControllerVocabulary.SHUTDOWN_ON_CLOSE};
+        byte[] data = {
+            ControllerVocabulary.SHUTDOWN_ON_CLOSE
+        };
         sock.getOutputStream().write( data, 0, 1 );
 
         sock.getInputStream().read( data );
@@ -251,7 +257,8 @@ public class OutOfProcessControllerTest
 
         Thread.sleep( 100 );
 
-        assertFalse( "Service should not be shutdown until shutdown command is given.", svc.shutdown );
+        assertFalse( "Service should not be shutdown until shutdown command is given.",
+                     svc.shutdown );
 
         sendCommand( port, ControllerVocabulary.SHUTDOWN_SERVICE );
 

@@ -74,7 +74,12 @@ public class ControllerClient
     public void close()
     {
         ControllerUtil.close( socket );
-        state = SHUTDOWN;
+        socket = null;
+    }
+
+    public boolean isOpen()
+    {
+        return socket != null;
     }
 
     /**
@@ -201,6 +206,8 @@ public class ControllerClient
             try
             {
                 socket = new Socket( address, port );
+                socket.setTcpNoDelay( true );
+                socket.setSoLinger( true, 0 );
             }
             catch( IOException e )
             {

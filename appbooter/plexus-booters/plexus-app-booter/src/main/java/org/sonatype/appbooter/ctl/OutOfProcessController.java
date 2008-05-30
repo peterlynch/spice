@@ -91,6 +91,7 @@ public class OutOfProcessController
                 {
                     try
                     {
+                        System.out.println( "Port " + port + " accepting control connections." );
                         socket = serverSocket.accept();
                     }
                     catch ( SocketTimeoutException e )
@@ -99,6 +100,8 @@ public class OutOfProcessController
                         continue;
                     }
 
+                    System.out.println( "Port " + port + " setting socket parameters." );
+//                    socket.setSoTimeout( DEFAULT_TIMEOUT );
                     socket.setTcpNoDelay( true );
 
                     while ( true )
@@ -106,7 +109,26 @@ public class OutOfProcessController
                         byte command = 0x0;
                         try
                         {
-                            command = (byte) socket.getInputStream().read();
+                            byte[] data = new byte[1];
+                            System.out.println( "Port " + port + " reading from control connection." );
+                            int read = (byte) socket.getInputStream().read( data, 0, 1 );
+                            if ( read > 0 )
+                            {
+                                command = data[0];
+                            }
+                            else
+                            {
+//                                System.out.println( "Port " + port + " read " + read + " bytes. Sleeping " + SLEEP_PERIOD + "ms before continuing with another read attempt." );
+//                                try
+//                                {
+//                                    Thread.sleep( SLEEP_PERIOD );
+//                                }
+//                                catch ( InterruptedException e )
+//                                {
+//                                }
+
+                                continue;
+                            }
                         }
                         catch ( SocketException e )
                         {

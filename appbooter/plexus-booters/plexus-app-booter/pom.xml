@@ -33,4 +33,19 @@ under the License.
             <artifactId>plexus-container-default</artifactId>
         </dependency>
     </dependencies>
+    
+    <build>
+      <pluginManagement>
+        <plugins>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>**/UserDriven*Test*</exclude>
+              </excludes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </pluginManagement>
+    </build>
 </project>
