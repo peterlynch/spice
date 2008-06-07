@@ -1,0 +1,17 @@
+<component-set>
+  <components>
+    <component>
+      <role>org.sonatype.webdav.security.Authentication</role>
+      <role-hint>properties</role-hint>
+      <implementation>org.sonatype.webdav.security.PropertiesAuthentication</implementation>
+      <configuration>
+        <properties>
+          <property>
+            <name>andy</name>
+            <value>williams</value>
+          </property>
+        </properties>
+      </configuration>
+    </component>
+  </components>
+</component-set>

@@ -1,0 +1,158 @@
+package org.sonatype.webdav;
+
+import org.codehaus.plexus.util.IOUtil;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.FileOutputStream;
+import java.util.Enumeration;
+import java.util.Vector;
+
+/**
+ * @author Andrew Williams
+ * @plexus.component role="org.sonatype.webdav.ResourceCollection" role-hint="file"
+ */
+public class FileResourceCollection
+    extends AbstractResourceCollection
+{
+    private File dir;
+
+    public FileResourceCollection()
+    {
+        this( new File( "target/webdav" ).getAbsoluteFile(), "/" );
+
+        /* initialise the datastore on first creation */
+        if ( !dir.exists() )
+        {
+            dir.mkdirs();
+        }
+    }
+
+    public FileResourceCollection( File root, String id )
+    {
+        super( id );
+
+        this.dir = root;
+    }
+
+    public Enumeration<Object> listResources( MethodExecutionContext context )
+    {
+        Vector<Object> ret = new Vector<Object>();
+
+        File[] list = dir.listFiles();
+
+        if ( list != null )
+        {
+            for ( int i = 0; i < list.length; i++ )
+            {
+                File file = list[i];
+
+                if ( file.isDirectory() )
+                {
+                    ret.add( new FileResourceCollection( file, getPath() + file.getName() + "/" ) );
+                }
+                else
+                {
+                    ret.add( new FileResource( file ) );
+                }
+            }
+        }
+
+        return ret.elements();
+    }
+
+    public void addResource( MethodExecutionContext context, Resource resource )
+    {
+        File underlying = ( (FileResource) resource ).getFile();
+
+        File newName = new File( dir, resource.getName() );
+
+        move( underlying, newName );
+        ( (FileResource) resource ).setFile( newName );
+    }
+
+    public void removeResource( MethodExecutionContext context, Resource resource )
+    {
+        ( (FileResource) resource ).remove( context );
+    }
+
+    public void replaceResource( MethodExecutionContext context, Resource old, Resource resource )
+    {
+        File underlying = ( (FileResource) old ).getFile();
+        underlying.delete();
+
+        File replace = new File( dir, resource.getName() );
+
+        move( ( (FileResource) resource ).getFile(), replace );
+        ( (FileResource) resource ).setFile( replace );
+    }
+
+    public ResourceCollection createCollection( MethodExecutionContext context, String path )
+    {
+        File dir = new File( this.dir, new File( path ).getName() );
+
+        dir.mkdir();
+        FileResourceCollection ret = new FileResourceCollection( dir, path );
+        return ret;
+    }
+
+    public void removeCollection( MethodExecutionContext context, ResourceCollection collection )
+    {
+        File file = new File( dir, new File( collection.getPath() ).getName() );
+
+        file.delete(); // TODO remove recursively
+    }
+
+    public Resource createResource( MethodExecutionContext context, String deepPath )
+    {
+        return new FileResource();
+    }
+
+    public long getLastModified()
+    {
+        return dir.lastModified();
+    }
+
+    public long getCreation()
+    {
+        return dir.lastModified(); // FIXME make java better!
+    }
+
+    public static void move( File from, File to )
+    {
+        if ( from.renameTo( to ) )
+        {
+            return;
+        }
+
+        boolean moved = false;
+        InputStream in = null;
+        OutputStream out = null;
+        try
+        {
+            in = new FileInputStream( from );
+            out = new FileOutputStream( to );
+
+            IOUtil.copy( in, out );
+            moved = true;
+        }
+        catch ( IOException e )
+        {
+            // TODO handle better
+            e.printStackTrace();
+        }
+        finally
+        {
+            IOUtil.close( in );
+            IOUtil.close( out );
+        }
+
+        if ( moved )
+        {
+            from.delete();
+        }
+    }
+}

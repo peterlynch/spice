@@ -1,0 +1,64 @@
+Litmus compliancy check
+=======================
+key:
+ PA: pass
+ FA: fail
+ SK: skip
+  -: setup failed, so further tests could not run
+
+enterprise1 (FS backend, properties auth)
+
+     | PA FA SK
+ http|  3  0  0
+basic| 12  2  0
+locks| 33  5  0
+copym|  8  4  0
+props|  8  5 16
+---------------
+   96  64 16 16 - 67%
+
+enterprise2 (NX backend, properties auth)
+
+     | PA FA SK
+ http|  3  0  0
+basic| 13  1  0
+locks| 32  6  0
+copym|  6  6  0
+props|  8  5 16
+---------------
+   96  64 16 16 - 67%
+
+archiva
+
+     | PA FA SK
+ http|  0  -  -
+basic|  0  -  -
+locks|  0  -  -
+copym|  0  -  -
+props|  0  -  -
+---------------
+  101   0  -  - - 0%
+(bug made all collections read only)
+
+mod_dav (apache)
+
+     | PA FA SK
+ http|  3  0  0
+basic| 14  0  0
+locks| 38  0  0
+copym| 12  0  0
+props| 29  0  0
+---------------
+   96  96  0  0 - 100%
+
+Danube (ah.org)
+
+     | PA FA SK
+ http|  3  0  0
+basic| 14  0  0
+locks| 34  0  4
+copym| 12  0  0
+props| 10  3 16
+---------------
+   96  73  3 20 - 76%
+
