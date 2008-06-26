@@ -23,7 +23,7 @@ under the License.
 		<version>4</version>
 	</parent>  
   <artifactId>maven-assembly-helpers</artifactId>
-  <version>1.0</version>
+  <version>1.1-SNAPSHOT</version>
   <name>maven-assembly-helpers</name>
 
   <dependencies>
@@ -58,10 +58,4 @@ under the License.
       </plugin>
     </plugins>
   </build>
-
-  <scm>
-    <connection>scm:svn:http://svn.sonatype.org/spice/tags/maven-assembly-helpers-1.0</connection>
-    <developerConnection>scm:svn:https://svn.sonatype.org/spice/tags/maven-assembly-helpers-1.0</developerConnection>
-    <url>http://svn.sonatype.org/spice/tags/maven-assembly-helpers-1.0</url>
-  </scm>
 </project>
