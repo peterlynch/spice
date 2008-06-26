@@ -34,7 +34,6 @@ under the License.
       <module>plexus-jetty-testsuite</module>
       <module>plexus-restlet-bridge</module>
       <module>plexus-webdav</module>
-      <module>sandbox</module>
       <module>spice-parent</module>
     </modules>
     
