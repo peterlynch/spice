@@ -21,7 +21,7 @@ under the License.
     <parent>
         <groupId>org.sonatype.appbooter</groupId>
         <artifactId>appbooter</artifactId>
-        <version>1.2-SNAPSHOT</version>
+        <version>1.2</version>
     </parent> 
   
   <groupId>org.sonatype.appbooter.plexus-booters</groupId>
