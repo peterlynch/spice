@@ -15,16 +15,6 @@
   */
 package org.sonatype.appbooter;
 
-import org.codehaus.plexus.ContainerConfiguration;
-import org.codehaus.plexus.DefaultContainerConfiguration;
-import org.codehaus.plexus.DefaultPlexusContainer;
-import org.codehaus.plexus.PlexusContainer;
-import org.codehaus.plexus.classworlds.ClassWorld;
-import org.codehaus.plexus.util.interpolation.MapBasedValueSource;
-import org.codehaus.plexus.util.interpolation.RegexBasedInterpolator;
-import org.sonatype.appbooter.ctl.OutOfProcessController;
-import org.sonatype.appbooter.ctl.Service;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -33,6 +23,17 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import org.codehaus.plexus.ContainerConfiguration;
+import org.codehaus.plexus.DefaultContainerConfiguration;
+import org.codehaus.plexus.DefaultPlexusContainer;
+import org.codehaus.plexus.PlexusContainer;
+import org.codehaus.plexus.classworlds.ClassWorld;
+import org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.interpolation.MapBasedValueSource;
+import org.codehaus.plexus.util.interpolation.RegexBasedInterpolator;
+import org.sonatype.appbooter.ctl.OutOfProcessController;
+import org.sonatype.appbooter.ctl.Service;
 
 /**
  * Main class for booting plexus apps in standalone model
@@ -58,6 +59,8 @@ public class PlexusContainerHost
     private File configuration;
 
     private ClassWorld world;
+    
+    private int controlPort = DEFAULT_CONTROL_PORT;
 
     private boolean isShutdown;
 
@@ -69,8 +72,10 @@ public class PlexusContainerHost
 
     private Thread managementThread;
 
-    public PlexusContainerHost( ClassWorld world )
+    public PlexusContainerHost( ClassWorld world, int controlPort )
     {
+        this.controlPort = controlPort;
+        
         this.world = world;
 
         String configPath = System.getProperty( CONFIGURATION_FILE_PROPERTY );
@@ -86,6 +91,11 @@ public class PlexusContainerHost
 
         initManagementThread();
     }
+    
+    public PlexusContainerHost( ClassWorld world )
+    {
+        this( world, DEFAULT_CONTROL_PORT );
+    }
 
     public PlexusContainerHost( ClassWorld world, File configuration )
     {
@@ -100,12 +110,12 @@ public class PlexusContainerHost
     {
         if ( Boolean.getBoolean( ENABLE_CONTROL_SOCKET ) )
         {
-            System.out.println( "\n\nStarting control socket on port: " + DEFAULT_CONTROL_PORT + "\n" );
+            System.out.println( "\n\nStarting control socket on port: " + this.controlPort + "\n" );
 
             try
             {
-                managementThread = OutOfProcessController.manage( this, DEFAULT_CONTROL_PORT );
-                System.out.println( "\n\nStarted control socket on port: " + DEFAULT_CONTROL_PORT + "\n" );
+                managementThread = OutOfProcessController.manage( this, this.controlPort );
+                System.out.println( "\n\nStarted control socket on port: " + this.controlPort + "\n" );
             }
             catch ( UnknownHostException e )
             {
@@ -255,7 +265,10 @@ public class PlexusContainerHost
     public static void main( String[] args,
                              ClassWorld classWorld )
     {
-        PlexusContainerHost containerHost = new PlexusContainerHost( classWorld );
+        // get the port from args
+        int controlPort = getControlPortFromArgs(args);
+
+        PlexusContainerHost containerHost = new PlexusContainerHost( classWorld, controlPort );
 
         System.out.println( "Starting container" );
         if ( Boolean.getBoolean( ENABLE_CONTROL_SOCKET ) )
@@ -264,6 +277,44 @@ public class PlexusContainerHost
             Runtime.getRuntime().addShutdownHook( new Thread( shutdownHook ) );
         }
         containerHost.startPlexusContainer();
+    }
+    
+    /**
+     * Parses the <code>args</code> if a single element exists and is a integer the value returned. Otherwise the
+     * <code>DEFAULT_CONTROL_PORT</code> is used.
+     * 
+     * @param args Command line arguments.
+     * @return The control port.
+     */
+    private static int getControlPortFromArgs(String[] args)
+    {
+        
+        // if we need to get more involved we could use commons-cli's CommandLineParser
+        // but for a single arg that seems overkill, what would be nice, is if we parsed
+        //all of the args and put them in the context of the container.
+                
+        int controlPort = DEFAULT_CONTROL_PORT;
+        
+        // grunt parsing..
+        if( args != null && args.length ==1 )
+        {
+            String tmpPortString = args[0];
+            if( StringUtils.isNotEmpty( tmpPortString ) && StringUtils.isNumeric( tmpPortString ) )
+            {
+                try
+                {
+                  controlPort = Integer.parseInt( tmpPortString );
+                }
+                // this should never happen, well, maybe if you pass in a long
+                catch( NumberFormatException e )
+                {
+                    System.out.println( "Error parsing command line args: "+ e.getMessage() );
+                    System.out.println( "Using default control port: "+ DEFAULT_CONTROL_PORT );
+                }
+            }
+        }
+        
+        return controlPort;
     }
 
     private static final class ShutdownRunnable
