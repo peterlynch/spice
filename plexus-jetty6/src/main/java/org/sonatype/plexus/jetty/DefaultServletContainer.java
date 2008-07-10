@@ -114,7 +114,7 @@ public class DefaultServletContainer
     public void initialize()
         throws InitializationException
     {
-        Log.setLog( new PlexusJettyLogger( getLogger() ) );
+        // Log.setLog( new PlexusJettyLogger( getLogger() ) );
 
         setServer( new Server() );
 
