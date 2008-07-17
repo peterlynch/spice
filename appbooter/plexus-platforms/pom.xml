@@ -90,10 +90,7 @@ under the License.
                   <relocation>
                     <pattern>org.codehaus.plexus.util</pattern>
                     <excludes>
-                      <exclude>org.codehaus.plexus.util.xml.Xpp3Dom</exclude>
-                      <exclude>org.codehaus.plexus.util.xml.Xpp3DomBuilder</exclude>
-                      <exclude>org.codehaus.plexus.util.xml.Xpp3DomUtils</exclude>
-                      <exclude>org.codehaus.plexus.util.xml.Xpp3DomWriter</exclude>
+                      <exclude>org.codehaus.plexus.util.xml.*</exclude>
                     </excludes>
                   </relocation>
                 </relocations>
