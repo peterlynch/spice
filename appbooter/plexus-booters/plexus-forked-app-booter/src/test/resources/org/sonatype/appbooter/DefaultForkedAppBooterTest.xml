@@ -1,0 +1,30 @@
+<component-set>
+	<components>
+
+		<component>
+			<role>org.sonatype.appbooter.ForkedAppBooter</role>
+			<implementation>
+				org.sonatype.appbooter.DefaultForkedAppBooter
+			</implementation>
+
+			<configuration>
+		        <disable-blocking>false</disable-blocking>
+		        <debug>false</debug>
+		        <java-cmd>java</java-cmd>
+		        <debug-port>5005</debug-port>
+		        <debug-suspend>true</debug-suspend>
+		        <debug-java-cmd>java -Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,server=y,suspend=@DEBUG_SUSPEND@,address=@DEBUG_PORT@ -Djava.compiler=NONE</debug-java-cmd>
+		        <launcher-class>org.sonatype.appbooter.PlexusContainerHost</launcher-class>
+		        <configuration>${basedir}/src/test/resources/plexus.xml</configuration>
+		        <temp-dir>.</temp-dir>
+		        <control-port>-1</control-port>
+		        <platform-file>my-nonexisting-platform.jar</platform-file>
+		        <basedir>${basedir}</basedir>
+		        <class-path-elements>${basedir}/runtime/apps/nexus/conf, ${basedir}/runtime/apps/nexus/lib/*.jar</class-path-elements>
+		     </configuration>
+
+
+		</component>
+
+	</components>
+</component-set>

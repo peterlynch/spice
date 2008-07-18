@@ -1,0 +1,16 @@
+main is ${config.mainClass} from ${config.mainRealm}
+
+#if($config.hasSystemProperties())#foreach($propertyEntry in $config.systemProperties.entrySet())
+set ${propertyEntry.key} default ${propertyEntry.value}
+#end#end
+
+#foreach($realm in $config.realmConfigurations)
+[${realm.id}]
+#if($realm.hasImports())#foreach($importEntry in $realm.imports.entrySet())
+  import ${importEntry.key} from ${importEntry.value}
+#end#end
+#if($realm.hasLoadPatterns())#foreach($loadPattern in $realm.loadPatterns)
+  load ${loadPattern}
+#end#end
+
+#end

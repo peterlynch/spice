@@ -1,4 +1,4 @@
- /**
+/**
   * Copyright (C) 2008 Sonatype Inc. 
   * Sonatype Inc, licenses this file to you under the Apache License,
   * Version 2.0 (the "License"); you may not use this file except in 
@@ -13,19 +13,26 @@
   * specific language governing permissions and limitations
   * under the License.
   */
-package org.sonatype.appbooter.ctl;
+package org.sonatype.plexus.classworlds.io;
 
-
-public interface Service
+public class ClassworldsIOException
+    extends Exception
 {
 
-    boolean isShutdown();
+    /**
+     * Generated serialVersionUID
+     */
+    private static final long serialVersionUID = 4835510591823073460L;
 
-    void shutdown() throws AppBooterServiceException;
-    
-    boolean isStopped();
-    
-    void stop() throws AppBooterServiceException;
-    
-    void start() throws AppBooterServiceException;
+    public ClassworldsIOException( String message,
+                                      Throwable cause )
+    {
+        super( message, cause );
+    }
+
+    public ClassworldsIOException( String message )
+    {
+        super( message );
+    }
+
 }

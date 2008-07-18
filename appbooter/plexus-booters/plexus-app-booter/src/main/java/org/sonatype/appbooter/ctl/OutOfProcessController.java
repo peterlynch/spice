@@ -185,6 +185,11 @@ public class OutOfProcessController
                     e.printStackTrace();
                     System.out.println( "Port " + port + " Error while servicing control socket: " + e.getMessage() + "\nKilling connection." );
                 }
+                catch ( AppBooterServiceException e )
+                {
+                    e.printStackTrace();
+                    System.out.println( "Port " + port + " Error while servicing control socket: " + e.getMessage() + "\nKilling connection." );
+                }
                 finally
                 {
                     ControllerUtil.close( socket );
@@ -193,7 +198,15 @@ public class OutOfProcessController
         }
 
         //When we are done managing, time to go ahead and stop the Service as well
-        close();
+        try
+        {
+            close();
+        }
+        catch ( AppBooterServiceException e )
+        {
+            e.printStackTrace();
+            System.out.println( "\n\n\nERROR: Unable to shutdown the process."  );
+        }
 
         System.out.println( "Port " + port + " Controller Thread Complete" );
     }
@@ -219,7 +232,7 @@ public class OutOfProcessController
         return true;
     }
 
-    private void close()
+    private void close() throws AppBooterServiceException
     {
         System.out.println( "Controller Closing, requesting controlled service shutdown" );
         service.shutdown();
