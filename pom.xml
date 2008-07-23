@@ -33,6 +33,7 @@ under the License.
       <module>plexus-jetty6</module>
       <module>plexus-jetty-testsuite</module>
       <module>plexus-restlet-bridge</module>
+      <module>plexus-jsecurity</module>
       <module>plexus-webdav</module>
       <module>spice-parent</module>
     </modules>
