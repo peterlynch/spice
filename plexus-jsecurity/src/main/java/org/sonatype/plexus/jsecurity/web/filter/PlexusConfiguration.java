@@ -29,11 +29,6 @@ public class PlexusConfiguration
 
     protected String securityManagerRoleHint;
 
-    public PlexusConfiguration()
-    {
-        super();
-    }
-
     public String getSecurityManagerRole()
     {
         if ( securityManagerRole != null )
