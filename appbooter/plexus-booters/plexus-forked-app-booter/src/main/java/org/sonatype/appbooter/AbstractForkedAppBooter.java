@@ -476,5 +476,77 @@ public abstract class AbstractForkedAppBooter extends AbstractLogEnabled impleme
     {
         this.stop();
     }
+
+    public void setDisableBlocking( boolean disableBlocking )
+    {
+        this.disableBlocking = disableBlocking;
+    }
+
+    public void setDebug( boolean debug )
+    {
+        this.debug = debug;
+    }
+
+    public void setJavaCmd( String javaCmd )
+    {
+        this.javaCmd = javaCmd;
+    }
+
+    public void setDebugPort( int debugPort )
+    {
+        this.debugPort = debugPort;
+    }
+
+    public void setDebugSuspend( boolean debugSuspend )
+    {
+        this.debugSuspend = debugSuspend;
+    }
+
+    public void setDebugJavaCmd( String debugJavaCmd )
+    {
+        this.debugJavaCmd = debugJavaCmd;
+    }
+
+    public void setLauncherClass( String launcherClass )
+    {
+        this.launcherClass = launcherClass;
+    }
+
+    public void setSystemProperties( Map<String, String> systemProperties )
+    {
+        this.systemProperties = systemProperties;
+    }
+
+    public void setConfiguration( File configuration )
+    {
+        this.configuration = configuration;
+    }
+
+    public void setBasedir( File basedir )
+    {
+        this.basedir = basedir;
+    }
+
+    public void setTempDir( File tempDir )
+    {
+        this.tempDir = tempDir;
+    }
+
+    public void setSleepAfterStart( int sleepAfterStart )
+    {
+        this.sleepAfterStart = sleepAfterStart;
+    }
+
+    public void setControlPort( int controlPort )
+    {
+        this.controlPort = controlPort;
+    }
+
+    public void setControlClient( ControllerClient controlClient )
+    {
+        this.controlClient = controlClient;
+    }
+    
+    
     
 }

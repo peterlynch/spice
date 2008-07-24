@@ -1,10 +1,15 @@
 package org.sonatype.appbooter;
 
 import java.io.File;
+import java.lang.reflect.Field;
+import java.util.Arrays;
 
 import junit.framework.Assert;
 
 import org.codehaus.plexus.PlexusTestCase;
+import org.codehaus.plexus.component.configurator.ComponentConfigurator;
+import org.codehaus.plexus.component.repository.ComponentDescriptor;
+import org.codehaus.plexus.configuration.PlexusConfiguration;
 import org.codehaus.plexus.util.cli.Commandline;
 import org.sonatype.plexus.classworlds.model.ClassworldsRealmConfiguration;
 
@@ -33,11 +38,39 @@ public class DefaultForkedAppBooterTest
     public void testGetPlatformFile()
         throws Exception
     {
-        AbstractForkedAppBooter appBooter = (AbstractForkedAppBooter) this.lookup( ForkedAppBooter.ROLE );
+        AbstractForkedAppBooter appBooter = (AbstractForkedAppBooter) this.lookup( ForkedAppBooter.ROLE, "default" );
 
         File platformFile = appBooter.getPlatformFile();
 
         Assert.assertTrue( "my-nonexisting-platform.jar".equals( platformFile.getName() ) );
+    }
+
+    public void testConfigurator()
+        throws Exception
+    {
+        ForkedAppBooter appBooter = (ForkedAppBooter) this.lookup( ForkedAppBooter.ROLE, "default" );
+
+        ComponentDescriptor descript = this.getContainer().getComponentDescriptor( ForkedAppBooter.ROLE, "default" );
+        PlexusConfiguration config = descript.getConfiguration();
+
+        // get the value and set it to 25
+        PlexusConfiguration[] wow = config.getChildren( "control-port" ); // the private controlPort field
+        wow[0].setValue( "25" );
+
+        // get the configurator:
+        ComponentConfigurator configurator = (ComponentConfigurator) this.lookup( ComponentConfigurator.ROLE );
+        // configure the component
+        configurator.configureComponent( appBooter, config,
+                                         this.getContainer().getComponentRealm( ForkedAppBooter.ROLE ) );
+
+        
+        // now just test the value for kicks
+        Field contorlPortField = AbstractForkedAppBooter.class.getDeclaredField( "controlPort" );
+        contorlPortField.setAccessible( true );
+
+        int controlPort = contorlPortField.getInt( appBooter );
+        Assert.assertEquals( 25, controlPort );
+
     }
 
     public void testBuildCommandLine()
@@ -49,7 +82,22 @@ public class DefaultForkedAppBooterTest
 
         // this is a very very week test, it doesn't test anything
         Assert.assertTrue( cmd.toString().endsWith( appBooter.getPlatformFile().getAbsolutePath() ) );
+        
+        
     }
+    
+    
+    public void testBuildCommandLineWithAsterisk() throws Exception
+    {
+        AbstractForkedAppBooter appBooter = (AbstractForkedAppBooter) this.lookup( ForkedAppBooter.ROLE, "withAsterisk" );
+
+        Commandline cmd = appBooter.buildCommandLine();
+        
+     // this is a very very week test, it doesn't test anything
+        Assert.assertTrue( cmd.toString().endsWith( appBooter.getPlatformFile().getAbsolutePath() ) );
+        
+    }
+    
 
     public void testRunAppBooter()
         throws Exception
