@@ -2,6 +2,8 @@ package org.sonatype.plexus.jsecurity.web;
 
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
+import org.jsecurity.realm.Realm;
+import org.jsecurity.util.LifecycleUtils;
 import org.sonatype.plexus.jsecurity.SecurityConfigurationProvider;
 
 /**
@@ -19,6 +21,11 @@ public class DefaultWebSecurityManager
      */
     private SecurityConfigurationProvider securityConfigurationProvider;
 
+    public DefaultWebSecurityManager()
+    {
+        // nothing
+    }
+
     public void initialize()
         throws InitializationException
     {
@@ -28,5 +35,11 @@ public class DefaultWebSecurityManager
         }
 
         setRealms( securityConfigurationProvider.getRealms() );
+
+        // init the realms
+        for ( Realm realm : getRealms() )
+        {
+            LifecycleUtils.init( realm );
+        }
     }
 }

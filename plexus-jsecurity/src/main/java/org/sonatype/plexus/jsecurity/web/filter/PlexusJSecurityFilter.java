@@ -12,8 +12,6 @@ public class PlexusJSecurityFilter
 {
     public PlexusJSecurityFilter()
     {
-        super();
-
         this.configClassName = PlexusConfiguration.class.getName();
     }
 }
