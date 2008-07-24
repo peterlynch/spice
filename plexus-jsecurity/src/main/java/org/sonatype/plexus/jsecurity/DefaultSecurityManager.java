@@ -1,10 +1,7 @@
 package org.sonatype.plexus.jsecurity;
 
-import java.util.List;
-
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
-import org.jsecurity.realm.Realm;
 
 /**
  * A simple Plexus componentized WebSecurityManager.
@@ -17,13 +14,18 @@ public class DefaultSecurityManager
     implements Initializable
 {
     /**
-     * @plexus.requirement role="org.jsecurity.realm.Realm"
+     * @plexus.requirement
      */
-    private List<Realm> realms;
+    private SecurityConfigurationProvider securityConfigurationProvider;
 
     public void initialize()
         throws InitializationException
     {
-        setRealms( realms );
+        setRealms( securityConfigurationProvider.getRealms() );
+
+        if ( securityConfigurationProvider.getRememberMeManager() != null )
+        {
+            setRememberMeManager( securityConfigurationProvider.getRememberMeManager() );
+        }
     }
 }
