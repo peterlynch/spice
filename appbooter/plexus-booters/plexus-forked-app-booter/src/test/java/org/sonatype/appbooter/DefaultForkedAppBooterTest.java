@@ -63,7 +63,6 @@ public class DefaultForkedAppBooterTest
         configurator.configureComponent( appBooter, config,
                                          this.getContainer().getComponentRealm( ForkedAppBooter.ROLE ) );
 
-        
         // now just test the value for kicks
         Field contorlPortField = AbstractForkedAppBooter.class.getDeclaredField( "controlPort" );
         contorlPortField.setAccessible( true );
@@ -80,24 +79,38 @@ public class DefaultForkedAppBooterTest
 
         Commandline cmd = appBooter.buildCommandLine();
 
+        System.out.println( "cmd: " + cmd );
+
+        String platformFilePath = appBooter.getPlatformFile().getAbsolutePath();
         // this is a very very week test, it doesn't test anything
-        Assert.assertTrue( cmd.toString().endsWith( appBooter.getPlatformFile().getAbsolutePath() ) );
-        
-        
+        Assert.assertTrue( cmd.toString().endsWith( platformFilePath )// my machine
+            || cmd.toString().endsWith( platformFilePath + "\"" ) // maybe windows
+            || cmd.toString().endsWith( platformFilePath + "\"\"" ) // windows
+            || cmd.toString().endsWith( platformFilePath + "'" ) ); // unix
+
     }
-    
-    
-    public void testBuildCommandLineWithAsterisk() throws Exception
+
+    public void testBuildCommandLineWithAsterisk()
+        throws Exception
     {
-        AbstractForkedAppBooter appBooter = (AbstractForkedAppBooter) this.lookup( ForkedAppBooter.ROLE, "withAsterisk" );
+        AbstractForkedAppBooter appBooter =
+            (AbstractForkedAppBooter) this.lookup( ForkedAppBooter.ROLE, "withAsterisk" );
 
         Commandline cmd = appBooter.buildCommandLine();
         
-     // this is a very very week test, it doesn't test anything
-        Assert.assertTrue( cmd.toString().endsWith( appBooter.getPlatformFile().getAbsolutePath() ) );
+        System.out.println( "cmd: " + cmd );
+
+        String platformFilePath = appBooter.getPlatformFile().getAbsolutePath();
+        
+        Assert.assertFalse( platformFilePath.contains( "*" ) );
+        
+        // this is a very very week test, it doesn't test anything
+        Assert.assertTrue( cmd.toString().endsWith( platformFilePath ) // my machine
+                           || cmd.toString().endsWith( platformFilePath + "\"" ) // maybe windows
+                           || cmd.toString().endsWith( platformFilePath + "\"\"" ) // windows
+                           || cmd.toString().endsWith( platformFilePath + "'" ) ); // unix
         
     }
-    
 
     public void testRunAppBooter()
         throws Exception
