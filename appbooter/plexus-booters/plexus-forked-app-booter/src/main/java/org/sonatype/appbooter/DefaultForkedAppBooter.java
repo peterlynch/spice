@@ -65,7 +65,7 @@ public class DefaultForkedAppBooter
             // now do the fun stuff. A little file finding regex fun
 
             // we want to excape all of the current . and replace them with \., and replace any * with .*
-            final String fileRegEx = platformFile.getAbsolutePath().replace( ".", "\\." ).replace( "*", ".*" );
+            final String fileRegEx = platformFile.getAbsolutePath().replace( "\\", "\\\\" ).replace( ".", "\\." ).replace( "*", ".*" );
             // This may be a little to non standard. but it would be really easy to add a new component to replace the
             // default.
 
