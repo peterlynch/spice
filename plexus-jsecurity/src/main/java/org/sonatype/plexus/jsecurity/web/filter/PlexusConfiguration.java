@@ -1,6 +1,7 @@
 package org.sonatype.plexus.jsecurity.web.filter;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletContext;
 
@@ -85,16 +86,23 @@ public class PlexusConfiguration
     }
 
     @Override
-    protected SecurityManager createSecurityManager()
+    protected SecurityManager createDefaultSecurityManager()
+    {
+        return createSecurityManager( null );
+    }
+
+    @Override
+    protected SecurityManager createSecurityManager( Map<String, Map<String, String>> sections )
     {
         ServletContext servletContext = getFilterConfig().getServletContext();
 
         PlexusContainer container = (PlexusContainer) servletContext.getAttribute( PlexusConstants.PLEXUS_KEY );
 
-        return getOrCreateSecurityManager( container );
+        return getOrCreateSecurityManager( container, sections );
     }
 
-    protected SecurityManager getOrCreateSecurityManager( PlexusContainer container )
+    protected SecurityManager getOrCreateSecurityManager( PlexusContainer container,
+        Map<String, Map<String, String>> sections )
     {
         SecurityManager securityManager = null;
 
@@ -114,7 +122,7 @@ public class PlexusConfiguration
 
         if ( securityManager == null )
         {
-            securityManager = createDefaultSecurityManagerFromRealms( container );
+            securityManager = createDefaultSecurityManagerFromRealms( container, sections );
         }
 
         if ( securityManager == null )
@@ -131,12 +139,13 @@ public class PlexusConfiguration
     }
 
     @SuppressWarnings( "unchecked" )
-    protected SecurityManager createDefaultSecurityManagerFromRealms( PlexusContainer container )
+    protected SecurityManager createDefaultSecurityManagerFromRealms( PlexusContainer container,
+        Map<String, Map<String, String>> sections )
     {
         SecurityManager securityManager = null;
 
         // Create security manager according to superclass
-        securityManager = super.createSecurityManager();
+        securityManager = super.createSecurityManager( sections );
 
         try
         {
