@@ -111,6 +111,9 @@ public class PlexusConfiguration
             securityManager = (SecurityManager) container.lookup(
                 getSecurityManagerRole(),
                 getSecurityManagerRoleHint() );
+
+            log.info( "SecurityManager with role='" + getSecurityManagerRole() + "' and roleHint='"
+                + getSecurityManagerRoleHint() + "' found in Plexus." );
         }
         catch ( ComponentLookupException e )
         {
