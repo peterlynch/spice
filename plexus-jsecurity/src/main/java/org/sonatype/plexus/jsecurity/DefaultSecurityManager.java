@@ -1,8 +1,11 @@
 package org.sonatype.plexus.jsecurity;
 
+import java.util.List;
+
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
 import org.jsecurity.realm.Realm;
+import org.jsecurity.subject.RememberMeManager;
 import org.jsecurity.util.LifecycleUtils;
 
 /**
@@ -28,15 +31,19 @@ public class DefaultSecurityManager
     public void initialize()
         throws InitializationException
     {
-        if ( securityConfigurationProvider.getRememberMeManager() != null )
+        RememberMeManager rmm = securityConfigurationProvider.getRememberMeManager();
+
+        if ( rmm != null )
         {
-            setRememberMeManager( securityConfigurationProvider.getRememberMeManager() );
+            setRememberMeManager( rmm );
         }
 
-        setRealms( securityConfigurationProvider.getRealms() );
+        List<Realm> realms = securityConfigurationProvider.getRealms();
+
+        setRealms( realms );
 
         // init the realms
-        for ( Realm realm : getRealms() )
+        for ( Realm realm : realms )
         {
             LifecycleUtils.init( realm );
         }
