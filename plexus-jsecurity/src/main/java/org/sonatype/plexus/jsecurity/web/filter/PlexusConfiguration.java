@@ -5,6 +5,8 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.plexus.PlexusConstants;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
@@ -26,9 +28,16 @@ public class PlexusConfiguration
 
     public static final String DEFAULT_SECURITY_MANAGER_ROLE_HINT = PlexusConstants.PLEXUS_DEFAULT_HINT + "-web";
 
+    private final Log logger = LogFactory.getLog( this.getClass() );
+
     protected String securityManagerRole;
 
     protected String securityManagerRoleHint;
+
+    protected Log getLogger()
+    {
+        return logger;
+    }
 
     public String getSecurityManagerRole()
     {
@@ -112,13 +121,15 @@ public class PlexusConfiguration
                 getSecurityManagerRole(),
                 getSecurityManagerRoleHint() );
 
-            log.info( "SecurityManager with role='" + getSecurityManagerRole() + "' and roleHint='"
-                + getSecurityManagerRoleHint() + "' found in Plexus." );
+            getLogger().info(
+                "SecurityManager with role='" + getSecurityManagerRole() + "' and roleHint='"
+                    + getSecurityManagerRoleHint() + "' found in Plexus." );
         }
         catch ( ComponentLookupException e )
         {
-            log.info( "Could not lookup SecurityManager with role='" + getSecurityManagerRole() + "' and roleHint='"
-                + getSecurityManagerRoleHint() + "'. Will look for Realms..." );
+            getLogger().info(
+                "Could not lookup SecurityManager with role='" + getSecurityManagerRole() + "' and roleHint='"
+                    + getSecurityManagerRoleHint() + "'. Will look for Realms..." );
 
             securityManager = null;
         }
@@ -164,14 +175,16 @@ public class PlexusConfiguration
                 }
                 else
                 {
-                    log.warn( "Attempted to set realms declared in Plexus Context on SecurityManager, but was not of "
-                        + "type RealmSecurityManager - instead was of type: " + securityManager.getClass().getName() );
+                    getLogger().warn(
+                        "Attempted to set realms declared in Plexus Context on SecurityManager, but was not of "
+                            + "type RealmSecurityManager - instead was of type: "
+                            + securityManager.getClass().getName() );
                 }
             }
         }
         catch ( ComponentLookupException e )
         {
-            log.warn( "Attempted to lookup realms declared in Plexus Context but found none", e );
+            getLogger().warn( "Attempted to lookup realms declared in Plexus Context but found none", e );
         }
 
         LifecycleUtils.init( securityManager );
