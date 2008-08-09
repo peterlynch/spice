@@ -7,13 +7,13 @@
 	</parent>  
   <groupId>org.sonatype.plexus</groupId>
   <artifactId>plexus-jetty6</artifactId>
-  <version>1.1</version>
+  <version>1.2-SNAPSHOT</version>
   <name>Plexus Jetty6 Component</name>
   
     <scm>
-        <connection>scm:svn:http://svn.sonatype.org/spice/tags/plexus-jetty6-1.1</connection>
-        <url>http://svn.sonatype.org/spice/tags/plexus-jetty6-1.1</url>
-        <developerConnection>scm:svn:https://svn.sonatype.org/spice/tags/plexus-jetty6-1.1</developerConnection>
+        <connection>scm:svn:http://svn.sonatype.org/spice/trunk/plexus-jetty6</connection>
+        <url>http://svn.sonatype.org/spice/trunk/plexus-jetty6</url>
+        <developerConnection>scm:svn:https://svn.sonatype.org/spice/trunk/plexus-jetty6</developerConnection>
     </scm>
   
   <dependencies>
