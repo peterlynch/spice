@@ -21,7 +21,7 @@ under the License.
     <parent>
         <groupId>org.sonatype.appbooter.plexus-booters</groupId>
         <artifactId>plexus-booters</artifactId>
-        <version>1.4-SNAPSHOT</version>
+        <version>1.3-SNAPSHOT</version>
     </parent> 
     <artifactId>plexus-jsw-app-booter</artifactId>
 

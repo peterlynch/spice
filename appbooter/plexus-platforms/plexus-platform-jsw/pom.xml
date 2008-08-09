@@ -3,7 +3,7 @@
   <parent>
         <groupId>org.sonatype.appbooter.plexus-platforms</groupId>
         <artifactId>plexus-platforms</artifactId>
-        <version>1.4-SNAPSHOT</version>
+        <version>1.3-SNAPSHOT</version>
   </parent>
 
   <artifactId>plexus-platform-jsw</artifactId>
