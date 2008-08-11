@@ -23,10 +23,13 @@ import org.apache.velocity.context.Context;
 import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
+import org.codehaus.plexus.logging.Logger;
+import org.codehaus.plexus.logging.console.ConsoleLogger;
 import org.codehaus.plexus.util.IOUtil;
 import org.sonatype.plexus.classworlds.model.ClassworldsAppConfiguration;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
@@ -46,6 +49,7 @@ public class ClassworldsConfWriter
         VelocityEngine engine = new VelocityEngine();
         try
         {
+            checkLogChute( velocityProperties );
             engine.init( velocityProperties );
         }
         catch ( Exception e )
@@ -64,7 +68,10 @@ public class ClassworldsConfWriter
         VelocityEngine engine = new VelocityEngine();
         try
         {
-            engine.init( getDefaultVelocityProperties() );
+            Properties props = getDefaultVelocityProperties();
+            
+            checkLogChute( props );
+            engine.init( props );
         }
         catch ( Exception e )
         {
@@ -83,7 +90,21 @@ public class ClassworldsConfWriter
         VelocityEngine engine = new VelocityEngine();
         try
         {
-            engine.init( velocityProperties.getAbsolutePath() );
+            FileInputStream stream = null;
+            Properties props = new Properties();
+            try
+            {
+                stream = new FileInputStream( velocityProperties );
+                props.load( stream );
+            }
+            finally
+            {
+                IOUtil.close( stream );
+            }
+            
+            checkLogChute( props );
+            
+            engine.init( props );
         }
         catch ( Exception e )
         {
@@ -101,6 +122,7 @@ public class ClassworldsConfWriter
         VelocityEngine engine = new VelocityEngine();
         try
         {
+            checkLogChute( velocityProperties );
             engine.init( velocityProperties );
         }
         catch ( Exception e )
@@ -118,7 +140,10 @@ public class ClassworldsConfWriter
         VelocityEngine engine = new VelocityEngine();
         try
         {
-            engine.init( getDefaultVelocityProperties() );
+            Properties props = getDefaultVelocityProperties();
+            
+            checkLogChute( props );
+            engine.init( props );
         }
         catch ( Exception e )
         {
@@ -128,7 +153,20 @@ public class ClassworldsConfWriter
         _write( target, config, null, engine );
     }
 
-    private Properties getDefaultVelocityProperties()
+    private void checkLogChute( Properties props )
+    {
+        if ( !VelocityLogChute.hasPlexusLogger() )
+        {
+            VelocityLogChute.setPlexusLogger( new ConsoleLogger( Logger.LEVEL_INFO, "classworlds-writer-internal" ) );
+        }
+        
+        if ( !props.containsKey( "runtime.log.logsystem.class" ) )
+        {
+            props.setProperty( "runtime.log.logsystem.class", VelocityLogChute.class.getName() );
+        }
+    }
+
+    public Properties getDefaultVelocityProperties()
     {
         Properties velocityProperties = new Properties();
 

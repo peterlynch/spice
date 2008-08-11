@@ -5,9 +5,13 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
+import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.Commandline;
@@ -18,6 +22,7 @@ import org.sonatype.appbooter.ctl.ControlConnectionException;
 import org.sonatype.appbooter.ctl.ControllerClient;
 import org.sonatype.plexus.classworlds.io.ClassworldsConfWriter;
 import org.sonatype.plexus.classworlds.io.ClassworldsIOException;
+import org.sonatype.plexus.classworlds.io.VelocityLogChute;
 import org.sonatype.plexus.classworlds.model.ClassworldsAppConfiguration;
 import org.sonatype.plexus.classworlds.model.ClassworldsRealmConfiguration;
 import org.sonatype.plexus.classworlds.validator.ClassworldsModelValidator;
@@ -30,7 +35,9 @@ import org.sonatype.plexus.classworlds.validator.ClassworldsValidationResult;
  * a control port listening for administrative commands.
  *
  */
-public abstract class AbstractForkedAppBooter extends AbstractLogEnabled implements ForkedAppBooter
+public abstract class AbstractForkedAppBooter
+    extends AbstractLogEnabled
+    implements ForkedAppBooter
 {
     
 
@@ -105,9 +112,7 @@ public abstract class AbstractForkedAppBooter extends AbstractLogEnabled impleme
     /** @plexus.configuration default-value="${basedir}"*/
     private File basedir;
 
-    /**
-     * @plexus.configuration default-value="."
-     */
+    /** @plexus.configuration default-value="${basedir}/target/appbooter.tmp"*/
     private File tempDir;
     
     /**
@@ -287,9 +292,6 @@ public abstract class AbstractForkedAppBooter extends AbstractLogEnabled impleme
         return cli;
     }
     
-    
-
-    
     private File writeConfig( ClassworldsAppConfiguration config )
         throws AppBooterServiceException
     {
@@ -297,7 +299,14 @@ public abstract class AbstractForkedAppBooter extends AbstractLogEnabled impleme
 
         try
         {
-            new ClassworldsConfWriter().write( classworldsConf, config );
+            ClassworldsConfWriter writer = new ClassworldsConfWriter();
+            
+            Properties velocityProperties = writer.getDefaultVelocityProperties();
+            
+            VelocityLogChute.setPlexusLogger( getLogger() );
+            velocityProperties.setProperty( "runtime.log.logsystem.class", VelocityLogChute.class.getName() );
+
+            writer.write( classworldsConf, config, velocityProperties );
         }
         catch ( ClassworldsIOException e )
         {
@@ -475,6 +484,17 @@ public abstract class AbstractForkedAppBooter extends AbstractLogEnabled impleme
     public void shutdown() throws AppBooterServiceException
     {
         this.stop();
+        if ( tempDir != null && tempDir.exists() )
+        {
+            try
+            {
+                FileUtils.deleteDirectory( tempDir );
+            }
+            catch ( IOException e )
+            {
+                throw new AppBooterServiceException( "Failed to delete appbooter temp dir: " + tempDir, e );
+            }
+        }
     }
 
     public void setDisableBlocking( boolean disableBlocking )
@@ -546,7 +566,5 @@ public abstract class AbstractForkedAppBooter extends AbstractLogEnabled impleme
     {
         this.controlClient = controlClient;
     }
-    
-    
     
 }
