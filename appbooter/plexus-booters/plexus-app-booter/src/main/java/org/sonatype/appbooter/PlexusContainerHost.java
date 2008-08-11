@@ -29,9 +29,10 @@ import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.classworlds.ClassWorld;
+import org.codehaus.plexus.interpolation.InterpolationException;
+import org.codehaus.plexus.interpolation.MapBasedValueSource;
+import org.codehaus.plexus.interpolation.RegexBasedInterpolator;
 import org.codehaus.plexus.util.StringUtils;
-import org.codehaus.plexus.util.interpolation.MapBasedValueSource;
-import org.codehaus.plexus.util.interpolation.RegexBasedInterpolator;
 import org.sonatype.appbooter.ctl.OutOfProcessController;
 import org.sonatype.appbooter.ctl.Service;
 
@@ -126,6 +127,7 @@ public class PlexusContainerHost
 
     @SuppressWarnings("unchecked")
     protected Map createContainerContext()
+        throws InterpolationException
     {
         Map containerContext = new HashMap();
 
