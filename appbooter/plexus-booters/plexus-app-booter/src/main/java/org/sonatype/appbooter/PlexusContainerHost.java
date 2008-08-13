@@ -166,6 +166,19 @@ public class PlexusContainerHost
                 containerContext.put( propertyKey, propertyValue );
             }
         }
+        
+        // Now get the environment variables, as these should override properties file
+        
+        Map<String,String> envmap = System.getenv();
+        
+        for ( String key : envmap.keySet() )
+        {
+            if ( key.startsWith( "plexus-" ) )
+            {
+                System.out.println( "Replacing " + key + " with value in ENVIRONMENT + " + envmap.get( key ) );
+                containerContext.put( key.substring( "plexus-".length() ), envmap.get( key ) );
+            }
+        }
 
         return containerContext;
     }
