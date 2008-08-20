@@ -23,6 +23,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
@@ -74,6 +75,8 @@ public class PlexusContainerHost
     private Thread managementThread;
     
     private static final String PLEXUS_ENV_VAR_PREFIX = "PLEXUS_";
+    
+    private static final String PLEXUS_SYSTEM_PROP_PREFIX = "plexus.";
 
     public PlexusContainerHost( ClassWorld world, int controlPort )
     {
@@ -181,6 +184,21 @@ public class PlexusContainerHost
                 
                 // Convert to lowercase, Strip off the PLEXUS- prefix, and replace '_' with '-'
                 containerContext.put( key.toLowerCase().substring( PLEXUS_ENV_VAR_PREFIX.length() ).replace('_', '-'), envmap.get( key ) );
+            }
+        }
+        
+        // now do the same for the system properties, as these should override the ENV's
+        Properties sysProps = System.getProperties();
+        
+        for ( Object objectKey : sysProps.keySet() )
+        {
+            String stringKey = objectKey.toString();
+            if ( stringKey.startsWith( PLEXUS_SYSTEM_PROP_PREFIX ) && stringKey.length() > PLEXUS_SYSTEM_PROP_PREFIX.length() )
+            {
+                System.out.println( "Replacing " + stringKey + " with value in System Property + " + sysProps.get( stringKey ) );
+                
+                //  Strip off the plexus. prefix
+                containerContext.put( stringKey.substring( PLEXUS_SYSTEM_PROP_PREFIX.length() ), sysProps.get( stringKey ) );
             }
         }
 
