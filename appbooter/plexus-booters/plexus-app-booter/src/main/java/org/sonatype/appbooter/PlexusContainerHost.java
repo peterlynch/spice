@@ -72,6 +72,8 @@ public class PlexusContainerHost
     private File basedir;
 
     private Thread managementThread;
+    
+    private static final String PLEXUS_ENV_VAR_PREFIX = "PLEXUS_";
 
     public PlexusContainerHost( ClassWorld world, int controlPort )
     {
@@ -173,10 +175,12 @@ public class PlexusContainerHost
         
         for ( String key : envmap.keySet() )
         {
-            if ( key.startsWith( "plexus-" ) )
+            if ( key.toUpperCase().startsWith( PLEXUS_ENV_VAR_PREFIX ) && key.length() > PLEXUS_ENV_VAR_PREFIX.length() )
             {
                 System.out.println( "Replacing " + key + " with value in ENVIRONMENT + " + envmap.get( key ) );
-                containerContext.put( key.substring( "plexus-".length() ), envmap.get( key ) );
+                
+                // Convert to lowercase, Strip off the PLEXUS- prefix, and replace '_' with '-'
+                containerContext.put( key.toLowerCase().substring( PLEXUS_ENV_VAR_PREFIX.length() ).replace('_', '-'), envmap.get( key ) );
             }
         }
 
