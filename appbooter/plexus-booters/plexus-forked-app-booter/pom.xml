@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>appbooter</artifactId>
 		<groupId>org.sonatype.appbooter</groupId>
-		<version>1.4</version>
+		<version>1.5-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>plexus-forked-app-booter</artifactId>
@@ -16,7 +16,7 @@
 		<dependency>
 			<groupId>org.sonatype.appbooter.plexus-booters</groupId>
 			<artifactId>plexus-app-booter</artifactId>
-			<version>1.4</version>
+			<version>1.5-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>velocity</groupId>
