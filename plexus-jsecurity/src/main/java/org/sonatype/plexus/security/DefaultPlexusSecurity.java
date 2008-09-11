@@ -125,7 +125,8 @@ public class DefaultPlexusSecurity
     //@Requirement
     private RealmSelector realmSelector;
 
-    @Requirement 
+    //@Requirement
+    /** @plexus.requirement */
     private Realm realm;
     
     public Realm selectRealm()

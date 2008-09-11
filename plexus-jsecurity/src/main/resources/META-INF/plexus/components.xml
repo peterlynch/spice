@@ -1,0 +1,12 @@
+<!-- 
+This is to create a descriptor for standard JSecurity realms. I'm creating descriptors for them here so that
+Plexus can wire them in.
+-->
+<component-set>
+  <components>
+    <component>
+      <role>org.jsecurity.realm.Realm</role>
+      <implementation>org.jsecurity.realm.text.PropertiesRealm</implementation>
+    </component>
+  </components>
+</component-set>
