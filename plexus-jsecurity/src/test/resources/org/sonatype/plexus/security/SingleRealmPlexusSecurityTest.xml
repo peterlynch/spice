@@ -1,0 +1,8 @@
+<component-set>
+  <components>
+    <component>
+      <role>org.jsecurity.realm.Realm</role>
+      <implementation>org.jsecurity.realm.text.PropertiesRealm</implementation>
+    </component>
+  </components>
+</component-set>
