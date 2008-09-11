@@ -1,0 +1,271 @@
+<model xsd.namespace="http://www.sonatype.com/xsd/security-configuration-1.0.0"
+    xsd.target-namespace="http://www.sonatype.com/xsd/security-configuration-1.0.0">
+
+    <id>security</id>
+
+    <name>SecurityConfiguration</name>
+
+    <description>
+        <![CDATA[
+        <p>XML Based Security Configuration.</p>
+        ]]>
+    </description>
+
+    <defaults>
+        <default>
+            <key>package</key>
+            <value>org.sonatype.jsecurity.model</value>
+        </default>
+    </defaults>
+
+    <classes>
+
+        <!-- ROOT -->
+        <class rootElement="true" xml.tagName="security">
+            <name>Configuration</name>
+            <version>1.0.0+</version>
+            <description>The root element of Security configuration.</description>
+            <fields>
+                <field>
+                    <name>version</name>
+                    <version>1.0.0+</version>
+                    <description>
+                        The version of the security persisted model.
+                    </description>
+                    <type>String</type>
+                    <required>true</required>
+                </field>
+                <field>
+                    <name>users</name>
+                    <version>1.0.0+</version>
+                    <description>List of users that are defined to have access to the system.</description>
+                    <association>
+                        <type>CUser</type>
+                        <multiplicity>*</multiplicity>
+                    </association>
+                    <required>false</required>
+                </field>
+                <field>
+                    <name>roles</name>
+                    <version>1.0.0+</version>
+                    <description>List of roles that Users can be associated to.  A roles is simply a container that hold privileges, and other roles.</description>
+                    <association>
+                        <type>CRole</type>
+                        <multiplicity>*</multiplicity>
+                    </association>
+                    <required>false</required>
+                </field>
+                <field>
+                    <name>privileges</name>
+                    <version>1.0.0+</version>
+                    <description>
+                        List of privileges that can be put in a role. 
+                    </description>
+                    <association>
+                        <type>CPrivilege</type>
+                        <multiplicity>*</multiplicity>
+                    </association>
+                    <required>false</required>
+                </field>
+            </fields>
+            <codeSegments>
+                <codeSegment>
+                    <version>1.0.0+</version>
+                    <code><![CDATA[
+    public static final String MODEL_VERSION = "1.0.0";
+]]></code>
+                </codeSegment>
+            </codeSegments>
+        </class>
+        
+        <!-- Users -->
+        <class>
+            <name>CUser</name>
+            <version>1.0.0+</version>
+            <description>A User is a security object, where, based upon its role, will have certain privileged access to the system</description>
+            <fields>
+                <field>
+                    <name>userId</name>
+                    <version>1.0.0+</version>
+                    <type>String</type>
+                    <required>true</required>
+                    <description>The userId that will be used to gain access to the system</description>
+                </field>
+                <field>
+                    <name>name</name>
+                    <version>1.0.0+</version>
+                    <type>String</type>
+                    <required>true</required>
+                    <description>Users real life name.</description>
+                </field>
+                <field>
+                    <name>password</name>
+                    <version>1.0.0+</version>
+                    <type>String</type>
+                    <required>true</required>
+                    <description>Users password, note this is just the hash of the password, not the actual password.</description>
+                </field>
+                <field>
+                    <name>status</name>
+                    <version>1.0.0+</version>
+                    <type>String</type>
+                    <required>true</required>
+                    <description>The current status of this user, active/locked/disabled</description>
+                </field>
+                <field>
+                    <name>email</name>
+                    <version>1.0.0+</version>
+                    <type>String</type>
+                    <required>true</required>
+                    <description>The user's email address.</description>
+                </field>
+                <field>
+                    <name>roles</name>
+                    <version>1.0.0+</version>
+                    <description>
+                        List of role ids that will define this user. 
+                    </description>
+                    <association>
+                        <type>String</type>
+                        <multiplicity>*</multiplicity>
+                    </association>
+                    <required>false</required>
+                </field>
+            </fields>
+            <codeSegments>
+                <codeSegment>
+                    <version>1.0.0+</version>
+                    <code><![CDATA[
+    public static final String STATUS_DISABLED = "disabled";
+    
+    public static final String STATUS_ACTIVE = "active";
+    
+    //Not currently supported
+    //public static final String STATUS_LOCKED = "locked";
+    
+    //public static final String STATUS_EXPIRED = "expired";
+]]></code>
+                </codeSegment>
+            </codeSegments>
+        </class>
+        
+        <!-- Roles -->
+        <class>
+            <name>CRole</name>
+            <version>1.0.0+</version>
+            <description>A Role is a bucket for privileges, can also contain other roles.</description>
+            <fields>
+                <field>
+                    <name>id</name>
+                    <version>1.0.0+</version>
+                    <type>String</type>
+                    <required>true</required>
+                    <description>The ID used to reference this role</description>
+                </field>
+                <field>
+                    <name>name</name>
+                    <version>1.0.0+</version>
+                    <type>String</type>
+                    <required>true</required>
+                    <description>A descriptive name for the role.</description>
+                </field>
+                <field>
+                    <name>description</name>
+                    <version>1.0.0+</version>
+                    <type>String</type>
+                    <required>false</required>
+                    <description>An explanation of the use of the role.</description>
+                </field>
+                <field>
+                    <name>sessionTimeout</name>
+                    <version>1.0.0+</version>
+                    <type>int</type>
+                    <required>true</required>
+                    <description>The number of minutes to wait before the session timeouts because of inactivity.</description>
+                </field>
+                <field>
+                    <name>privileges</name>
+                    <version>1.0.0+</version>
+                    <description>
+                        List of privilege ids that will define this role. 
+                    </description>
+                    <association>
+                        <type>String</type>
+                        <multiplicity>*</multiplicity>
+                    </association>
+                    <required>false</required>
+                </field>
+                <field>
+                    <name>roles</name>
+                    <version>1.0.0+</version>
+                    <description>
+                        List of role ids, whose contents, will also define this role. 
+                    </description>
+                    <association>
+                        <type>String</type>
+                        <multiplicity>*</multiplicity>
+                    </association>
+                    <required>false</required>
+                </field>
+            </fields>
+        </class>
+
+        <!-- Privileges -->
+        <class>
+            <name>CPrivilege</name>
+            <version>1.0.0+</version>
+            <description>Base privilege class contains items common to all types of privileges.</description>
+            <fields>
+                <field>
+                    <name>id</name>
+                    <version>1.0.0+</version>
+                    <type>String</type>
+                    <required>true</required>
+                    <description>The ID used to reference this privilege</description>
+                </field>
+                <field>
+                    <name>name</name>
+                    <version>1.0.0+</version>
+                    <type>String</type>
+                    <required>true</required>
+                    <description>A descriptive name for the privilege.</description>
+                </field>
+                <field>
+                    <name>description</name>
+                    <version>1.0.0+</version>
+                    <type>String</type>
+                    <required>true</required>
+                    <description>A description of the privilege.</description>
+                </field>
+                <field>
+                    <name>method</name>
+                    <version>1.0.0+</version>
+                    <type>String</type>
+                    <required>true</required>
+                    <description>The method this privilege grants access to, read/write/update/delete.</description>
+                </field>
+                <field>
+                    <name>permission</name>
+                    <version>1.0.0+</version>
+                    <type>String</type>
+                    <required>true</required>
+                    <description>The application level permission (i.e. app:system:config) that is protected by this privilege</description>
+                </field>
+            </fields>
+            <codeSegments>
+                <codeSegment>
+                    <version>1.0.0+</version>
+                    <code><![CDATA[
+    public static final String METHOD_READ = "read";
+
+    public static final String METHOD_CREATE = "create";
+    
+    public static final String METHOD_UPDATE = "update";
+    
+    public static final String METHOD_DELETE = "delete";
+]]></code>
+                </codeSegment>
+            </codeSegments>
+        </class>
+    </classes>
+</model>

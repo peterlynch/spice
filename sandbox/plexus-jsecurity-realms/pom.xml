@@ -1,0 +1,11 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.sonatype.jsecurity</groupId>
+  <version>1.0</version>
+  <name>Plexus JSecurity Realms</name>
+  <artifactId>plexus-jsecurity-realms</artifactId>
+  <packaging>pom</packaging>
+  <modules>
+    <module>security-xml-realm</module>
+  </modules>
+</project>
