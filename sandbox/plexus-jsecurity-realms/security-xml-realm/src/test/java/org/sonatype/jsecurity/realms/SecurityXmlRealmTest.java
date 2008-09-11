@@ -15,6 +15,7 @@ import org.jsecurity.realm.Realm;
 import org.sonatype.jsecurity.model.CUser;
 import org.sonatype.jsecurity.model.Configuration;
 import org.sonatype.jsecurity.model.io.xpp3.SecurityConfigurationXpp3Writer;
+import org.sonatype.jsecurity.realms.tools.StringDigester;
 
 public class SecurityXmlRealmTest
     extends PlexusTestCase
@@ -48,6 +49,10 @@ public class SecurityXmlRealmTest
         UsernamePasswordToken upToken = new UsernamePasswordToken( "username", "password" );
         
         AuthenticationInfo ai = realm.getAuthenticationInfo( upToken );
+        
+        String password = new String( (char[] ) ai.getCredentials() );
+        
+        assertEquals( StringDigester.getSha1Digest( "password" ), password );        
     }
     
     private Configuration buildTestAuthenticationConfig()
@@ -59,7 +64,7 @@ public class SecurityXmlRealmTest
         user.setName( "dummyname" );
         user.setStatus( CUser.STATUS_ACTIVE );
         user.setUserId( "username" );
-        user.setPassword( "password" );
+        user.setPassword( StringDigester.getSha1Digest( "password" ) );
         
         config.addUser( user );
         

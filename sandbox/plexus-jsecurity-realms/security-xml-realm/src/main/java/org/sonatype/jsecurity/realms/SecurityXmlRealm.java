@@ -27,6 +27,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.List;
 
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.jsecurity.authc.AccountException;
 import org.jsecurity.authc.AuthenticationException;
@@ -35,6 +37,7 @@ import org.jsecurity.authc.AuthenticationToken;
 import org.jsecurity.authc.DisabledAccountException;
 import org.jsecurity.authc.SimpleAuthenticationInfo;
 import org.jsecurity.authc.UsernamePasswordToken;
+import org.jsecurity.authc.credential.Sha1CredentialsMatcher;
 import org.jsecurity.authz.AuthorizationInfo;
 import org.jsecurity.realm.AuthorizingRealm;
 import org.jsecurity.subject.PrincipalCollection;
@@ -48,6 +51,7 @@ import org.sonatype.jsecurity.model.io.xpp3.SecurityConfigurationXpp3Reader;
  */
 public class SecurityXmlRealm
     extends AuthorizingRealm
+        implements Initializable
 {
     /**
      * @plexus.configuration default-value="${security-xml-file}"
@@ -58,6 +62,12 @@ public class SecurityXmlRealm
      * This will hold the current configuration in memory, to reload, will need to set this to null
      */
     private Configuration configuration = null;
+    
+    public void initialize()
+        throws InitializationException
+    {
+        setCredentialsMatcher( new Sha1CredentialsMatcher() );
+    }
     
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo( AuthenticationToken token )
