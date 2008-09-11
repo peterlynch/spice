@@ -9,6 +9,7 @@ import java.io.Writer;
 import org.codehaus.plexus.PlexusTestCase;
 import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.context.ContextException;
+import org.jsecurity.authc.AuthenticationException;
 import org.jsecurity.authc.AuthenticationInfo;
 import org.jsecurity.authc.UsernamePasswordToken;
 import org.jsecurity.realm.Realm;
@@ -22,6 +23,10 @@ public class SecurityXmlRealmTest
 {
     public static final String PLEXUS_SECURITY_XML_FILE = "security-xml-file";
     
+    private static final String SECURITY_CONFIG_FILE_PATH = getBasedir() + "/target/jsecurity/security.xml"; 
+    
+    private File configFile = new File( SECURITY_CONFIG_FILE_PATH );
+    
     private Realm realm;
         
     @Override
@@ -29,7 +34,7 @@ public class SecurityXmlRealmTest
     {
         super.customizeContext( context );
         
-        context.put( PLEXUS_SECURITY_XML_FILE, getBasedir() + "/target/jsecurity/security.xml" );
+        context.put( PLEXUS_SECURITY_XML_FILE, SECURITY_CONFIG_FILE_PATH );
     }
     
     @Override
@@ -39,9 +44,11 @@ public class SecurityXmlRealmTest
         super.setUp();
         
         realm = ( Realm ) lookup( Realm.class, "SecurityXmlRealm" );
+        
+        configFile.delete();
     }
     
-    public void testAuthentication()
+    public void testSuccessfulAuthentication()
         throws Exception
     {
         writeConfig( buildTestAuthenticationConfig() );
@@ -53,6 +60,71 @@ public class SecurityXmlRealmTest
         String password = new String( (char[] ) ai.getCredentials() );
         
         assertEquals( StringDigester.getSha1Digest( "password" ), password );        
+    }
+    
+    public void testFailedAuthentication()
+        throws Exception
+    {
+        writeConfig( buildTestAuthenticationConfig() );
+        
+        UsernamePasswordToken upToken = new UsernamePasswordToken( "username", "badpassword" );
+        
+        try
+        {
+            AuthenticationInfo ai = realm.getAuthenticationInfo( upToken );
+            
+            fail( "Authentication should have failed" );
+        }
+        catch( AuthenticationException e )
+        {
+            // good
+        }   
+    }
+    
+    public void testDisabledAuthentication()
+        throws Exception
+    {
+        Configuration config = buildTestAuthenticationConfig();
+        
+        ( ( CUser )config.getUsers().get( 0 ) ).setStatus( CUser.STATUS_DISABLED );
+        
+        writeConfig( config );
+        
+        UsernamePasswordToken upToken = new UsernamePasswordToken( "username", "password" );
+        
+        try
+        {
+            AuthenticationInfo ai = realm.getAuthenticationInfo( upToken );
+            
+            fail( "Authentication should have failed" );
+        }
+        catch( AuthenticationException e )
+        {
+            // good
+        }
+    }
+    
+    public void testInavlidStatusAuthentication()
+        throws Exception
+    {
+        Configuration config = buildTestAuthenticationConfig();
+        
+        ( ( CUser )config.getUsers().get( 0 ) ).setStatus( "junk" );
+        
+        writeConfig( config );
+        
+        UsernamePasswordToken upToken = new UsernamePasswordToken( "username", "password" );
+        
+        try
+        {
+            AuthenticationInfo ai = realm.getAuthenticationInfo( upToken );
+            
+            fail( "Authentication should have failed" );
+        }
+        catch( AuthenticationException e )
+        {
+            // good
+        }
     }
     
     private Configuration buildTestAuthenticationConfig()
@@ -75,17 +147,13 @@ public class SecurityXmlRealmTest
         throws ContextException, 
             IOException
     {
-        String filename = ( String ) getContainer().getContext().get( PLEXUS_SECURITY_XML_FILE );
-        
-        File file = new File( filename );
-        
-        file.getParentFile().mkdirs();
+        configFile.getParentFile().mkdirs();
         
         Writer fw = null;
         
         try
         {
-            fw = new OutputStreamWriter( new FileOutputStream( file ) );
+            fw = new OutputStreamWriter( new FileOutputStream( configFile ) );
 
             SecurityConfigurationXpp3Writer writer = new SecurityConfigurationXpp3Writer();
 
