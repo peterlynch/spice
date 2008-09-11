@@ -25,10 +25,15 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
+import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.jsecurity.authc.AccountException;
 import org.jsecurity.authc.AuthenticationException;
@@ -38,9 +43,15 @@ import org.jsecurity.authc.DisabledAccountException;
 import org.jsecurity.authc.SimpleAuthenticationInfo;
 import org.jsecurity.authc.UsernamePasswordToken;
 import org.jsecurity.authc.credential.Sha1CredentialsMatcher;
+import org.jsecurity.authz.AuthorizationException;
 import org.jsecurity.authz.AuthorizationInfo;
+import org.jsecurity.authz.Permission;
+import org.jsecurity.authz.SimpleAuthorizationInfo;
+import org.jsecurity.authz.permission.WildcardPermission;
 import org.jsecurity.realm.AuthorizingRealm;
 import org.jsecurity.subject.PrincipalCollection;
+import org.sonatype.jsecurity.model.CPrivilege;
+import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUser;
 import org.sonatype.jsecurity.model.Configuration;
 import org.sonatype.jsecurity.model.io.xpp3.SecurityConfigurationXpp3Reader;
@@ -104,8 +115,86 @@ public class SecurityXmlRealm
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo( PrincipalCollection principals )
     {
-        // TODO Auto-generated method stub
-        return null;
+        if ( principals == null )
+        {
+            throw new AuthorizationException( "Cannot authorize with no principals." );
+        }
+        
+        String username = (String) principals.fromRealm( getName() ).iterator().next();
+        
+        CUser user = getUser( username );
+        
+        if ( user == null )
+        {
+            throw new AuthorizationException( "User '" + username + "' cannot be retrieved." );
+        }
+        
+        LinkedList<String> rolesToProcess = new LinkedList<String>();
+        List<String> roles = user.getRoles();
+        if ( roles != null )
+        {
+            rolesToProcess.addAll( roles );
+        }
+        
+        Set<String> roleNames = new LinkedHashSet<String>();
+        Set<Permission> permissions = new LinkedHashSet<Permission>();
+        while ( !rolesToProcess.isEmpty() )
+        {
+            String roleName = rolesToProcess.removeFirst();
+            if ( !roleNames.contains( roleName ) )
+            {                
+                CRole role = getRole( roleName );
+                
+                if ( role != null )
+                {
+                    roleNames.add( roleName );
+    
+                    // process the roles this role has
+                    rolesToProcess.addAll( role.getRoles() );
+    
+                    // add the permissions this role has
+                    List<String> privilegeIds = role.getPrivileges();
+                    for ( String privilegeId : privilegeIds )
+                    {
+                        Set<Permission> set = getPermissions( privilegeId );
+                        permissions.addAll( set );
+                    }
+                }
+            }
+        }
+        
+        SimpleAuthorizationInfo info = new SimpleAuthorizationInfo( roleNames );
+        info.setObjectPermissions( permissions );
+
+        return info;
+    }
+    
+    protected Set<Permission> getPermissions( String privilegeId )
+    {
+        CPrivilege privilege = getPrivilege( privilegeId );
+        
+        if ( privilege != null )
+        {
+            String permissionString = privilege.getPermission();
+
+            if ( StringUtils.isEmpty( permissionString ) )
+            {
+                permissionString = "*:*";
+            }
+
+            String method = privilege.getMethod();
+
+            if ( StringUtils.isEmpty( method ) )
+            {
+                method = "*";
+            }
+
+            Permission permission = new WildcardPermission( permissionString + ":" + method );
+            
+            return Collections.singleton( permission );
+        }       
+
+        return Collections.emptySet();
     }
     
     private CUser getUser( String userid )
@@ -117,6 +206,54 @@ public class SecurityXmlRealm
                 if ( user.getUserId().equals( userid ) )
                 {
                     return user;
+                }
+            }
+        }
+        catch ( IOException e )
+        {
+            e.printStackTrace();
+        }
+        catch ( XmlPullParserException e )
+        {
+            e.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    private CRole getRole( String roleId )
+    {
+        try
+        {
+            for ( CRole role : ( List<CRole> ) getConfiguration().getRoles() )
+            {
+                if ( role.getId().equals( roleId ) )
+                {
+                    return role;
+                }
+            }
+        }
+        catch ( IOException e )
+        {
+            e.printStackTrace();
+        }
+        catch ( XmlPullParserException e )
+        {
+            e.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    private CPrivilege getPrivilege( String privilegeId )
+    {
+        try
+        {
+            for ( CPrivilege priv : ( List<CPrivilege> ) getConfiguration().getPrivileges() )
+            {
+                if ( priv.getId().equals( privilegeId ) )
+                {
+                    return priv;
                 }
             }
         }
