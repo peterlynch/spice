@@ -129,7 +129,6 @@ public class DefaultEMailer
                 if ( request.isStoreable() || mailType.isStoreable() )
                 {
                     mailStorage.saveMailRequest( request );
-
                     status.setStored( true );
                 }
 

@@ -32,11 +32,19 @@ public class EMailerTest
     /**
      * Turned off since it needs localhost SMTP server
      */
-    public void offedTestWithLocalhost()
+    public void OFFEDtestWithLocalhost()
     {
         EmailerConfiguration config = new EmailerConfiguration();
 
-        config.setMailHost( "localhost" );
+        config.setMailHost( "is-micro.myip.hu" );
+
+        config.setTls( true );
+        
+        config.setUsername( "XXX" );
+
+        config.setPassword( "XXX" );
+
+        config.setDebug( true );
 
         eMailer.configure( config );
 
@@ -51,6 +59,11 @@ public class EMailerTest
         request.getBodyContext().put( DefaultMailType.BODY_KEY, "Some mail body" );
 
         MailRequestStatus status = eMailer.sendMail( request );
+
+        if ( status.getErrorCause() != null )
+        {
+            status.getErrorCause().printStackTrace();
+        }
 
         assertTrue( status.isSent() );
     }

@@ -1,7 +1,11 @@
 package org.sonatype.micromailer;
 
-import javax.mail.Authenticator;
+import java.util.Properties;
 
+import javax.mail.Authenticator;
+import javax.mail.Session;
+
+import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.micromailer.imp.DefaultAuthenticator;
 
 public class EmailerConfiguration
@@ -25,6 +29,30 @@ public class EmailerConfiguration
     private boolean isSsl = false;
 
     private boolean debug = false;
+
+    // ==
+
+    private static final String MAIL_HOST = "mail.smtp.host";
+
+    private static final String MAIL_PORT = "mail.smtp.port";
+
+    private static final String MAIL_SMTP_FROM = "mail.smtp.from";
+
+    private static final String MAIL_SMTP_AUTH = "mail.smtp.auth";
+
+    private static final String MAIL_TRANSPORT_PROTOCOL = "mail.transport.protocol";
+
+    private static final String MAIL_TRANSPORT_TLS = "mail.smtp.starttls.enable";
+
+    private static final String MAIL_SMTP_SOCKET_FACTORY_FALLBACK = "mail.smtp.socketFactory.fallback";
+
+    private static final String MAIL_SMTP_SOCKET_FACTORY_CLASS = "mail.smtp.socketFactory.class";
+
+    private static final String MAIL_SMTP_SOCKET_FACTORY_PORT = "mail.smtp.socketFactory.port";
+
+    private static final String MAIL_DEBUG = "mail.debug";
+
+    private transient Session session;
 
     public boolean isStoreMails()
     {
@@ -144,4 +172,75 @@ public class EmailerConfiguration
         }
     }
 
+    // ==
+    // Session factory
+
+    public Session getSession()
+        throws MailCompositionMessagingException
+    {
+        if ( this.session == null )
+        {
+            Properties properties = new Properties( System.getProperties() );
+
+            properties.setProperty( MAIL_TRANSPORT_PROTOCOL, "smtp" );
+
+            if ( StringUtils.isEmpty( getMailHost() ) )
+            {
+                setMailHost( properties.getProperty( MAIL_HOST ) );
+            }
+
+            if ( StringUtils.isEmpty( getMailHost() ) )
+            {
+                throw new MailCompositionMessagingException( "Cannot find valid hostname for mail session" );
+            }
+
+            properties.setProperty( MAIL_PORT, String.valueOf( getMailPort() ) );
+            properties.setProperty( MAIL_HOST, getMailHost() );
+            properties.setProperty( MAIL_DEBUG, String.valueOf( isDebug() ) );
+
+            Authenticator authenticator = getAuthenticator();
+
+            if ( authenticator != null )
+            {
+                properties.setProperty( MAIL_SMTP_AUTH, "true" );
+                properties.setProperty( MAIL_TRANSPORT_TLS, isTls() ? "true" : "false" );
+
+                if ( isTls() )
+                {
+                    if ( isDebug() )
+                    {
+                        properties.setProperty( MAIL_SMTP_SOCKET_FACTORY_FALLBACK, "false" );
+                        java.security.Security.setProperty(
+                            "ssl.SocketFactory.provider",
+                            "org.sonatype.micromailer.imp.DebugTLSSocketFactory" );
+                    }
+                }
+            }
+
+            if ( isSsl() )
+            {
+                properties.setProperty( MAIL_SMTP_SOCKET_FACTORY_PORT, String.valueOf( getMailPort() ) );
+                properties.setProperty( MAIL_SMTP_SOCKET_FACTORY_FALLBACK, "false" );
+                if ( isDebug() )
+                {
+                    java.security.Security.setProperty(
+                        "ssl.SocketFactory.provider",
+                        "org.sonatype.micromailer.imp.DebugSSLSocketFactory" );
+                }
+                else
+                {
+                    properties.setProperty( MAIL_SMTP_SOCKET_FACTORY_CLASS, "javax.net.ssl.SSLSocketFactory" );
+                }
+            }
+
+            if ( getBounceAddress() != null )
+            {
+                properties.setProperty( MAIL_SMTP_FROM, getBounceAddress() );
+            }
+
+            this.session = Session.getInstance( properties, authenticator );
+        }
+
+        return this.session;
+    }
 }

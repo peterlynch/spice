@@ -43,7 +43,7 @@ public class MailRequest
 
     private String expandedBody;
 
-    private transient MimeMessage mimeMessage;
+    private MimeMessage mimeMessage;
 
     public MailRequest( String id, String mailTypeId )
     {
