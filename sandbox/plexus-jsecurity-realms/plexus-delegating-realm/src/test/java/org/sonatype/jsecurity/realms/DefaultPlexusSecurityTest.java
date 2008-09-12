@@ -141,6 +141,20 @@ public class DefaultPlexusSecurityTest
             new SimplePrincipalCollection( "username", SecurityXmlRealm.class.getName() ),
             new WildcardPermission( "app:ui" ) ) );
     }
+    
+    public void testOtherRealmAuthorization()
+        throws Exception
+    {
+        buildTestOtherAuthorizationConfig();
+        
+        assertTrue( security.isPermitted(
+            new SimplePrincipalCollection( "username", MethodRealm.class.getName() ),
+            new WildcardPermission( "app:config:read" ) ) );
+         
+        assertFalse( security.isPermitted(
+            new SimplePrincipalCollection( "username", MethodRealm.class.getName() ),
+            new WildcardPermission( "app:config:create" ) ) );
+    }
 
     private void buildTestAuthenticationConfig( String status )
     {
@@ -189,6 +203,47 @@ public class DefaultPlexusSecurityTest
 
         configurationManager.createUser( user );
 
+        configurationManager.save();
+    }
+    
+    private void buildTestOtherAuthorizationConfig()
+    {
+        CProperty permissionProp = new CProperty();
+        permissionProp.setKey( "permission" );
+        permissionProp.setValue( "app:config" );
+        
+        CProperty methodProp = new CProperty();
+        methodProp.setKey( "method" );
+        methodProp.setValue( "read" );
+        
+        CPrivilege priv = new CPrivilege();
+        priv.setId( "priv" );
+        priv.setName( "somepriv" );
+        priv.setDescription( "somedescription" );
+        priv.addProperty( permissionProp );
+        priv.addProperty( methodProp );
+        
+        configurationManager.createPrivilege( priv );
+        
+        CRole role = new CRole();
+        role.setId( "role" );
+        role.setName( "somerole" );
+        role.setDescription( "somedescription" );
+        role.setSessionTimeout( 60 );
+        role.addPrivilege( priv.getId() );
+        
+        configurationManager.createRole( role );
+        
+        CUser user = new CUser();
+        user.setEmail( "dummyemail" );
+        user.setName( "dummyname" );
+        user.setStatus( CUser.STATUS_ACTIVE );
+        user.setId( "username" );
+        user.setPassword( StringDigester.getSha1Digest( "password" ) );
+        user.addRole( role.getId() );
+        
+        configurationManager.createUser( user );
+        
         configurationManager.save();
     }
 
