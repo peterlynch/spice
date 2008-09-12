@@ -1,15 +1,10 @@
 package org.sonatype.jsecurity.realms;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.Collection;
 
 import org.codehaus.plexus.PlexusTestCase;
 import org.codehaus.plexus.context.Context;
-import org.codehaus.plexus.context.ContextException;
 import org.jsecurity.authc.AuthenticationException;
 import org.jsecurity.authc.AuthenticationInfo;
 import org.jsecurity.authc.UsernamePasswordToken;
@@ -21,8 +16,8 @@ import org.jsecurity.subject.SimplePrincipalCollection;
 import org.sonatype.jsecurity.model.CPrivilege;
 import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUser;
-import org.sonatype.jsecurity.model.Configuration;
-import org.sonatype.jsecurity.model.io.xpp3.SecurityConfigurationXpp3Writer;
+import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
+import org.sonatype.jsecurity.realms.tools.DefaultConfigurationManager;
 import org.sonatype.jsecurity.realms.tools.StringDigester;
 
 public class SecurityXmlRealmTest
@@ -35,6 +30,8 @@ public class SecurityXmlRealmTest
     private File configFile = new File( SECURITY_CONFIG_FILE_PATH );
     
     private SecurityXmlRealm realm;
+    
+    private DefaultConfigurationManager configurationManager;
         
     @Override
     protected void customizeContext( Context context )
@@ -52,13 +49,17 @@ public class SecurityXmlRealmTest
         
         realm = ( SecurityXmlRealm ) lookup( Realm.class, "SecurityXmlRealm" );
         
+        configurationManager = ( DefaultConfigurationManager ) lookup( ConfigurationManager.ROLE );
+        
+        configurationManager.clearCache();
+        
         configFile.delete();
     }
     
     public void testSuccessfulAuthentication()
         throws Exception
     {
-        writeConfig( buildTestAuthenticationConfig() );
+        buildTestAuthenticationConfig( CUser.STATUS_ACTIVE );
         
         UsernamePasswordToken upToken = new UsernamePasswordToken( "username", "password" );
         
@@ -72,7 +73,7 @@ public class SecurityXmlRealmTest
     public void testFailedAuthentication()
         throws Exception
     {
-        writeConfig( buildTestAuthenticationConfig() );
+        buildTestAuthenticationConfig( CUser.STATUS_ACTIVE );
         
         UsernamePasswordToken upToken = new UsernamePasswordToken( "username", "badpassword" );
         
@@ -91,11 +92,7 @@ public class SecurityXmlRealmTest
     public void testDisabledAuthentication()
         throws Exception
     {
-        Configuration config = buildTestAuthenticationConfig();
-        
-        ( ( CUser )config.getUsers().get( 0 ) ).setStatus( CUser.STATUS_DISABLED );
-        
-        writeConfig( config );
+        buildTestAuthenticationConfig( CUser.STATUS_DISABLED );
         
         UsernamePasswordToken upToken = new UsernamePasswordToken( "username", "password" );
         
@@ -114,11 +111,7 @@ public class SecurityXmlRealmTest
     public void testInavlidStatusAuthentication()
         throws Exception
     {
-        Configuration config = buildTestAuthenticationConfig();
-        
-        ( ( CUser )config.getUsers().get( 0 ) ).setStatus( "junk" );
-        
-        writeConfig( config );
+        buildTestAuthenticationConfig( "junk" );
         
         UsernamePasswordToken upToken = new UsernamePasswordToken( "username", "password" );
         
@@ -137,7 +130,7 @@ public class SecurityXmlRealmTest
     public void testAuthorization()
         throws Exception
     {
-        writeConfig( buildTestAuthorizationConfig() );
+        buildTestAuthorizationConfig();
         
         AuthorizationInfo ai = realm.getAuthorizationInfo( new SimplePrincipalCollection( "username", realm.getName() ) );
         
@@ -160,32 +153,30 @@ public class SecurityXmlRealmTest
         assertNotImplied( new WildcardPermission( "app:ui:delete" ), permissions );
     }
     
-    private Configuration buildTestAuthenticationConfig()
+    private void buildTestAuthenticationConfig( String status )
     {
-        Configuration config = new Configuration();
-        
         CUser user = new CUser();
         user.setEmail( "dummyemail" );
         user.setName( "dummyname" );
-        user.setStatus( CUser.STATUS_ACTIVE );
-        user.setUserId( "username" );
+        user.setStatus( status );
+        user.setId( "username" );
         user.setPassword( StringDigester.getSha1Digest( "password" ) );
         
-        config.addUser( user );
+        configurationManager.createUser( user );
         
-        return config;
+        configurationManager.save();
     }
     
-    private Configuration buildTestAuthorizationConfig()
+    private void buildTestAuthorizationConfig()
     {
-        Configuration config = new Configuration();
-        
         CPrivilege priv = new CPrivilege();
         priv.setId( "priv" );
         priv.setName( "somepriv" );
         priv.setDescription( "somedescription" );
         priv.setMethod( "read" );
         priv.setPermission( "app:config" );
+        
+        configurationManager.createPrivilege( priv );
         
         CRole role = new CRole();
         role.setId( "role" );
@@ -194,48 +185,21 @@ public class SecurityXmlRealmTest
         role.setSessionTimeout( 60 );
         role.addPrivilege( priv.getId() );
         
+        configurationManager.createRole( role );
+        
         CUser user = new CUser();
         user.setEmail( "dummyemail" );
         user.setName( "dummyname" );
         user.setStatus( CUser.STATUS_ACTIVE );
-        user.setUserId( "username" );
+        user.setId( "username" );
         user.setPassword( StringDigester.getSha1Digest( "password" ) );
         user.addRole( role.getId() );
         
-        config.addPrivilege( priv );
-        config.addRole( role );
-        config.addUser( user );
+        configurationManager.createUser( user );
         
-        return config;
+        configurationManager.save();
     }
     
-    private void writeConfig( Configuration configuration ) 
-        throws ContextException, 
-            IOException
-    {
-        configFile.getParentFile().mkdirs();
-        
-        Writer fw = null;
-        
-        try
-        {
-            fw = new OutputStreamWriter( new FileOutputStream( configFile ) );
-
-            SecurityConfigurationXpp3Writer writer = new SecurityConfigurationXpp3Writer();
-
-            writer.write( fw, configuration );
-        }
-        finally
-        {
-            if ( fw != null )
-            {
-                fw.flush();
-
-                fw.close();
-            }
-        }
-    }
-
     public static void assertImplied( Permission testPermission, Collection<Permission> assignedPermissions )
     {
         for ( Permission assignedPermission : assignedPermissions )

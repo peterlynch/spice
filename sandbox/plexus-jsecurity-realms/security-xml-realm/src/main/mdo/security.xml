@@ -85,7 +85,7 @@
             <description>A User is a security object, where, based upon its role, will have certain privileged access to the system</description>
             <fields>
                 <field>
-                    <name>userId</name>
+                    <name>id</name>
                     <version>1.0.0+</version>
                     <type>String</type>
                     <required>true</required>

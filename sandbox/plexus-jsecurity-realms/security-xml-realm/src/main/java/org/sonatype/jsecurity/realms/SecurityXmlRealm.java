@@ -1,30 +1,5 @@
-/*
- * Nexus: Maven Repository Manager
- * Copyright (C) 2008 Sonatype Inc.                                                                                                                          
- * 
- * This file is part of Nexus.                                                                                                                                  
- * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see http://www.gnu.org/licenses/.
- *
- */
 package org.sonatype.jsecurity.realms;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -34,7 +9,6 @@ import java.util.Set;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
 import org.codehaus.plexus.util.StringUtils;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.jsecurity.authc.AccountException;
 import org.jsecurity.authc.AuthenticationException;
 import org.jsecurity.authc.AuthenticationInfo;
@@ -53,8 +27,7 @@ import org.jsecurity.subject.PrincipalCollection;
 import org.sonatype.jsecurity.model.CPrivilege;
 import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUser;
-import org.sonatype.jsecurity.model.Configuration;
-import org.sonatype.jsecurity.model.io.xpp3.SecurityConfigurationXpp3Reader;
+import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
 
 /**
  * @plexus.component role="org.jsecurity.realm.Realm" role-hint="SecurityXmlRealm"
@@ -65,14 +38,9 @@ public class SecurityXmlRealm
         implements Initializable
 {
     /**
-     * @plexus.configuration default-value="${security-xml-file}"
+     * @plexus.requirement
      */
-    private File securityConfiguration;
-    
-    /**
-     * This will hold the current configuration in memory, to reload, will need to set this to null
-     */
-    private Configuration configuration = null;
+    private ConfigurationManager configuration;
     
     public void initialize()
         throws InitializationException
@@ -86,7 +54,7 @@ public class SecurityXmlRealm
     {
         UsernamePasswordToken upToken = ( UsernamePasswordToken ) token;
         
-        CUser user = getUser( upToken.getUsername() );
+        CUser user = configuration.readUser( upToken.getUsername() );
         
         if ( user == null )
         {
@@ -122,7 +90,7 @@ public class SecurityXmlRealm
         
         String username = (String) principals.fromRealm( getName() ).iterator().next();
         
-        CUser user = getUser( username );
+        CUser user = configuration.readUser( username );
         
         if ( user == null )
         {
@@ -136,18 +104,18 @@ public class SecurityXmlRealm
             rolesToProcess.addAll( roles );
         }
         
-        Set<String> roleNames = new LinkedHashSet<String>();
+        Set<String> roleIds = new LinkedHashSet<String>();
         Set<Permission> permissions = new LinkedHashSet<Permission>();
         while ( !rolesToProcess.isEmpty() )
         {
-            String roleName = rolesToProcess.removeFirst();
-            if ( !roleNames.contains( roleName ) )
+            String roleId = rolesToProcess.removeFirst();
+            if ( !roleIds.contains( roleId ) )
             {                
-                CRole role = getRole( roleName );
+                CRole role = configuration.readRole( roleId );
                 
                 if ( role != null )
                 {
-                    roleNames.add( roleName );
+                    roleIds.add( roleId );
     
                     // process the roles this role has
                     rolesToProcess.addAll( role.getRoles() );
@@ -163,7 +131,7 @@ public class SecurityXmlRealm
             }
         }
         
-        SimpleAuthorizationInfo info = new SimpleAuthorizationInfo( roleNames );
+        SimpleAuthorizationInfo info = new SimpleAuthorizationInfo( roleIds );
         info.setObjectPermissions( permissions );
 
         return info;
@@ -171,7 +139,7 @@ public class SecurityXmlRealm
     
     protected Set<Permission> getPermissions( String privilegeId )
     {
-        CPrivilege privilege = getPrivilege( privilegeId );
+        CPrivilege privilege = configuration.readPrivilege( privilegeId );
         
         if ( privilege != null )
         {
@@ -195,109 +163,5 @@ public class SecurityXmlRealm
         }       
 
         return Collections.emptySet();
-    }
-    
-    private CUser getUser( String userid )
-    {
-        try
-        {
-            for ( CUser user : ( List<CUser> ) getConfiguration().getUsers() )
-            {
-                if ( user.getUserId().equals( userid ) )
-                {
-                    return user;
-                }
-            }
-        }
-        catch ( IOException e )
-        {
-            e.printStackTrace();
-        }
-        catch ( XmlPullParserException e )
-        {
-            e.printStackTrace();
-        }
-        
-        return null;
-    }
-    
-    private CRole getRole( String roleId )
-    {
-        try
-        {
-            for ( CRole role : ( List<CRole> ) getConfiguration().getRoles() )
-            {
-                if ( role.getId().equals( roleId ) )
-                {
-                    return role;
-                }
-            }
-        }
-        catch ( IOException e )
-        {
-            e.printStackTrace();
-        }
-        catch ( XmlPullParserException e )
-        {
-            e.printStackTrace();
-        }
-        
-        return null;
-    }
-    
-    private CPrivilege getPrivilege( String privilegeId )
-    {
-        try
-        {
-            for ( CPrivilege priv : ( List<CPrivilege> ) getConfiguration().getPrivileges() )
-            {
-                if ( priv.getId().equals( privilegeId ) )
-                {
-                    return priv;
-                }
-            }
-        }
-        catch ( IOException e )
-        {
-            e.printStackTrace();
-        }
-        catch ( XmlPullParserException e )
-        {
-            e.printStackTrace();
-        }
-        
-        return null;
-    }
-    
-    private Configuration getConfiguration() 
-        throws IOException, 
-            XmlPullParserException
-    {
-        if ( configuration != null )
-        {
-            return configuration;
-        }
-        
-        Reader fr = null;
-        
-        FileInputStream is = new FileInputStream( securityConfiguration );
-
-        try
-        {
-            SecurityConfigurationXpp3Reader reader = new SecurityConfigurationXpp3Reader();
-
-            fr = new InputStreamReader( is );
-
-            configuration = reader.read( fr );
-        }
-        finally
-        {
-            if ( fr != null )
-            {
-                fr.close();
-            }
-        }
-        
-        return configuration;
     }
 }
