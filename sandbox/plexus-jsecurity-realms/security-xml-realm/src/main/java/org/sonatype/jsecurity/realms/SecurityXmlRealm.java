@@ -42,6 +42,12 @@ public class SecurityXmlRealm
      */
     private ConfigurationManager configuration;
     
+    @Override
+    public String getName()
+    {
+        return SecurityXmlRealm.class.getName();
+    }
+    
     public void initialize()
         throws InitializationException
     {

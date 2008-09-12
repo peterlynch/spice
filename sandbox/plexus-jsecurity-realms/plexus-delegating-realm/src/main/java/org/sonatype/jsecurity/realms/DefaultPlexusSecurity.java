@@ -117,8 +117,6 @@ public class DefaultPlexusSecurity
     extends DefaultSecurityManager
     implements PlexusSecurity, Realm, Initializable
 {
-    public static final String NAME = "Plexus Security Realm";
-
     //@Requirement
     private RememberMeManager rememberMeManager;
 
@@ -135,7 +133,7 @@ public class DefaultPlexusSecurity
 
     public String getName()
     {
-        return NAME;
+        return DefaultPlexusSecurity.class.getName();
     }
 
     // Authentication

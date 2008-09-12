@@ -7,7 +7,6 @@ import org.codehaus.plexus.util.StringUtils;
 import org.jsecurity.authz.Permission;
 import org.jsecurity.authz.permission.WildcardPermission;
 import org.sonatype.jsecurity.model.CPrivilege;
-import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
 
 /**
  * @plexus.component role="org.jsecurity.realm.Realm" role-hint="MethodRealm"
@@ -16,6 +15,12 @@ import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
 public class MethodRealm
     extends SecurityXmlRealm
 {    
+    @Override
+    public String getName()
+    {
+        return MethodRealm.class.getName();
+    }
+    
     @Override
     protected Set<Permission> getPermissions( String privilegeId )
     {
