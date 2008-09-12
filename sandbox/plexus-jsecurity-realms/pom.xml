@@ -6,6 +6,7 @@
   <artifactId>plexus-jsecurity-realms</artifactId>
   <packaging>pom</packaging>
   <modules>
+    <module>plexus-delegating-realm</module>
     <module>security-xml-realm</module>
   </modules>
 </project>
