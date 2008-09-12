@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.codehaus.plexus.component.annotations.Component;
-import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
 import org.jsecurity.authc.AuthenticationException;
@@ -18,6 +17,8 @@ import org.jsecurity.realm.AuthorizingRealm;
 import org.jsecurity.realm.Realm;
 import org.jsecurity.subject.PrincipalCollection;
 import org.jsecurity.subject.RememberMeManager;
+import org.sonatype.jsecurity.selectors.RealmCriteria;
+import org.sonatype.jsecurity.selectors.RealmSelector;
 
 /*
 
@@ -122,22 +123,12 @@ public class DefaultPlexusSecurity
     private RememberMeManager rememberMeManager;
 
     //@Requirement
+    /** @plexus.requirement */
     private RealmSelector realmSelector;
-
-    @Requirement(hint="SecurityXmlRealm")
-    /** @plexus.requirement role-hint="SecurityXmlRealm" */
-    private Realm realm;
     
     public Realm selectRealm()
     {
-        if ( realmSelector != null )
-        {
-            return realmSelector.selectRealm( new RealmCriteria() );
-        }
-        else
-        {
-            return realm;
-        }
+        return realmSelector.selectRealm( new RealmCriteria() );
     }
 
     // JSecurity Realm Implementation
@@ -256,7 +247,7 @@ public class DefaultPlexusSecurity
          * 
          */
         
-        realm = new SecurityXmlRealm();
+        Realm realm = selectRealm();
         
         ( (AuthorizingRealm) realm ).setAuthorizationCache( new HashtableCache( null ) );               
         
