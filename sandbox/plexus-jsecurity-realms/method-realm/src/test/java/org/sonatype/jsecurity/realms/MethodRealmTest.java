@@ -59,6 +59,8 @@ public class MethodRealmTest
     {
         buildTestAuthorizationConfig();
         
+        // Fails because the configuration requirement in SecurityXmlRealm isn't initialized
+        // thus NPE
         AuthorizationInfo ai = realm.getAuthorizationInfo( new SimplePrincipalCollection( "username", realm.getName() ) );
         
         assertEquals( ai.getRoles().size(), 1 );

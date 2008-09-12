@@ -8,6 +8,10 @@
 	<packaging>jar</packaging>
 	<build>
 		<plugins>
+		    <!-- !!!!!!!!!!!!!!!!!!!!!!!!! -->
+		    <!-- because of a bug in the plexus i need to manually build the components.xml file -->
+		    <!-- !!!!!!!!!!!!!!!!!!!!!!!!! -->
+			<!--  
 			<plugin>
 				<groupId>org.codehaus.plexus</groupId>
 				<artifactId>plexus-maven-plugin</artifactId>
@@ -21,6 +25,7 @@
 					</execution>
 				</executions>
 			</plugin>
+			-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
