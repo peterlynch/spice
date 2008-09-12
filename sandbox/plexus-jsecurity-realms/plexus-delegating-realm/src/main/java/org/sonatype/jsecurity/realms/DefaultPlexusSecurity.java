@@ -1,7 +1,10 @@
 package org.sonatype.jsecurity.realms;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
@@ -11,9 +14,7 @@ import org.jsecurity.authc.AuthenticationInfo;
 import org.jsecurity.authc.AuthenticationToken;
 import org.jsecurity.authz.AuthorizationException;
 import org.jsecurity.authz.Permission;
-import org.jsecurity.cache.HashtableCache;
 import org.jsecurity.mgt.DefaultSecurityManager;
-import org.jsecurity.realm.AuthorizingRealm;
 import org.jsecurity.realm.Realm;
 import org.jsecurity.subject.PrincipalCollection;
 import org.jsecurity.subject.RememberMeManager;
@@ -124,9 +125,22 @@ public class DefaultPlexusSecurity
     /** @plexus.requirement */
     private RealmSelector realmSelector;
     
+    public Realm selectRealm( RealmCriteria criteria )
+    {
+        return realmSelector.selectRealm( criteria );
+    }
+    
+    public Realm selectRealm( String realmName )
+    {
+        RealmCriteria criteria = new RealmCriteria();
+        criteria.setName( realmName );
+        
+        return selectRealm( criteria );
+    }
+    
     public Realm selectRealm()
     {
-        return realmSelector.selectRealm( new RealmCriteria() );
+        return selectRealm( new RealmCriteria() );
     }
 
     // JSecurity Realm Implementation
@@ -154,82 +168,207 @@ public class DefaultPlexusSecurity
     public void checkPermission( PrincipalCollection subjectPrincipal, String permission )
         throws AuthorizationException
     {
-        selectRealm().checkPermission( subjectPrincipal, permission );
+        for ( String realmName : subjectPrincipal.getRealmNames() )
+        {
+            selectRealm( realmName ).checkPermission( subjectPrincipal, permission );
+        }
     }
 
     public void checkPermission( PrincipalCollection subjectPrincipal, Permission permission )
         throws AuthorizationException
     {
-        selectRealm().checkPermission( subjectPrincipal, permission );
+        for ( String realmName : subjectPrincipal.getRealmNames() )
+        {
+            selectRealm( realmName ).checkPermission( subjectPrincipal, permission );
+        }
     }
 
     public void checkPermissions( PrincipalCollection subjectPrincipal, String... permissions )
         throws AuthorizationException
     {
-        selectRealm().checkPermissions( subjectPrincipal, permissions );
+        for ( String realmName : subjectPrincipal.getRealmNames() )
+        {
+            selectRealm( realmName ).checkPermissions( subjectPrincipal, permissions );
+        }        
     }
 
     public void checkPermissions( PrincipalCollection subjectPrincipal, Collection<Permission> permissions )
         throws AuthorizationException
     {
-        selectRealm().checkPermissions( subjectPrincipal, permissions );
+        for ( String realmName : subjectPrincipal.getRealmNames() )
+        {
+            selectRealm( realmName ).checkPermissions( subjectPrincipal, permissions );
+        }
     }
 
     public void checkRole( PrincipalCollection subjectPrincipal, String roleIdentifier )
         throws AuthorizationException
     {
-        selectRealm().checkRole( subjectPrincipal, roleIdentifier );
+        for ( String realmName : subjectPrincipal.getRealmNames() )
+        {
+            selectRealm( realmName ).checkRole( subjectPrincipal, roleIdentifier );
+        }
     }
 
     public void checkRoles( PrincipalCollection subjectPrincipal, Collection<String> roleIdentifiers )
         throws AuthorizationException
     {
-        selectRealm().checkRoles( subjectPrincipal, roleIdentifiers );
+        for ( String realmName : subjectPrincipal.getRealmNames() )
+        {
+            selectRealm( realmName ).checkRoles( subjectPrincipal, roleIdentifiers );
+        }
     }
 
     public boolean hasAllRoles( PrincipalCollection subjectPrincipal, Collection<String> roleIdentifiers )
     {
-        return selectRealm().hasAllRoles( subjectPrincipal, roleIdentifiers );
+        Set<String> hasRoleList = new HashSet<String>();
+        
+        for ( String realmName : subjectPrincipal.getRealmNames() )
+        {
+            int i = 0;
+            
+            for ( Iterator<String> iter = roleIdentifiers.iterator() ; iter.hasNext() ; i++ )
+            {
+                String roleIdentifier = iter.next();
+                
+                if ( selectRealm( realmName ).hasRole( subjectPrincipal, roleIdentifier ) )
+                {
+                    hasRoleList.add( roleIdentifier );
+                }
+            }
+        }
+        
+        return hasRoleList.size() == roleIdentifiers.size();
     }
 
     public boolean hasRole( PrincipalCollection subjectPrincipal, String roleIdentifier )
     {
-        return selectRealm().hasRole( subjectPrincipal, roleIdentifier );
+        for ( String realmName : subjectPrincipal.getRealmNames() )
+        {
+            if ( selectRealm( realmName ).hasRole( subjectPrincipal, roleIdentifier ) )
+            {
+                return true;
+            }
+        }
+        
+        return false;
     }
 
     public boolean[] hasRoles( PrincipalCollection subjectPrincipal, List<String> roleIdentifiers )
     {
-        return selectRealm().hasRoles( subjectPrincipal, roleIdentifiers );
+        boolean[] combinedResult = new boolean[ roleIdentifiers.size() ];
+        
+        for ( String realmName : subjectPrincipal.getRealmNames() )
+        {
+            boolean[] result = selectRealm( realmName ).hasRoles( subjectPrincipal, roleIdentifiers );
+            
+            for ( int i = 0 ; i < combinedResult.length ; i++ )
+            {
+                combinedResult[i] = combinedResult[i] | result[i];
+            }
+        }
+        
+        return combinedResult;
     }
 
     public boolean isPermitted( PrincipalCollection principals, String permission )
     {
-        return selectRealm().isPermitted( principals, permission );
+        for ( String realmName : principals.getRealmNames() )
+        {
+            if ( selectRealm( realmName ).isPermitted( principals, permission ) )
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public boolean isPermitted( PrincipalCollection subjectPrincipal, Permission permission )
     {
-        return selectRealm().isPermitted( subjectPrincipal, permission );
+        for ( String realmName : subjectPrincipal.getRealmNames() )
+        {
+            if ( selectRealm( realmName ).isPermitted( subjectPrincipal, permission ) )
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public boolean[] isPermitted( PrincipalCollection subjectPrincipal, String... permissions )
     {
-        return selectRealm().isPermitted( subjectPrincipal, permissions );
+        boolean[] combinedResult = new boolean[ permissions.length ];
+        
+        for ( String realmName : subjectPrincipal.getRealmNames() )
+        {
+            boolean[] result = selectRealm( realmName ).isPermitted( subjectPrincipal, permissions );
+            
+            for ( int i = 0 ; i < combinedResult.length ; i++ )
+            {
+                combinedResult[i] = combinedResult[i] | result[i];
+            }
+        }
+        
+        return combinedResult;
     }
 
     public boolean[] isPermitted( PrincipalCollection subjectPrincipal, List<Permission> permissions )
     {
-        return selectRealm().isPermitted( subjectPrincipal, permissions );
+        boolean[] combinedResult = new boolean[ permissions.size() ];
+        
+        for ( String realmName : subjectPrincipal.getRealmNames() )
+        {
+            boolean[] result = selectRealm( realmName ).isPermitted( subjectPrincipal, permissions );
+            
+            for ( int i = 0 ; i < combinedResult.length ; i++ )
+            {
+                combinedResult[i] = combinedResult[i] | result[i];
+            }
+        }
+        
+        return combinedResult;
     }
 
     public boolean isPermittedAll( PrincipalCollection subjectPrincipal, String... permissions )
     {
-        return selectRealm().isPermittedAll( subjectPrincipal, permissions );
+        Set<String> isPermittedList = new HashSet<String>();
+        
+        for ( String realmName : subjectPrincipal.getRealmNames() )
+        {            
+            for ( int i = 0 ; i < permissions.length ; i++ )
+            {   
+                if ( selectRealm( realmName ).isPermitted( subjectPrincipal, permissions[i] ) )
+                {
+                    isPermittedList.add( permissions[i] );
+                }
+            }
+        }
+        
+        return isPermittedList.size() == permissions.length;
     }
 
     public boolean isPermittedAll( PrincipalCollection subjectPrincipal, Collection<Permission> permissions )
     {
-        return selectRealm().isPermittedAll( subjectPrincipal, permissions );
+        Set<Permission> isPermittedList = new HashSet<Permission>();
+        
+        for ( String realmName : subjectPrincipal.getRealmNames() )
+        {            
+            int i = 0;
+            
+            for ( Iterator<Permission> iter = permissions.iterator() ; iter.hasNext() ; i++ )
+            {   
+                Permission perm = iter.next();
+                
+                if ( selectRealm( realmName ).isPermitted( subjectPrincipal, perm ) )
+                {
+                    isPermittedList.add( perm );
+                }
+            }
+        }
+        
+        return isPermittedList.size() == permissions.size();
     }
 
     // Plexus Lifecycle
@@ -245,11 +384,7 @@ public class DefaultPlexusSecurity
          * 
          */
         
-        Realm realm = selectRealm();
-        
-        ( (AuthorizingRealm) realm ).setAuthorizationCache( new HashtableCache( null ) );               
-        
-        setRealm( realm );
+        setRealm( this );
         
         if ( rememberMeManager != null )
         {

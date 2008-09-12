@@ -22,6 +22,7 @@ import org.jsecurity.authz.AuthorizationInfo;
 import org.jsecurity.authz.Permission;
 import org.jsecurity.authz.SimpleAuthorizationInfo;
 import org.jsecurity.authz.permission.WildcardPermission;
+import org.jsecurity.cache.HashtableCache;
 import org.jsecurity.realm.AuthorizingRealm;
 import org.jsecurity.subject.PrincipalCollection;
 import org.sonatype.jsecurity.model.CPrivilege;
@@ -52,6 +53,7 @@ public class SecurityXmlRealm
         throws InitializationException
     {
         setCredentialsMatcher( new Sha1CredentialsMatcher() );
+        setAuthorizationCache( new HashtableCache( null ) );
     }
     
     @Override
