@@ -14,6 +14,7 @@ import java.util.List;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.sonatype.jsecurity.model.CPrivilege;
+import org.sonatype.jsecurity.model.CProperty;
 import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUser;
 import org.sonatype.jsecurity.model.Configuration;
@@ -122,6 +123,27 @@ public class DefaultConfigurationManager
     {
         deleteUser( user.getId() );
         createUser( user );
+    }
+    
+    public String getPrivilegeProperty( CPrivilege privilege, String key )
+    {
+        if ( privilege != null && privilege.getProperties() != null )
+        {
+            for ( CProperty prop : ( List<CProperty> ) privilege.getProperties() )
+            {
+                if ( prop.getKey().equals( key ) )
+                {
+                    return prop.getValue();
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    public String getPrivilegeProperty( String id, String key )
+    {
+        return getPrivilegeProperty( readPrivilege( id ), key );
     }
     
     public void clearCache()
@@ -235,9 +257,30 @@ public class DefaultConfigurationManager
         
         cloned.setDescription( privilege.getDescription() );
         cloned.setId( privilege.getId() );
-        cloned.setMethod( privilege.getMethod() );
         cloned.setName( privilege.getName() );
-        cloned.setPermission( privilege.getPermission() );
+        
+        if ( privilege.getProperties() != null )
+        {
+            for ( CProperty prop : ( List<CProperty> ) privilege.getProperties() )
+            {
+                cloned.addProperty( cloneProperty( prop ) );
+            }
+        }
+        
+        return cloned;
+    }
+    
+    private CProperty cloneProperty( CProperty property )
+    {
+        if ( property == null )
+        {
+            return null;
+        }
+        
+        CProperty cloned = new CProperty();
+        
+        cloned.setKey( property.getKey() );
+        cloned.setValue( property.getValue() );
         
         return cloned;
     }

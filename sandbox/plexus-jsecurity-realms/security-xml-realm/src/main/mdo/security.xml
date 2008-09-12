@@ -238,34 +238,39 @@
                     <description>A description of the privilege.</description>
                 </field>
                 <field>
-                    <name>method</name>
+                    <name>properties</name>
                     <version>1.0.0+</version>
-                    <type>String</type>
-                    <required>true</required>
-                    <description>The method this privilege grants access to, read/write/update/delete.</description>
-                </field>
-                <field>
-                    <name>permission</name>
-                    <version>1.0.0+</version>
-                    <type>String</type>
-                    <required>true</required>
-                    <description>The application level permission (i.e. app:system:config) that is protected by this privilege</description>
+                    <association>
+                        <type>CProperty</type>
+                        <multiplicity>*</multiplicity>
+                    </association>
+                    <required>false</required>
+                    <description>Properties assigned to this privilege, used to define a permission</description>
                 </field>
             </fields>
-            <codeSegments>
-                <codeSegment>
+        </class>
+        
+        <!-- Properties -->
+        <class>
+            <name>CProperty</name>
+            <version>1.0.0+</version>
+            <description>A simple key value pair</description>
+            <fields>
+                <field>
+                    <name>key</name>
                     <version>1.0.0+</version>
-                    <code><![CDATA[
-    public static final String METHOD_READ = "read";
-
-    public static final String METHOD_CREATE = "create";
-    
-    public static final String METHOD_UPDATE = "update";
-    
-    public static final String METHOD_DELETE = "delete";
-]]></code>
-                </codeSegment>
-            </codeSegments>
+                    <type>String</type>
+                    <required>true</required>
+                    <description>Unique key used as identifier</description>
+                </field>
+                <field>
+                    <name>value</name>
+                    <version>1.0.0+</version>
+                    <type>String</type>
+                    <required>true</required>
+                    <description>Value associated to the key</description>
+                </field>
+            </fields>
         </class>
     </classes>
 </model>

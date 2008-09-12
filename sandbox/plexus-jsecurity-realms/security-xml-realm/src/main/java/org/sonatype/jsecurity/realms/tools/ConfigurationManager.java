@@ -96,6 +96,23 @@ public interface ConfigurationManager
     void deletePrivilege( String id );
     
     /**
+     * Helper method to retrieve a property from the privilege
+     * 
+     * @param privilege
+     * @param key
+     * @return
+     */
+    String getPrivilegeProperty( CPrivilege privilege, String key );
+    
+    /**
+     * Helper method to retrieve a property from the privilege
+     * @param id
+     * @param key
+     * @return
+     */
+    String getPrivilegeProperty( String id, String key );
+    
+    /**
      * Clear the cache and reload from file
      */
     void clearCache();

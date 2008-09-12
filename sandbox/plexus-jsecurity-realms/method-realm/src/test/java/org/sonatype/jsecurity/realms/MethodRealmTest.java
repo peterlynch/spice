@@ -5,9 +5,6 @@ import java.util.Collection;
 
 import org.codehaus.plexus.PlexusTestCase;
 import org.codehaus.plexus.context.Context;
-import org.jsecurity.authc.AuthenticationException;
-import org.jsecurity.authc.AuthenticationInfo;
-import org.jsecurity.authc.UsernamePasswordToken;
 import org.jsecurity.authz.AuthorizationInfo;
 import org.jsecurity.authz.Permission;
 import org.jsecurity.authz.permission.WildcardPermission;
@@ -21,7 +18,7 @@ import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
 import org.sonatype.jsecurity.realms.tools.DefaultConfigurationManager;
 import org.sonatype.jsecurity.realms.tools.StringDigester;
 
-public class SecurityXmlRealmTest
+public class MethodRealmTest
     extends PlexusTestCase
 {
     public static final String PLEXUS_SECURITY_XML_FILE = "security-xml-file";
@@ -30,10 +27,10 @@ public class SecurityXmlRealmTest
     
     private File configFile = new File( SECURITY_CONFIG_FILE_PATH );
     
-    private SecurityXmlRealm realm;
+    private MethodRealm realm;
     
     private DefaultConfigurationManager configurationManager;
-        
+    
     @Override
     protected void customizeContext( Context context )
     {
@@ -48,84 +45,13 @@ public class SecurityXmlRealmTest
     {
         super.setUp();
         
-        realm = ( SecurityXmlRealm ) lookup( Realm.class, "SecurityXmlRealm" );
+        realm = ( MethodRealm ) lookup( Realm.class, "MethodRealm" );
         
         configurationManager = ( DefaultConfigurationManager ) lookup( ConfigurationManager.ROLE );
         
         configurationManager.clearCache();
         
         configFile.delete();
-    }
-    
-    public void testSuccessfulAuthentication()
-        throws Exception
-    {
-        buildTestAuthenticationConfig( CUser.STATUS_ACTIVE );
-        
-        UsernamePasswordToken upToken = new UsernamePasswordToken( "username", "password" );
-        
-        AuthenticationInfo ai = realm.getAuthenticationInfo( upToken );
-        
-        String password = new String( (char[] ) ai.getCredentials() );
-        
-        assertEquals( StringDigester.getSha1Digest( "password" ), password );        
-    }
-    
-    public void testFailedAuthentication()
-        throws Exception
-    {
-        buildTestAuthenticationConfig( CUser.STATUS_ACTIVE );
-        
-        UsernamePasswordToken upToken = new UsernamePasswordToken( "username", "badpassword" );
-        
-        try
-        {
-            realm.getAuthenticationInfo( upToken );
-            
-            fail( "Authentication should have failed" );
-        }
-        catch( AuthenticationException e )
-        {
-            // good
-        }   
-    }
-    
-    public void testDisabledAuthentication()
-        throws Exception
-    {
-        buildTestAuthenticationConfig( CUser.STATUS_DISABLED );
-        
-        UsernamePasswordToken upToken = new UsernamePasswordToken( "username", "password" );
-        
-        try
-        {
-            realm.getAuthenticationInfo( upToken );
-            
-            fail( "Authentication should have failed" );
-        }
-        catch( AuthenticationException e )
-        {
-            // good
-        }
-    }
-    
-    public void testInavlidStatusAuthentication()
-        throws Exception
-    {
-        buildTestAuthenticationConfig( "junk" );
-        
-        UsernamePasswordToken upToken = new UsernamePasswordToken( "username", "password" );
-        
-        try
-        {
-            realm.getAuthenticationInfo( upToken );
-            
-            fail( "Authentication should have failed" );
-        }
-        catch( AuthenticationException e )
-        {
-            // good
-        }
     }
     
     public void testAuthorization()
@@ -142,24 +68,17 @@ public class SecurityXmlRealmTest
         Collection<Permission> permissions = ai.getObjectPermissions();
         
         // Verify the permission
-        assertImplied( new WildcardPermission( "app:config" ), permissions );
+        assertImplied( new WildcardPermission( "app:config:read" ), permissions );
+        // Verify other method not allowed
+        assertNotImplied( new WildcardPermission( "app:config:create" ), permissions );
+        assertNotImplied( new WildcardPermission( "app:config:update" ), permissions );
+        assertNotImplied( new WildcardPermission( "app:config:delete" ), permissions );
         
         // Verify other permission not allowed
-        assertNotImplied( new WildcardPermission( "app:ui" ), permissions );
-    }
-    
-    private void buildTestAuthenticationConfig( String status )
-    {
-        CUser user = new CUser();
-        user.setEmail( "dummyemail" );
-        user.setName( "dummyname" );
-        user.setStatus( status );
-        user.setId( "username" );
-        user.setPassword( StringDigester.getSha1Digest( "password" ) );
-        
-        configurationManager.createUser( user );
-        
-        configurationManager.save();
+        assertNotImplied( new WildcardPermission( "app:ui:read" ), permissions );
+        assertNotImplied( new WildcardPermission( "app:ui:create" ), permissions );
+        assertNotImplied( new WildcardPermission( "app:ui:update" ), permissions );
+        assertNotImplied( new WildcardPermission( "app:ui:delete" ), permissions );
     }
     
     private void buildTestAuthorizationConfig()
@@ -168,11 +87,16 @@ public class SecurityXmlRealmTest
         permissionProp.setKey( "permission" );
         permissionProp.setValue( "app:config" );
         
+        CProperty methodProp = new CProperty();
+        methodProp.setKey( "method" );
+        methodProp.setValue( "read" );
+        
         CPrivilege priv = new CPrivilege();
         priv.setId( "priv" );
         priv.setName( "somepriv" );
         priv.setDescription( "somedescription" );
         priv.addProperty( permissionProp );
+        priv.addProperty( methodProp );
         
         configurationManager.createPrivilege( priv );
         

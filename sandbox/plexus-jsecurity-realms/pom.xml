@@ -8,5 +8,6 @@
   <modules>
     <module>plexus-delegating-realm</module>
     <module>security-xml-realm</module>
+    <module>method-realm</module>
   </modules>
 </project>

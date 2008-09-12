@@ -143,25 +143,23 @@ public class SecurityXmlRealm
         
         if ( privilege != null )
         {
-            String permissionString = privilege.getPermission();
-
+            String permissionString = configuration.getPrivilegeProperty( privilege, "permission" );
+            
             if ( StringUtils.isEmpty( permissionString ) )
             {
                 permissionString = "*:*";
             }
 
-            String method = privilege.getMethod();
-
-            if ( StringUtils.isEmpty( method ) )
-            {
-                method = "*";
-            }
-
-            Permission permission = new WildcardPermission( permissionString + ":" + method );
+            Permission permission = new WildcardPermission( permissionString );
             
             return Collections.singleton( permission );
         }       
 
         return Collections.emptySet();
+    }
+    
+    protected ConfigurationManager getConfigurationManager()
+    {
+        return configuration;
     }
 }
