@@ -10,6 +10,11 @@
     <name>Plexus JSecurity Realms</name>
     <artifactId>plexus-jsecurity-realms</artifactId>
     <packaging>pom</packaging>
+    <scm>
+        <connection>scm:svn:http://svn.sonatype.org/spice/trunk/plexus-jsecurity-realms</connection>
+        <url>http://svn.sonatype.org/spice/trunk/plexus-jsecurity-realms</url>
+        <developerConnection>scm:svn:https://svn.sonatype.org/spice/trunk/plexus-jsecurity-realms</developerConnection>
+    </scm>
     <modules>
         <module>plexus-delegating-realm</module>
         <module>security-xml-realm</module>
