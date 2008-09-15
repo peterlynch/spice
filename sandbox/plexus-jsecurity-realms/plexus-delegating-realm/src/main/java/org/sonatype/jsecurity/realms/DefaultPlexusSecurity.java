@@ -155,12 +155,44 @@ public class DefaultPlexusSecurity
     public AuthenticationInfo getAuthenticationInfo( AuthenticationToken token )
         throws AuthenticationException
     {
-        return selectRealm().getAuthenticationInfo( token );
+        if ( UsernamePasswordRealmToken.class.isAssignableFrom( token.getClass() ) )
+        {
+            for ( String realmName : ( ( UsernamePasswordRealmToken) token ).getRealmNames() )
+            {
+                AuthenticationInfo ai = selectRealm( realmName ).getAuthenticationInfo( token );
+                
+                if ( ai != null )
+                {
+                    return ai;
+                }
+            }
+            
+            return null;
+        }
+        else
+        {
+            return selectRealm().getAuthenticationInfo( token );
+        }
     }
 
     public boolean supports( AuthenticationToken token )
     {
-        return selectRealm().supports( token );
+        if ( UsernamePasswordRealmToken.class.isAssignableFrom( token.getClass() ) )
+        {
+            for ( String realmName : ( ( UsernamePasswordRealmToken) token ).getRealmNames() )
+            {
+                if ( selectRealm( realmName ).supports( token ) )
+                {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        else
+        {
+            return selectRealm().supports( token );
+        }
     }
 
     // Authorization

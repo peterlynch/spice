@@ -62,7 +62,7 @@ public class DefaultPlexusSecurityTest
     {
         buildTestAuthenticationConfig( CUser.STATUS_ACTIVE );
 
-        UsernamePasswordToken upToken = new UsernamePasswordToken( "username", "password" );
+        UsernamePasswordToken upToken = new UsernamePasswordRealmToken( "username", "password", SecurityXmlRealm.class.getName() );
 
         AuthenticationInfo ai = security.authenticate( upToken );
 
@@ -76,7 +76,7 @@ public class DefaultPlexusSecurityTest
     {
         buildTestAuthenticationConfig( CUser.STATUS_ACTIVE );
 
-        UsernamePasswordToken upToken = new UsernamePasswordToken( "username", "badpassword" );
+        UsernamePasswordToken upToken = new UsernamePasswordRealmToken( "username", "badpassword", SecurityXmlRealm.class.getName() );
 
         try
         {
@@ -95,7 +95,7 @@ public class DefaultPlexusSecurityTest
     {
         buildTestAuthenticationConfig( CUser.STATUS_DISABLED );
 
-        UsernamePasswordToken upToken = new UsernamePasswordToken( "username", "password" );
+        UsernamePasswordToken upToken = new UsernamePasswordRealmToken( "username", "password", SecurityXmlRealm.class.getName() );
 
         try
         {
@@ -114,7 +114,7 @@ public class DefaultPlexusSecurityTest
     {
         buildTestAuthenticationConfig( "junk" );
 
-        UsernamePasswordToken upToken = new UsernamePasswordToken( "username", "password" );
+        UsernamePasswordToken upToken = new UsernamePasswordRealmToken( "username", "password", SecurityXmlRealm.class.getName() );
 
         try
         {

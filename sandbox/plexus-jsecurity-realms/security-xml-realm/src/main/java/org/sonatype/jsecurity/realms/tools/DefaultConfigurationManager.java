@@ -10,6 +10,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
@@ -38,19 +39,21 @@ public class DefaultConfigurationManager
      */
     private Configuration configuration = null;
     
+    private ReentrantLock lock = new ReentrantLock();
+    
     public void createPrivilege( CPrivilege privilege )
     {
-        getConfiguration().addPrivilege( clonePrivilege( privilege ) );
+        getConfiguration().addPrivilege( ObjectCloner.clone( privilege ) );
     }
 
     public void createRole( CRole role )
     {
-        getConfiguration().addRole( cloneRole( role ) );
+        getConfiguration().addRole( ObjectCloner.clone( role ) );
     }
 
     public void createUser( CUser user )
     {
-        getConfiguration().addUser( cloneUser( user ) );
+        getConfiguration().addUser( ObjectCloner.clone( user ) );
     }
 
     public void deletePrivilege( String id )
@@ -68,39 +71,42 @@ public class DefaultConfigurationManager
         getConfiguration().removeUser( readUser( id ) );
     }
 
+    @SuppressWarnings("unchecked")
     public CPrivilege readPrivilege( String id )
     {
         for ( CPrivilege privilege : ( List<CPrivilege> ) getConfiguration().getPrivileges() )
         {
             if ( privilege.getId().equals( id ) )
             {
-                return clonePrivilege( privilege );
+                return ObjectCloner.clone( privilege );
             }
         }
         
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     public CRole readRole( String id )
     {
         for ( CRole role : ( List<CRole> ) getConfiguration().getRoles() )
         {
             if ( role.getId().equals( id ) )
             {
-                return cloneRole( role );
+                return ObjectCloner.clone( role );
             }
         }
         
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     public CUser readUser( String id )
     {
         for ( CUser user : ( List<CUser> ) getConfiguration().getUsers() )
         {
             if ( user.getId().equals( id ) )
             {
-                return cloneUser( user );
+                return ObjectCloner.clone( user );
             }
         }
         
@@ -125,6 +131,7 @@ public class DefaultConfigurationManager
         createUser( user );
     }
     
+    @SuppressWarnings("unchecked")
     public String getPrivilegeProperty( CPrivilege privilege, String key )
     {
         if ( privilege != null && privilege.getProperties() != null )
@@ -148,11 +155,16 @@ public class DefaultConfigurationManager
     
     public void clearCache()
     {
+        // Just to make sure we aren't fiddling w/ save/loading process
+        lock.lock();
         configuration = null;
+        lock.unlock();
     }
     
     public void save()
     {
+        lock.lock();
+        
         securityConfiguration.getParentFile().mkdirs();
         
         Writer fw = null;
@@ -184,105 +196,9 @@ public class DefaultConfigurationManager
                     // just closing if open
                 }
             }
+            
+            lock.unlock();
         }
-    }
-    
-    private CUser cloneUser( CUser user )
-    {
-        if ( user == null )
-        {
-            return null;
-        }
-        
-        CUser cloned = new CUser();
-        
-        cloned.setEmail( user.getEmail() );
-        cloned.setName( user.getName() );
-        cloned.setPassword( user.getPassword() );
-        cloned.setStatus( user.getStatus() );
-        cloned.setId( user.getId() );
-     
-        if ( user.getRoles() != null )
-        {
-            for ( String roleId : ( List<String> ) user.getRoles() )
-            {
-                cloned.addRole( roleId );
-            }
-        }
-        
-        return cloned;
-    }
-    
-    private CRole cloneRole( CRole role )
-    {
-        if ( role == null )
-        {
-            return null;
-        }
-        
-        CRole cloned = new CRole();
-        
-        cloned.setDescription( role.getDescription() );
-        cloned.setId( role.getId() );
-        cloned.setName( role.getName() );
-        cloned.setSessionTimeout( role.getSessionTimeout() );
-        
-        if ( role.getRoles() != null )
-        {
-            for ( String roleId : ( List<String> ) role.getRoles() )
-            {
-                cloned.addRole( roleId );
-            }
-        }
-        
-        if ( role.getPrivileges() != null )
-        {
-            for ( String privilegeId : ( List<String> ) role.getPrivileges() )
-            {
-                cloned.addPrivilege( privilegeId );
-            }
-        }
-        
-        return cloned;
-    }
-    
-    private CPrivilege clonePrivilege( CPrivilege privilege )
-    {
-        if ( privilege == null )
-        {
-            return privilege;
-        }
-        
-        CPrivilege cloned = new CPrivilege();
-        
-        cloned.setDescription( privilege.getDescription() );
-        cloned.setId( privilege.getId() );
-        cloned.setName( privilege.getName() );
-        
-        if ( privilege.getProperties() != null )
-        {
-            for ( CProperty prop : ( List<CProperty> ) privilege.getProperties() )
-            {
-                cloned.addProperty( cloneProperty( prop ) );
-            }
-        }
-        
-        return cloned;
-    }
-    
-    private CProperty cloneProperty( CProperty property )
-    {
-        if ( property == null )
-        {
-            return null;
-        }
-        
-        CProperty cloned = new CProperty();
-        
-        cloned.setKey( property.getKey() );
-        cloned.setValue( property.getValue() );
-        
-        return cloned;
     }
     
     private Configuration getConfiguration()
@@ -291,6 +207,8 @@ public class DefaultConfigurationManager
         {
             return configuration;
         }
+        
+        lock.lock();
         
         Reader fr = null;
     
@@ -330,6 +248,8 @@ public class DefaultConfigurationManager
                     // just closing if open
                 }
             }
+            
+            lock.unlock();
         }
         
         return configuration;
