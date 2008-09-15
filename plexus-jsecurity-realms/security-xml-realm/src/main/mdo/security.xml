@@ -238,6 +238,13 @@
                     <description>A description of the privilege.</description>
                 </field>
                 <field>
+                    <name>type</name>
+                    <version>1.0.0+</version>
+                    <type>String</type>
+                    <required>true</required>
+                    <description>The type of privilege.</description>
+                </field>
+                <field>
                     <name>properties</name>
                     <version>1.0.0+</version>
                     <association>

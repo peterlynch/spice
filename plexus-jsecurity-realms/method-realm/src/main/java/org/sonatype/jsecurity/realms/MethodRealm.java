@@ -28,23 +28,20 @@ public class MethodRealm
         
         if ( privilege != null )
         {
-            String permissionString = getConfigurationManager().getPrivilegeProperty( privilege, "permission" );
+            String permission = getConfigurationManager().getPrivilegeProperty( privilege, "permission" );
+            String method = getConfigurationManager().getPrivilegeProperty( privilege, "method" );
             
-            if ( StringUtils.isEmpty( permissionString ) )
+            if ( StringUtils.isEmpty( permission ) )
             {
-                permissionString = "*:*";
-            }
-            
-            String methodString = getConfigurationManager().getPrivilegeProperty( privilege, "method" );
-            
-            if ( StringUtils.isEmpty( methodString ) )
-            {
-                methodString = "*";
+                permission = "*:*";
             }
 
-            Permission permission = new WildcardPermission( permissionString + ":" + methodString );
+            if ( StringUtils.isEmpty( method ) )
+            {
+                method = "*";
+            }
             
-            return Collections.singleton( permission );
+            return Collections.singleton( ( Permission ) new WildcardPermission( permission + ":" + method) );
         }       
 
         return Collections.emptySet();

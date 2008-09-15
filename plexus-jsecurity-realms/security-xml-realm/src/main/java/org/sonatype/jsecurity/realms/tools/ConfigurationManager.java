@@ -1,6 +1,8 @@
 
 package org.sonatype.jsecurity.realms.tools;
 
+import java.util.List;
+
 import org.sonatype.jsecurity.model.CPrivilege;
 import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUser;
@@ -8,6 +10,27 @@ import org.sonatype.jsecurity.model.CUser;
 public interface ConfigurationManager
 {
     String ROLE = ConfigurationManager.class.getName();
+    
+    /**
+     * Retrieve all users
+     * 
+     * @return
+     */
+    List<CUser> listUsers();
+    
+    /**
+     * Retrieve all roles
+     * 
+     * @return
+     */
+    List<CRole> listRoles();
+    
+    /**
+     * Retrieve all privileges
+     * 
+     * @return
+     */
+    List<CPrivilege> listPrivileges();
     
     /**
      * Create a new user

@@ -42,6 +42,24 @@ public class DefaultConfigurationManager
     
     private ReentrantLock lock = new ReentrantLock();
     
+    @SuppressWarnings("unchecked")
+    public List<CPrivilege> listPrivileges()
+    {
+        return ( List<CPrivilege> ) getConfiguration().getPrivileges();
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<CRole> listRoles()
+    {
+        return ( List<CRole> ) getConfiguration().getRoles();
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<CUser> listUsers()
+    {
+        return ( List<CUser> ) getConfiguration().getUsers();
+    }
+    
     public void createPrivilege( CPrivilege privilege )
     {
         getConfiguration().addPrivilege( ObjectCloner.clone( privilege ) );

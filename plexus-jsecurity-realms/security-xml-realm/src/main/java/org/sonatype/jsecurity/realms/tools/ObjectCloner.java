@@ -86,6 +86,7 @@ public class ObjectCloner
         cloned.setDescription( privilege.getDescription() );
         cloned.setId( privilege.getId() );
         cloned.setName( privilege.getName() );
+        cloned.setType( privilege.getType() );
         
         if ( privilege.getProperties() != null )
         {

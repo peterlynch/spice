@@ -98,6 +98,7 @@ public class ObjectClonerTest
         priv.setDescription( "description" );
         priv.setId( "id" );
         priv.setName( "name" );
+        priv.setType( "type" );
         
         List<CProperty> props = new ArrayList<CProperty>();
         
@@ -122,6 +123,7 @@ public class ObjectClonerTest
         assertTrue( cloned.getDescription().equals( priv.getDescription() ) );
         assertTrue( cloned.getId().equals( priv.getId() ) );
         assertTrue( cloned.getName().equals( priv.getName() ) );
+        assertTrue( cloned.getType().equals( priv.getType() ) );
         
         assertTrue( cloned.getProperties() != null );
         assertTrue( cloned.getProperties() != priv.getProperties() );
