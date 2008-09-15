@@ -402,6 +402,30 @@ public class DefaultPlexusSecurity
         
         return isPermittedList.size() == permissions.size();
     }
+    
+    public void clearCache( String realmName )
+    {
+        RealmCriteria criteria = new RealmCriteria();
+        criteria.setName( realmName );
+        
+        Realm realm = realmSelector.selectRealm( criteria );
+        
+        if ( realm != null && MutableRealm.class.isAssignableFrom( realm.getClass() ) )
+        {
+            ( ( MutableRealm ) realm ).clearCache();
+        }
+    }
+    
+    public void clearCache( Set<String> realmNames )
+    {
+        if ( realmNames != null )
+        {
+            for ( String realmName : realmNames )
+            {
+                clearCache( realmName );
+            }
+        }
+    }
 
     // Plexus Lifecycle
 
