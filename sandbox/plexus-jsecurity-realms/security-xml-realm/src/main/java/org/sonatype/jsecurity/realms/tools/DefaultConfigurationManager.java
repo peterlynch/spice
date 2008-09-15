@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -56,19 +57,43 @@ public class DefaultConfigurationManager
         getConfiguration().addUser( ObjectCloner.clone( user ) );
     }
 
+    @SuppressWarnings("unchecked")
     public void deletePrivilege( String id )
     {
-        getConfiguration().removePrivilege( readPrivilege( id ) );
+        for ( Iterator<CPrivilege> iter = getConfiguration().getPrivileges().iterator() ; iter.hasNext() ; )
+        {
+            if ( iter.next().getId().equals( id ) )
+            {
+                iter.remove();
+                break;
+            }
+        }
     }
 
+    @SuppressWarnings("unchecked")
     public void deleteRole( String id )
     {
-        getConfiguration().removeRole( readRole( id ) );
+        for ( Iterator<CRole> iter = getConfiguration().getRoles().iterator() ; iter.hasNext() ; )
+        {
+            if ( iter.next().getId().equals( id ) )
+            {
+                iter.remove();
+                break;
+            }
+        }
     }
 
+    @SuppressWarnings("unchecked")
     public void deleteUser( String id )
     {
-        getConfiguration().removeUser( readUser( id ) );
+        for ( Iterator<CUser> iter = getConfiguration().getUsers().iterator() ; iter.hasNext() ; )
+        {
+            if ( iter.next().getId().equals( id ) )
+            {
+                iter.remove();
+                break;
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")

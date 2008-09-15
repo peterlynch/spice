@@ -68,6 +68,11 @@
 			<version>0.9.0-RC1</version>
 		</dependency>
 		<dependency>
+            <groupId>org.sonatype.jsecurity</groupId>
+            <artifactId>plexus-delegating-realm</artifactId>
+            <version>1.0</version>
+        </dependency>
+		<dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
             <version>1.2</version>

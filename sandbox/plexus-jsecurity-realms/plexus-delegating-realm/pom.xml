@@ -47,16 +47,6 @@
 	        <artifactId>plexus-component-annotations</artifactId>
 	        <version>1.0-alpha-17</version>
 	    </dependency>
-	    <dependency>
-            <groupId>org.sonatype.jsecurity</groupId>
-            <artifactId>security-xml-realm</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.sonatype.jsecurity</groupId>
-            <artifactId>method-realm</artifactId>
-            <version>1.0</version>
-        </dependency>
 		<dependency>
 			<groupId>org.codehaus.plexus</groupId>
 			<artifactId>plexus-container-default</artifactId>

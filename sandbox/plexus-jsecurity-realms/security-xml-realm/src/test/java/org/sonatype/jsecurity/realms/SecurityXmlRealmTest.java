@@ -148,6 +148,51 @@ public class SecurityXmlRealmTest
         assertNotImplied( new WildcardPermission( "app:ui" ), permissions );
     }
     
+    public void testMutability()
+        throws Exception
+    {
+        buildTestAuthorizationConfig();
+        
+        AuthorizationInfo ai = realm.getAuthorizationInfo( new SimplePrincipalCollection( "username", realm.getName() ) );
+        
+        assertEquals( ai.getRoles().size(), 1 );
+        
+        assertEquals( ai.getRoles().iterator().next(), "role" );
+        
+        Collection<Permission> permissions = ai.getObjectPermissions();
+        
+        assertImplied( new WildcardPermission( "app:config" ), permissions );
+        assertNotImplied( new WildcardPermission( "app:ui" ), permissions );
+        
+        updateTestAuthorizationConfig();
+        
+        // Still same, cache not cleared
+        ai = realm.getAuthorizationInfo( new SimplePrincipalCollection( "username", realm.getName() ) );
+        
+        assertEquals( ai.getRoles().size(), 1 );
+        
+        assertEquals( ai.getRoles().iterator().next(), "role" );
+        
+        permissions = ai.getObjectPermissions();
+        
+        assertImplied( new WildcardPermission( "app:config" ), permissions );
+        assertNotImplied( new WildcardPermission( "app:ui" ), permissions );
+        
+        // Clear the cache and should now show changes
+        realm.clearCache();
+        
+        ai = realm.getAuthorizationInfo( new SimplePrincipalCollection( "username", realm.getName() ) );
+        
+        assertEquals( ai.getRoles().size(), 1 );
+        
+        assertEquals( ai.getRoles().iterator().next(), "role" );
+        
+        permissions = ai.getObjectPermissions();
+        
+        assertNotImplied( new WildcardPermission( "app:config" ), permissions );
+        assertImplied( new WildcardPermission( "app:ui" ), permissions );
+    }
+    
     private void buildTestAuthenticationConfig( String status )
     {
         CUser user = new CUser();
@@ -194,6 +239,19 @@ public class SecurityXmlRealmTest
         user.addRole( role.getId() );
         
         configurationManager.createUser( user );
+        
+        configurationManager.save();
+    }
+    
+    private void updateTestAuthorizationConfig()
+    {
+        CPrivilege priv = configurationManager.readPrivilege( "priv" );
+        
+        assertTrue( priv != null );
+        
+        ( ( CProperty ) priv.getProperties().get( 0 ) ).setValue( "app:ui" );
+        
+        configurationManager.updatePrivilege( priv );
         
         configurationManager.save();
     }

@@ -3,8 +3,8 @@ package org.sonatype.jsecurity.selectors;
 import org.codehaus.plexus.PlexusTestCase;
 import org.codehaus.plexus.context.Context;
 import org.jsecurity.realm.Realm;
-import org.sonatype.jsecurity.realms.MethodRealm;
-import org.sonatype.jsecurity.realms.SecurityXmlRealm;
+import org.sonatype.jsecurity.realms.FakeRealm1;
+import org.sonatype.jsecurity.realms.FakeRealm2;
 
 public class DefaultRealmSelectorTest
     extends PlexusTestCase
@@ -33,18 +33,18 @@ public class DefaultRealmSelectorTest
     {
         RealmCriteria criteria = new RealmCriteria();
         
-        criteria.setName( SecurityXmlRealm.class.getName() );
+        criteria.setName( FakeRealm1.class.getName() );
         
         Realm selected = selector.selectRealm( criteria );
         
         assertTrue( selected != null );
-        assertTrue( selected.getName().equals( SecurityXmlRealm.class.getName() ) );
+        assertTrue( selected.getName().equals( FakeRealm1.class.getName() ) );
         
-        criteria.setName( MethodRealm.class.getName() );
+        criteria.setName( FakeRealm2.class.getName() );
         
         selected = selector.selectRealm( criteria );
         
         assertTrue( selected != null );
-        assertTrue( selected.getName().equals( MethodRealm.class.getName() ) );
+        assertTrue( selected.getName().equals( FakeRealm2.class.getName() ) );
     }
 }

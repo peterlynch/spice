@@ -36,7 +36,7 @@ import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
  */
 public class SecurityXmlRealm
     extends AuthorizingRealm
-        implements Initializable
+        implements Initializable, MutableRealm
 {
     /**
      * @plexus.requirement
@@ -164,6 +164,12 @@ public class SecurityXmlRealm
         }       
 
         return Collections.emptySet();
+    }
+    
+    public void clearCache()
+    {
+        getAuthorizationCache().clear();
+        configuration.clearCache();
     }
     
     protected ConfigurationManager getConfigurationManager()
