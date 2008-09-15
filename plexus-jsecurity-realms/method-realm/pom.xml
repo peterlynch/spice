@@ -1,59 +1,48 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
-    <groupId>org.sonatype.jsecurity</groupId>
-    <artifactId>plexus-jsecurity-realms</artifactId>
-    <version>1.0-SNAPSHOT</version>
-	</parent>
-  
-	<modelVersion>4.0.0</modelVersion>
-	<artifactId>method-realm</artifactId>
-	<name>Method based realm</name>
-	
-  <build>
-		<plugins>
+        <groupId>org.sonatype.jsecurity</groupId>
+        <artifactId>plexus-jsecurity-realms</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>method-realm</artifactId>
+    <name>Method based realm</name>
+    <build>
+        <plugins>
 		    <!-- !!!!!!!!!!!!!!!!!!!!!!!!! -->
-		    <!-- because of a bug in the plexus i need to manually build the components.xml file -->
+            <!-- because of a bug in the plexus i need to manually build the components.xml file -->
 		    <!-- !!!!!!!!!!!!!!!!!!!!!!!!! -->
-			<!--  
-			<plugin>
-				<groupId>org.codehaus.plexus</groupId>
-				<artifactId>plexus-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>descriptor</id>
-						<goals>
-							<goal>descriptor</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			-->
-		</plugins>
-	</build>
-	<dependencies>
-    <dependency>
-			<groupId>org.sonatype.jsecurity</groupId>
-			<artifactId>security-xml-realm</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jsecurity</groupId>
-			<artifactId>jsecurity</artifactId>
-		</dependency>
-		<dependency>
+            <!--
+                <plugin> 
+                    <groupId>org.codehaus.plexus</groupId> 
+                    <artifactId>plexus-maven-plugin</artifactId>
+                </plugin>
+            -->
+        </plugins>
+    </build>
+    <dependencies>
+        <dependency>
+            <groupId>org.sonatype.jsecurity</groupId>
+            <artifactId>security-xml-realm</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jsecurity</groupId>
+            <artifactId>jsecurity</artifactId>
+        </dependency>
+        <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
         </dependency>
-		<dependency>
-			<groupId>org.codehaus.plexus</groupId>
-			<artifactId>plexus-utils</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.codehaus.plexus</groupId>
-			<artifactId>plexus-container-default</artifactId>
-			<scope>provided</scope>
-		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-utils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-container-default</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 </project>

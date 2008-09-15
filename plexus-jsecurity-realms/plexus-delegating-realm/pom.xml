@@ -1,49 +1,38 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  
-	<parent>
-		<groupId>org.sonatype.jsecurity</groupId>
-		<artifactId>plexus-jsecurity-realms</artifactId>
-		<version>1.0-SNAPSHOT</version>
-	</parent>
-  
-	<modelVersion>4.0.0</modelVersion>	
-	<artifactId>plexus-delegating-realm</artifactId>	
-	<name>Plexus Based Realm that will delegate control to other jsecurity realms</name>
-  
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.codehaus.plexus</groupId>
-				<artifactId>plexus-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>descriptor</id>
-						<goals>
-							<goal>descriptor</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
-	<dependencies>
-		<dependency>
-			<groupId>org.jsecurity</groupId>
-			<artifactId>jsecurity</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.codehaus.plexus</groupId>
-			<artifactId>plexus-utils</artifactId>
-		</dependency>
-		<dependency>
-	    <groupId>org.codehaus.plexus</groupId>
-	    <artifactId>plexus-component-annotations</artifactId>
-	  </dependency>
-		<dependency>
-			<groupId>org.codehaus.plexus</groupId>
-			<artifactId>plexus-container-default</artifactId>
-			<scope>provided</scope>
-		</dependency>
-	</dependencies>
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <parent>
+        <groupId>org.sonatype.jsecurity</groupId>
+        <artifactId>plexus-jsecurity-realms</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>plexus-delegating-realm</artifactId>
+    <name>Plexus Based Realm that will delegate control to other jsecurity realms</name>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.plexus</groupId>
+                <artifactId>plexus-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+    <dependencies>
+        <dependency>
+            <groupId>org.jsecurity</groupId>
+            <artifactId>jsecurity</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-utils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-component-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-container-default</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 </project>
