@@ -17,7 +17,7 @@ import org.jsecurity.authz.Permission;
 import org.jsecurity.mgt.DefaultSecurityManager;
 import org.jsecurity.realm.Realm;
 import org.jsecurity.subject.PrincipalCollection;
-import org.jsecurity.subject.RememberMeManager;
+import org.sonatype.jsecurity.locators.RememberMeLocator;
 import org.sonatype.jsecurity.selectors.RealmCriteria;
 import org.sonatype.jsecurity.selectors.RealmSelector;
 
@@ -117,9 +117,10 @@ We need to allow:
 public class DefaultPlexusSecurity
     extends DefaultSecurityManager
     implements PlexusSecurity, Realm, Initializable
-{
+{    
     //@Requirement
-    private RememberMeManager rememberMeManager;
+    /** @plexus.requirement */
+    private RememberMeLocator rememberMeLocator;
 
     //@Requirement
     /** @plexus.requirement */
@@ -442,9 +443,6 @@ public class DefaultPlexusSecurity
         
         setRealm( this );
         
-        if ( rememberMeManager != null )
-        {
-            setRememberMeManager( rememberMeManager );
-        }
+        setRememberMeManager( rememberMeLocator.getRememberMeManager() );
     }
 }

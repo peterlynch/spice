@@ -11,7 +11,7 @@ public class DefaultRealmSelector
     implements RealmSelector
 {
     /**
-     * @plexus.requirement role-hint="PropertyFileRealmLocator"
+     * @plexus.requirement
      */
     private RealmLocator realmLocator;
     

@@ -27,7 +27,7 @@ public class PropertyFileRealmLocatorTest
     {
         super.setUp();
         
-        locator = ( RealmLocator ) lookup( RealmLocator.class, "PropertyFileRealmLocator" );
+        locator = ( RealmLocator ) lookup( RealmLocator.class );
     }
     
     public void testLocator()

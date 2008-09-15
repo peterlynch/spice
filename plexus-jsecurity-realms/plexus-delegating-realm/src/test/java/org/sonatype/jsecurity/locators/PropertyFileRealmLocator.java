@@ -15,7 +15,7 @@ import org.codehaus.plexus.util.StringUtils;
 import org.jsecurity.realm.Realm;
 
 /**
- * @plexus.component role-hint="PropertyFileRealmLocator"
+ * @plexus.component 
  */
 public class PropertyFileRealmLocator
     extends AbstractLogEnabled
