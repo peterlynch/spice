@@ -15,6 +15,10 @@ import org.sonatype.jsecurity.model.CPrivilege;
 public class MethodRealm
     extends SecurityXmlRealm
 {    
+    public static final String PRIVILEGE_TYPE_METHOD = "method";
+    
+    public static final String PRIVILEGE_PROPERTY_METHOD = "method";
+    public static final String PRIVILEGE_PROPERTY_PERMISSION = "permission";
     @Override
     public String getName()
     {
@@ -26,10 +30,10 @@ public class MethodRealm
     {
         CPrivilege privilege = getConfigurationManager().readPrivilege( privilegeId );
         
-        if ( privilege != null )
+        if ( privilege != null && privilege.getType().equals( PRIVILEGE_TYPE_METHOD ) )
         {
-            String permission = getConfigurationManager().getPrivilegeProperty( privilege, "permission" );
-            String method = getConfigurationManager().getPrivilegeProperty( privilege, "method" );
+            String permission = getConfigurationManager().getPrivilegeProperty( privilege, PRIVILEGE_PROPERTY_PERMISSION );
+            String method = getConfigurationManager().getPrivilegeProperty( privilege, PRIVILEGE_PROPERTY_METHOD );
             
             if ( StringUtils.isEmpty( permission ) )
             {
