@@ -1,0 +1,162 @@
+package org.codehaus.plexus.components.mercury;
+
+/*
+ * Copyright 2001-2007 Codehaus Foundation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.net.URL;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Provider;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.security.spec.KeySpec;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.PBEParameterSpec;
+
+import org.apache.maven.mercury.artifact.Artifact;
+import org.apache.maven.mercury.crypto.api.StreamObserverFactory;
+import org.apache.maven.mercury.crypto.api.StreamVerifierAttributes;
+import org.apache.maven.mercury.crypto.api.StreamVerifierException;
+import org.apache.maven.mercury.crypto.api.StreamVerifierFactory;
+import org.apache.maven.mercury.crypto.pgp.PgpStreamVerifierFactory;
+import org.apache.maven.mercury.repository.api.RepositoryException;
+import org.apache.maven.mercury.repository.api.RepositoryWriter;
+import org.apache.maven.mercury.repository.remote.m2.RemoteRepositoryM2;
+import org.apache.maven.mercury.repository.remote.m2.RemoteRepositoryWriterM2;
+import org.apache.maven.mercury.transport.api.Credentials;
+import org.apache.maven.mercury.transport.api.Server;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.encoders.Base64Encoder;
+import org.codehaus.plexus.i18n.DefaultLanguage;
+import org.codehaus.plexus.i18n.Language;
+import org.codehaus.plexus.logging.AbstractLogEnabled;
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
+import org.codehaus.plexus.util.StringUtils;
+import org.mortbay.jetty.security.Credential;
+
+/**
+ * @plexus.component
+ * 
+ * @author Oleg Gusakov
+ * 
+ */
+public class DefaultPlexusMercury
+extends AbstractLogEnabled
+implements PlexusMercury, Initializable
+{
+  private static final org.slf4j.Logger _log = org.slf4j.LoggerFactory.getLogger( DefaultPlexusMercury.class ); 
+  private static final Language _lang = new DefaultLanguage( DefaultPlexusMercury.class );
+
+  //---------------------------------------------------------------
+  public void initialize()
+  throws InitializationException
+  {
+  }
+
+  //---------------------------------------------------------------
+  public RemoteRepositoryM2 constructRemoteRepositoryM2(
+                        String id
+                      , URL serverUrl, String serverUser, String serverPass 
+                      , URL proxyUrl,  String proxyUser,  String proxyPass
+                      , Set<StreamObserverFactory> readerStreamObservers
+                      , Set<StreamVerifierFactory> readerStreamVerifiers
+                      , Set<StreamObserverFactory> writerStreamObservers
+                      , Set<StreamVerifierFactory> writerStreamVerifiers
+                                                       )
+  throws RepositoryException
+  {
+    Server server = new Server( id, serverUrl );
+    
+    server.setReaderStreamObserverFactories( readerStreamObservers );
+    server.setReaderStreamVerifierFactories( readerStreamVerifiers );
+    server.setWriterStreamObserverFactories( writerStreamObservers );
+    server.setWriterStreamVerifierFactories( writerStreamVerifiers );
+    
+    if( serverUser != null )
+    {
+      Credentials cred = new Credentials( serverUser, serverPass );
+      server.setServerCredentials( cred );
+    }
+    
+    if( proxyUrl != null )
+    {
+      server.setProxy( proxyUrl );
+      
+      if( proxyUser != null )
+      {
+        Credentials cred = new Credentials( proxyUser, proxyPass );
+        server.setProxyCredentials( cred );
+      }
+    }
+
+    RemoteRepositoryM2 repo = new RemoteRepositoryM2( id, server );
+
+    return repo;
+  }
+
+  //---------------------------------------------------------------
+  public void deploy( RemoteRepositoryM2 repo, Artifact... artifacts )
+  throws RepositoryException
+  {
+    if( repo == null )
+      throw new RepositoryException( _lang.getMessage( "null.repo" ) );
+    
+    RepositoryWriter wr = repo.getWriter();
+    
+    wr.writeArtifact( Arrays.asList( artifacts ) );
+    
+  }
+  //---------------------------------------------------------------
+  public PgpStreamVerifierFactory createPgpReaderFactory(
+      boolean lenient,
+      boolean sufficient,
+      InputStream pubRing )
+  throws StreamVerifierException
+  {
+    return new PgpStreamVerifierFactory(
+        new StreamVerifierAttributes(PgpStreamVerifierFactory.DEFAULT_EXTENSION,lenient,sufficient )
+        , pubRing
+                                      );
+  }
+
+  //---------------------------------------------------------------
+  public PgpStreamVerifierFactory createPgpWriterFactory(
+      boolean lenient,
+      boolean sufficient,
+      InputStream secRing,
+      String keyId,
+      String keyPass )
+      throws StreamVerifierException
+  {
+    return new PgpStreamVerifierFactory(
+        new StreamVerifierAttributes(PgpStreamVerifierFactory.DEFAULT_EXTENSION,lenient,sufficient )
+        , secRing , keyId, keyPass
+                                      );
+  }
+  //---------------------------------------------------------------
+  //---------------------------------------------------------------
+}
