@@ -16,7 +16,6 @@ import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUser;
 import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
 import org.sonatype.jsecurity.realms.tools.DefaultConfigurationManager;
-import org.sonatype.jsecurity.realms.tools.StringDigester;
 
 public class MethodRealmTest
     extends PlexusTestCase
@@ -96,6 +95,7 @@ public class MethodRealmTest
         CPrivilege priv = new CPrivilege();
         priv.setId( "priv" );
         priv.setName( "somepriv" );
+        priv.setType( "method" );
         priv.setDescription( "somedescription" );
         priv.addProperty( permissionProp );
         priv.addProperty( methodProp );
@@ -116,7 +116,7 @@ public class MethodRealmTest
         user.setName( "dummyname" );
         user.setStatus( CUser.STATUS_ACTIVE );
         user.setId( "username" );
-        user.setPassword( StringDigester.getSha1Digest( "password" ) );
+        user.setPassword( "password" );
         user.addRole( role.getId() );
         
         configurationManager.createUser( user );
