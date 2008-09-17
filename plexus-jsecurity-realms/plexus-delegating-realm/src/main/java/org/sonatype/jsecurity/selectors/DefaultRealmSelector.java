@@ -1,5 +1,7 @@
 package org.sonatype.jsecurity.selectors;
 
+import java.util.List;
+
 import org.jsecurity.realm.Realm;
 import org.sonatype.jsecurity.locators.RealmLocator;
 
@@ -26,5 +28,10 @@ public class DefaultRealmSelector
         }
         
         return null;
+    }
+    
+    public List<Realm> selectAllRealms()
+    {
+        return this.realmLocator.getRealms();
     }
 }

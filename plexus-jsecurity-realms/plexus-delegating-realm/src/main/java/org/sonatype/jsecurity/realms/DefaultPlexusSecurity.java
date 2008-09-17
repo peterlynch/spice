@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
 import org.jsecurity.authc.AuthenticationException;
@@ -113,7 +112,7 @@ We need to allow:
 /**
  * @plexus.component role="org.sonatype.jsecurity.realms.PlexusSecurity"
  */
-@Component(role = PlexusSecurity.class)
+//@Component(role = PlexusSecurity.class)
 public class DefaultPlexusSecurity
     extends DefaultSecurityManager
     implements PlexusSecurity, Realm, Initializable
@@ -426,6 +425,12 @@ public class DefaultPlexusSecurity
                 clearCache( realmName );
             }
         }
+    }
+    
+    @Override
+    protected void afterCacheManagerSet()
+    {
+        // Do nothing
     }
 
     // Plexus Lifecycle

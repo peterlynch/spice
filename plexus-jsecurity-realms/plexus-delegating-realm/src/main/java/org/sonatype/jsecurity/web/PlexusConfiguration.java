@@ -23,7 +23,7 @@ public class PlexusConfiguration
 {
     public static final String SECURITY_MANAGER_ROLE = "securityManagerRole";
 
-    public static final String DEFAULT_SECURITY_MANAGER_ROLE = PlexusSecurity.class.getName();
+    public static final String DEFAULT_SECURITY_MANAGER_ROLE = PlexusSecurity.ROLE;
 
     public static final String SECURITY_MANAGER_ROLE_HINT = "securityManagerRoleHint";
 
