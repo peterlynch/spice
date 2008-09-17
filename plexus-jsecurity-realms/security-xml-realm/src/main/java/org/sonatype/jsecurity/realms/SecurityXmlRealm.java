@@ -33,6 +33,7 @@ import org.sonatype.jsecurity.model.CUser;
 import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
 import org.sonatype.jsecurity.realms.tools.PasswordGenerator;
 import org.sonatype.micromailer.EMailer;
+import org.sonatype.micromailer.MailRequest;
 
 /**
  * @plexus.component role="org.jsecurity.realm.Realm" role-hint="SecurityXmlRealm"
@@ -242,7 +243,7 @@ public class SecurityXmlRealm
         if ( userIds.size() > 0 )
         {
             //TODO Notify user by email
-            mailer.sendMail( null );
+            sendEmail( null );
         }
     }
     
@@ -261,8 +262,15 @@ public class SecurityXmlRealm
             configuration.save();
             
             // TODO Notify user by email
-            mailer.sendMail( null );
+            sendEmail( null );
         }
+    }
+    
+    protected void sendEmail( MailRequest request )
+    {
+        mailer.configure( mailerConfig.getConfiguration() );
+        
+        mailer.sendMail( request );
     }
     
     protected ConfigurationManager getConfigurationManager()
