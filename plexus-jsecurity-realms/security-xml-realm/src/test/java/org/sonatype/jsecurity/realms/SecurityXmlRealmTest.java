@@ -193,6 +193,18 @@ public class SecurityXmlRealmTest
         assertImplied( new WildcardPermission( "app:ui" ), permissions );
     }
     
+    public void testChangePassword()
+        throws Exception
+    {
+        buildTestAuthenticationConfig( CUser.STATUS_ACTIVE );
+        
+        realm.changePassword( "username", "password", "newpassword" );
+        
+        CUser user = configurationManager.readUser( "username" );
+        
+        assertTrue( user.getPassword().equals( StringDigester.getSha1Digest( "newpassword" ) ) );
+    }
+    
     private void buildTestAuthenticationConfig( String status )
     {
         CUser user = new CUser();

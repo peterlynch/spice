@@ -15,4 +15,12 @@ public interface MutableRealm
      * Clear jsecurity caches so that realm will be queried again for authorization data
      */
     void clearCache();
+    
+    void forgotPassword( String username, String email );
+    
+    void forgotUsername( String email );
+    
+    void resetPassword( String username );
+    
+    void changePassword( String username, String oldPassword, String newPassword );
 }

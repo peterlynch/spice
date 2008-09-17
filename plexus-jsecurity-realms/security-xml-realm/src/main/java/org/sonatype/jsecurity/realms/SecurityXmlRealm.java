@@ -1,5 +1,6 @@
 package org.sonatype.jsecurity.realms;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -29,6 +30,7 @@ import org.sonatype.jsecurity.model.CPrivilege;
 import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUser;
 import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
+import org.sonatype.jsecurity.realms.tools.PasswordGenerator;
 
 /**
  * @plexus.component role="org.jsecurity.realm.Realm" role-hint="SecurityXmlRealm"
@@ -42,6 +44,11 @@ public class SecurityXmlRealm
      * @plexus.requirement
      */
     private ConfigurationManager configuration;
+    
+    /**
+     * @plexus.requirement
+     */
+    private PasswordGenerator pwGenerator;
     
     @Override
     public String getName()
@@ -170,6 +177,76 @@ public class SecurityXmlRealm
     {
         getAuthorizationCache().clear();
         configuration.clearCache();
+    }
+    
+    public void changePassword( String username, String oldPassword, String newPassword )
+    {
+        CUser user = configuration.readUser( username );
+        
+        if ( user != null )
+        {
+            String validate = pwGenerator.hashPassword( oldPassword );
+            
+            if ( !validate.equals( user.getPassword() ) )
+            {
+                // Invalid
+            }
+            else
+            {
+                user.setPassword( pwGenerator.hashPassword( newPassword ) );
+                
+                configuration.updateUser( user );
+                
+                configuration.save();
+            }
+        }
+    }
+    
+    public void forgotPassword( String username, String email )
+    {
+        CUser user = configuration.readUser( username );
+        
+        if ( user != null && user.getEmail().equals( email ) )
+        {
+            resetPassword( username );
+        }
+    }
+    
+    public void forgotUsername( String email )
+    {
+        List<CUser> users = configuration.listUsers();
+        
+        List<String> userIds = new ArrayList<String>();
+        for ( CUser user : users )
+        {
+            if ( user.getEmail().equals( email ) )
+            {
+                userIds.add( user.getId() );
+            }
+        }
+        
+        if ( userIds.size() > 0 )
+        {
+            //TODO Notify user by email
+        }
+    }
+    
+    public void resetPassword( String username )
+    {
+        CUser user = configuration.readUser( username );
+        
+        if ( user != null )
+        {
+            String password = pwGenerator.generatePassword( 10, 10 );
+            
+            user.setPassword( pwGenerator.hashPassword( password ) );
+            
+            configuration.updateUser( user );
+            
+            configuration.save();
+            
+            // TODO Notify user by email
+        }
     }
     
     protected ConfigurationManager getConfigurationManager()
