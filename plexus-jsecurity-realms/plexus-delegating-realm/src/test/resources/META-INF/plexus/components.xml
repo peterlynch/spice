@@ -2,15 +2,8 @@
   <components>
     <component>
       <role>org.jsecurity.realm.Realm</role>
-      <role-hint>FakeRealm1</role-hint>
-      <implementation>org.sonatype.jsecurity.realms.FakeRealm1</implementation>
-      <description></description>
-      <isolated-realm>false</isolated-realm>
-    </component>
-    <component>
-      <role>org.jsecurity.realm.Realm</role>
-      <role-hint>FakeRealm2</role-hint>
-      <implementation>org.sonatype.jsecurity.realms.FakeRealm2</implementation>
+      <role-hint>FakeRealm</role-hint>
+      <implementation>org.sonatype.jsecurity.realms.FakeRealm</implementation>
       <description></description>
       <isolated-realm>false</isolated-realm>
     </component>

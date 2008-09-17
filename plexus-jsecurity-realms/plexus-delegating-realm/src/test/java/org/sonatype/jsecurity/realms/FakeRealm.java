@@ -15,16 +15,16 @@ import org.jsecurity.realm.AuthorizingRealm;
 import org.jsecurity.subject.PrincipalCollection;
 
 /**
- * @plexus.component role="org.jsecurity.realm.Realm" role-hint="FakeRealm2"
+ * @plexus.component role="org.jsecurity.realm.Realm" role-hint="FakeRealm1"
  */
-public class FakeRealm2
+public class FakeRealm
     extends
     AuthorizingRealm
 {    
     @Override
     public String getName()
     {
-        return FakeRealm2.class.getName();
+        return FakeRealm.class.getName();
     }
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo( PrincipalCollection arg0 )
@@ -32,7 +32,7 @@ public class FakeRealm2
         
         SimpleAuthorizationInfo info = new SimpleAuthorizationInfo( Collections.singleton( "role" ) );
         
-        Permission permission = new WildcardPermission( "other:perm" );
+        Permission permission = new WildcardPermission( "test:perm" );
         
         info.setObjectPermissions( Collections.singleton( permission ) );
 
@@ -45,6 +45,6 @@ public class FakeRealm2
     {
         UsernamePasswordToken upToken = ( UsernamePasswordToken ) token;
         
-        return new SimpleAuthenticationInfo( upToken.getUsername(), "password", getName() );
+        return new SimpleAuthenticationInfo( upToken.getUsername(), "password" , getName() );
     }
 }
