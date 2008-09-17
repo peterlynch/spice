@@ -26,11 +26,13 @@ import org.jsecurity.authz.permission.WildcardPermission;
 import org.jsecurity.cache.HashtableCache;
 import org.jsecurity.realm.AuthorizingRealm;
 import org.jsecurity.subject.PrincipalCollection;
+import org.sonatype.jsecurity.locators.EmailConfigurationLocator;
 import org.sonatype.jsecurity.model.CPrivilege;
 import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUser;
 import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
 import org.sonatype.jsecurity.realms.tools.PasswordGenerator;
+import org.sonatype.micromailer.EMailer;
 
 /**
  * @plexus.component role="org.jsecurity.realm.Realm" role-hint="SecurityXmlRealm"
@@ -50,6 +52,16 @@ public class SecurityXmlRealm
      */
     private PasswordGenerator pwGenerator;
     
+    /**
+     * @plexus.requirement
+     */
+    private EMailer mailer;
+    
+    /**
+     * @plexus.requirement
+     */
+    private EmailConfigurationLocator mailerConfig;
+    
     @Override
     public String getName()
     {
@@ -61,6 +73,8 @@ public class SecurityXmlRealm
     {
         setCredentialsMatcher( new Sha1CredentialsMatcher() );
         setAuthorizationCache( new HashtableCache( null ) );
+        
+        mailer.configure( mailerConfig.getConfiguration() );
     }
     
     @Override
@@ -228,6 +242,7 @@ public class SecurityXmlRealm
         if ( userIds.size() > 0 )
         {
             //TODO Notify user by email
+            mailer.sendMail( null );
         }
     }
     
@@ -246,6 +261,7 @@ public class SecurityXmlRealm
             configuration.save();
             
             // TODO Notify user by email
+            mailer.sendMail( null );
         }
     }
     
