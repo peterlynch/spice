@@ -37,21 +37,24 @@ public interface ConfigurationManager
      * 
      * @param user
      */
-    void createUser( CUser user );
+    void createUser( CUser user )
+        throws InvalidConfigurationException;
     
     /**
      * Create a new role
      * 
      * @param role
      */
-    void createRole( CRole role );
+    void createRole( CRole role )
+        throws InvalidConfigurationException;
     
     /**
      * Create a new privilege
      * 
      * @param privilege
      */
-    void createPrivilege( CPrivilege privilege );
+    void createPrivilege( CPrivilege privilege )
+        throws InvalidConfigurationException;
     
     /**
      * Retrieve an existing user
@@ -59,7 +62,8 @@ public interface ConfigurationManager
      * @param id
      * @return
      */
-    CUser readUser( String id );
+    CUser readUser( String id )
+        throws NoSuchUserException;
     
     /**
      * Retrieve an existing role
@@ -67,56 +71,67 @@ public interface ConfigurationManager
      * @param id
      * @return
      */
-    CRole readRole( String id );
+    CRole readRole( String id )
+        throws NoSuchRoleException;
     
     /**
      * Retrieve an existing privilege
      * @param id
      * @return
      */
-    CPrivilege readPrivilege( String id );
+    CPrivilege readPrivilege( String id )
+        throws NoSuchPrivilegeException;
     
     /**
      * Update an existing user
      * 
      * @param user
      */
-    void updateUser( CUser user );
+    void updateUser( CUser user )
+        throws InvalidConfigurationException,
+        NoSuchUserException;
     
     /**
      * Update an existing role
      * 
      * @param role
      */
-    void updateRole( CRole role );
+    void updateRole( CRole role )
+        throws InvalidConfigurationException,
+        NoSuchRoleException;
     
     /**
      * Update an existing privilege
      * 
      * @param privilege
      */
-    void updatePrivilege( CPrivilege privilege );
+    void updatePrivilege( CPrivilege privilege )
+        throws InvalidConfigurationException,
+        NoSuchPrivilegeException;
     
     /**
      * Delete an existing user
      * 
      * @param id
      */
-    void deleteUser( String id );
+    void deleteUser( String id )
+        throws NoSuchUserException;
     
     /**
      * Delete an existing role
      * 
      * @param id
      */
-    void deleteRole( String id );
+    void deleteRole( String id )
+        throws NoSuchRoleException;
     
     /**
      * Delete an existing privilege
      * 
      * @param id
      */
-    void deletePrivilege( String id );
+    void deletePrivilege( String id )
+        throws NoSuchPrivilegeException;
     
     /**
      * Helper method to retrieve a property from the privilege
@@ -133,7 +148,8 @@ public interface ConfigurationManager
      * @param key
      * @return
      */
-    String getPrivilegeProperty( String id, String key );
+    String getPrivilegeProperty( String id, String key )
+        throws NoSuchPrivilegeException;
     
     /**
      * Clear the cache and reload from file

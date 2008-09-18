@@ -19,6 +19,8 @@ import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUser;
 import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
 import org.sonatype.jsecurity.realms.tools.DefaultConfigurationManager;
+import org.sonatype.jsecurity.realms.tools.InvalidConfigurationException;
+import org.sonatype.jsecurity.realms.tools.NoSuchPrivilegeException;
 import org.sonatype.jsecurity.realms.tools.StringDigester;
 
 public class SecurityXmlRealmTest
@@ -94,25 +96,6 @@ public class SecurityXmlRealmTest
         throws Exception
     {
         buildTestAuthenticationConfig( CUser.STATUS_DISABLED );
-        
-        UsernamePasswordToken upToken = new UsernamePasswordToken( "username", "password" );
-        
-        try
-        {
-            realm.getAuthenticationInfo( upToken );
-            
-            fail( "Authentication should have failed" );
-        }
-        catch( AuthenticationException e )
-        {
-            // good
-        }
-    }
-    
-    public void testInavlidStatusAuthentication()
-        throws Exception
-    {
-        buildTestAuthenticationConfig( "junk" );
         
         UsernamePasswordToken upToken = new UsernamePasswordToken( "username", "password" );
         
@@ -205,31 +188,65 @@ public class SecurityXmlRealmTest
         assertTrue( user.getPassword().equals( StringDigester.getSha1Digest( "newpassword" ) ) );
     }
     
-    private void buildTestAuthenticationConfig( String status )
+    private void buildTestAuthenticationConfig( String status ) throws InvalidConfigurationException
     {
+        CPrivilege priv = new CPrivilege();
+        priv.setId( "priv" );
+        priv.setName( "name" );
+        priv.setDescription( "desc" );
+        priv.setType( "method" );
+        
+        CProperty prop = new CProperty();
+        prop.setKey( "method" );
+        prop.setValue( "read" );
+        priv.addProperty( prop );
+        
+        prop = new CProperty();
+        prop.setKey( "permission" );
+        prop.setValue( "somevalue" );
+        priv.addProperty( prop );
+        
+        configurationManager.createPrivilege( priv );
+        
+        CRole role = new CRole();
+        role.setName( "name" );
+        role.setId( "role" );
+        role.setDescription( "desc" );
+        role.setSessionTimeout( 50 );
+        role.addPrivilege( "priv" );
+        
+        configurationManager.createRole( role );
+        
         CUser user = new CUser();
         user.setEmail( "dummyemail" );
         user.setName( "dummyname" );
         user.setStatus( status );
         user.setId( "username" );
         user.setPassword( StringDigester.getSha1Digest( "password" ) );
+        user.addRole( "role" );
         
         configurationManager.createUser( user );
         
         configurationManager.save();
     }
     
-    private void buildTestAuthorizationConfig()
-    {
-        CProperty permissionProp = new CProperty();
-        permissionProp.setKey( "permission" );
-        permissionProp.setValue( "app:config" );
-        
+    private void buildTestAuthorizationConfig() throws InvalidConfigurationException
+    {        
         CPrivilege priv = new CPrivilege();
+        priv.setType( "method" );
         priv.setId( "priv" );
         priv.setName( "somepriv" );
         priv.setDescription( "somedescription" );
-        priv.addProperty( permissionProp );
+        
+        CProperty prop = new CProperty();
+        prop.setKey( "permission" );
+        prop.setValue( "app:config" );
+        priv.addProperty( prop );
+        
+        prop = new CProperty();
+        prop.setKey( "method" );
+        prop.setValue( "read" );
+        priv.addProperty( prop );
         
         configurationManager.createPrivilege( priv );
         
@@ -255,7 +272,7 @@ public class SecurityXmlRealmTest
         configurationManager.save();
     }
     
-    private void updateTestAuthorizationConfig()
+    private void updateTestAuthorizationConfig() throws InvalidConfigurationException, NoSuchPrivilegeException
     {
         CPrivilege priv = configurationManager.readPrivilege( "priv" );
         

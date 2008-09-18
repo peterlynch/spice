@@ -7,6 +7,7 @@ import org.codehaus.plexus.util.StringUtils;
 import org.jsecurity.authz.Permission;
 import org.jsecurity.authz.permission.WildcardPermission;
 import org.sonatype.jsecurity.model.CPrivilege;
+import org.sonatype.jsecurity.realms.tools.NoSuchPrivilegeException;
 
 /**
  * @plexus.component role="org.jsecurity.realm.Realm" role-hint="MethodRealm"
@@ -28,10 +29,10 @@ public class MethodRealm
     @Override
     protected Set<Permission> getPermissions( String privilegeId )
     {
-        CPrivilege privilege = getConfigurationManager().readPrivilege( privilegeId );
-        
-        if ( privilege != null && privilege.getType().equals( PRIVILEGE_TYPE_METHOD ) )
+        try
         {
+            CPrivilege privilege = getConfigurationManager().readPrivilege( privilegeId );
+            
             String permission = getConfigurationManager().getPrivilegeProperty( privilege, PRIVILEGE_PROPERTY_PERMISSION );
             String method = getConfigurationManager().getPrivilegeProperty( privilege, PRIVILEGE_PROPERTY_METHOD );
             
@@ -46,8 +47,10 @@ public class MethodRealm
             }
             
             return Collections.singleton( ( Permission ) new WildcardPermission( permission + ":" + method) );
-        }       
-
-        return Collections.emptySet();
+        }
+        catch ( NoSuchPrivilegeException e )
+        {
+            return Collections.emptySet();
+        }
     }
 }

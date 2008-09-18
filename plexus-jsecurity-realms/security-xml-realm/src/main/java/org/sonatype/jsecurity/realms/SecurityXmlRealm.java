@@ -31,6 +31,10 @@ import org.sonatype.jsecurity.model.CPrivilege;
 import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUser;
 import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
+import org.sonatype.jsecurity.realms.tools.InvalidConfigurationException;
+import org.sonatype.jsecurity.realms.tools.NoSuchPrivilegeException;
+import org.sonatype.jsecurity.realms.tools.NoSuchRoleException;
+import org.sonatype.jsecurity.realms.tools.NoSuchUserException;
 import org.sonatype.jsecurity.realms.tools.PasswordGenerator;
 import org.sonatype.micromailer.EMailer;
 import org.sonatype.micromailer.MailRequest;
@@ -84,11 +88,14 @@ public class SecurityXmlRealm
     {
         UsernamePasswordToken upToken = ( UsernamePasswordToken ) token;
         
-        CUser user = configuration.readUser( upToken.getUsername() );
-        
-        if ( user == null )
+        CUser user;
+        try
         {
-            throw new AccountException( "User '" + upToken.getUsername() + "' cannot be retrieved." );
+            user = configuration.readUser( upToken.getUsername() );
+        }
+        catch ( NoSuchUserException e )
+        {
+            throw new AccountException( "User '" + upToken.getUsername() + "' cannot be retrieved.", e );
         }
         
         if ( user.getPassword() == null )
@@ -120,11 +127,14 @@ public class SecurityXmlRealm
         
         String username = (String) principals.fromRealm( getName() ).iterator().next();
         
-        CUser user = configuration.readUser( username );
-        
-        if ( user == null )
+        CUser user;
+        try
         {
-            throw new AuthorizationException( "User '" + username + "' cannot be retrieved." );
+            user = configuration.readUser( username );
+        }
+        catch ( NoSuchUserException e )
+        {
+            throw new AuthorizationException( "User '" + username + "' cannot be retrieved.", e );
         }
         
         LinkedList<String> rolesToProcess = new LinkedList<String>();
@@ -141,12 +151,12 @@ public class SecurityXmlRealm
             String roleId = rolesToProcess.removeFirst();
             if ( !roleIds.contains( roleId ) )
             {                
-                CRole role = configuration.readRole( roleId );
-                
-                if ( role != null )
+                CRole role;
+                try
                 {
+                    role = configuration.readRole( roleId );
                     roleIds.add( roleId );
-    
+                    
                     // process the roles this role has
                     rolesToProcess.addAll( role.getRoles() );
     
@@ -157,6 +167,10 @@ public class SecurityXmlRealm
                         Set<Permission> set = getPermissions( privilegeId );
                         permissions.addAll( set );
                     }
+                }
+                catch ( NoSuchRoleException e )
+                {
+                    // skip
                 }
             }
         }
@@ -169,10 +183,11 @@ public class SecurityXmlRealm
     
     protected Set<Permission> getPermissions( String privilegeId )
     {
-        CPrivilege privilege = configuration.readPrivilege( privilegeId );
-        
-        if ( privilege != null )
+        CPrivilege privilege;
+        try
         {
+            privilege = configuration.readPrivilege( privilegeId );
+            
             String permissionString = configuration.getPrivilegeProperty( privilege, "permission" );
             
             if ( StringUtils.isEmpty( permissionString ) )
@@ -183,9 +198,11 @@ public class SecurityXmlRealm
             Permission permission = new WildcardPermission( permissionString );
             
             return Collections.singleton( permission );
-        }       
-
-        return Collections.emptySet();
+        }
+        catch ( NoSuchPrivilegeException e )
+        {
+            return Collections.emptySet();
+        }
     }
     
     public void clearCache()
@@ -196,10 +213,11 @@ public class SecurityXmlRealm
     
     public void changePassword( String username, String oldPassword, String newPassword )
     {
-        CUser user = configuration.readUser( username );
-        
-        if ( user != null )
+        CUser user;
+        try
         {
+            user = configuration.readUser( username );
+            
             String validate = pwGenerator.hashPassword( oldPassword );
             
             if ( !validate.equals( user.getPassword() ) )
@@ -210,20 +228,39 @@ public class SecurityXmlRealm
             {
                 user.setPassword( pwGenerator.hashPassword( newPassword ) );
                 
-                configuration.updateUser( user );
+                try
+                {
+                    configuration.updateUser( user );
+                }
+                catch ( InvalidConfigurationException e )
+                {
+                    // Shouldn't happen, just changing password
+                }
                 
                 configuration.save();
             }
+        }
+        catch ( NoSuchUserException e1 )
+        {
+            // Couldn't find user
         }
     }
     
     public void forgotPassword( String username, String email )
     {
-        CUser user = configuration.readUser( username );
-        
-        if ( user != null && user.getEmail().equals( email ) )
+        CUser user;
+        try
         {
-            resetPassword( username );
+            user = configuration.readUser( username );
+            
+            if ( user.getEmail().equals( email ) )
+            {
+                resetPassword( username );
+            }
+        }
+        catch ( NoSuchUserException e )
+        {
+            // Couldn't find user
         }
     }
     
@@ -249,20 +286,32 @@ public class SecurityXmlRealm
     
     public void resetPassword( String username )
     {
-        CUser user = configuration.readUser( username );
-        
-        if ( user != null )
+        CUser user;
+        try
         {
+            user = configuration.readUser( username );
+            
             String password = pwGenerator.generatePassword( 10, 10 );
             
             user.setPassword( pwGenerator.hashPassword( password ) );
             
-            configuration.updateUser( user );
+            try
+            {
+                configuration.updateUser( user );
+            }
+            catch ( InvalidConfigurationException e )
+            {
+                // Shouldn't happen, just changing password
+            }
             
             configuration.save();
             
             // TODO Notify user by email
             sendEmail( null );
+        }
+        catch ( NoSuchUserException e1 )
+        {
+            // No user found
         }
     }
     

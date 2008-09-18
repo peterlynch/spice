@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
@@ -22,6 +23,9 @@ import org.sonatype.jsecurity.model.CUser;
 import org.sonatype.jsecurity.model.Configuration;
 import org.sonatype.jsecurity.model.io.xpp3.SecurityConfigurationXpp3Reader;
 import org.sonatype.jsecurity.model.io.xpp3.SecurityConfigurationXpp3Writer;
+import org.sonatype.jsecurity.realms.validator.ConfigurationValidator;
+import org.sonatype.jsecurity.realms.validator.ValidationContext;
+import org.sonatype.jsecurity.realms.validator.ValidationResponse;
 
 /**
  * @plexus.component
@@ -34,6 +38,11 @@ public class DefaultConfigurationManager
      * @plexus.configuration default-value="${security-xml-file}"
      */
     private File securityConfiguration;
+    
+    /**
+     * @plexus.requirement
+     */
+    private ConfigurationValidator validator;
     
     /**
      * This will hold the current configuration in memory, to reload, will need to set this to null
@@ -61,61 +70,119 @@ public class DefaultConfigurationManager
     }
     
     public void createPrivilege( CPrivilege privilege )
+        throws InvalidConfigurationException
     {
-        getConfiguration().addPrivilege( ObjectCloner.clone( privilege ) );
+        ValidationResponse vr = validator.validatePrivilege( initializeContext(), privilege, false );
+        
+        if ( vr.isValid() )
+        {
+            getConfiguration().addPrivilege( ObjectCloner.clone( privilege ) );
+        }
+        else
+        {
+            throw new InvalidConfigurationException( vr );
+        }
     }
 
     public void createRole( CRole role )
+        throws InvalidConfigurationException
     {
-        getConfiguration().addRole( ObjectCloner.clone( role ) );
+        ValidationResponse vr = validator.validateRole( initializeContext(), role, false );
+        
+        if ( vr.isValid() )
+        {
+            getConfiguration().addRole( ObjectCloner.clone( role ) );
+        }
+        else
+        {
+            throw new InvalidConfigurationException( vr );
+        }
     }
 
     public void createUser( CUser user )
+        throws InvalidConfigurationException
     {
-        getConfiguration().addUser( ObjectCloner.clone( user ) );
+        ValidationResponse vr = validator.validateUser( initializeContext(), user, false );
+        
+        if ( vr.isValid() )
+        {
+            getConfiguration().addUser( ObjectCloner.clone( user ) );
+        }
+        else
+        {
+            throw new InvalidConfigurationException( vr );
+        }
     }
 
     @SuppressWarnings("unchecked")
     public void deletePrivilege( String id )
+        throws NoSuchPrivilegeException
     {
+        boolean found = false;
+        
         for ( Iterator<CPrivilege> iter = getConfiguration().getPrivileges().iterator() ; iter.hasNext() ; )
         {
             if ( iter.next().getId().equals( id ) )
             {
+                found = true;
                 iter.remove();
                 break;
             }
+        }
+        
+        if ( !found )
+        {
+            throw new NoSuchPrivilegeException( id );
         }
     }
 
     @SuppressWarnings("unchecked")
     public void deleteRole( String id )
+        throws NoSuchRoleException
     {
+        boolean found = false;
+        
         for ( Iterator<CRole> iter = getConfiguration().getRoles().iterator() ; iter.hasNext() ; )
         {
             if ( iter.next().getId().equals( id ) )
             {
+                found = true;
                 iter.remove();
                 break;
             }
+        }
+        
+        if ( !found )
+        {
+            throw new NoSuchRoleException( id );
         }
     }
 
     @SuppressWarnings("unchecked")
     public void deleteUser( String id )
+        throws NoSuchUserException
     {
+        boolean found = false;
+        
         for ( Iterator<CUser> iter = getConfiguration().getUsers().iterator() ; iter.hasNext() ; )
         {
             if ( iter.next().getId().equals( id ) )
             {
+                found = true;
                 iter.remove();
                 break;
             }
         }
+        
+        if ( !found )
+        {
+            throw new NoSuchUserException( id );
+        }        
     }
 
     @SuppressWarnings("unchecked")
     public CPrivilege readPrivilege( String id )
+        throws NoSuchPrivilegeException
     {
         for ( CPrivilege privilege : ( List<CPrivilege> ) getConfiguration().getPrivileges() )
         {
@@ -125,11 +192,12 @@ public class DefaultConfigurationManager
             }
         }
         
-        return null;
+        throw new NoSuchPrivilegeException( id );
     }
 
     @SuppressWarnings("unchecked")
     public CRole readRole( String id )
+        throws NoSuchRoleException
     {
         for ( CRole role : ( List<CRole> ) getConfiguration().getRoles() )
         {
@@ -139,11 +207,12 @@ public class DefaultConfigurationManager
             }
         }
         
-        return null;
+        throw new NoSuchRoleException( id );
     }
 
     @SuppressWarnings("unchecked")
     public CUser readUser( String id )
+        throws NoSuchUserException
     {
         for ( CUser user : ( List<CUser> ) getConfiguration().getUsers() )
         {
@@ -153,25 +222,58 @@ public class DefaultConfigurationManager
             }
         }
         
-        return null;
+        throw new NoSuchUserException( id );
     }
 
     public void updatePrivilege( CPrivilege privilege )
+        throws InvalidConfigurationException,
+        NoSuchPrivilegeException
     {
-        deletePrivilege( privilege.getId() );
-        createPrivilege( privilege );
+        ValidationResponse vr = validator.validatePrivilege( initializeContext(), privilege, true );
+
+        if ( vr.isValid() )
+        {
+            deletePrivilege( privilege.getId() );
+            getConfiguration().addPrivilege( ObjectCloner.clone( privilege ) );
+        }
+        else
+        {
+            throw new InvalidConfigurationException( vr );
+        }
     }
 
     public void updateRole( CRole role )
+        throws InvalidConfigurationException,
+        NoSuchRoleException
     {
-        deleteRole( role.getId() );
-        createRole( role );
+        ValidationResponse vr = validator.validateRole( initializeContext(), role, true );
+
+        if ( vr.isValid() )
+        {
+            deleteRole( role.getId() );
+            getConfiguration().addRole( ObjectCloner.clone( role ) );
+        }
+        else
+        {
+            throw new InvalidConfigurationException( vr );
+        }
     }
 
     public void updateUser( CUser user )
+        throws InvalidConfigurationException,
+        NoSuchUserException
     {
-        deleteUser( user.getId() );
-        createUser( user );
+        ValidationResponse vr = validator.validateUser( initializeContext(), user, true );
+
+        if ( vr.isValid() )
+        {
+            deleteUser( user.getId() );
+            getConfiguration().addUser( ObjectCloner.clone( user ) );
+        }
+        else
+        {
+            throw new InvalidConfigurationException( vr );
+        }
     }
     
     @SuppressWarnings("unchecked")
@@ -192,6 +294,7 @@ public class DefaultConfigurationManager
     }
     
     public String getPrivilegeProperty( String id, String key )
+        throws NoSuchPrivilegeException
     {
         return getPrivilegeProperty( readPrivilege( id ), key );
     }
@@ -297,5 +400,37 @@ public class DefaultConfigurationManager
         
         return configuration;
     }
+    
+    private ValidationContext initializeContext()
+    {
+        ValidationContext context = new ValidationContext();
 
+        context.addExistingUserIds();
+        context.addExistingRoleIds();
+        context.addExistingPrivilegeIds();
+
+        for ( CUser user : listUsers() )
+        {
+            context.getExistingUserIds().add( user.getId() );
+            context.getExistingEmailMap().put( user.getId(), user.getEmail() );
+        }
+
+        for ( CRole role : listRoles() )
+        {
+            context.getExistingRoleIds().add( role.getId() );
+
+            ArrayList<String> containedRoles = new ArrayList<String>();
+
+            containedRoles.addAll( role.getRoles() );
+
+            context.getRoleContainmentMap().put( role.getId(), containedRoles );
+        }
+
+        for ( CPrivilege priv : listPrivileges() )
+        {
+            context.getExistingPrivilegeIds().add( priv.getId() );
+        }
+        
+        return context;
+    }
 }

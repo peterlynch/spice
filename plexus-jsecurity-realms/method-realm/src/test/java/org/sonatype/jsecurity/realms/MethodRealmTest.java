@@ -16,6 +16,7 @@ import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUser;
 import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
 import org.sonatype.jsecurity.realms.tools.DefaultConfigurationManager;
+import org.sonatype.jsecurity.realms.tools.InvalidConfigurationException;
 
 public class MethodRealmTest
     extends PlexusTestCase
@@ -82,7 +83,7 @@ public class MethodRealmTest
         assertNotImplied( new WildcardPermission( "app:ui:delete" ), permissions );
     }
     
-    private void buildTestAuthorizationConfig()
+    private void buildTestAuthorizationConfig() throws InvalidConfigurationException
     {
         CProperty permissionProp = new CProperty();
         permissionProp.setKey( "permission" );
