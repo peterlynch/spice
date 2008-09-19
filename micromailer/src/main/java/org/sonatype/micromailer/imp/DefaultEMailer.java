@@ -2,6 +2,7 @@ package org.sonatype.micromailer.imp;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.codehaus.plexus.logging.AbstractLogEnabled;
@@ -50,6 +51,8 @@ public class DefaultEMailer
     private MailSender mailSender;
 
     private EmailerConfiguration emailerConfiguration = new EmailerConfiguration();
+    
+    private ExecutorService executor = Executors.newCachedThreadPool();
 
     // =========================================================================
     // EMailer iface
@@ -112,10 +115,10 @@ public class DefaultEMailer
 
         MailRequestStatus status = new MailRequestStatus( request );
 
-        Executors.newSingleThreadExecutor().execute(
-                                                     new RunnableMailer( getLogger(), request, mailTypeSource,
-                                                                         mailComposer, emailerConfiguration,
-                                                                         mailStorage, mailSender, status ) );
+        executor.execute(
+             new RunnableMailer( getLogger(), request, mailTypeSource,
+                                 mailComposer, emailerConfiguration,
+                                 mailStorage, mailSender, status ) );
 
         return status;
     }
