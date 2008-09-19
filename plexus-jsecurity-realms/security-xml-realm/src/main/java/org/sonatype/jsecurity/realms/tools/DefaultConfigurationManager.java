@@ -45,11 +45,6 @@ public class DefaultConfigurationManager
     private ConfigurationValidator validator;
     
     /**
-     * @plexus.requirement
-     */
-    private PasswordGenerator pwGenerator;
-    
-    /**
      * This will hold the current configuration in memory, to reload, will need to set this to null
      */
     private Configuration configuration = null;
@@ -106,21 +101,12 @@ public class DefaultConfigurationManager
 
     public void createUser( CUser user )
         throws InvalidConfigurationException
-    {
-        if ( user.getPassword() == null )
-        {
-            String password = pwGenerator.generatePassword( 10, 10 );
-        
-            user.setPassword( pwGenerator.hashPassword( password ) );
-        }
-        
+    {        
         ValidationResponse vr = validator.validateUser( initializeContext(), user, false );
         
         if ( vr.isValid() )
         {
             getConfiguration().addUser( ObjectCloner.clone( user ) );
-            
-            //TODO send mail
         }
         else
         {

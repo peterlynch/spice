@@ -1,6 +1,5 @@
 package org.sonatype.jsecurity.realms;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -26,18 +25,13 @@ import org.jsecurity.authz.permission.WildcardPermission;
 import org.jsecurity.cache.HashtableCache;
 import org.jsecurity.realm.AuthorizingRealm;
 import org.jsecurity.subject.PrincipalCollection;
-import org.sonatype.jsecurity.locators.EmailConfigurationLocator;
 import org.sonatype.jsecurity.model.CPrivilege;
 import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUser;
 import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
-import org.sonatype.jsecurity.realms.tools.InvalidConfigurationException;
 import org.sonatype.jsecurity.realms.tools.NoSuchPrivilegeException;
 import org.sonatype.jsecurity.realms.tools.NoSuchRoleException;
 import org.sonatype.jsecurity.realms.tools.NoSuchUserException;
-import org.sonatype.jsecurity.realms.tools.PasswordGenerator;
-import org.sonatype.micromailer.EMailer;
-import org.sonatype.micromailer.MailRequest;
 
 /**
  * @plexus.component role="org.jsecurity.realm.Realm" role-hint="SecurityXmlRealm"
@@ -52,21 +46,6 @@ public class SecurityXmlRealm
      */
     private ConfigurationManager configuration;
     
-    /**
-     * @plexus.requirement
-     */
-    private PasswordGenerator pwGenerator;
-    
-    /**
-     * @plexus.requirement
-     */
-    private EMailer mailer;
-    
-    /**
-     * @plexus.requirement
-     */
-    private EmailConfigurationLocator mailerConfig;
-    
     @Override
     public String getName()
     {
@@ -78,8 +57,6 @@ public class SecurityXmlRealm
     {
         setCredentialsMatcher( new Sha1CredentialsMatcher() );
         setAuthorizationCache( new HashtableCache( null ) );
-        
-        mailer.configure( mailerConfig.getConfiguration() );
     }
     
     @Override
@@ -209,117 +186,6 @@ public class SecurityXmlRealm
     {
         getAuthorizationCache().clear();
         configuration.clearCache();
-    }
-    
-    public void changePassword( String username, String oldPassword, String newPassword )
-    {
-        CUser user;
-        try
-        {
-            user = configuration.readUser( username );
-            
-            String validate = pwGenerator.hashPassword( oldPassword );
-            
-            if ( !validate.equals( user.getPassword() ) )
-            {
-                // Invalid
-            }
-            else
-            {
-                user.setPassword( pwGenerator.hashPassword( newPassword ) );
-                
-                try
-                {
-                    configuration.updateUser( user );
-                }
-                catch ( InvalidConfigurationException e )
-                {
-                    // Shouldn't happen, just changing password
-                }
-                
-                configuration.save();
-            }
-        }
-        catch ( NoSuchUserException e1 )
-        {
-            // Couldn't find user
-        }
-    }
-    
-    public void forgotPassword( String username, String email )
-    {
-        CUser user;
-        try
-        {
-            user = configuration.readUser( username );
-            
-            if ( user.getEmail().equals( email ) )
-            {
-                resetPassword( username );
-            }
-        }
-        catch ( NoSuchUserException e )
-        {
-            // Couldn't find user
-        }
-    }
-    
-    public void forgotUsername( String email )
-    {
-        List<CUser> users = configuration.listUsers();
-        
-        List<String> userIds = new ArrayList<String>();
-        for ( CUser user : users )
-        {
-            if ( user.getEmail().equals( email ) )
-            {
-                userIds.add( user.getId() );
-            }
-        }
-        
-        if ( userIds.size() > 0 )
-        {
-            //TODO Notify user by email
-            sendEmail( null );
-        }
-    }
-    
-    public void resetPassword( String username )
-    {
-        CUser user;
-        try
-        {
-            user = configuration.readUser( username );
-            
-            String password = pwGenerator.generatePassword( 10, 10 );
-            
-            user.setPassword( pwGenerator.hashPassword( password ) );
-            
-            try
-            {
-                configuration.updateUser( user );
-            }
-            catch ( InvalidConfigurationException e )
-            {
-                // Shouldn't happen, just changing password
-            }
-            
-            configuration.save();
-            
-            // TODO Notify user by email
-            sendEmail( null );
-        }
-        catch ( NoSuchUserException e1 )
-        {
-            // No user found
-        }
-    }
-    
-    protected void sendEmail( MailRequest request )
-    {
-        mailer.configure( mailerConfig.getConfiguration() );
-        
-        mailer.sendMail( request );
     }
     
     protected ConfigurationManager getConfigurationManager()
