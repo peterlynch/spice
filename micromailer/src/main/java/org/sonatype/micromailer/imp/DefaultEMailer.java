@@ -2,8 +2,10 @@ package org.sonatype.micromailer.imp;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.concurrent.Executors;
 
 import org.codehaus.plexus.logging.AbstractLogEnabled;
+import org.codehaus.plexus.logging.Logger;
 import org.sonatype.micromailer.EMailer;
 import org.sonatype.micromailer.EmailerConfiguration;
 import org.sonatype.micromailer.MailComposer;
@@ -110,49 +112,83 @@ public class DefaultEMailer
 
         MailRequestStatus status = new MailRequestStatus( request );
 
-        try
-        {
-            if ( getLogger().isDebugEnabled() )
-            {
-                getLogger().debug( "  PREPARING " + request.getRequestId() );
-            }
-
-            MailType mailType = mailTypeSource.getMailType( request.getMailTypeId() );
-
-            if ( mailType != null )
-            {
-                // prepare it if needed
-                mailComposer.composeMail( emailerConfiguration, request, mailType );
-                status.setPrepared( true );
-
-                // store it if needed
-                if ( request.isStoreable() || mailType.isStoreable() )
-                {
-                    mailStorage.saveMailRequest( request );
-                    status.setStored( true );
-                }
-
-                // send it
-                mailSender.sendMail( emailerConfiguration, request, mailType );
-                status.setSent( true );
-            }
-            else
-            {
-                status.setErrorCause( new MailCompositionTemplateException( "Unknown mailType with ID='"
-                    + request.getMailTypeId() + "'" ) );
-            }
-        }
-        catch ( MailCompositionException ex )
-        {
-            status.setErrorCause( ex );
-        }
-        catch ( IOException ex )
-        {
-            getLogger().warn( "IOException during handling of mail request Id = [" + request.getRequestId() + "]", ex );
-
-            status.setErrorCause( ex );
-        }
+        Executors.newSingleThreadExecutor().execute(
+                                                     new RunnableMailer( getLogger(), request, mailTypeSource,
+                                                                         mailComposer, emailerConfiguration,
+                                                                         mailStorage, mailSender, status ) );
 
         return status;
+    }
+    
+    private static final class RunnableMailer
+        implements Runnable
+    {
+        private Logger logger;
+        private MailRequest request;
+        private MailTypeSource mailTypeSource;
+        private MailComposer mailComposer;
+        private EmailerConfiguration emailerConfiguration;
+        private MailStorage mailStorage;
+        private MailSender mailSender;
+        private MailRequestStatus status;
+        
+        protected RunnableMailer( Logger logger, MailRequest request, MailTypeSource mailTypeSource,
+                                  MailComposer mailComposer, EmailerConfiguration emailerConfiguration,
+                                  MailStorage mailStorage, MailSender mailSender, MailRequestStatus status )
+        {
+            this.logger = logger;
+            this.request = request;
+            this.mailTypeSource = mailTypeSource;
+            this.mailComposer = mailComposer;
+            this.emailerConfiguration = emailerConfiguration;
+            this.mailStorage = mailStorage;
+            this.mailSender = mailSender;
+            this.status = status;
+        }
+        public void run()
+        {
+            try
+            {
+                if ( logger.isDebugEnabled() )
+                {
+                    logger.debug( "  PREPARING " + request.getRequestId() );
+                }
+
+                MailType mailType = mailTypeSource.getMailType( request.getMailTypeId() );
+
+                if ( mailType != null )
+                {
+                    // prepare it if needed
+                    mailComposer.composeMail( emailerConfiguration, request, mailType );
+                    status.setPrepared( true );
+
+                    // store it if needed
+                    if ( request.isStoreable() || mailType.isStoreable() )
+                    {
+                        mailStorage.saveMailRequest( request );
+                        status.setStored( true );
+                    }
+
+                    // send it
+                    mailSender.sendMail( emailerConfiguration, request, mailType );
+                    status.setSent( true );
+                }
+                else
+                {
+                    status.setErrorCause( new MailCompositionTemplateException( "Unknown mailType with ID='"
+                        + request.getMailTypeId() + "'" ) );
+                }
+            }
+            catch ( MailCompositionException ex )
+            {
+                status.setErrorCause( ex );
+            }
+            catch ( IOException ex )
+            {
+                logger.warn( "IOException during handling of mail request Id = [" + request.getRequestId() + "]", ex );
+
+                status.setErrorCause( ex );
+            }   
+        }
     }
 }

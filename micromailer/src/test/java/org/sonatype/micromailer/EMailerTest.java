@@ -17,10 +17,19 @@ public class EMailerTest
     }
 
     public void testWithoutConfiguration()
+        throws Exception
     {
         MailRequest request = new MailRequest( "testId", DefaultMailType.DEFAULT_TYPE_ID );
 
         MailRequestStatus status = eMailer.sendMail( request );
+        
+        int count = 0;
+        
+        while ( !status.isSent() && count < 10 )
+        {
+            Thread.sleep( 100 );
+            count++;
+        }
 
         assertFalse( status.isSent() );
 
@@ -33,6 +42,7 @@ public class EMailerTest
      * Turned off since it needs localhost SMTP server
      */
     public void OFFEDtestWithLocalhost()
+        throws Exception
     {
         EmailerConfiguration config = new EmailerConfiguration();
 
@@ -59,12 +69,20 @@ public class EMailerTest
         request.getBodyContext().put( DefaultMailType.BODY_KEY, "Some mail body" );
 
         MailRequestStatus status = eMailer.sendMail( request );
+        
+        int count = 0;
+        
+        while ( !status.isSent() && count < 10 )
+        {
+            Thread.sleep( 100 );
+            count++;
+        }
 
         if ( status.getErrorCause() != null )
         {
             status.getErrorCause().printStackTrace();
         }
-
+        
         assertTrue( status.isSent() );
     }
 
