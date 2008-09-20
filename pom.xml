@@ -30,10 +30,10 @@ under the License.
       <module>appbooter</module>
       <module>jsw-binaries</module>
       <module>maven-assembly-helpers</module>
+      <module>micromailer</module>
       <module>plexus-jetty6</module>
       <module>plexus-jetty-testsuite</module>
       <module>plexus-restlet-bridge</module>
-      <module>plexus-jsecurity</module>
       <module>plexus-jsecurity-realms</module>
       <module>plexus-webdav</module>
       <module>spice-parent</module>
