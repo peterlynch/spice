@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.codehaus.plexus.util.StringUtils;
+import org.jsecurity.authc.AuthenticationToken;
 import org.jsecurity.authz.Permission;
 import org.jsecurity.authz.permission.WildcardPermission;
 import org.sonatype.jsecurity.model.CPrivilege;
@@ -20,10 +21,11 @@ public class MethodRealm
     
     public static final String PRIVILEGE_PROPERTY_METHOD = "method";
     public static final String PRIVILEGE_PROPERTY_PERMISSION = "permission";
+    
     @Override
-    public String getName()
+    public boolean supports( AuthenticationToken token )
     {
-        return MethodRealm.class.getName();
+        return false;
     }
     
     @Override

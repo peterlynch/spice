@@ -24,7 +24,7 @@ public class DefaultPlexusSecurityTest
     {
         super.setUp();
 
-        security = (PlexusSecurity) lookup( PlexusSecurity.class );
+        security = (PlexusSecurity) lookup( PlexusSecurity.class, "web" );
     }
 
     @Override
@@ -36,7 +36,7 @@ public class DefaultPlexusSecurityTest
     public void testSuccessfulAuthentication()
         throws Exception
     {
-        UsernamePasswordToken upToken = new UsernamePasswordRealmToken( "username", "password", FakeRealm.class.getName() );
+        UsernamePasswordToken upToken = new UsernamePasswordRealmToken( "username", "password", FakeRealm1.class.getName() );
 
         AuthenticationInfo ai = security.authenticate( upToken );
 
@@ -48,7 +48,7 @@ public class DefaultPlexusSecurityTest
     public void testFailedAuthentication()
         throws Exception
     {
-        UsernamePasswordToken upToken = new UsernamePasswordRealmToken( "username", "badpassword", FakeRealm.class.getName() );
+        UsernamePasswordToken upToken = new UsernamePasswordRealmToken( "username", "badpassword", FakeRealm1.class.getName() );
 
         try
         {
@@ -66,12 +66,20 @@ public class DefaultPlexusSecurityTest
         throws Exception
     {   
         assertTrue( security.isPermitted(
-            new SimplePrincipalCollection( "username", FakeRealm.class.getName() ),
+            new SimplePrincipalCollection( "username", FakeRealm1.class.getName() ),
             new WildcardPermission( "test:perm" ) ) );
         
-        assertFalse( security.isPermitted(
-            new SimplePrincipalCollection( "username", FakeRealm.class.getName() ),
+        assertTrue( security.isPermitted(
+            new SimplePrincipalCollection( "username", FakeRealm1.class.getName() ),
             new WildcardPermission( "other:perm" ) ) );
+        
+        assertTrue( security.isPermitted(
+            new SimplePrincipalCollection( "username", FakeRealm2.class.getName() ),
+            new WildcardPermission( "other:perm" ) ) );
+         
+        assertTrue( security.isPermitted(
+            new SimplePrincipalCollection( "username", FakeRealm2.class.getName() ),
+            new WildcardPermission( "test:perm" ) ) );
     }
 
     public static void assertImplied( Permission testPermission, Collection<Permission> assignedPermissions )

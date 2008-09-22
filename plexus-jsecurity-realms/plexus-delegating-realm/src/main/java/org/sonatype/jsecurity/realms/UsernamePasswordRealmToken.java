@@ -1,35 +1,26 @@
 package org.sonatype.jsecurity.realms;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.jsecurity.authc.UsernamePasswordToken;
 
 public class UsernamePasswordRealmToken
     extends UsernamePasswordToken
 {
-    private Set<String> realmNames = new HashSet<String>();
-    
-    public UsernamePasswordRealmToken( String username, String password, Set<String> realmNames)
-    {
-        super( username, password );
-        
-        this.realmNames = realmNames;
-    }
+    private String realmName;
     
     public UsernamePasswordRealmToken( String username, String password, String realmName )
     {
-        this( username, password, Collections.singleton( realmName ) );
+        super( username, password );
+        
+        this.realmName = realmName;
     }
     
-    public Set<String> getRealmNames()
+    public String getRealmName()
     {
-        return realmNames;
+        return realmName;
     }
     
-    public void setRealmNames( Set<String> realmNames )
+    public void setRealmName( String realmName )
     {
-        this.realmNames = realmNames;
+        this.realmName = realmName;
     }
 }

@@ -5,7 +5,8 @@ import java.util.List;
 import org.codehaus.plexus.PlexusTestCase;
 import org.codehaus.plexus.context.Context;
 import org.jsecurity.realm.Realm;
-import org.sonatype.jsecurity.realms.FakeRealm;
+import org.sonatype.jsecurity.realms.FakeRealm1;
+import org.sonatype.jsecurity.realms.FakeRealm2;
 
 public class PropertyFileRealmLocatorTest
     extends PlexusTestCase
@@ -34,8 +35,9 @@ public class PropertyFileRealmLocatorTest
     {
         List<Realm> realms = locator.getRealms();
         
-        assertTrue( realms.size() == 1);
+        assertTrue( realms.size() == 2);
         
-        assertTrue( realms.get( 0 ).getClass().equals( FakeRealm.class ) );
+        assertTrue( realms.get( 0 ).getClass().equals( FakeRealm1.class ) );
+        assertTrue( realms.get( 1 ).getClass().equals( FakeRealm2.class ) );
     }
 }

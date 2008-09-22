@@ -8,7 +8,6 @@ import java.util.Set;
 
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
-import org.codehaus.plexus.util.StringUtils;
 import org.jsecurity.authc.AccountException;
 import org.jsecurity.authc.AuthenticationException;
 import org.jsecurity.authc.AuthenticationInfo;
@@ -21,15 +20,12 @@ import org.jsecurity.authz.AuthorizationException;
 import org.jsecurity.authz.AuthorizationInfo;
 import org.jsecurity.authz.Permission;
 import org.jsecurity.authz.SimpleAuthorizationInfo;
-import org.jsecurity.authz.permission.WildcardPermission;
 import org.jsecurity.cache.HashtableCache;
 import org.jsecurity.realm.AuthorizingRealm;
 import org.jsecurity.subject.PrincipalCollection;
-import org.sonatype.jsecurity.model.CPrivilege;
 import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUser;
 import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
-import org.sonatype.jsecurity.realms.tools.NoSuchPrivilegeException;
 import org.sonatype.jsecurity.realms.tools.NoSuchRoleException;
 import org.sonatype.jsecurity.realms.tools.NoSuchUserException;
 
@@ -160,26 +156,7 @@ public class SecurityXmlRealm
     
     protected Set<Permission> getPermissions( String privilegeId )
     {
-        CPrivilege privilege;
-        try
-        {
-            privilege = configuration.readPrivilege( privilegeId );
-            
-            String permissionString = configuration.getPrivilegeProperty( privilege, "permission" );
-            
-            if ( StringUtils.isEmpty( permissionString ) )
-            {
-                permissionString = "*:*";
-            }
-
-            Permission permission = new WildcardPermission( permissionString );
-            
-            return Collections.singleton( permission );
-        }
-        catch ( NoSuchPrivilegeException e )
-        {
-            return Collections.emptySet();
-        }
+        return Collections.emptySet();
     }
     
     public void clearCache()
