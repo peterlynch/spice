@@ -168,12 +168,13 @@ public class PlexusContainerHost
 
                 String propertyValue = ip.interpolate( containerProperties.getProperty( propertyKey ), "" );
 
+                System.out.println( "plexus.properties KEY " + propertyKey + " VALUE " + propertyValue + " inserted into plexus context." );
+                
                 containerContext.put( propertyKey, propertyValue );
             }
         }
         
-        // Now get the environment variables, as these should override properties file
-        
+        // Now get the environment variables, as these should override properties file        
         Map<String,String> envmap = System.getenv();
         
         for ( String key : envmap.keySet() )
@@ -183,7 +184,11 @@ public class PlexusContainerHost
                 System.out.println( "Replacing " + key + " with value in ENVIRONMENT + " + envmap.get( key ) );
                 
                 // Convert to lowercase, Strip off the PLEXUS- prefix, and replace '_' with '-'
-                containerContext.put( key.toLowerCase().substring( PLEXUS_ENV_VAR_PREFIX.length() ).replace('_', '-'), envmap.get( key ) );
+                String plexusKey = key.toLowerCase().substring( PLEXUS_ENV_VAR_PREFIX.length() ).replace('_', '-');
+                
+                System.out.println( "environment KEY " + plexusKey + " VALUE " + envmap.get( key ) + " inserted into plexus context." );
+                
+                containerContext.put( plexusKey, envmap.get( key ) );
             }
         }
         
@@ -197,8 +202,23 @@ public class PlexusContainerHost
             {
                 System.out.println( "Replacing " + stringKey + " with value in System Property + " + sysProps.get( stringKey ) );
                 
+                // Convert to lowercase, Strip off the PLEXUS- prefix, and replace '_' with '-'
+                String plexusKey = stringKey.toLowerCase().substring( PLEXUS_ENV_VAR_PREFIX.length() ).replace('_', '-');
+                
+                System.out.println( "system-property KEY " + plexusKey + " VALUE " + sysProps.get( stringKey ) + " inserted into plexus context." );
+                
                 //  Strip off the plexus. prefix
-                containerContext.put( stringKey.substring( PLEXUS_SYSTEM_PROP_PREFIX.length() ), sysProps.get( stringKey ) );
+                containerContext.put( plexusKey, sysProps.get( stringKey ) );
+            }
+        }
+        
+        for ( String key : ( Set<String> ) containerContext.keySet() )
+        {
+            String sysPropKey = PLEXUS_SYSTEM_PROP_PREFIX + key;
+            
+            if ( System.getProperty( sysPropKey ) == null )
+            {
+                System.setProperty( sysPropKey, ( String ) containerContext.get( key ) );
             }
         }
 
