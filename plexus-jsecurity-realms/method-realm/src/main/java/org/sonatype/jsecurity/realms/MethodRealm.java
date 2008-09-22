@@ -35,7 +35,13 @@ public class MethodRealm
         {
             CPrivilege privilege = getConfigurationManager().readPrivilege( privilegeId );
             
+            if ( !privilege.getType().equals( PRIVILEGE_TYPE_METHOD ) )
+            {
+                return Collections.emptySet();
+            }
+            
             String permission = getConfigurationManager().getPrivilegeProperty( privilege, PRIVILEGE_PROPERTY_PERMISSION );
+            
             String method = getConfigurationManager().getPrivilegeProperty( privilege, PRIVILEGE_PROPERTY_METHOD );
             
             if ( StringUtils.isEmpty( permission ) )
