@@ -17,7 +17,9 @@ package org.codehaus.plexus.components.mercury;
  */
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -25,9 +27,14 @@ import java.security.Provider;
 import java.security.SecureRandom;
 import java.security.Security;
 import java.security.spec.KeySpec;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.crypto.Cipher;
@@ -37,13 +44,21 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 
 import org.apache.maven.mercury.artifact.Artifact;
+import org.apache.maven.mercury.artifact.ArtifactBasicMetadata;
+import org.apache.maven.mercury.builder.api.DependencyProcessor;
+import org.apache.maven.mercury.builder.api.MetadataReader;
+import org.apache.maven.mercury.builder.api.MetadataReaderException;
 import org.apache.maven.mercury.crypto.api.StreamObserverFactory;
 import org.apache.maven.mercury.crypto.api.StreamVerifierAttributes;
 import org.apache.maven.mercury.crypto.api.StreamVerifierException;
 import org.apache.maven.mercury.crypto.api.StreamVerifierFactory;
 import org.apache.maven.mercury.crypto.pgp.PgpStreamVerifierFactory;
+import org.apache.maven.mercury.repository.api.ArtifactResults;
+import org.apache.maven.mercury.repository.api.Repository;
 import org.apache.maven.mercury.repository.api.RepositoryException;
+import org.apache.maven.mercury.repository.api.RepositoryReader;
 import org.apache.maven.mercury.repository.api.RepositoryWriter;
+import org.apache.maven.mercury.repository.local.m2.LocalRepositoryM2;
 import org.apache.maven.mercury.repository.remote.m2.RemoteRepositoryM2;
 import org.apache.maven.mercury.repository.remote.m2.RemoteRepositoryWriterM2;
 import org.apache.maven.mercury.transport.api.Credentials;
@@ -119,7 +134,37 @@ implements PlexusMercury, Initializable
   }
 
   //---------------------------------------------------------------
-  public void deploy( RemoteRepositoryM2 repo, Artifact... artifacts )
+  public LocalRepositoryM2 constructLocalRepositoryM2(
+      String id,
+      File rootDir,
+      Set<StreamObserverFactory> readerStreamObservers,
+      Set<StreamVerifierFactory> readerStreamVerifiers,
+      Set<StreamObserverFactory> writerStreamObservers,
+      Set<StreamVerifierFactory> writerStreamVerifiers )
+      throws RepositoryException
+  {
+    Server server;
+    try
+    {
+      server = new Server( id, rootDir.toURL() );
+    }
+    catch( MalformedURLException e )
+    {
+      throw new RepositoryException(e);
+    }
+    
+    server.setReaderStreamObserverFactories( readerStreamObservers );
+    server.setReaderStreamVerifierFactories( readerStreamVerifiers );
+    server.setWriterStreamObserverFactories( writerStreamObservers );
+    server.setWriterStreamVerifierFactories( writerStreamVerifiers );
+
+    LocalRepositoryM2 repo = new LocalRepositoryM2( server );
+
+    return repo;
+  }
+
+  //---------------------------------------------------------------
+  public void write( Repository repo, Artifact... artifacts )
   throws RepositoryException
   {
     if( repo == null )
@@ -128,6 +173,40 @@ implements PlexusMercury, Initializable
     RepositoryWriter wr = repo.getWriter();
     
     wr.writeArtifact( Arrays.asList( artifacts ) );
+    
+  }
+  //---------------------------------------------------------------
+  public Collection<Artifact> read( Repository repo, ArtifactBasicMetadata... artifacts )
+  throws RepositoryException
+  {
+    if( repo == null )
+      throw new RepositoryException( _lang.getMessage( "null.repo" ) );
+    
+    RepositoryReader rr = repo.getReader( new DependencyProcessor() {
+
+      public List<ArtifactBasicMetadata> getDependencies(
+          ArtifactBasicMetadata bmd,
+          MetadataReader mdReader,
+          Hashtable env )
+          throws MetadataReaderException
+      {
+        return null;
+      }} );
+    
+    ArtifactResults ar = rr.readArtifacts( Arrays.asList( artifacts ) );
+    if( ar.hasExceptions() )
+      throw new RepositoryException( ar.getExceptions().toString() );
+    
+    if( !ar.hasResults() )
+      return null;
+    
+    Map<ArtifactBasicMetadata, List<Artifact>> am = ar.getResults();
+    
+    List<Artifact> al = new ArrayList<Artifact>();
+    for( Map.Entry<ArtifactBasicMetadata, List<Artifact>> e : am.entrySet() )
+      al.addAll( e.getValue() );
+
+    return al;
     
   }
   //---------------------------------------------------------------

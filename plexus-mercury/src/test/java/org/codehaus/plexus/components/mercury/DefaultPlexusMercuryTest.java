@@ -38,6 +38,7 @@ import org.apache.maven.mercury.crypto.api.StreamVerifierFactory;
 import org.apache.maven.mercury.crypto.pgp.PgpStreamVerifierFactory;
 import org.apache.maven.mercury.crypto.sha.SHA1VerifierFactory;
 import org.apache.maven.mercury.repository.api.RepositoryException;
+import org.apache.maven.mercury.repository.local.m2.LocalRepositoryM2;
 import org.apache.maven.mercury.repository.remote.m2.RemoteRepositoryM2;
 import org.apache.maven.mercury.util.FileUtil;
 import org.codehaus.plexus.components.mercury.DefaultPlexusMercury;
@@ -55,7 +56,8 @@ public class DefaultPlexusMercuryTest
 {
   DefaultPlexusMercury pm;
 
-  RemoteRepositoryM2 repo;
+  RemoteRepositoryM2 remoteRepo;
+  LocalRepositoryM2  localRepo;
   
   Artifact a;
   
@@ -68,6 +70,8 @@ public class DefaultPlexusMercuryTest
   public static final String SYSTEM_PARAMETER_PLEXUS_MERCURY_TEST_URL = "plexus.mercury.test.url";
   private String remoteServerUrl = System.getProperty( SYSTEM_PARAMETER_PLEXUS_MERCURY_TEST_URL, null );
 //  static String remoteServerUrl = "http://localhost:8081/nexus/content/repositories/releases";
+
+  private File localRepoDir;
   
   public static final String SYSTEM_PARAMETER_PLEXUS_MERCURY_TEST_USER = "plexus.mercury.test.user";
   static String remoteServerUser = System.getProperty( SYSTEM_PARAMETER_PLEXUS_MERCURY_TEST_USER, "admin" );
@@ -108,13 +112,16 @@ public class DefaultPlexusMercuryTest
     
     sha1F = new SHA1VerifierFactory( true, false );
     
-    repo = pm.constructRemoteRepositoryM2( "testRepo"
+    remoteRepo = pm.constructRemoteRepositoryM2( "testRepo"
                         , new URL(remoteServerUrl), remoteServerUser, remoteServerPass
                         , null, null, null
                         , null, FileUtil.vSet( pgpRF, sha1F )
                         , null, FileUtil.vSet( pgpWF, sha1F )
                                         );
     
+    localRepoDir = File.createTempFile( "local-", "-repo" );
+    localRepoDir.delete();
+    localRepoDir.mkdir();
   }
   //-------------------------------------------------------------------------------------
   @Override
@@ -127,10 +134,16 @@ public class DefaultPlexusMercuryTest
     super.tearDown();
   }
   //-------------------------------------------------------------------------------------
-  public void testDeploy()
+  public void testWrite()
   throws RepositoryException
   {
-    pm.deploy( repo, a );
+    pm.write( remoteRepo, a );
+  }
+  //-------------------------------------------------------------------------------------
+  public void testRead()
+  throws RepositoryException
+  {
+    pm.write( remoteRepo, a );
   }
   //-------------------------------------------------------------------------------------
   //-------------------------------------------------------------------------------------

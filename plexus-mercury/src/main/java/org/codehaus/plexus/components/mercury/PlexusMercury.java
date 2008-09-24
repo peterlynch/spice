@@ -1,15 +1,20 @@
 package org.codehaus.plexus.components.mercury;
 
+import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Set;
 
 import org.apache.maven.mercury.artifact.Artifact;
+import org.apache.maven.mercury.artifact.ArtifactBasicMetadata;
 import org.apache.maven.mercury.crypto.api.StreamObserverFactory;
 import org.apache.maven.mercury.crypto.api.StreamVerifierException;
 import org.apache.maven.mercury.crypto.api.StreamVerifierFactory;
 import org.apache.maven.mercury.crypto.pgp.PgpStreamVerifierFactory;
+import org.apache.maven.mercury.repository.api.Repository;
 import org.apache.maven.mercury.repository.api.RepositoryException;
+import org.apache.maven.mercury.repository.local.m2.LocalRepositoryM2;
 import org.apache.maven.mercury.repository.remote.m2.RemoteRepositoryM2;
 
 /*
@@ -97,15 +102,49 @@ public interface PlexusMercury
                                      )
   throws RepositoryException;
 
+  
   /**
-   * deploy given Artifact to the repository
+   * construct local M2 repository and configure it with supplied attributes
    * 
-   * @param str
-   * @param passPhrase
+   * @param id
+   * @param rootDir
+   * @param readerStreamObservers
+   * @param readerStreamVerifiers
+   * @param writerStreamObservers
+   * @param writerStreamVerifiers
+   * @return repository instance
+   * @throws PlexusMercuryException
+   */
+  public LocalRepositoryM2 constructLocalRepositoryM2(
+      String id
+    , File rootDir
+    , Set<StreamObserverFactory> readerStreamObservers
+    , Set<StreamVerifierFactory> readerStreamVerifiers
+    , Set<StreamObserverFactory> writerStreamObservers
+    , Set<StreamVerifierFactory> writerStreamVerifiers
+                                     )
+  throws RepositoryException;
+
+  /**
+   * write (deploy) given Artifact(s) to the repository
+   * 
+   * @param repo repository instance to search
+   * @param artfifacts to write
    * @return
    * @throws PlexusMercuryException
    */
-  public void deploy( RemoteRepositoryM2 repo, Artifact... artifact )
+  public void write( Repository repo, Artifact... artifacts )
+  throws RepositoryException;
+
+  /**
+   * read given Artifact(s) from the repository
+   * 
+   * @param repo repository instance to search
+   * @param artfifacts to read
+   * @return
+   * @throws PlexusMercuryException
+   */
+  public Collection<Artifact> read( Repository repo, ArtifactBasicMetadata... artifacts )
   throws RepositoryException;
 
 }
