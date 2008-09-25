@@ -13,7 +13,7 @@ import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationExce
  * @author <a href="oleg@codehaus.org">Oleg Gusakov</a>
  * 
  * @plexus.component
- *   role="org.codehaus.plexus.i18n.Language"
+ *   role="org.codehaus.plexus.lang.Language"
  */
 public class DefaultLanguage
 implements Language

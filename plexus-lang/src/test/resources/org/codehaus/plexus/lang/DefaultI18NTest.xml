@@ -1,0 +1,11 @@
+<configuration>
+  <components>
+    <component>
+      <role>org.codehaus.plexus.lang.I18N</role>
+      <implementation>org.codehaus.plexus.lang.DefaultI18N</implementation>
+      <configuration>
+        <default-bundle-name>org.codehaus.plexus.lang.BarBundle</default-bundle-name>
+      </configuration>
+    </component>
+  </components>
+</configuration>

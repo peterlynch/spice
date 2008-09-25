@@ -31,7 +31,7 @@ import java.lang.reflect.Field;
 
 /**
  * @plexus.component
- *   role="org.codehaus.plexus.i18n.I18N"
+ *   role="org.codehaus.plexus.lang.I18N"
  */
 public class DefaultI18N
     extends AbstractLogEnabled
