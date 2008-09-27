@@ -11,11 +11,11 @@ import org.sonatype.jsecurity.model.CPrivilege;
 import org.sonatype.jsecurity.realms.tools.NoSuchPrivilegeException;
 
 /**
- * @plexus.component role="org.jsecurity.realm.Realm" role-hint="MethodRealm"
+ * @plexus.component role="org.jsecurity.realm.Realm" role-hint="XmlMethodAuthorizingRealm"
  *
  */
-public class MethodRealm
-    extends SecurityXmlRealm
+public class XmlMethodAuthorizingRealm
+    extends AbstractXmlAuthorizingRealm
 {    
     public static final String PRIVILEGE_TYPE_METHOD = "method";
     

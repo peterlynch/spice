@@ -36,7 +36,7 @@ public class DefaultPlexusSecurityTest
     public void testSuccessfulAuthentication()
         throws Exception
     {
-        UsernamePasswordToken upToken = new UsernamePasswordRealmToken( "username", "password", FakeRealm1.class.getName() );
+        UsernamePasswordToken upToken = new UsernamePasswordToken( "username", "password" );
 
         AuthenticationInfo ai = security.authenticate( upToken );
 
@@ -48,7 +48,7 @@ public class DefaultPlexusSecurityTest
     public void testFailedAuthentication()
         throws Exception
     {
-        UsernamePasswordToken upToken = new UsernamePasswordRealmToken( "username", "badpassword", FakeRealm1.class.getName() );
+        UsernamePasswordToken upToken = new UsernamePasswordToken( "username", "badpassword" );
 
         try
         {

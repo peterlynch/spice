@@ -2,8 +2,8 @@
   <components>
     <component>
       <role>org.jsecurity.realm.Realm</role>
-      <role-hint>MethodRealm</role-hint>
-      <implementation>org.sonatype.jsecurity.realms.MethodRealm</implementation>
+      <role-hint>XmlMethodAuthorizingRealm</role-hint>
+      <implementation>org.sonatype.jsecurity.realms.XmlMethodAuthorizingRealm</implementation>
       <description></description>
       <isolated-realm>false</isolated-realm>
       <requirements>

@@ -27,7 +27,7 @@ public class MethodRealmTest
     
     private File configFile = new File( SECURITY_CONFIG_FILE_PATH );
     
-    private MethodRealm realm;
+    private XmlMethodAuthorizingRealm realm;
     
     private DefaultConfigurationManager configurationManager;
     
@@ -45,7 +45,7 @@ public class MethodRealmTest
     {
         super.setUp();
         
-        realm = ( MethodRealm ) lookup( Realm.class, "MethodRealm" );
+        realm = ( XmlMethodAuthorizingRealm ) lookup( Realm.class, "XmlMethodAuthorizingRealm" );
         
         configurationManager = ( DefaultConfigurationManager ) lookup( ConfigurationManager.ROLE );
         

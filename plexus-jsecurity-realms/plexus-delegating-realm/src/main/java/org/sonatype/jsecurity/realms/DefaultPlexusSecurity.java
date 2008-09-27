@@ -2,7 +2,6 @@ package org.sonatype.jsecurity.realms;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
@@ -365,30 +364,6 @@ public class DefaultPlexusSecurity
         }
         
         return true;
-    }
-    
-    public void clearCache( String realmName )
-    {
-        RealmCriteria criteria = new RealmCriteria();
-        criteria.setName( realmName );
-        
-        Realm realm = realmSelector.selectRealm( criteria );
-        
-        if ( realm != null && MutableRealm.class.isAssignableFrom( realm.getClass() ) )
-        {
-            ( ( MutableRealm ) realm ).clearCache();
-        }
-    }
-    
-    public void clearCache( Set<String> realmNames )
-    {
-        if ( realmNames != null )
-        {
-            for ( String realmName : realmNames )
-            {
-                clearCache( realmName );
-            }
-        }
     }
     
     @Override

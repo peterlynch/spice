@@ -91,7 +91,6 @@ We need to allow:
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
@@ -104,7 +103,6 @@ import org.jsecurity.realm.Realm;
 import org.jsecurity.subject.PrincipalCollection;
 import org.jsecurity.web.DefaultWebSecurityManager;
 import org.sonatype.jsecurity.locators.RememberMeLocator;
-import org.sonatype.jsecurity.realms.MutableRealm;
 import org.sonatype.jsecurity.realms.PlexusSecurity;
 import org.sonatype.jsecurity.selectors.RealmCriteria;
 import org.sonatype.jsecurity.selectors.RealmSelector;
@@ -367,30 +365,6 @@ public class WebPlexusSecurity
         }
         
         return true;
-    }
-    
-    public void clearCache( String realmName )
-    {
-        RealmCriteria criteria = new RealmCriteria();
-        criteria.setName( realmName );
-        
-        Realm realm = realmSelector.selectRealm( criteria );
-        
-        if ( realm != null && MutableRealm.class.isAssignableFrom( realm.getClass() ) )
-        {
-            ( ( MutableRealm ) realm ).clearCache();
-        }
-    }
-    
-    public void clearCache( Set<String> realmNames )
-    {
-        if ( realmNames != null )
-        {
-            for ( String realmName : realmNames )
-            {
-                clearCache( realmName );
-            }
-        }
     }
     
     @Override

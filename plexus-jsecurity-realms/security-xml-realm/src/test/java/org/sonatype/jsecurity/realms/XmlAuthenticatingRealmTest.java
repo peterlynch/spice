@@ -17,7 +17,7 @@ import org.sonatype.jsecurity.realms.tools.DefaultConfigurationManager;
 import org.sonatype.jsecurity.realms.tools.InvalidConfigurationException;
 import org.sonatype.jsecurity.realms.tools.StringDigester;
 
-public class SecurityXmlRealmTest
+public class XmlAuthenticatingRealmTest
     extends PlexusTestCase
 {
     public static final String PLEXUS_SECURITY_XML_FILE = "security-xml-file";
@@ -26,7 +26,7 @@ public class SecurityXmlRealmTest
     
     private File configFile = new File( SECURITY_CONFIG_FILE_PATH );
     
-    private SecurityXmlRealm realm;
+    private XmlAuthenticatingRealm realm;
     
     private DefaultConfigurationManager configurationManager;
         
@@ -44,7 +44,7 @@ public class SecurityXmlRealmTest
     {
         super.setUp();
         
-        realm = ( SecurityXmlRealm ) lookup( Realm.class, "SecurityXmlRealm" );
+        realm = ( XmlAuthenticatingRealm ) lookup( Realm.class, "XmlAuthenticatingRealm" );
         
         configurationManager = ( DefaultConfigurationManager ) lookup( ConfigurationManager.ROLE );
         
