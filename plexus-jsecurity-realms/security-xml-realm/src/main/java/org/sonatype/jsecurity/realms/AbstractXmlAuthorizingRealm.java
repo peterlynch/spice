@@ -5,8 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
-import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
 import org.jsecurity.authc.AuthenticationException;
 import org.jsecurity.authc.AuthenticationInfo;
 import org.jsecurity.authc.AuthenticationToken;
@@ -27,24 +25,23 @@ import org.sonatype.jsecurity.realms.tools.NoSuchUserException;
 
 public abstract class AbstractXmlAuthorizingRealm
     extends AuthorizingRealm
-        implements Initializable, Realm
+        implements Realm
 {
     /**
      * @plexus.requirement
      */
     private ConfigurationManager configuration;
     
+    public AbstractXmlAuthorizingRealm()
+    {
+        setCredentialsMatcher( new Sha1CredentialsMatcher() );
+        setAuthorizationCache( new HashtableCache( null ) );
+    }
+    
     @Override
     public String getName()
     {
         return AbstractXmlAuthorizingRealm.class.getName();
-    }
-    
-    public void initialize()
-        throws InitializationException
-    {
-        setCredentialsMatcher( new Sha1CredentialsMatcher() );
-        setAuthorizationCache( new HashtableCache( null ) );
     }
     
     @Override
