@@ -13,12 +13,12 @@
   <artifactId>hudson-jsw</artifactId>
   <packaging>jar</packaging>
   <name>Hudson JSW Bundle</name>
-  <version>1.254-2</version>
+  <version>1.254-3-SNAPSHOT</version>
   
   <scm>
-    <connection>scm:svn:http://svn.sonatype.org/spice/tags/hudson-jsw-1.254-2</connection>
-    <developerConnection>scm:svn:https://svn.sonatype.org/spice/tags/hudson-jsw-1.254-2</developerConnection>
-    <url>http://svn.sonatype.org/spice/tags/hudson-jsw-1.254-2</url>
+    <connection>scm:svn:http://svn.sonatype.org/spice/trunk/hudson-jsw</connection>
+    <developerConnection>scm:svn:https://svn.sonatype.org/spice/trunk/hudson-jsw</developerConnection>
+    <url>http://svn.sonatype.org/spice/trunk/hudson-jsw</url>
   </scm>
   
   <properties>
