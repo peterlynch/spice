@@ -1,12 +1,25 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 <!-- the version of maven's project object model -->
   <modelVersion>4.0.0</modelVersion>
-<!-- Parent POM -->
+  
+  <!-- Parent POM -->
+  <parent>
+    <groupId>org.sonatype.spice</groupId>
+    <artifactId>spice-parent</artifactId>
+    <version>5</version>
+  </parent>
+
   <groupId>org.sonatype.hudson</groupId>
   <artifactId>hudson-jsw</artifactId>
   <packaging>jar</packaging>
   <name>Hudson JSW Bundle</name>
   <version>${hudsonVersion}-1-SNAPSHOT</version>
+  
+  <scm>
+    <connection>scm:svn:http://svn.sonatype.org/spice/trunk/hudson-jsw</connection>
+    <developerConnection>scm:svn:https://svn.sonatype.org/spice/trunk/hudson-jsw</developerConnection>
+    <url>http://svn.sonatype.org/spice/trunk/hudson-jsw</url>
+  </scm>
   
   <properties>
     <jsw-input>target/jsw-template</jsw-input>
@@ -62,7 +75,7 @@
             <executions>
               <execution>
                 <id>grab-hudson-war</id>
-                <phase>process-resources</phase>
+                <phase>generate-resources</phase>
                 <goals>
                   <goal>run</goal>
                 </goals>
@@ -86,6 +99,7 @@
     <filters>
       <filter>src/main/filters/assemble.properties</filter>
     </filters>
+    
     <resources>
       <resource>
         <directory>src/main/bundle</directory>
@@ -121,6 +135,18 @@
         <targetPath>../${jsw-output}</targetPath>
       </resource>
     </resources>
+    
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-release-plugin</artifactId>
+          <configuration>
+            <tagBase>https://svn.sonatype.org/spice/tags</tagBase>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    
     <plugins>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
