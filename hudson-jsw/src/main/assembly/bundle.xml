@@ -143,7 +143,7 @@
     <file>
       <source>tmp/hudson-${hudsonVersion}.war</source>
       <outputDirectory>/</outputDirectory>
-      <destName>hudson-${hudsonVersion}.war</destName>
+      <destName>hudson.war</destName>
       <fileMode>0644</fileMode>
     </file>
   </files>
