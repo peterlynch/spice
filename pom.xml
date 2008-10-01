@@ -35,6 +35,7 @@ under the License.
       <module>plexus-jetty-testsuite</module>
       <module>plexus-restlet-bridge</module>
       <module>plexus-jsecurity-realms</module>
+      <module>plexus-task-scheduler</module>
       <module>plexus-webdav</module>
       <module>spice-parent</module>
     </modules>
