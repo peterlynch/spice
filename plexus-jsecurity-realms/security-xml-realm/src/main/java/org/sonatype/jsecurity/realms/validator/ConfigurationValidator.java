@@ -6,8 +6,6 @@ import org.sonatype.jsecurity.model.CUser;
 
 public interface ConfigurationValidator
 {
-    String ROLE = ConfigurationValidator.class.getName();
-    
     ValidationResponse validateModel( ValidationRequest request );
     
     ValidationResponse validatePrivilege( ValidationContext ctx, CPrivilege privilege, boolean update );

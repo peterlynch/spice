@@ -1,14 +1,12 @@
 package org.sonatype.jsecurity.locators;
 
+import org.codehaus.plexus.component.annotations.Component;
 import org.jsecurity.subject.RememberMeManager;
 import org.jsecurity.web.WebRememberMeManager;
 
-/**
- * @plexus.component
- */
+@Component( role = RememberMeLocator.class )
 public class DefaultRememberMeLocator
-    implements
-    RememberMeLocator
+    implements RememberMeLocator
 {
     public RememberMeManager getRememberMeManager()
     {

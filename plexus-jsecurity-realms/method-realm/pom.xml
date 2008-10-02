@@ -10,15 +10,10 @@
     <name>Method based realm</name>
     <build>
         <plugins>
-		    <!-- !!!!!!!!!!!!!!!!!!!!!!!!! -->
-            <!-- because of a bug in the plexus i need to manually build the components.xml file -->
-		    <!-- !!!!!!!!!!!!!!!!!!!!!!!!! -->
-            <!--
-                <plugin> 
-                    <groupId>org.codehaus.plexus</groupId> 
-                    <artifactId>plexus-maven-plugin</artifactId>
-                </plugin>
-            -->
+            <plugin>
+                <groupId>org.codehaus.plexus</groupId>
+                <artifactId>plexus-component-metadata</artifactId>
+            </plugin>
         </plugins>
     </build>
     <dependencies>

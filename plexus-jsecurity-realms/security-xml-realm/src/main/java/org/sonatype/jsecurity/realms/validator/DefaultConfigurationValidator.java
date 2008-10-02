@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.jsecurity.model.CPrivilege;
@@ -12,20 +14,14 @@ import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUser;
 import org.sonatype.jsecurity.model.Configuration;
 
-/**
- * @plexus.component
- *
- */
+@Component( role = ConfigurationValidator.class )
 public class DefaultConfigurationValidator
     extends AbstractLogEnabled
-    implements
-    ConfigurationValidator
+    implements ConfigurationValidator
 {
-    /**
-     * @plexus.requirement
-     */
+    @Requirement
     private ConfigurationIdGenerator idGenerator;
-    
+
     public ValidationResponse validateModel( ValidationRequest request )
     {
         ValidationResponse response = new ValidationResponse();
@@ -139,13 +135,15 @@ public class DefaultConfigurationValidator
 
             response.setModified( true );
         }
-        
+
         if ( StringUtils.isEmpty( privilege.getType() ) )
         {
-            ValidationMessage message = new ValidationMessage( "type", "Cannot have an empty type", 
-                                                               "Privilege cannot have an invalid type" );
-        
-            response.addValidationError( message );             
+            ValidationMessage message = new ValidationMessage(
+                "type",
+                "Cannot have an empty type",
+                "Privilege cannot have an invalid type" );
+
+            response.addValidationError( message );
         }
         else
         {
@@ -162,8 +160,8 @@ public class DefaultConfigurationValidator
                 String repositoryId = null;
                 String repositoryTargetId = null;
                 String repositoryGroupId = null;
-                
-                for ( CProperty property : ( List<CProperty> ) privilege.getProperties() )
+
+                for ( CProperty property : (List<CProperty>) privilege.getProperties() )
                 {
                     if ( property.getKey().equals( "method" ) )
                     {
@@ -186,13 +184,13 @@ public class DefaultConfigurationValidator
                         repositoryGroupId = property.getValue();
                     }
                 }
-                
+
                 if ( privilege.getType().equals( "method" ) )
                 {
                     if ( StringUtils.isEmpty( permission ) )
                     {
                         response.addValidationError( "Permission cannot be empty on a privilege!" );
-                    }   
+                    }
                 }
                 else if ( privilege.getType().equals( "target" ) )
                 {
@@ -207,13 +205,15 @@ public class DefaultConfigurationValidator
                     {
                         ValidationMessage message = new ValidationMessage(
                             "repositoryId",
-                            "Privilege ID '" + privilege.getId() + "' cannot be assigned to both a group and repository."
+                            "Privilege ID '"
+                                + privilege.getId()
+                                + "' cannot be assigned to both a group and repository."
                                 + "  Either assign a group, a repository or neither (which assigns to ALL repositories).",
                             "Cannot select both a Repository and Repository Group." );
                         response.addValidationError( message );
                     }
                 }
-                
+
                 if ( StringUtils.isEmpty( method ) )
                 {
                     response.addValidationError( "Method cannot be empty on a privilege!" );
@@ -221,7 +221,7 @@ public class DefaultConfigurationValidator
                 else
                 {
                     String[] methods = null;
-        
+
                     if ( method.contains( "," ) )
                     {
                         // it is a list of methods
@@ -232,9 +232,9 @@ public class DefaultConfigurationValidator
                         // it is a single method
                         methods = new String[] { method };
                     }
-        
+
                     boolean valid = true;
-        
+
                     for ( String singlemethod : methods )
                     {
                         if ( !"create".equals( singlemethod ) && !"delete".equals( singlemethod )
@@ -242,18 +242,21 @@ public class DefaultConfigurationValidator
                             && !"*".equals( singlemethod ) )
                         {
                             valid = false;
-        
+
                             break;
                         }
                     }
-        
+
                     if ( !valid )
                     {
-                        ValidationMessage message = new ValidationMessage( "method", "Privilege ID '" + privilege.getId()
-                            + "' Method is wrong! (Allowed methods are: create, delete, read and update)", "Invalid method selected." );
+                        ValidationMessage message = new ValidationMessage(
+                            "method",
+                            "Privilege ID '" + privilege.getId()
+                                + "' Method is wrong! (Allowed methods are: create, delete, read and update)",
+                            "Invalid method selected." );
                         response.addValidationError( message );
                     }
-        
+
                 }
             }
         }
@@ -269,7 +272,7 @@ public class DefaultConfigurationValidator
 
         return response;
     }
-    
+
     public ValidationResponse validateRoleContainment( ValidationContext ctx )
     {
         ValidationResponse response = new ValidationResponse();
@@ -441,7 +444,7 @@ public class DefaultConfigurationValidator
                 containedRoles.add( roleId );
             }
         }
-        
+
         // It is expected that a full context is built upon update
         if ( update )
         {
@@ -509,11 +512,9 @@ public class DefaultConfigurationValidator
 
         if ( !CUser.STATUS_ACTIVE.equals( user.getStatus() ) && !CUser.STATUS_DISABLED.equals( user.getStatus() ) )
         {
-            ValidationMessage message = new ValidationMessage(
-                "status",
-                "User ID '" + user.getId() + "' has invalid status '" + user.getStatus()
-                    + "'.  (Allowed values are: " + CUser.STATUS_ACTIVE + " and " + CUser.STATUS_DISABLED + ")",
-                "Invalid Status selected." );
+            ValidationMessage message = new ValidationMessage( "status", "User ID '" + user.getId()
+                + "' has invalid status '" + user.getStatus() + "'.  (Allowed values are: " + CUser.STATUS_ACTIVE
+                + " and " + CUser.STATUS_DISABLED + ")", "Invalid Status selected." );
             response.addValidationError( message );
         }
 

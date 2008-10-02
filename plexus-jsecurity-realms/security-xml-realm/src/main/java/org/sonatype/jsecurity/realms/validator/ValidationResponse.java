@@ -63,7 +63,7 @@ public class ValidationResponse
         }
         return validationErrors;
     }
-    
+
     public ValidationMessage getValidationError( String key )
     {
         if ( validationErrors != null )
@@ -76,7 +76,7 @@ public class ValidationResponse
                 }
             }
         }
-        
+
         return null;
     }
 
@@ -107,7 +107,7 @@ public class ValidationResponse
 
         addValidationError( e );
     }
-    
+
     public ValidationMessage getValidationWarning( String key )
     {
         if ( validationWarnings != null )
@@ -120,7 +120,7 @@ public class ValidationResponse
                 }
             }
         }
-        
+
         return null;
     }
 

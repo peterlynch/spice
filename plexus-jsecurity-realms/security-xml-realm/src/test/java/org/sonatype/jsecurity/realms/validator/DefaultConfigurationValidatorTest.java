@@ -21,7 +21,7 @@ public class DefaultConfigurationValidatorTest
     {
         super.setUp();
 
-        this.configurationValidator = ( ConfigurationValidator ) lookup( ConfigurationValidator.ROLE );
+        this.configurationValidator = ( ConfigurationValidator ) lookup( ConfigurationValidator.class );
     }
 
     protected Configuration getConfigurationFromStream( InputStream is )

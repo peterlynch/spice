@@ -7,16 +7,16 @@ import java.util.Map;
 
 public class ValidationContext
 {
-private List<String> existingPrivilegeIds;
-    
+    private List<String> existingPrivilegeIds;
+
     private List<String> existingRoleIds;
-    
+
     private List<String> existingUserIds;
-    
-    private Map<String,String> existingEmailMap;
-    
-    private Map<String,List<String>> roleContainmentMap;
-    
+
+    private Map<String, String> existingEmailMap;
+
+    private Map<String, List<String>> roleContainmentMap;
+
     public void addExistingPrivilegeIds()
     {
         if ( this.existingPrivilegeIds == null )
@@ -24,54 +24,54 @@ private List<String> existingPrivilegeIds;
             this.existingPrivilegeIds = new ArrayList<String>();
         }
     }
-    
+
     public void addExistingRoleIds()
     {
         if ( this.existingRoleIds == null )
         {
             this.existingRoleIds = new ArrayList<String>();
         }
-        
+
         if ( this.roleContainmentMap == null )
         {
-            this.roleContainmentMap = new HashMap<String,List<String>>();
+            this.roleContainmentMap = new HashMap<String, List<String>>();
         }
     }
-    
+
     public void addExistingUserIds()
     {
         if ( this.existingUserIds == null )
         {
             this.existingUserIds = new ArrayList<String>();
         }
-        
+
         if ( this.existingEmailMap == null )
         {
-            this.existingEmailMap = new HashMap<String,String>();
+            this.existingEmailMap = new HashMap<String, String>();
         }
     }
-    
+
     public List<String> getExistingPrivilegeIds()
     {
         return existingPrivilegeIds;
     }
-    
+
     public List<String> getExistingRoleIds()
     {
         return existingRoleIds;
     }
-    
+
     public List<String> getExistingUserIds()
     {
         return existingUserIds;
     }
-    
-    public Map<String,String> getExistingEmailMap()
+
+    public Map<String, String> getExistingEmailMap()
     {
         return existingEmailMap;
     }
-    
-    public Map<String,List<String>> getRoleContainmentMap()
+
+    public Map<String, List<String>> getRoleContainmentMap()
     {
         return roleContainmentMap;
     }

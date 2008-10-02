@@ -9,8 +9,6 @@ import org.sonatype.jsecurity.model.CUser;
 
 public interface ConfigurationManager
 {
-    String ROLE = ConfigurationManager.class.getName();
-    
     /**
      * Retrieve all users
      * 

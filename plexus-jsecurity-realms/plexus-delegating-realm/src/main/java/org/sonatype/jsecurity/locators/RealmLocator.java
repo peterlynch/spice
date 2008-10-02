@@ -6,7 +6,5 @@ import org.jsecurity.realm.Realm;
 
 public interface RealmLocator
 {
-    String ROLE = RealmLocator.class.getName();
-    
     List<Realm> getRealms();
 }

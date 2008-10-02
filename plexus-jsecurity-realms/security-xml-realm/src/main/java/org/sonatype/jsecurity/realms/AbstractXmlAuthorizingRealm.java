@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.codehaus.plexus.component.annotations.Requirement;
 import org.jsecurity.authc.AuthenticationException;
 import org.jsecurity.authc.AuthenticationInfo;
 import org.jsecurity.authc.AuthenticationToken;
@@ -25,38 +26,36 @@ import org.sonatype.jsecurity.realms.tools.NoSuchUserException;
 
 public abstract class AbstractXmlAuthorizingRealm
     extends AuthorizingRealm
-        implements Realm
+    implements Realm
 {
-    /**
-     * @plexus.requirement
-     */
+    @Requirement
     private ConfigurationManager configuration;
-    
+
     public AbstractXmlAuthorizingRealm()
     {
         setCredentialsMatcher( new Sha1CredentialsMatcher() );
         setAuthorizationCache( new HashtableCache( null ) );
     }
-    
+
     @Override
     public String getName()
     {
         return AbstractXmlAuthorizingRealm.class.getName();
     }
-    
+
     @Override
     public boolean supports( AuthenticationToken token )
     {
         return false;
     }
-    
+
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo( AuthenticationToken token )
         throws AuthenticationException
     {
         return null;
     }
-    
+
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo( PrincipalCollection principals )
     {
@@ -64,9 +63,9 @@ public abstract class AbstractXmlAuthorizingRealm
         {
             throw new AuthorizationException( "Cannot authorize with no principals." );
         }
-        
+
         String username = (String) principals.iterator().next();
-        
+
         CUser user;
         try
         {
@@ -76,30 +75,30 @@ public abstract class AbstractXmlAuthorizingRealm
         {
             throw new AuthorizationException( "User '" + username + "' cannot be retrieved.", e );
         }
-        
+
         LinkedList<String> rolesToProcess = new LinkedList<String>();
         List<String> roles = user.getRoles();
         if ( roles != null )
         {
             rolesToProcess.addAll( roles );
         }
-        
+
         Set<String> roleIds = new LinkedHashSet<String>();
         Set<Permission> permissions = new LinkedHashSet<Permission>();
         while ( !rolesToProcess.isEmpty() )
         {
             String roleId = rolesToProcess.removeFirst();
             if ( !roleIds.contains( roleId ) )
-            {                
+            {
                 CRole role;
                 try
                 {
                     role = configuration.readRole( roleId );
                     roleIds.add( roleId );
-                    
+
                     // process the roles this role has
                     rolesToProcess.addAll( role.getRoles() );
-    
+
                     // add the permissions this role has
                     List<String> privilegeIds = role.getPrivileges();
                     for ( String privilegeId : privilegeIds )
@@ -114,15 +113,15 @@ public abstract class AbstractXmlAuthorizingRealm
                 }
             }
         }
-        
+
         SimpleAuthorizationInfo info = new SimpleAuthorizationInfo( roleIds );
         info.setObjectPermissions( permissions );
 
         return info;
     }
-    
+
     protected abstract Set<Permission> getPermissions( String privilegeId );
-    
+
     protected ConfigurationManager getConfigurationManager()
     {
         return configuration;

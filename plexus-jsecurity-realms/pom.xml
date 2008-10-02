@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.sonatype.spice</groupId>
         <artifactId>spice-parent</artifactId>
-        <version>6</version>
+        <version>7-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.sonatype.jsecurity</groupId>
@@ -46,7 +46,7 @@
                 <artifactId>jcl-over-slf4j</artifactId>
                 <version>1.5.3</version>
             </dependency>
-            <!-- Provide a backed for JUnit tests purposes -->
+            <!-- Provide a backend for JUnit tests purposes -->
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-simple</artifactId>
@@ -75,6 +75,10 @@
                     <target>1.5</target>
                 </configuration>
             </plugin>
+			<plugin>
+				<groupId>org.codehaus.plexus</groupId>
+				<artifactId>plexus-component-metadata</artifactId>
+			</plugin>
         </plugins>
         <pluginManagement>
             <plugins>

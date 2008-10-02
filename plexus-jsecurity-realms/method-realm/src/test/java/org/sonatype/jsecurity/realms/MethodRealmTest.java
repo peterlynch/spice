@@ -47,7 +47,7 @@ public class MethodRealmTest
         
         realm = ( XmlMethodAuthorizingRealm ) lookup( Realm.class, "XmlMethodAuthorizingRealm" );
         
-        configurationManager = ( DefaultConfigurationManager ) lookup( ConfigurationManager.ROLE );
+        configurationManager = ( DefaultConfigurationManager ) lookup( ConfigurationManager.class );
         
         configurationManager.clearCache();
         
