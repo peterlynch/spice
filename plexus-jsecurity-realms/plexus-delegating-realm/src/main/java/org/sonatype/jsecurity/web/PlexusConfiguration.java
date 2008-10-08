@@ -358,6 +358,10 @@ public class PlexusConfiguration
     {
         try
         {
+            getLogger().info(
+                "Adding new protected resource with path='" + pathPattern + "' and filterExpression='"
+                    + filterExpression + "'" );
+
             chains.put( pathPattern, getPathFilters( pathPattern, filterExpression ) );
         }
         catch ( Exception e )
