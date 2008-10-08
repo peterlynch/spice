@@ -24,7 +24,7 @@ public class PlexusJSecurityFilter
 {
     public static final String CONFIG_ROLE = "configRole";
 
-    public static final String CONFIG_ROLE_DEFAULT = WebConfiguration.class.getName();
+    public static final String CONFIG_ROLE_DEFAULT = PlexusWebConfiguration.class.getName();
 
     public static final String CONFIG_ROLE_HINT = "configRoleHint";
 

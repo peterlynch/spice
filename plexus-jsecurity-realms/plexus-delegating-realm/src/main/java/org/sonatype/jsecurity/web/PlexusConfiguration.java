@@ -1,25 +1,38 @@
 package org.sonatype.jsecurity.web;
 
+import static org.jsecurity.util.StringUtils.split;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.Filter;
 import javax.servlet.ServletContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.plexus.PlexusConstants;
 import org.codehaus.plexus.PlexusContainer;
+import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.codehaus.plexus.context.Context;
+import org.codehaus.plexus.context.ContextException;
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
 import org.jsecurity.JSecurityException;
+import org.jsecurity.config.ConfigurationException;
 import org.jsecurity.mgt.RealmSecurityManager;
 import org.jsecurity.mgt.SecurityManager;
 import org.jsecurity.realm.Realm;
 import org.jsecurity.util.LifecycleUtils;
 import org.jsecurity.web.config.IniWebConfiguration;
+import org.jsecurity.web.filter.PathConfigProcessor;
 import org.sonatype.jsecurity.realms.PlexusSecurity;
 
+@Component( role = PlexusWebConfiguration.class )
 public class PlexusConfiguration
     extends IniWebConfiguration
+    implements PlexusMutableWebConfiguration, Contextualizable
 {
     private static final long serialVersionUID = -608021587325532351L;
 
@@ -31,15 +44,25 @@ public class PlexusConfiguration
 
     public static final String DEFAULT_SECURITY_MANAGER_ROLE_HINT = "web";
 
-    private final Log logger = LogFactory.getLog( this.getClass() );
+    private static final Log log = LogFactory.getLog( PlexusConfiguration.class );
+
+    protected PlexusContainer plexusContainer;
 
     protected String securityManagerRole;
 
     protected String securityManagerRoleHint;
 
+    protected Map<String, Filter> filters;
+
     protected Log getLogger()
     {
-        return logger;
+        return log;
+    }
+
+    public void contextualize( Context context )
+        throws ContextException
+    {
+        plexusContainer = (PlexusContainer) context.get( PlexusConstants.PLEXUS_KEY );
     }
 
     public String getSecurityManagerRole()
@@ -97,6 +120,20 @@ public class PlexusConfiguration
         super.init();
     }
 
+    protected PlexusContainer getPlexusContainer()
+    {
+        // to remain backward compatible, where PlexusConfiguration was not Plexus component, co
+        // Contexualizable would not be noticed, get Plexus from servletContext attrs
+        if ( plexusContainer == null )
+        {
+            ServletContext servletContext = getFilterConfig().getServletContext();
+
+            plexusContainer = (PlexusContainer) servletContext.getAttribute( PlexusConstants.PLEXUS_KEY );
+        }
+
+        return plexusContainer;
+    }
+
     @Override
     protected SecurityManager createDefaultSecurityManager()
     {
@@ -106,11 +143,7 @@ public class PlexusConfiguration
     @Override
     protected SecurityManager createSecurityManager( Map<String, Map<String, String>> sections )
     {
-        ServletContext servletContext = getFilterConfig().getServletContext();
-
-        PlexusContainer container = (PlexusContainer) servletContext.getAttribute( PlexusConstants.PLEXUS_KEY );
-
-        return getOrCreateSecurityManager( container, sections );
+        return getOrCreateSecurityManager( getPlexusContainer(), sections );
     }
 
     protected SecurityManager getOrCreateSecurityManager( PlexusContainer container,
@@ -194,4 +227,143 @@ public class PlexusConfiguration
 
         return securityManager;
     }
+
+    // DYNA CONFIG
+
+    protected void afterSecurityManagerSet( Map<String, Map<String, String>> sections )
+    {
+        // filters section:
+        Map<String, String> section = sections.get( FILTERS );
+
+        // changed: we need the prepped filters for later
+        filters = getFilters( section );
+
+        // urls section:
+        section = sections.get( URLS );
+        this.chains = createChains( section, filters );
+
+        initFilters( this.chains );
+    }
+
+    public Map<String, List<Filter>> createChains( Map<String, String> urls, Map<String, Filter> filters )
+    {
+        if ( urls == null || urls.isEmpty() )
+        {
+            if ( log.isDebugEnabled() )
+            {
+                log.debug( "No urls to process." );
+            }
+            return null;
+        }
+        if ( filters == null || filters.isEmpty() )
+        {
+            if ( log.isDebugEnabled() )
+            {
+                log.debug( "No filters to process." );
+            }
+            return null;
+        }
+
+        if ( log.isTraceEnabled() )
+        {
+            log.trace( "Before url processing." );
+        }
+
+        Map<String, List<Filter>> pathChains = new LinkedHashMap<String, List<Filter>>( urls.size() );
+
+        for ( Map.Entry<String, String> entry : urls.entrySet() )
+        {
+            String path = entry.getKey();
+            String value = entry.getValue();
+
+            // externalized this part to enable later reuse
+            List<Filter> pathFilters = getPathFilters( path, value );
+
+            if ( !pathFilters.isEmpty() )
+            {
+                pathChains.put( path, pathFilters );
+            }
+        }
+
+        if ( pathChains.isEmpty() )
+        {
+            return null;
+        }
+
+        return pathChains;
+    }
+
+    protected List<Filter> getPathFilters( String path, String value )
+    {
+        if ( log.isDebugEnabled() )
+        {
+            log.debug( "Processing path [" + path + "] with value [" + value + "]" );
+        }
+
+        List<Filter> pathFilters = new ArrayList<Filter>();
+
+        // parse the value by tokenizing it to get the resulting filter-specific config entries
+        //
+        // e.g. for a value of
+        //
+        // "authc, roles[admin,user], perms[file:edit]"
+        //
+        // the resulting token array would equal
+        //
+        // { "authc", "roles[admin,user]", "perms[file:edit]" }
+        //
+        String[] filterTokens = split( value, ',', '[', ']', true, true );
+
+        // each token is specific to each filter.
+        // strip the name and extract any filter-specific config between brackets [ ]
+        for ( String token : filterTokens )
+        {
+            String[] nameAndConfig = token.split( "\\[", 2 );
+            String name = nameAndConfig[0];
+            String config = null;
+
+            if ( nameAndConfig.length == 2 )
+            {
+                config = nameAndConfig[1];
+                // if there was an open bracket, there was a close bracket, so strip it too:
+                config = config.substring( 0, config.length() - 1 );
+            }
+
+            // now we have the filter name, path and (possibly null) path-specific config. Let's apply them:
+            Filter filter = filters.get( name );
+            if ( filter == null )
+            {
+                String msg = "Path [" + path + "] specified a filter named '" + name + "', but that "
+                    + "filter has not been specified in the [" + FILTERS + "] section.";
+                throw new ConfigurationException( msg );
+            }
+            if ( filter instanceof PathConfigProcessor )
+            {
+                if ( log.isDebugEnabled() )
+                {
+                    log.debug( "Applying path [" + path + "] to filter [" + name + "] " + "with config [" + config
+                        + "]" );
+                }
+                ( (PathConfigProcessor) filter ).processPathConfig( path, config );
+            }
+
+            pathFilters.add( filter );
+        }
+
+        return pathFilters;
+    }
+
+    public void addProtectedResource( String pathPattern, String filterExpression )
+        throws SecurityConfigurationException
+    {
+        try
+        {
+            chains.put( pathPattern, getPathFilters( pathPattern, filterExpression ) );
+        }
+        catch ( Exception e )
+        {
+            throw new SecurityConfigurationException( "Could not apply changes!", e );
+        }
+    }
+
 }
