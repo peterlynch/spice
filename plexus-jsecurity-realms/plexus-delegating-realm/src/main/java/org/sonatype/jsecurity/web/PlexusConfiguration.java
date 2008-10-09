@@ -230,6 +230,7 @@ public class PlexusConfiguration
 
     // DYNA CONFIG
 
+    @Override
     protected void afterSecurityManagerSet( Map<String, Map<String, String>> sections )
     {
         // filters section:
@@ -245,6 +246,7 @@ public class PlexusConfiguration
         initFilters( this.chains );
     }
 
+    @Override
     public Map<String, List<Filter>> createChains( Map<String, String> urls, Map<String, Filter> filters )
     {
         if ( urls == null || urls.isEmpty() )
@@ -362,6 +364,8 @@ public class PlexusConfiguration
                 "Adding new protected resource with path='" + pathPattern + "' and filterExpression='"
                     + filterExpression + "'" );
 
+            chains.remove( pathPattern );
+
             chains.put( pathPattern, getPathFilters( pathPattern, filterExpression ) );
         }
         catch ( Exception e )
@@ -369,5 +373,4 @@ public class PlexusConfiguration
             throw new SecurityConfigurationException( "Could not apply changes!", e );
         }
     }
-
 }

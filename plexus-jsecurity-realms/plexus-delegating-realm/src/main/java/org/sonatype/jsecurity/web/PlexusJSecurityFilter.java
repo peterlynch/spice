@@ -1,5 +1,7 @@
 package org.sonatype.jsecurity.web;
 
+import static org.jsecurity.util.StringUtils.clean;
+
 import javax.servlet.FilterConfig;
 
 import org.codehaus.plexus.PlexusConstants;
@@ -11,7 +13,6 @@ import org.jsecurity.util.ClassUtils;
 import org.jsecurity.util.LifecycleUtils;
 import org.jsecurity.web.config.WebConfiguration;
 import org.jsecurity.web.servlet.JSecurityFilter;
-import static org.jsecurity.util.StringUtils.clean;
 
 /**
  * Extension of JSecurityFilter that uses Plexus lookup to get the configuration, if any role param is given. Otherwise
@@ -35,6 +36,8 @@ public class PlexusJSecurityFilter
     public PlexusJSecurityFilter()
     {
         // not setting configClassName explicitly, so we can use either configRole or configClassName
+
+        this.configClassName = null;
     }
 
     protected void applyInitParams()
