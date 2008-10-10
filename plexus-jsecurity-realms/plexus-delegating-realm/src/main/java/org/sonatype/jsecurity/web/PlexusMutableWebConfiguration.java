@@ -5,4 +5,6 @@ public interface PlexusMutableWebConfiguration
 {
     void addProtectedResource( String pathPattern, String filterExpression )
         throws SecurityConfigurationException;
+
+    void protectedResourcesAdded();
 }

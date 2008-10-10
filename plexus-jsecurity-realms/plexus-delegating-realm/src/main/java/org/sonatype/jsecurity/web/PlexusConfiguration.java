@@ -379,4 +379,9 @@ public class PlexusConfiguration
             throw new SecurityConfigurationException( "Could not apply changes!", e );
         }
     }
+
+    public void protectedResourcesAdded()
+    {
+        initFilters( chains );
+    }
 }
