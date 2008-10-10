@@ -17,16 +17,22 @@ public class SecurityPrivilege
     
     public SecurityPrivilege( CPrivilege privilege )
     {
+        this( privilege, false );
+    }
+    
+    public SecurityPrivilege( CPrivilege privilege, boolean readOnly )
+    {
         setDescription( privilege.getDescription() );
         setId( privilege.getId() );
         setName( privilege.getName() );
         setType( privilege.getType() );
+        setReadOnly( readOnly );
         
         if ( privilege.getProperties() != null )
         {
             for ( CProperty prop : ( List<CProperty> ) privilege.getProperties() )
             {
-                addProperty( new SecurityProperty( prop ) );
+                addProperty( new SecurityProperty( prop, true ) );
             }
         }
     }

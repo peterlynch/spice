@@ -173,7 +173,7 @@ public class ResourceMergingConfigurationManager
         
         for ( CPrivilege item : ( List<CPrivilege> ) getConfiguration().getPrivileges() )
         {
-            list.add( new SecurityPrivilege( item ) );
+            list.add( new SecurityPrivilege( item, true ) );
         }
         
         return list;
@@ -185,7 +185,7 @@ public class ResourceMergingConfigurationManager
         
         for ( CRole item : ( List<CRole> ) getConfiguration().getRoles() )
         {
-            list.add( new SecurityRole( item ) );
+            list.add( new SecurityRole( item, true ) );
         }
         
         return list;
@@ -197,7 +197,7 @@ public class ResourceMergingConfigurationManager
         
         for ( CUser item : ( List<CUser> ) getConfiguration().getUsers() )
         {
-            list.add( new SecurityUser( item ) );
+            list.add( new SecurityUser( item, true ) );
         }
         
         return list;
@@ -210,7 +210,7 @@ public class ResourceMergingConfigurationManager
         {
             if ( privilege.getId().equals( id ) )
             {
-                return new SecurityPrivilege( privilege );
+                return new SecurityPrivilege( privilege, true );
             }
         }
 
@@ -224,7 +224,7 @@ public class ResourceMergingConfigurationManager
         {
             if ( role.getId().equals( id ) )
             {
-                return new SecurityRole( role );
+                return new SecurityRole( role, true );
             }
         }
 
@@ -238,7 +238,7 @@ public class ResourceMergingConfigurationManager
         {
             if ( user.getId().equals( id ) )
             {
-                return new SecurityUser( user );
+                return new SecurityUser( user, true );
             }
         }
 

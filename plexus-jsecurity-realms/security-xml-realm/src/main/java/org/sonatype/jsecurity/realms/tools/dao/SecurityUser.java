@@ -16,11 +16,17 @@ public class SecurityUser
     
     public SecurityUser( CUser user )
     {
+        this( user, false );
+    }
+    
+    public SecurityUser( CUser user, boolean readOnly )
+    {
         setEmail( user.getEmail() );
         setName( user.getName() );
         setPassword( user.getPassword() );
         setStatus( user.getStatus() );
         setId( user.getId() );
+        setReadOnly( readOnly );
      
         if ( user.getRoles() != null )
         {

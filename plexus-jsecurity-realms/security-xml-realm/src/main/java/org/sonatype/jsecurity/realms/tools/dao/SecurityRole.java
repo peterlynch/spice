@@ -16,10 +16,16 @@ public class SecurityRole
     
     public SecurityRole( CRole role )
     {
+        this( role, false );
+    }
+    
+    public SecurityRole( CRole role, boolean readOnly )
+    {
         setDescription( role.getDescription() );
         setId( role.getId() );
         setName( role.getName() );
         setSessionTimeout( role.getSessionTimeout() );
+        setReadOnly( readOnly );
         
         if ( role.getRoles() != null )
         {
