@@ -7,7 +7,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>plexus-delegating-realm</artifactId>
-    <name>Plexus Based Realm that will delegate control to other jsecurity realms</name>
+    <name>Plexus Delegating Realm</name>
+    <description>Plexus Based Realm that will delegate control to other jsecurity realms</description>
     <build>
         <plugins>
             <plugin>

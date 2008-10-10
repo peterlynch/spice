@@ -7,7 +7,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>security-xml-realm</artifactId>
-    <name>Security.xml based Realm</name>
+    <name>Plexus XML Realm</name>
+    <description>Security.xml based Realm</description>
     <build>
         <plugins>
             <plugin>
