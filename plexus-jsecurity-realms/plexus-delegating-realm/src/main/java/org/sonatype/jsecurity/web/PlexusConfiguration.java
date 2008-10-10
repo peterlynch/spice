@@ -364,6 +364,12 @@ public class PlexusConfiguration
                 "Adding new protected resource with path='" + pathPattern + "' and filterExpression='"
                     + filterExpression + "'" );
 
+            if ( chains == null )
+            {
+                // create a map if not
+                chains = new LinkedHashMap<String, List<Filter>>();
+            }
+
             chains.remove( pathPattern );
 
             chains.put( pathPattern, getPathFilters( pathPattern, filterExpression ) );
