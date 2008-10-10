@@ -25,11 +25,14 @@ import org.sonatype.jsecurity.model.CUser;
 import org.sonatype.jsecurity.model.Configuration;
 import org.sonatype.jsecurity.model.io.xpp3.SecurityConfigurationXpp3Reader;
 import org.sonatype.jsecurity.model.io.xpp3.SecurityConfigurationXpp3Writer;
+import org.sonatype.jsecurity.realms.tools.dao.SecurityPrivilege;
+import org.sonatype.jsecurity.realms.tools.dao.SecurityRole;
+import org.sonatype.jsecurity.realms.tools.dao.SecurityUser;
 import org.sonatype.jsecurity.realms.validator.ConfigurationValidator;
 import org.sonatype.jsecurity.realms.validator.ValidationContext;
 import org.sonatype.jsecurity.realms.validator.ValidationResponse;
 
-@Component( role = ConfigurationManager.class )
+@Component( role = ConfigurationManager.class, hint = "default" )
 public class DefaultConfigurationManager
     extends AbstractLogEnabled
     implements ConfigurationManager
@@ -48,31 +51,63 @@ public class DefaultConfigurationManager
     private ReentrantLock lock = new ReentrantLock();
 
     @SuppressWarnings( "unchecked" )
-    public List<CPrivilege> listPrivileges()
+    public List<SecurityPrivilege> listPrivileges()
     {
-        return (List<CPrivilege>) getConfiguration().getPrivileges();
+        List<SecurityPrivilege> list = new ArrayList<SecurityPrivilege>();
+        
+        for ( CPrivilege item : ( List<CPrivilege> ) getConfiguration().getPrivileges() )
+        {
+            list.add( new SecurityPrivilege( item ) );
+        }
+        
+        return list;
     }
 
     @SuppressWarnings( "unchecked" )
-    public List<CRole> listRoles()
+    public List<SecurityRole> listRoles()
     {
-        return (List<CRole>) getConfiguration().getRoles();
+        List<SecurityRole> list = new ArrayList<SecurityRole>();
+        
+        for ( CRole item : ( List<CRole> ) getConfiguration().getRoles() )
+        {
+            list.add( new SecurityRole( item ) );
+        }
+        
+        return list;
     }
 
     @SuppressWarnings( "unchecked" )
-    public List<CUser> listUsers()
+    public List<SecurityUser> listUsers()
     {
-        return (List<CUser>) getConfiguration().getUsers();
+        List<SecurityUser> list = new ArrayList<SecurityUser>();
+        
+        for ( CUser item : ( List<CUser> ) getConfiguration().getUsers() )
+        {
+            list.add( new SecurityUser( item ) );
+        }
+        
+        return list;
     }
-
-    public void createPrivilege( CPrivilege privilege )
+    
+    public void createPrivilege( SecurityPrivilege privilege )
         throws InvalidConfigurationException
     {
-        ValidationResponse vr = validator.validatePrivilege( initializeContext(), privilege, false );
+        createPrivilege( privilege, initializeContext() );
+    }
+
+    public void createPrivilege( SecurityPrivilege privilege, ValidationContext context )
+        throws InvalidConfigurationException
+    {
+        if ( context == null )
+        {
+            context = initializeContext();
+        }
+        
+        ValidationResponse vr = validator.validatePrivilege( context, privilege, false );
 
         if ( vr.isValid() )
         {
-            getConfiguration().addPrivilege( ObjectCloner.clone( privilege ) );
+            getConfiguration().addPrivilege( privilege );
         }
         else
         {
@@ -80,29 +115,51 @@ public class DefaultConfigurationManager
         }
     }
 
-    public void createRole( CRole role )
+    public void createRole( SecurityRole role )
         throws InvalidConfigurationException
     {
-        ValidationResponse vr = validator.validateRole( initializeContext(), role, false );
+        createRole( role, initializeContext() );
+    }
+    
+    public void createRole( SecurityRole role, ValidationContext context )
+        throws InvalidConfigurationException
+    {
+        if ( context == null )
+        {
+            context = initializeContext();
+        }
+        
+        ValidationResponse vr = validator.validateRole( context, role, false );
 
         if ( vr.isValid() )
         {
-            getConfiguration().addRole( ObjectCloner.clone( role ) );
+            getConfiguration().addRole( role );
         }
         else
         {
             throw new InvalidConfigurationException( vr );
         }
     }
-
-    public void createUser( CUser user )
+    
+    public void createUser( SecurityUser user )
         throws InvalidConfigurationException
     {
-        ValidationResponse vr = validator.validateUser( initializeContext(), user, false );
+        createUser( user, initializeContext() );
+    }
+
+    public void createUser( SecurityUser user, ValidationContext context )
+        throws InvalidConfigurationException
+    {
+        if ( context == null )
+        {
+            context = initializeContext();
+        }
+        
+        ValidationResponse vr = validator.validateUser( context, user, false );
 
         if ( vr.isValid() )
         {
-            getConfiguration().addUser( ObjectCloner.clone( user ) );
+            getConfiguration().addUser( user );
         }
         else
         {
@@ -177,14 +234,14 @@ public class DefaultConfigurationManager
     }
 
     @SuppressWarnings( "unchecked" )
-    public CPrivilege readPrivilege( String id )
+    public SecurityPrivilege readPrivilege( String id )
         throws NoSuchPrivilegeException
     {
         for ( CPrivilege privilege : (List<CPrivilege>) getConfiguration().getPrivileges() )
         {
             if ( privilege.getId().equals( id ) )
             {
-                return ObjectCloner.clone( privilege );
+                return new SecurityPrivilege( privilege );
             }
         }
 
@@ -192,14 +249,14 @@ public class DefaultConfigurationManager
     }
 
     @SuppressWarnings( "unchecked" )
-    public CRole readRole( String id )
+    public SecurityRole readRole( String id )
         throws NoSuchRoleException
     {
         for ( CRole role : (List<CRole>) getConfiguration().getRoles() )
         {
             if ( role.getId().equals( id ) )
             {
-                return ObjectCloner.clone( role );
+                return new SecurityRole( role );
             }
         }
 
@@ -207,30 +264,42 @@ public class DefaultConfigurationManager
     }
 
     @SuppressWarnings( "unchecked" )
-    public CUser readUser( String id )
+    public SecurityUser readUser( String id )
         throws NoSuchUserException
     {
         for ( CUser user : (List<CUser>) getConfiguration().getUsers() )
         {
             if ( user.getId().equals( id ) )
             {
-                return ObjectCloner.clone( user );
+                return new SecurityUser( user );
             }
         }
 
         throw new NoSuchUserException( id );
     }
-
-    public void updatePrivilege( CPrivilege privilege )
+    
+    public void updatePrivilege( SecurityPrivilege privilege )
         throws InvalidConfigurationException,
             NoSuchPrivilegeException
     {
-        ValidationResponse vr = validator.validatePrivilege( initializeContext(), privilege, true );
+        updatePrivilege( privilege, initializeContext() );
+    }
+
+    public void updatePrivilege( SecurityPrivilege privilege, ValidationContext context )
+        throws InvalidConfigurationException,
+            NoSuchPrivilegeException
+    {
+        if ( context == null )
+        {
+            context = initializeContext();
+        }
+        
+        ValidationResponse vr = validator.validatePrivilege( context, privilege, true );
 
         if ( vr.isValid() )
         {
             deletePrivilege( privilege.getId() );
-            getConfiguration().addPrivilege( ObjectCloner.clone( privilege ) );
+            getConfiguration().addPrivilege( privilege );
         }
         else
         {
@@ -238,16 +307,28 @@ public class DefaultConfigurationManager
         }
     }
 
-    public void updateRole( CRole role )
+    public void updateRole( SecurityRole role )
         throws InvalidConfigurationException,
             NoSuchRoleException
     {
-        ValidationResponse vr = validator.validateRole( initializeContext(), role, true );
+        updateRole( role, initializeContext() );
+    }
+    
+    public void updateRole( SecurityRole role, ValidationContext context )
+        throws InvalidConfigurationException,
+            NoSuchRoleException
+    {
+        if ( context == null )
+        {
+            context = initializeContext();
+        }
+        
+        ValidationResponse vr = validator.validateRole( context, role, true );
 
         if ( vr.isValid() )
         {
             deleteRole( role.getId() );
-            getConfiguration().addRole( ObjectCloner.clone( role ) );
+            getConfiguration().addRole( role );
         }
         else
         {
@@ -255,16 +336,28 @@ public class DefaultConfigurationManager
         }
     }
 
-    public void updateUser( CUser user )
+    public void updateUser( SecurityUser user )
         throws InvalidConfigurationException,
             NoSuchUserException
     {
-        ValidationResponse vr = validator.validateUser( initializeContext(), user, true );
+        updateUser( user, initializeContext() );
+    }
+    
+    public void updateUser( SecurityUser user, ValidationContext context )
+        throws InvalidConfigurationException,
+            NoSuchUserException
+    {
+        if ( context == null )
+        {
+            context = initializeContext();
+        }
+        
+        ValidationResponse vr = validator.validateUser( context, user, true );
 
         if ( vr.isValid() )
         {
             deleteUser( user.getId() );
-            getConfiguration().addUser( ObjectCloner.clone( user ) );
+            getConfiguration().addUser( user );
         }
         else
         {
@@ -273,7 +366,7 @@ public class DefaultConfigurationManager
     }
 
     @SuppressWarnings( "unchecked" )
-    public String getPrivilegeProperty( CPrivilege privilege, String key )
+    public String getPrivilegeProperty( SecurityPrivilege privilege, String key )
     {
         if ( privilege != null && privilege.getProperties() != null )
         {
@@ -353,10 +446,11 @@ public class DefaultConfigurationManager
         lock.lock();
 
         Reader fr = null;
+        FileInputStream is = null;
 
         try
         {
-            FileInputStream is = new FileInputStream( securityConfiguration );
+            is = new FileInputStream( securityConfiguration );
 
             SecurityConfigurationXpp3Reader reader = new SecurityConfigurationXpp3Reader();
 
@@ -390,6 +484,18 @@ public class DefaultConfigurationManager
                     // just closing if open
                 }
             }
+            
+            if ( is != null )
+            {
+                try
+                {
+                    is.close();
+                }
+                catch ( IOException e )
+                {
+                    // just closing if open
+                }
+            }
 
             lock.unlock();
         }
@@ -397,7 +503,7 @@ public class DefaultConfigurationManager
         return configuration;
     }
 
-    private ValidationContext initializeContext()
+    public ValidationContext initializeContext()
     {
         ValidationContext context = new ValidationContext();
 

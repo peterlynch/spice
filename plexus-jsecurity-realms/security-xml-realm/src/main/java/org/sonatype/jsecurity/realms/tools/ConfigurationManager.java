@@ -3,9 +3,10 @@ package org.sonatype.jsecurity.realms.tools;
 
 import java.util.List;
 
-import org.sonatype.jsecurity.model.CPrivilege;
-import org.sonatype.jsecurity.model.CRole;
-import org.sonatype.jsecurity.model.CUser;
+import org.sonatype.jsecurity.realms.tools.dao.SecurityPrivilege;
+import org.sonatype.jsecurity.realms.tools.dao.SecurityRole;
+import org.sonatype.jsecurity.realms.tools.dao.SecurityUser;
+import org.sonatype.jsecurity.realms.validator.ValidationContext;
 
 public interface ConfigurationManager
 {
@@ -14,28 +15,36 @@ public interface ConfigurationManager
      * 
      * @return
      */
-    List<CUser> listUsers();
+    List<SecurityUser> listUsers();
     
     /**
      * Retrieve all roles
      * 
      * @return
      */
-    List<CRole> listRoles();
+    List<SecurityRole> listRoles();
     
     /**
      * Retrieve all privileges
      * 
      * @return
      */
-    List<CPrivilege> listPrivileges();
+    List<SecurityPrivilege> listPrivileges();
     
     /**
      * Create a new user
      * 
      * @param user
      */
-    void createUser( CUser user )
+    void createUser( SecurityUser user )
+        throws InvalidConfigurationException;
+    
+    /**
+     * Create a new user with a context to validate in
+     * 
+     * @param user
+     */
+    void createUser( SecurityUser user, ValidationContext context )
         throws InvalidConfigurationException;
     
     /**
@@ -43,7 +52,15 @@ public interface ConfigurationManager
      * 
      * @param role
      */
-    void createRole( CRole role )
+    void createRole( SecurityRole role )
+        throws InvalidConfigurationException;
+    
+    /**
+     * Create a new role with a context to validate in
+     * 
+     * @param role
+     */
+    void createRole( SecurityRole role, ValidationContext context )
         throws InvalidConfigurationException;
     
     /**
@@ -51,7 +68,15 @@ public interface ConfigurationManager
      * 
      * @param privilege
      */
-    void createPrivilege( CPrivilege privilege )
+    void createPrivilege( SecurityPrivilege privilege )
+        throws InvalidConfigurationException;
+    
+    /**
+     * Create a new privilege with a context to validate in
+     * 
+     * @param privilege
+     */
+    void createPrivilege( SecurityPrivilege privilege, ValidationContext context )
         throws InvalidConfigurationException;
     
     /**
@@ -60,7 +85,7 @@ public interface ConfigurationManager
      * @param id
      * @return
      */
-    CUser readUser( String id )
+    SecurityUser readUser( String id )
         throws NoSuchUserException;
     
     /**
@@ -69,7 +94,7 @@ public interface ConfigurationManager
      * @param id
      * @return
      */
-    CRole readRole( String id )
+    SecurityRole readRole( String id )
         throws NoSuchRoleException;
     
     /**
@@ -77,7 +102,7 @@ public interface ConfigurationManager
      * @param id
      * @return
      */
-    CPrivilege readPrivilege( String id )
+    SecurityPrivilege readPrivilege( String id )
         throws NoSuchPrivilegeException;
     
     /**
@@ -85,7 +110,16 @@ public interface ConfigurationManager
      * 
      * @param user
      */
-    void updateUser( CUser user )
+    void updateUser( SecurityUser user )
+        throws InvalidConfigurationException,
+        NoSuchUserException;
+    
+    /**
+     * Update an existing user with a context to validate in
+     * 
+     * @param user
+     */
+    void updateUser( SecurityUser user, ValidationContext context )
         throws InvalidConfigurationException,
         NoSuchUserException;
     
@@ -94,7 +128,16 @@ public interface ConfigurationManager
      * 
      * @param role
      */
-    void updateRole( CRole role )
+    void updateRole( SecurityRole role )
+        throws InvalidConfigurationException,
+        NoSuchRoleException;
+    
+    /**
+     * Update an existing role with a context to validate in
+     * 
+     * @param role
+     */
+    void updateRole( SecurityRole role, ValidationContext context )
         throws InvalidConfigurationException,
         NoSuchRoleException;
     
@@ -103,7 +146,16 @@ public interface ConfigurationManager
      * 
      * @param privilege
      */
-    void updatePrivilege( CPrivilege privilege )
+    void updatePrivilege( SecurityPrivilege privilege )
+        throws InvalidConfigurationException,
+        NoSuchPrivilegeException;
+    
+    /**
+     * Update an existing privilege with a context to validate in
+     * 
+     * @param privilege
+     */
+    void updatePrivilege( SecurityPrivilege privilege, ValidationContext context )
         throws InvalidConfigurationException,
         NoSuchPrivilegeException;
     
@@ -138,7 +190,7 @@ public interface ConfigurationManager
      * @param key
      * @return
      */
-    String getPrivilegeProperty( CPrivilege privilege, String key );
+    String getPrivilegeProperty( SecurityPrivilege privilege, String key );
     
     /**
      * Helper method to retrieve a property from the privilege
@@ -158,4 +210,10 @@ public interface ConfigurationManager
      * Save to disk what is currently cached in memory 
      */
     void save();
+    
+    /**
+     * Initialize the context used for validation
+     * @return
+     */
+    ValidationContext initializeContext();
 }

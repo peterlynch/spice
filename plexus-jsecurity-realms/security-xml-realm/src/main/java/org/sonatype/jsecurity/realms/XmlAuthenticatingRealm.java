@@ -25,7 +25,7 @@ public class XmlAuthenticatingRealm
     extends AuthorizingRealm
     implements Initializable, Realm
 {
-    @Requirement
+    @Requirement( role = ConfigurationManager.class, hint = "resourceMerging" )
     private ConfigurationManager configuration;
 
     @Override

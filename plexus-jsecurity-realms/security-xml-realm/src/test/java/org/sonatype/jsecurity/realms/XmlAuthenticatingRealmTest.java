@@ -8,19 +8,21 @@ import org.jsecurity.authc.AuthenticationException;
 import org.jsecurity.authc.AuthenticationInfo;
 import org.jsecurity.authc.UsernamePasswordToken;
 import org.jsecurity.realm.Realm;
-import org.sonatype.jsecurity.model.CPrivilege;
-import org.sonatype.jsecurity.model.CProperty;
-import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUser;
 import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
 import org.sonatype.jsecurity.realms.tools.DefaultConfigurationManager;
 import org.sonatype.jsecurity.realms.tools.InvalidConfigurationException;
 import org.sonatype.jsecurity.realms.tools.StringDigester;
+import org.sonatype.jsecurity.realms.tools.dao.SecurityPrivilege;
+import org.sonatype.jsecurity.realms.tools.dao.SecurityProperty;
+import org.sonatype.jsecurity.realms.tools.dao.SecurityRole;
+import org.sonatype.jsecurity.realms.tools.dao.SecurityUser;
 
 public class XmlAuthenticatingRealmTest
     extends PlexusTestCase
 {
     public static final String PLEXUS_SECURITY_XML_FILE = "security-xml-file";
+    public static final String PLEXUS_STATIC_SECURITY = "static-security-resource";
     
     private static final String SECURITY_CONFIG_FILE_PATH = getBasedir() + "/target/jsecurity/security.xml"; 
     
@@ -36,6 +38,7 @@ public class XmlAuthenticatingRealmTest
         super.customizeContext( context );
         
         context.put( PLEXUS_SECURITY_XML_FILE, SECURITY_CONFIG_FILE_PATH );
+        context.put( PLEXUS_STATIC_SECURITY, "" );
     }
     
     @Override
@@ -46,7 +49,7 @@ public class XmlAuthenticatingRealmTest
         
         realm = ( XmlAuthenticatingRealm ) lookup( Realm.class, "XmlAuthenticatingRealm" );
         
-        configurationManager = ( DefaultConfigurationManager ) lookup( ConfigurationManager.class );
+        configurationManager = ( DefaultConfigurationManager ) lookup( ConfigurationManager.class, "default" );
         
         configurationManager.clearCache();
         
@@ -107,25 +110,25 @@ public class XmlAuthenticatingRealmTest
     
     private void buildTestAuthenticationConfig( String status ) throws InvalidConfigurationException
     {
-        CPrivilege priv = new CPrivilege();
+        SecurityPrivilege priv = new SecurityPrivilege();
         priv.setId( "priv" );
         priv.setName( "name" );
         priv.setDescription( "desc" );
         priv.setType( "method" );
         
-        CProperty prop = new CProperty();
+        SecurityProperty prop = new SecurityProperty();
         prop.setKey( "method" );
         prop.setValue( "read" );
         priv.addProperty( prop );
         
-        prop = new CProperty();
+        prop = new SecurityProperty();
         prop.setKey( "permission" );
         prop.setValue( "somevalue" );
         priv.addProperty( prop );
         
         configurationManager.createPrivilege( priv );
         
-        CRole role = new CRole();
+        SecurityRole role = new SecurityRole();
         role.setName( "name" );
         role.setId( "role" );
         role.setDescription( "desc" );
@@ -134,7 +137,7 @@ public class XmlAuthenticatingRealmTest
         
         configurationManager.createRole( role );
         
-        CUser user = new CUser();
+        SecurityUser user = new SecurityUser();
         user.setEmail( "dummyemail" );
         user.setName( "dummyname" );
         user.setStatus( status );

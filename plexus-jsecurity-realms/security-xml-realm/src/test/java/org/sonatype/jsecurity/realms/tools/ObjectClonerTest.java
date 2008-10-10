@@ -8,6 +8,9 @@ import org.sonatype.jsecurity.model.CPrivilege;
 import org.sonatype.jsecurity.model.CProperty;
 import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUser;
+import org.sonatype.jsecurity.realms.tools.dao.SecurityPrivilege;
+import org.sonatype.jsecurity.realms.tools.dao.SecurityRole;
+import org.sonatype.jsecurity.realms.tools.dao.SecurityUser;
 
 public class ObjectClonerTest
     extends PlexusTestCase
@@ -29,7 +32,7 @@ public class ObjectClonerTest
         
         user.setRoles( roles );
         
-        CUser cloned = ObjectCloner.clone( user );
+        SecurityUser cloned = new SecurityUser( user );
         
         assertTrue( cloned != null );
         assertTrue( cloned != user );
@@ -69,7 +72,7 @@ public class ObjectClonerTest
         
         role.setPrivileges( privs );
         
-        CRole cloned = ObjectCloner.clone( role );
+        SecurityRole cloned = new SecurityRole( role );
         
         assertTrue( cloned != null );
         assertTrue( cloned != role );
@@ -116,7 +119,7 @@ public class ObjectClonerTest
         
         priv.setProperties( props );
         
-        CPrivilege cloned = ObjectCloner.clone( priv );
+        SecurityPrivilege cloned = new SecurityPrivilege( priv );
         
         assertTrue( cloned != null );
         assertTrue( cloned != priv );

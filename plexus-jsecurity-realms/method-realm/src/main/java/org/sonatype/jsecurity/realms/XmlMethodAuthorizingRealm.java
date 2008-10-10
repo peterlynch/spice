@@ -9,8 +9,8 @@ import org.jsecurity.authc.AuthenticationToken;
 import org.jsecurity.authz.Permission;
 import org.jsecurity.authz.permission.WildcardPermission;
 import org.jsecurity.realm.Realm;
-import org.sonatype.jsecurity.model.CPrivilege;
 import org.sonatype.jsecurity.realms.tools.NoSuchPrivilegeException;
+import org.sonatype.jsecurity.realms.tools.dao.SecurityPrivilege;
 
 @Component( role = Realm.class, hint = "XmlMethodAuthorizingRealm" )
 public class XmlMethodAuthorizingRealm
@@ -33,7 +33,7 @@ public class XmlMethodAuthorizingRealm
     {
         try
         {
-            CPrivilege privilege = getConfigurationManager().readPrivilege( privilegeId );
+            SecurityPrivilege privilege = getConfigurationManager().readPrivilege( privilegeId );
 
             if ( !privilege.getType().equals( PRIVILEGE_TYPE_METHOD ) )
             {

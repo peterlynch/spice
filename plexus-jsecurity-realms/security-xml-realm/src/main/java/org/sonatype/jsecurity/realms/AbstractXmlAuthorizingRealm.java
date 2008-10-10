@@ -28,7 +28,7 @@ public abstract class AbstractXmlAuthorizingRealm
     extends AuthorizingRealm
     implements Realm
 {
-    @Requirement
+    @Requirement( role = ConfigurationManager.class, hint = "resourceMerging" )
     private ConfigurationManager configuration;
 
     public AbstractXmlAuthorizingRealm()

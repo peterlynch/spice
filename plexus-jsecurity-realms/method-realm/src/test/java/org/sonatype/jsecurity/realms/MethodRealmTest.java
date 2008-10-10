@@ -10,18 +10,19 @@ import org.jsecurity.authz.Permission;
 import org.jsecurity.authz.permission.WildcardPermission;
 import org.jsecurity.realm.Realm;
 import org.jsecurity.subject.SimplePrincipalCollection;
-import org.sonatype.jsecurity.model.CPrivilege;
-import org.sonatype.jsecurity.model.CProperty;
-import org.sonatype.jsecurity.model.CRole;
-import org.sonatype.jsecurity.model.CUser;
 import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
 import org.sonatype.jsecurity.realms.tools.DefaultConfigurationManager;
 import org.sonatype.jsecurity.realms.tools.InvalidConfigurationException;
+import org.sonatype.jsecurity.realms.tools.dao.SecurityPrivilege;
+import org.sonatype.jsecurity.realms.tools.dao.SecurityProperty;
+import org.sonatype.jsecurity.realms.tools.dao.SecurityRole;
+import org.sonatype.jsecurity.realms.tools.dao.SecurityUser;
 
 public class MethodRealmTest
     extends PlexusTestCase
 {
     public static final String PLEXUS_SECURITY_XML_FILE = "security-xml-file";
+    public static final String PLEXUS_STATIC_SECURITY = "static-security-resource";
     
     private static final String SECURITY_CONFIG_FILE_PATH = getBasedir() + "/target/jsecurity/security.xml"; 
     
@@ -37,6 +38,7 @@ public class MethodRealmTest
         super.customizeContext( context );
         
         context.put( PLEXUS_SECURITY_XML_FILE, SECURITY_CONFIG_FILE_PATH );
+        context.put( PLEXUS_STATIC_SECURITY, "" );
     }
     
     @Override
@@ -85,15 +87,15 @@ public class MethodRealmTest
     
     private void buildTestAuthorizationConfig() throws InvalidConfigurationException
     {
-        CProperty permissionProp = new CProperty();
+        SecurityProperty permissionProp = new SecurityProperty();
         permissionProp.setKey( "permission" );
         permissionProp.setValue( "app:config" );
         
-        CProperty methodProp = new CProperty();
+        SecurityProperty methodProp = new SecurityProperty();
         methodProp.setKey( "method" );
         methodProp.setValue( "read" );
         
-        CPrivilege priv = new CPrivilege();
+        SecurityPrivilege priv = new SecurityPrivilege();
         priv.setId( "priv" );
         priv.setName( "somepriv" );
         priv.setType( "method" );
@@ -103,7 +105,7 @@ public class MethodRealmTest
         
         configurationManager.createPrivilege( priv );
         
-        CRole role = new CRole();
+        SecurityRole role = new SecurityRole();
         role.setId( "role" );
         role.setName( "somerole" );
         role.setDescription( "somedescription" );
@@ -112,10 +114,10 @@ public class MethodRealmTest
         
         configurationManager.createRole( role );
         
-        CUser user = new CUser();
+        SecurityUser user = new SecurityUser();
         user.setEmail( "dummyemail" );
         user.setName( "dummyname" );
-        user.setStatus( CUser.STATUS_ACTIVE );
+        user.setStatus( SecurityUser.STATUS_ACTIVE );
         user.setId( "username" );
         user.setPassword( "password" );
         user.addRole( role.getId() );
