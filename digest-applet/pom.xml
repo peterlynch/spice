@@ -16,6 +16,19 @@
         <developerConnection>scm:svn:https://svn.sonatype.org/spice/trunk/digest-applet</developerConnection>
     </scm>
     
+    <build>
+      <pluginManagement>
+        <plugins>
+          <plugin>
+            <artifactId>maven-release-plugin</artifactId>
+            <configuration>
+              <arguments>-Pnon-ci</arguments>
+            </configuration>
+          </plugin>
+        </plugins>
+      </pluginManagement>
+    </build>
+    
     <profiles>
       <profile>
         <id>ci</id>
