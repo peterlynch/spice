@@ -144,7 +144,7 @@ public interface PlexusMercury
    * @return
    * @throws PlexusMercuryException
    */
-  public Collection<Artifact> read( Repository repo, ArtifactBasicMetadata... artifacts )
+  public Collection<Artifact> read( Collection<Repository> repo, ArtifactBasicMetadata... artifacts )
   throws RepositoryException;
 
 }

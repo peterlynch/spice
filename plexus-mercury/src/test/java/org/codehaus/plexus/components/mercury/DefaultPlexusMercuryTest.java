@@ -26,8 +26,10 @@ package org.codehaus.plexus.components.mercury;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import junit.framework.TestCase;
 
@@ -37,13 +39,11 @@ import org.apache.maven.mercury.artifact.DefaultArtifact;
 import org.apache.maven.mercury.crypto.api.StreamVerifierFactory;
 import org.apache.maven.mercury.crypto.pgp.PgpStreamVerifierFactory;
 import org.apache.maven.mercury.crypto.sha.SHA1VerifierFactory;
+import org.apache.maven.mercury.repository.api.Repository;
 import org.apache.maven.mercury.repository.api.RepositoryException;
 import org.apache.maven.mercury.repository.local.m2.LocalRepositoryM2;
 import org.apache.maven.mercury.repository.remote.m2.RemoteRepositoryM2;
 import org.apache.maven.mercury.util.FileUtil;
-import org.codehaus.plexus.components.mercury.DefaultPlexusMercury;
-import org.codehaus.plexus.components.mercury.PlexusMercury;
-import org.codehaus.plexus.util.StringUtils;
 
 /**
  * 
@@ -52,12 +52,14 @@ import org.codehaus.plexus.util.StringUtils;
  * @version $Id$
  */
 public class DefaultPlexusMercuryTest
-    extends TestCase
+extends TestCase
 {
   DefaultPlexusMercury pm;
 
   RemoteRepositoryM2 remoteRepo;
   LocalRepositoryM2  localRepo;
+  
+  List<Repository>   repos;
   
   Artifact a;
   
@@ -67,9 +69,10 @@ public class DefaultPlexusMercuryTest
   protected static final String publicKeyFile = "/pgp/pubring.gpg";
   protected static final String secretKeyPass = "testKey82";
   
-  public static final String SYSTEM_PARAMETER_PLEXUS_MERCURY_TEST_URL = "plexus.mercury.test.url";
-  private String remoteServerUrl = System.getProperty( SYSTEM_PARAMETER_PLEXUS_MERCURY_TEST_URL, null );
-//  static String remoteServerUrl = "http://localhost:8081/nexus/content/repositories/releases";
+//  public static final String SYSTEM_PARAMETER_PLEXUS_MERCURY_TEST_URL = "plexus.mercury.test.url";
+//  private String remoteServerUrl = System.getProperty( SYSTEM_PARAMETER_PLEXUS_MERCURY_TEST_URL, null );
+  static String remoteServerUrl = "http://people.apache.org/~ogusakov/repos/test";
+  String artifactCoord = "org.apache.maven.mercury:mercury-repo-virtual:1.0.0-alpha-2-SNAPSHOT";
 
   private File localRepoDir;
   
@@ -84,15 +87,12 @@ public class DefaultPlexusMercuryTest
   
   SHA1VerifierFactory      sha1F;
   HashSet<StreamVerifierFactory> vFacSha1;
-
+  
   //-------------------------------------------------------------------------------------
   @Override
   protected void setUp()
   throws Exception
   {
-    if( remoteServerUrl == null )
-      return;
-    
     super.setUp();
 
     // prep. Artifact
@@ -122,6 +122,13 @@ public class DefaultPlexusMercuryTest
     localRepoDir = File.createTempFile( "local-", "-repo" );
     localRepoDir.delete();
     localRepoDir.mkdir();
+    
+    localRepo = new LocalRepositoryM2( "testLocalRepo", localRepoDir );
+    
+    repos = new ArrayList<Repository>();
+    repos.add( localRepo );
+    repos.add( remoteRepo );
+    
   }
   //-------------------------------------------------------------------------------------
   @Override
@@ -134,7 +141,7 @@ public class DefaultPlexusMercuryTest
     super.tearDown();
   }
   //-------------------------------------------------------------------------------------
-  public void testWrite()
+  public void notestWrite()
   throws RepositoryException
   {
     pm.write( remoteRepo, a );
@@ -143,7 +150,29 @@ public class DefaultPlexusMercuryTest
   public void testRead()
   throws RepositoryException
   {
-    pm.write( remoteRepo, a );
+    ArtifactBasicMetadata bmd = new ArtifactBasicMetadata(artifactCoord);
+    
+    Collection<Artifact> res = pm.read( repos, bmd );
+    
+    assertNotNull( res );
+    
+    assertFalse( res.isEmpty() );
+    
+    Artifact a = res.toArray( new Artifact[1] )[0];
+    
+    assertNotNull( a );
+    
+    File fBin = a.getFile();
+    
+    assertNotNull( fBin );
+
+    assertTrue( fBin.exists() );
+    
+    byte [] pomBytes = a.getPomBlob();
+    
+    assertNotNull( pomBytes );
+    
+    assertTrue( pomBytes.length > 10 );
   }
   //-------------------------------------------------------------------------------------
   //-------------------------------------------------------------------------------------

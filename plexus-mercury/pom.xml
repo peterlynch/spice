@@ -11,7 +11,7 @@
   <version>1.0.0-SNAPSHOT</version>
   
   <properties>
-    <mercury.version>1.0.0-alpha-1-SNAPSHOT</mercury.version>
+    <mercury.version>1.0.0-alpha-2-SNAPSHOT</mercury.version>
   </properties>
   
   <build>
@@ -44,9 +44,14 @@
       <version>1.5.1</version>
     </dependency>
     <dependency>
-    	<groupId>org.apache.maven.mercury</groupId>
-    	<artifactId>mercury-repo-remote-m2</artifactId>
-    	<version>${mercury.version}</version>
+      <groupId>org.apache.maven.mercury</groupId>
+      <artifactId>mercury-repo-remote-m2</artifactId>
+      <version>${mercury.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.mercury</groupId>
+      <artifactId>mercury-repo-virtual</artifactId>
+      <version>${mercury.version}</version>
     </dependency>
   </dependencies>
 </project>

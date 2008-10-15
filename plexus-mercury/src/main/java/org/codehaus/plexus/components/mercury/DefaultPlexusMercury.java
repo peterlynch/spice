@@ -45,8 +45,10 @@ import org.apache.maven.mercury.repository.api.RepositoryReader;
 import org.apache.maven.mercury.repository.api.RepositoryWriter;
 import org.apache.maven.mercury.repository.local.m2.LocalRepositoryM2;
 import org.apache.maven.mercury.repository.remote.m2.RemoteRepositoryM2;
+import org.apache.maven.mercury.repository.virtual.VirtualRepositoryReader;
 import org.apache.maven.mercury.transport.api.Credentials;
 import org.apache.maven.mercury.transport.api.Server;
+import org.apache.maven.mercury.util.Util;
 import org.codehaus.plexus.lang.DefaultLanguage;
 import org.codehaus.plexus.lang.Language;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
@@ -120,8 +122,9 @@ implements PlexusMercury, Initializable
       Set<StreamObserverFactory> readerStreamObservers,
       Set<StreamVerifierFactory> readerStreamVerifiers,
       Set<StreamObserverFactory> writerStreamObservers,
-      Set<StreamVerifierFactory> writerStreamVerifiers )
-      throws RepositoryException
+      Set<StreamVerifierFactory> writerStreamVerifiers 
+                                                      )
+  throws RepositoryException
   {
     Server server;
     try
@@ -152,28 +155,19 @@ implements PlexusMercury, Initializable
     
     RepositoryWriter wr = repo.getWriter();
     
-    wr.writeArtifact( Arrays.asList( artifacts ) );
+    wr.writeArtifacts( Arrays.asList( artifacts ) );
     
   }
   //---------------------------------------------------------------
-  public Collection<Artifact> read( Repository repo, ArtifactBasicMetadata... artifacts )
+  public Collection<Artifact> read( Collection<Repository> repos, ArtifactBasicMetadata... artifacts )
   throws RepositoryException
   {
-    if( repo == null )
+    if( Util.isEmpty( repos ) )
       throw new RepositoryException( _lang.getMessage( "null.repo" ) );
     
-    RepositoryReader rr = repo.getReader( new DependencyProcessor() {
-
-      public List<ArtifactBasicMetadata> getDependencies(
-          ArtifactBasicMetadata bmd,
-          MetadataReader mdReader,
-          Hashtable env )
-          throws MetadataReaderException
-      {
-        return null;
-      }} );
+    VirtualRepositoryReader vr = new VirtualRepositoryReader( repos, DependencyProcessor.NULL_PROCESSOR );
     
-    ArtifactResults ar = rr.readArtifacts( Arrays.asList( artifacts ) );
+    ArtifactResults ar = vr.readArtifacts( Arrays.asList( artifacts ) );
     if( ar.hasExceptions() )
       throw new RepositoryException( ar.getExceptions().toString() );
     
