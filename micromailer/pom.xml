@@ -69,8 +69,24 @@
 					<groupId>org.codehaus.plexus</groupId>
 					<artifactId>plexus-component-api</artifactId>
 				</exclusion>
+                <exclusion>
+                    <groupId>velocity</groupId>
+                    <artifactId>velocity</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-collections</groupId>
+                    <artifactId>commons-collections</artifactId>
+                </exclusion>
 			</exclusions>
 		</dependency>
+        
+        <dependency>
+            <groupId>org.apache.velocity</groupId>
+            <artifactId>velocity</artifactId>
+            <version>1.5</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
 
 		<!-- Mail sending -->
 		<dependency>
