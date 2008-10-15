@@ -16,27 +16,14 @@
         <developerConnection>scm:svn:https://svn.sonatype.org/spice/trunk/digest-applet</developerConnection>
     </scm>
     
-    <build>
-      <pluginManagement>
-        <plugins>
-          <plugin>
-            <artifactId>maven-release-plugin</artifactId>
-            <configuration>
-              <arguments>-Pnon-ci</arguments>
-            </configuration>
-          </plugin>
-        </plugins>
-      </pluginManagement>
-    </build>
-    
     <profiles>
       <profile>
-        <id>ci</id>
-      </profile>
-      <profile>
-        <id>non-ci</id>
+        <id>release</id>
         <activation>
-          <activeByDefault>true</activeByDefault>
+          <property>
+            <name>performRelease</name>
+            <value>true</value>
+          </property>
         </activation>
         
         <build>
