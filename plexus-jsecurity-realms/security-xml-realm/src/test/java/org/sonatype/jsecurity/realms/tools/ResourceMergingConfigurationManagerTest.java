@@ -17,7 +17,6 @@ public class ResourceMergingConfigurationManagerTest
         super.customizeContext( context );
         
         context.put( "security-xml-file", "target/test-classes/org/sonatype/jsecurity/configuration/static-merging/security.xml" );
-        context.put( "static-security-resource", "/org/sonatype/jsecurity/configuration/static-merging/static-security.xml" );
     }
     
     @Override

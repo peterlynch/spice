@@ -22,7 +22,6 @@ public class XmlAuthenticatingRealmTest
     extends PlexusTestCase
 {
     public static final String PLEXUS_SECURITY_XML_FILE = "security-xml-file";
-    public static final String PLEXUS_STATIC_SECURITY = "static-security-resource";
     
     private static final String SECURITY_CONFIG_FILE_PATH = getBasedir() + "/target/jsecurity/security.xml"; 
     
@@ -38,7 +37,6 @@ public class XmlAuthenticatingRealmTest
         super.customizeContext( context );
         
         context.put( PLEXUS_SECURITY_XML_FILE, SECURITY_CONFIG_FILE_PATH );
-        context.put( PLEXUS_STATIC_SECURITY, "" );
     }
     
     @Override

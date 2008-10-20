@@ -11,7 +11,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
-import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.sonatype.jsecurity.model.CPrivilege;
 import org.sonatype.jsecurity.model.CRole;
@@ -31,9 +30,9 @@ public class ResourceMergingConfigurationManager
     //This will handle all normal security.xml file loading/storing
     @Requirement( role = ConfigurationManager.class, hint = "default" )
     private ConfigurationManager manager;
-    
-    @org.codehaus.plexus.component.annotations.Configuration( value = "${static-security-resource}" )
-    private String resource;
+        
+    @Requirement( role = StaticSecurityResource.class )
+    private List<StaticSecurityResource> staticResources;
     
     /**
      * This will hold the current configuration in memory, to reload, will need to set this to null
@@ -245,68 +244,74 @@ public class ResourceMergingConfigurationManager
         return manager.readUser( id );
     }
     
-    private Configuration getConfiguration()
+    private Configuration initializeStaticConfiguration()
     {
-        if ( configuration != null )
-        {
-            return configuration;
-        }
-        
-        if ( StringUtils.isEmpty( resource ) )
-        {
-            configuration = new Configuration();
-            
-            return configuration;
-        }
-        
         lock.lock();
-
-        Reader fr = null;
-        InputStream is = null;
-
+        
         try
-        {
-            is = getClass().getResourceAsStream( resource );
-            SecurityConfigurationXpp3Reader reader = new SecurityConfigurationXpp3Reader();
-
-            fr = new InputStreamReader( is );
-
-            configuration = reader.read( fr );
-        }
-        catch ( IOException e )
-        {
-            getLogger().error( "IOException while retrieving configuration file", e );
-        }
-        catch ( XmlPullParserException e )
-        {
-            getLogger().error( "Invalid XML Configuration", e );
+        {        
+            for ( StaticSecurityResource resource : staticResources )
+            {
+                Configuration existing = resource.getConfiguration();
+                
+                if ( existing != null )
+                {
+                    appendConfig( existing );
+                }
+                else
+                {
+                    Reader fr = null;
+                    InputStream is = null;
+        
+                    try
+                    {
+                        getLogger().debug( "Loading static security config from " + resource.getResourcePath() );
+                        is = getClass().getResourceAsStream( resource.getResourcePath() );
+                        SecurityConfigurationXpp3Reader reader = new SecurityConfigurationXpp3Reader();
+        
+                        fr = new InputStreamReader( is );
+                        
+                        appendConfig( reader.read( fr ) );
+                    }
+                    catch ( IOException e )
+                    {
+                        getLogger().error( "IOException while retrieving configuration file", e );
+                    }
+                    catch ( XmlPullParserException e )
+                    {
+                        getLogger().error( "Invalid XML Configuration", e );
+                    }
+                    finally
+                    {
+                        if ( fr != null )
+                        {
+                            try
+                            {
+                                fr.close();
+                            }
+                            catch ( IOException e )
+                            {
+                                // just closing if open
+                            }
+                        }
+                        
+                        if ( is != null )
+                        {
+                            try
+                            {
+                                is.close();
+                            }
+                            catch ( IOException e )
+                            {
+                                // just closing if open
+                            }
+                        }
+                    }
+                }
+            }
         }
         finally
         {
-            if ( fr != null )
-            {
-                try
-                {
-                    fr.close();
-                }
-                catch ( IOException e )
-                {
-                    // just closing if open
-                }
-            }
-            
-            if ( is != null )
-            {
-                try
-                {
-                    is.close();
-                }
-                catch ( IOException e )
-                {
-                    // just closing if open
-                }
-            }
-            
             if ( configuration == null )
             {
                 configuration = new Configuration();
@@ -314,8 +319,43 @@ public class ResourceMergingConfigurationManager
             
             lock.unlock();
         }
-
+        
         return configuration;
+    }
+    
+    private Configuration appendConfig( Configuration config )
+    {
+        if ( configuration == null )
+        {
+            configuration = new Configuration();
+        }
+        
+        for ( CPrivilege privilege : ( List<CPrivilege> )config.getPrivileges() )
+        {
+            configuration.addPrivilege( privilege );
+        }
+        
+        for ( CRole role : ( List<CRole> )config.getRoles() )
+        {
+            configuration.addRole( role );
+        }
+        
+        for ( CUser user : ( List<CUser> )config.getUsers() )
+        {
+            configuration.addUser( user );
+        }
+        
+        return configuration;
+    }
+    
+    private Configuration getConfiguration()
+    {
+        if ( configuration != null )
+        {
+            return configuration;
+        }
+        
+        return initializeStaticConfiguration();        
     }
 
     public void save()
