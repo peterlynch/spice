@@ -32,7 +32,7 @@ public interface ConfigurationManager
     List<SecurityPrivilege> listPrivileges();
     
     /**
-     * Create a new user
+     * Create a new user.
      * 
      * @param user
      */
@@ -40,12 +40,31 @@ public interface ConfigurationManager
         throws InvalidConfigurationException;
     
     /**
-     * Create a new user with a context to validate in
+    * Create a new user and sets the password.
+    * 
+    * @param user
+    * @param password
+    */
+   void createUser( SecurityUser user, String password )
+       throws InvalidConfigurationException;
+    
+    /**
+     * Create a new user with a context to validate in.
      * 
      * @param user
      */
     void createUser( SecurityUser user, ValidationContext context )
         throws InvalidConfigurationException;
+    
+    /**
+     * Create a new user/password with a context to validate in.
+     * 
+     * @param user
+    * @param password
+     */
+    void createUser( SecurityUser user, String password, ValidationContext context )
+        throws InvalidConfigurationException;
+    
     
     /**
      * Create a new role

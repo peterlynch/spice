@@ -89,8 +89,20 @@ public class ResourceMergingConfigurationManager
         manager.createUser( user, initializeContext() );
     }
     
+    public void createUser( SecurityUser user, String password )
+    throws InvalidConfigurationException
+    {
+        manager.createUser( user, password, initializeContext() );
+    }
+    
     public void createUser( SecurityUser user, ValidationContext context )
         throws InvalidConfigurationException
+    {
+        createUser( user, null, context );
+    }
+    
+    public void createUser( SecurityUser user,String password, ValidationContext context )
+    throws InvalidConfigurationException
     {
         if ( context == null )
         {
@@ -98,7 +110,7 @@ public class ResourceMergingConfigurationManager
         }
         
         // The static config can't be updated, so delegate to xml file
-        manager.createUser( user, context );
+        manager.createUser( user, password, context );
     }
 
     public void deletePrivilege( String id )

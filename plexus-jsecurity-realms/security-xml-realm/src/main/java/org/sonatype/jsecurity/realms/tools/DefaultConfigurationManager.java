@@ -144,28 +144,40 @@ public class DefaultConfigurationManager
     public void createUser( SecurityUser user )
         throws InvalidConfigurationException
     {
-        createUser( user, initializeContext() );
+        createUser( user, null, initializeContext() );
+    }
+    
+    public void createUser( SecurityUser user, String password )
+    throws InvalidConfigurationException
+    {
+        createUser( user, password, initializeContext() );
     }
 
     public void createUser( SecurityUser user, ValidationContext context )
         throws InvalidConfigurationException
     {
-        if ( context == null )
-        {
-            context = initializeContext();
-        }
-        
-        ValidationResponse vr = validator.validateUser( context, user, false );
-
-        if ( vr.isValid() )
-        {
-            getConfiguration().addUser( user );
-        }
-        else
-        {
-            throw new InvalidConfigurationException( vr );
-        }
+        createUser( user, null, context );
     }
+    
+    public void createUser( SecurityUser user, String password, ValidationContext context )
+    throws InvalidConfigurationException
+{
+    if ( context == null )
+    {
+        context = initializeContext();
+    }
+    
+    ValidationResponse vr = validator.validateUser( context, user, false );
+
+    if ( vr.isValid() )
+    {
+        getConfiguration().addUser( user );
+    }
+    else
+    {
+        throw new InvalidConfigurationException( vr );
+    }
+}
 
     @SuppressWarnings( "unchecked" )
     public void deletePrivilege( String id )
