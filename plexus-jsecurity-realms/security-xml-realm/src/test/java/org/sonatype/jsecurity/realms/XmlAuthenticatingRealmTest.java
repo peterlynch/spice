@@ -68,6 +68,31 @@ public class XmlAuthenticatingRealmTest
         assertEquals( StringDigester.getSha1Digest( "password" ), password );        
     }
     
+    
+    public void testCreateWithPassowrd()
+    throws Exception
+    {
+        buildTestAuthenticationConfig( CUser.STATUS_ACTIVE );
+        
+        String clearPassword = "default-password";
+        
+        SecurityUser user = new SecurityUser();
+        user.setEmail( "testCreateWithPassowrdEmail" );
+        user.setName( "testCreateWithPassowrdEmail" );
+        user.setStatus( CUser.STATUS_ACTIVE );
+        user.setId( "testCreateWithPassowrdEmailUserId" );
+        user.addRole( "role" );
+        configurationManager.createUser( user, clearPassword );
+        
+        UsernamePasswordToken upToken = new UsernamePasswordToken( "testCreateWithPassowrdEmailUserId", clearPassword );
+        
+        AuthenticationInfo ai = realm.getAuthenticationInfo( upToken );
+        
+        String password = new String( (char[] ) ai.getCredentials() );
+        
+        assertEquals( StringDigester.getSha1Digest( clearPassword ), password );        
+    }
+    
     public void testFailedAuthentication()
         throws Exception
     {

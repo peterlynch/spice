@@ -167,6 +167,12 @@ public class DefaultConfigurationManager
         context = initializeContext();
     }
     
+    // set the password if its not null
+    if( password != null && password.trim().length() > 0)
+    {
+        user.setPassword( StringDigester.getSha1Digest( password ) );
+    }
+    
     ValidationResponse vr = validator.validateUser( context, user, false );
 
     if ( vr.isValid() )
