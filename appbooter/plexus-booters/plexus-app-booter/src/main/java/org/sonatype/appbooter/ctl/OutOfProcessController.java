@@ -255,16 +255,20 @@ public class OutOfProcessController
 
         private void close() throws AppBooterServiceException
         {
-           // System.out.println( "Controller Closing, requesting controlled service shutdown" );
+            System.out.println( "Controller Closing, requesting controlled service shutdown" );
             service.shutdown();
+            System.out.println( "Service shutdown complete");
 
+            System.out.println( "Closing control server socket" );
             ControllerUtil.close( serverSocket );
+            System.out.println( "Control server socket closed" );
         }
     }
 
     @Override
     public void interrupt()
     {
+        System.out.println( "Interrupting control thread.");
         super.interrupt();
         
         interrupted = true;
@@ -275,6 +279,8 @@ public class OutOfProcessController
         }
         
         runnable.stop = true;
+        
+        System.out.println( "Control thread has been interrupted, and should close shortly.");
     }
 
     @Override

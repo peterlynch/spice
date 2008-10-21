@@ -37,7 +37,9 @@ public class OutOfProcessControllerTest
 
         synchronized ( managementThread )
         {
+            System.out.println( "interrupting management thread." );
             managementThread.interrupt();
+            System.out.println( "interrupted." );
 
             if ( managementThread.isAlive() )
             {
@@ -76,19 +78,25 @@ public class OutOfProcessControllerTest
 
         Thread.sleep( 100 );
 
+        System.out.println( "Stopping service." );
         sendCommand( port, ControllerVocabulary.STOP_SERVICE );
+        System.out.println( "should be stopped" );
 
         Thread.sleep( 100 );
 
         assertTrue( "Service should be stopped.", svc.stopped );
 
+        System.out.println( "Starting service." );
         sendCommand( port, ControllerVocabulary.START_SERVICE );
+        System.out.println( "should be started" );
 
         Thread.sleep( 100 );
 
         assertFalse( "Service should not be stopped.", svc.stopped );
 
+        System.out.println( "Shutting down service." );
         sendCommand( port, ControllerVocabulary.SHUTDOWN_SERVICE );
+        System.out.println( "should be shutdown" );
 
         Thread.sleep( 100 );
 
@@ -146,8 +154,10 @@ public class OutOfProcessControllerTest
 
         Thread.sleep( 100 );
 
+        System.out.println( "Shutting down service." );
         sendCommand( port, ControllerVocabulary.SHUTDOWN_SERVICE );
-
+        System.out.println( "should be shutdown." );
+        
         synchronized ( managementThread )
         {
             if ( managementThread.isAlive() )
