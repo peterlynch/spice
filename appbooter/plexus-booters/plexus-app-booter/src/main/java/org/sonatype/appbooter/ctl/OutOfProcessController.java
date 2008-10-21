@@ -268,9 +268,14 @@ public class OutOfProcessController
     @Override
     public void interrupt()
     {
-        System.out.println( "Interrupting control thread.");
         super.interrupt();
         
+        if ( interrupted )
+        {
+            return;
+        }
+        
+        System.out.println( "Interrupting control thread.");
         interrupted = true;
         
         if ( runnable.serverSocket != null )
