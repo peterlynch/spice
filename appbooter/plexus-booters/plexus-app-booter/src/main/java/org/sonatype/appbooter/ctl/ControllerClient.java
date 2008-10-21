@@ -207,7 +207,7 @@ public class ControllerClient
             {
                 socket = new Socket( address, port );
                 socket.setTcpNoDelay( true );
-                socket.setSoLinger( true, 0 );
+                socket.setSoLinger( true, 1 );
             }
             catch( IOException e )
             {
