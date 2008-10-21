@@ -127,7 +127,7 @@ public class OutOfProcessControllerTest
     {
         Socket sock = new Socket( InetAddress.getLocalHost(), port );
         sock.setTcpNoDelay( true );
-        sock.setSoLinger( true, 0 );
+        sock.setSoLinger( true, 1 );
 
         byte[] data = {
             command
