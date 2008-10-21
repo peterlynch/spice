@@ -101,7 +101,7 @@ public class OutOfProcessController
                     }
 
            //         System.out.println( "Port " + port + " setting socket parameters." );
-//                    socket.setSoTimeout( DEFAULT_TIMEOUT );
+                    socket.setSoTimeout( DEFAULT_TIMEOUT );
                     socket.setTcpNoDelay( true );
 
                     while ( true )

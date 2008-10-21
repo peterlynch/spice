@@ -27,7 +27,7 @@ public class OutOfProcessControllerTest
 {
 
     public void testThreadInterruption()
-        throws UnknownHostException
+        throws UnknownHostException, InterruptedException
     {
         printTestStart();
 
@@ -37,6 +37,7 @@ public class OutOfProcessControllerTest
 
         synchronized ( managementThread )
         {
+			Thread.currentThread().sleep( 6 );
             managementThread.interrupt();
 
             if ( managementThread.isAlive() )
