@@ -182,6 +182,8 @@ public class OutOfProcessController
             {
                 //System.out.println( "Port " + port + " Opening socket channel for port." );
                 serverSocket = new ServerSocket( port );
+                
+                System.out.println( "Control socket listening on: " + serverSocket.getLocalSocketAddress() );
 
                 //System.out.println( "Setting socket parameters." );
 //                serverSocket.setSoTimeout( DEFAULT_TIMEOUT );
