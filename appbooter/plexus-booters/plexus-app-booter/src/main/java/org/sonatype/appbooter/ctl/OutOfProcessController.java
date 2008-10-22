@@ -16,6 +16,7 @@
 package org.sonatype.appbooter.ctl;
 
 import java.io.IOException;
+import java.net.BindException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -145,14 +146,19 @@ public class OutOfProcessController
                         sockets.add( socket );
                         executor.execute( new SocketHandler( this, service, socket ) );
                     }
-                    catch ( SocketException e )
-                    {
-                        System.out.println( "Port " + port + " Control socket closed. Cleaning up." );
-                    }
                     catch ( IOException e )
                     {
-                        e.printStackTrace();
-                        System.out.println( "Port " + port + " Error while servicing control socket: " + e.getMessage() + "\nKilling connection." );
+                        if ( e instanceof SocketException )
+                        {
+                            System.out.println( "Shutdown in progress. No longer accepting socket connections." );
+                        }
+                        else
+                        {
+                            e.printStackTrace();
+                            System.out.println( "Port " + port + " Error while servicing control socket: " + e.getMessage() + "\nKilling connection." );
+                        }
+                        
+                        ControllerUtil.close( socket );
                     }
                 }
             }
@@ -186,6 +192,8 @@ public class OutOfProcessController
                 e.printStackTrace( System.out );
                 System.out.println( "\n\n\nERROR: Cannot open control socket on: " + bindAddress + ":"
                                     + port + "\nSee stacktrace above for more information.\n" );
+                
+                ControllerUtil.close( serverSocket );
                 return false;
             }
 
