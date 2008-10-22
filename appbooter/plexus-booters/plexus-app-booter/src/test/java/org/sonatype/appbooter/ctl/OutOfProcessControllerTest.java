@@ -26,6 +26,16 @@ public class OutOfProcessControllerTest
     extends TestCase
 {
 
+    private Thread managementThread;
+    
+    public void tearDown() throws Exception
+    {
+        if ( managementThread != null && managementThread.isAlive() )
+        {
+            managementThread.interrupt();
+        }
+    }
+
     public void testThreadInterruption()
         throws UnknownHostException, InterruptedException
     {
@@ -33,7 +43,7 @@ public class OutOfProcessControllerTest
 
         TestService svc = new TestService();
 
-        Thread managementThread = OutOfProcessController.manage( svc, 32001 );
+        managementThread = OutOfProcessController.manage( svc, 32001 );
 
         synchronized ( managementThread )
         {
@@ -74,7 +84,7 @@ public class OutOfProcessControllerTest
 
         int port = 32001;
 
-        Thread managementThread = OutOfProcessController.manage( svc, port );
+        managementThread = OutOfProcessController.manage( svc, port );
 
         Thread.sleep( 100 );
 
@@ -150,7 +160,7 @@ public class OutOfProcessControllerTest
 
         int port = 32001;
 
-        Thread managementThread = OutOfProcessController.manage( svc, port );
+        managementThread = OutOfProcessController.manage( svc, port );
 
         Thread.sleep( 100 );
 
@@ -187,7 +197,7 @@ public class OutOfProcessControllerTest
 
         int port = 32001;
 
-        Thread managementThread = OutOfProcessController.manage( svc, port );
+        managementThread = OutOfProcessController.manage( svc, port );
 
         Thread.sleep( 100 );
 
@@ -242,7 +252,7 @@ public class OutOfProcessControllerTest
 
         int port = 32001;
 
-        Thread managementThread = OutOfProcessController.manage( svc, port );
+        managementThread = OutOfProcessController.manage( svc, port );
 
         Thread.sleep( 100 );
 
@@ -308,7 +318,7 @@ public class OutOfProcessControllerTest
 
         int port = 32001;
 
-        Thread managementThread = OutOfProcessController.manage( svc, port );
+        managementThread = OutOfProcessController.manage( svc, port );
 
         Thread.sleep( 100 );
 
