@@ -16,7 +16,6 @@
 package org.sonatype.appbooter.ctl;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -220,7 +219,7 @@ public class OutOfProcessControllerTest
 
         Thread.sleep( 100 );
 
-        Socket sock = new Socket( InetAddress.getLocalHost(), port );
+        Socket sock = new Socket( "127.0.0.1", port );
         sock.setTcpNoDelay( true );
         sock.setSoLinger( true, 0 );
 
@@ -275,7 +274,7 @@ public class OutOfProcessControllerTest
 
         Thread.sleep( 100 );
 
-        Socket sock = new Socket( InetAddress.getLocalHost(), port );
+        Socket sock = new Socket( "127.0.0.1", port );
         sock.setTcpNoDelay( true );
         sock.setSoLinger( true, 0 );
 
@@ -422,7 +421,6 @@ public class OutOfProcessControllerTest
         {
             try
             {
-                InetAddress addr = InetAddress.getLocalHost();
                 System.out.println( "Attempting to connect..." );
                 sock = new Socket( "127.0.0.1", port );
                 System.out.println( "Connected to: " + sock.getRemoteSocketAddress() );
