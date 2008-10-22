@@ -32,6 +32,7 @@ public class OutOfProcessControllerTest
     {
         if ( managementThread != null && managementThread.isAlive() )
         {
+            System.out.println( "Cleaning up lingering management thread." );
             managementThread.interrupt();
         }
     }
@@ -148,6 +149,8 @@ public class OutOfProcessControllerTest
             
             if ( t.isAlive() )
             {
+                System.out.println( "Forcing test-socket shutdown." );
+                
                 t.interrupt();
                 ControllerUtil.close( r.sock );
                 
