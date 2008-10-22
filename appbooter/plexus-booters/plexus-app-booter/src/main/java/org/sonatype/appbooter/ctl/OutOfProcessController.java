@@ -80,7 +80,6 @@ public class OutOfProcessController
         CtlRunnable ctl = new CtlRunnable( service, InetAddress.getLocalHost(), port );
         
         OutOfProcessController controller = new OutOfProcessController( ctl );
-//        Thread t = new Thread( ctl );
         controller.setPriority( Thread.MIN_PRIORITY );
         controller.start();
 
@@ -103,8 +102,6 @@ public class OutOfProcessController
         
         private boolean stop = false;
         
-//        private final Map<String, Socket> sockets = new HashMap<String, Socket>();
-        
         public CtlRunnable( Service service, InetAddress bindAddress, int port )
         {
             this.service = service;
@@ -112,12 +109,8 @@ public class OutOfProcessController
             this.port = port;
         }
 
-        /* (non-Javadoc)
-         * @see java.lang.Runnable#run()
-         */
         public void run()
         {
-         //   System.out.println( "Port " + port + " Controller Thread Started" );
             if ( openServerSocket() )
             {
                 while ( !Thread.currentThread().isInterrupted() && !stop )
@@ -127,19 +120,13 @@ public class OutOfProcessController
                     {
                         try
                         {
-           //                 System.out.println( "Port " + port + " accepting control connections." );
                             socket = serverSocket.accept();
                         }
                         catch ( SocketTimeoutException e )
                         {
-             //               System.out.println( "Port " + port + " Socket timed out on accept." );
                             continue;
                         }
                         
-//                        sockets.put( socket.getRemoteSocketAddress().toString(), socket );
-
-               //         System.out.println( "Port " + port + " setting socket parameters." );
-//                        socket.setSoTimeout( DEFAULT_TIMEOUT );
                         socket.setTcpNoDelay( true );
 
                         sockets.add( socket );
@@ -180,13 +167,9 @@ public class OutOfProcessController
         {
             try
             {
-                //System.out.println( "Port " + port + " Opening socket channel for port." );
                 serverSocket = new ServerSocket( port );
                 
                 System.out.println( "Control socket listening on: " + serverSocket.getLocalSocketAddress() );
-
-                //System.out.println( "Setting socket parameters." );
-//                serverSocket.setSoTimeout( DEFAULT_TIMEOUT );
             }
             catch ( IOException e )
             {
@@ -203,11 +186,9 @@ public class OutOfProcessController
 
         public void close() throws AppBooterServiceException
         {
-            System.out.println( "Controller Closing, requesting controlled service shutdown" );
+            System.out.println( "Controller closing..." );
             service.shutdown();
-            System.out.println( "Service shutdown complete");
 
-            System.out.println( "Closing control server socket" );
             if ( serverSocket != null )
             {
                 ControllerUtil.close( serverSocket );
@@ -248,7 +229,7 @@ public class OutOfProcessController
                 }
             }
             
-            System.out.println( "Control server socket closed" );
+            System.out.println( "...Controller closed." );
         }
 
     }
@@ -263,7 +244,8 @@ public class OutOfProcessController
             return;
         }
         
-        System.out.println( "Interrupting control thread.");
+        System.out.println( "Control thread has been interrupted, and should close shortly.");
+        
         interrupted = true;
         
         try
@@ -275,8 +257,6 @@ public class OutOfProcessController
             e.printStackTrace();
             System.out.println( "Error closing management socket on port: " + runnable.port + ". Reason: " + e.getMessage() );
         }
-        
-        System.out.println( "Control thread has been interrupted, and should close shortly.");
     }
 
     @Override
@@ -311,7 +291,6 @@ public class OutOfProcessController
                     try
                     {
                         byte[] data = new byte[1];
-         //               System.out.println( "Port " + port + " reading from control connection." );
                         int read = (byte) socket.getInputStream().read( data, 0, 1 );
                         if ( read > 0 )
                         {
@@ -319,21 +298,11 @@ public class OutOfProcessController
                         }
                         else
                         {
-//                            System.out.println( "Port " + port + " read " + read + " bytes. Sleeping " + SLEEP_PERIOD + "ms before continuing with another read attempt." );
-//                            try
-//                            {
-//                                Thread.sleep( SLEEP_PERIOD );
-//                            }
-//                            catch ( InterruptedException e )
-//                            {
-//                            }
-
                             continue;
                         }
                     }
                     catch ( SocketException e )
                     {
-           //             System.out.println( "Port " + port + ": " + e.getMessage() + "...Closing connection." );
                         break;
                     }
 
