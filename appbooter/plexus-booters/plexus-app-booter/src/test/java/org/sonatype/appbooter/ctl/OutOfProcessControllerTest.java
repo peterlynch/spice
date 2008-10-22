@@ -76,7 +76,7 @@ public class OutOfProcessControllerTest
     }
 
     public void testStopStartCommand()
-        throws IOException, InterruptedException
+        throws Throwable
     {
         printTestStart();
 
@@ -133,26 +133,41 @@ public class OutOfProcessControllerTest
 
     private void sendCommand( int port,
                               byte command )
-        throws IOException
+        throws Throwable
     {
-        Socket sock = new Socket( InetAddress.getLocalHost(), port );
-        sock.setTcpNoDelay( true );
-        sock.setSoLinger( true, 1 );
-
-        byte[] data = {
-            command
-        };
-        sock.getOutputStream().write( data, 0, 1 );
-
-        sock.getInputStream().read( data );
-
-        assertEquals( "ACK not received", command, data[0] );
-
-        sock.close();
+        TestSocketRunnable r = new TestSocketRunnable( port, command );
+        Thread t = new Thread( r );
+        t.start();
+        
+        try
+        {
+            if ( t.isAlive() )
+            {
+                t.join( 5000 );
+            }
+            
+            if ( t.isAlive() )
+            {
+                t.interrupt();
+                ControllerUtil.close( r.sock );
+                
+                fail( "Control socket had to be closed by force." );
+            }
+        }
+        catch ( InterruptedException e )
+        {
+            System.out.println( "Interrupted while waiting for test command to be issued: " + e.getMessage() );
+            Thread.currentThread().interrupt();
+        }
+        
+        if ( r != null && r.exception != null )
+        {
+            throw r.exception;
+        }
     }
 
     public void testShutdownCommand()
-        throws IOException, InterruptedException
+        throws Throwable
     {
         printTestStart();
 
@@ -244,7 +259,7 @@ public class OutOfProcessControllerTest
     }
 
     public void testDetachOnCloseCommand()
-        throws IOException, InterruptedException
+        throws Throwable
     {
         printTestStart();
 
@@ -310,7 +325,7 @@ public class OutOfProcessControllerTest
     }
 
     public void testUnknownCommand()
-        throws IOException, InterruptedException
+        throws Throwable
     {
         printTestStart();
 
@@ -383,5 +398,49 @@ public class OutOfProcessControllerTest
         {
             stopped = false;
         }
+    }
+    
+    private static final class TestSocketRunnable implements Runnable
+    {
+        
+        private final int port;
+        private final byte command;
+        private Throwable exception;
+        private Socket sock;
+
+        private TestSocketRunnable( int port, byte command )
+        {
+            this.port = port;
+            this.command = command;
+        }
+
+        public void run()
+        {
+            try
+            {
+                sock = new Socket( InetAddress.getLocalHost(), port );
+                sock.setTcpNoDelay( true );
+                sock.setSoLinger( true, 1 );
+
+                byte[] data = {
+                    command
+                };
+                
+                System.out.println( "Writing control command: " + Integer.toHexString( command ) );
+                sock.getOutputStream().write( data, 0, 1 );
+
+                System.out.println( "Reading ACK" );
+                sock.getInputStream().read( data );
+
+                assertEquals( "ACK not received", command, data[0] );
+
+                sock.close();
+            }
+            catch ( Exception e )
+            {
+                exception = e;
+            }
+        }
+        
     }
 }
