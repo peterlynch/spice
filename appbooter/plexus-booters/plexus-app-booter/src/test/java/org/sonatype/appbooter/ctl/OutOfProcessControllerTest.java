@@ -38,7 +38,7 @@ public class OutOfProcessControllerTest
     }
 
     public void testThreadInterruption()
-        throws UnknownHostException, InterruptedException
+        throws UnknownHostException
     {
         printTestStart();
 
@@ -62,6 +62,7 @@ public class OutOfProcessControllerTest
                 catch ( InterruptedException e )
                 {
                     System.out.println( "Interrupted." );
+                    Thread.currentThread().interrupt();
                 }
             }
         }

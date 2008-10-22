@@ -404,6 +404,8 @@ public class PlexusContainerHost
                 }
                 catch ( InterruptedException e )
                 {
+                    // pass it on.
+                    Thread.currentThread().interrupt();
                 }
             }
         }
