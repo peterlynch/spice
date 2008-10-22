@@ -206,9 +206,11 @@ public class OutOfProcessControllerTest
 
         assertFalse( "Service should not shutdown until socket is closed.", svc.shutdown );
 
+        System.out.println( "Closing control socket." );
         sock.close();
+        System.out.println( "Control socket closed. Service should be shutting down." );
 
-        Thread.sleep( 100 );
+        Thread.sleep( 2000 );
 
         assertTrue( "Service should have been shutdown when socket was closed.", svc.shutdown );
 

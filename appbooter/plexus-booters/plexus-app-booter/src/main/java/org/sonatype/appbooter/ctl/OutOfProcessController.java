@@ -22,6 +22,11 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Manages Service implementations, giving some access to the Service on an open port.
@@ -31,6 +36,19 @@ public class OutOfProcessController
     extends Thread
     implements Runnable
 {
+    
+    /*
+     * NOTE: This class is fairly complex. This is because we don't want to execute the management behavior
+     * in the current thread. Instead, a new thread is created to manage the ServerSocket that's created to
+     * allow remote connections to manage the service. From here, a new thread is created per socket connection,
+     * to prevent a zombie connection from blocking out other live management connections, thereby deadlocking
+     * the whole system.
+     * 
+     * The main class, OutOfProcessController, actually extends Thread to override the interrupt method and
+     * allow it to forcibly close the network sockets in play. This seems necessary since the socket.getInputStream().read(..)
+     * method doesn't seem to respond to Thread.interrupt() on all platforms (notably, I've had trouble with socket code running
+     * on FreeBSD and Solaris).
+     */
 
     public static final int DEFAULT_TIMEOUT = 5000;
 
@@ -76,6 +94,10 @@ public class OutOfProcessController
         private final InetAddress bindAddress;
 
         private final int port;
+        
+        private ExecutorService executor = Executors.newCachedThreadPool();
+        
+        private Set<Socket> sockets = new HashSet<Socket>();
 
         private ServerSocket serverSocket;
         
@@ -98,7 +120,7 @@ public class OutOfProcessController
          //   System.out.println( "Port " + port + " Controller Thread Started" );
             if ( openServerSocket() )
             {
-                while ( !Thread.currentThread().isInterrupted() && !stop)
+                while ( !Thread.currentThread().isInterrupted() && !stop )
                 {
                     Socket socket = null;
                     try
@@ -120,81 +142,8 @@ public class OutOfProcessController
 //                        socket.setSoTimeout( DEFAULT_TIMEOUT );
                         socket.setTcpNoDelay( true );
 
-                        while ( true )
-                        {
-                            byte command = 0x0;
-                            try
-                            {
-                                byte[] data = new byte[1];
-                 //               System.out.println( "Port " + port + " reading from control connection." );
-                                int read = (byte) socket.getInputStream().read( data, 0, 1 );
-                                if ( read > 0 )
-                                {
-                                    command = data[0];
-                                }
-                                else
-                                {
-//                                    System.out.println( "Port " + port + " read " + read + " bytes. Sleeping " + SLEEP_PERIOD + "ms before continuing with another read attempt." );
-//                                    try
-//                                    {
-//                                        Thread.sleep( SLEEP_PERIOD );
-//                                    }
-//                                    catch ( InterruptedException e )
-//                                    {
-//                                    }
-
-                                    continue;
-                                }
-                            }
-                            catch ( SocketException e )
-                            {
-                   //             System.out.println( "Port " + port + ": " + e.getMessage() + "...Closing connection." );
-                                break;
-                            }
-
-                            if ( command > -1 )
-                            {
-                                switch ( command )
-                                {
-                                    case ( ControllerVocabulary.SHUTDOWN_SERVICE ):
-                                    {
-                                        System.out.println( "Port " + port + " Received shutdown command. Shutting down application." );
-                                        stop = true;
-                                        break;
-                                    }
-                                    case ( ControllerVocabulary.STOP_SERVICE ):
-                                    {
-                                        System.out.println( "Port " + port + " Received stop command.  Stopping application." );
-                                        service.stop();
-                                        break;
-                                    }
-                                    case ( ControllerVocabulary.START_SERVICE ):
-                                    {
-                                        System.out.println( "Port " + port + " Received start command.  Starting application." );
-                                        service.start();
-                                        break;
-                                    }
-                                    case ( ControllerVocabulary.SHUTDOWN_ON_CLOSE ):
-                                    {
-                                        System.out.println( "Port " + port + " Received shutdown-on-close command. Application will be terminated if socket is closed." );
-                                        stop = true;
-                                        break;
-                                    }
-                                    case ( ControllerVocabulary.DETACH_ON_CLOSE ):
-                                    {
-                                        System.out.println( "Port " + port + " Received detach-on-close command. Application will -NOT- be terminated if socket is closed." );
-                                        stop = false;
-                                        break;
-                                    }
-                                    default:
-                                    {
-                                        System.out.println( "Unknown command: 0x" + Integer.toHexString( command & 0xf ));
-                                    }
-                                }
-
-                                socket.getOutputStream().write( command );
-                            }
-                        }
+                        sockets.add( socket );
+                        executor.execute( new SocketHandler( this, service, socket ) );
                     }
                     catch ( SocketException e )
                     {
@@ -204,16 +153,6 @@ public class OutOfProcessController
                     {
                         e.printStackTrace();
                         System.out.println( "Port " + port + " Error while servicing control socket: " + e.getMessage() + "\nKilling connection." );
-                    }
-                    catch ( AppBooterServiceException e )
-                    {
-                        e.printStackTrace();
-                        System.out.println( "Port " + port + " Error while servicing control socket: " + e.getMessage() + "\nKilling connection." );
-                    }
-                    finally
-                    {
-//                        sockets.remove( socket.getRemoteSocketAddress().toString() );
-                        ControllerUtil.close( socket );
                     }
                 }
             }
@@ -240,7 +179,7 @@ public class OutOfProcessController
                 serverSocket = new ServerSocket( port );
 
                 //System.out.println( "Setting socket parameters." );
-                serverSocket.setSoTimeout( DEFAULT_TIMEOUT );
+//                serverSocket.setSoTimeout( DEFAULT_TIMEOUT );
             }
             catch ( IOException e )
             {
@@ -253,16 +192,56 @@ public class OutOfProcessController
             return true;
         }
 
-        private void close() throws AppBooterServiceException
+        public void close() throws AppBooterServiceException
         {
             System.out.println( "Controller Closing, requesting controlled service shutdown" );
             service.shutdown();
             System.out.println( "Service shutdown complete");
 
             System.out.println( "Closing control server socket" );
-            ControllerUtil.close( serverSocket );
+            if ( serverSocket != null )
+            {
+                ControllerUtil.close( serverSocket );
+            }
+            
+            stop = true;
+            
+            // following example from: http://java.sun.com/javase/6/docs/api/index.html?java/util/concurrent/ExecutorService.html
+            executor.shutdown();
+            try
+            {
+                if ( !executor.awaitTermination( 5, TimeUnit.SECONDS ) )
+                {
+                    executor.shutdownNow();
+                    if ( !executor.awaitTermination( 5, TimeUnit.SECONDS ) )
+                    {
+                        System.out.println( "\n\n\nWARNING: Failed to stop one or more socket-handler threads: executor pool did not terminate.\n\n\n" );
+                    }
+                }
+            }
+            catch ( InterruptedException e )
+            {
+                executor.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+            // ---
+            
+            if ( sockets != null && !sockets.isEmpty() )
+            {
+                for ( Socket socket : sockets )
+                {
+                    if ( socket != null )
+                    {
+                        System.out.println( "Closing connection from: " + socket.getRemoteSocketAddress() );
+                    }
+                    
+                    ControllerUtil.close( socket );
+                }
+            }
+            
             System.out.println( "Control server socket closed" );
         }
+
     }
 
     @Override
@@ -278,12 +257,15 @@ public class OutOfProcessController
         System.out.println( "Interrupting control thread.");
         interrupted = true;
         
-        if ( runnable.serverSocket != null )
+        try
         {
-            ControllerUtil.close( runnable.serverSocket );
+            runnable.close();
         }
-        
-        runnable.stop = true;
+        catch ( AppBooterServiceException e )
+        {
+            e.printStackTrace();
+            System.out.println( "Error closing management socket on port: " + runnable.port + ". Reason: " + e.getMessage() );
+        }
         
         System.out.println( "Control thread has been interrupted, and should close shortly.");
     }
@@ -292,5 +274,149 @@ public class OutOfProcessController
     public boolean isInterrupted()
     {
         return interrupted;
+    }
+    
+    private static final class SocketHandler implements Runnable
+    {
+
+        private final CtlRunnable ctlRunnable;
+        private final Service service;
+        private final Socket socket;
+
+        public SocketHandler( CtlRunnable ctlRunnable, Service service, Socket socket )
+        {
+            this.ctlRunnable = ctlRunnable;
+            this.service = service;
+            this.socket = socket;
+        }
+
+        public void run()
+        {
+            boolean doShutdown = false;
+            try
+            {
+                boolean stopLooping = false;
+                while ( !stopLooping )
+                {
+                    byte command = 0x0;
+                    try
+                    {
+                        byte[] data = new byte[1];
+         //               System.out.println( "Port " + port + " reading from control connection." );
+                        int read = (byte) socket.getInputStream().read( data, 0, 1 );
+                        if ( read > 0 )
+                        {
+                            command = data[0];
+                        }
+                        else
+                        {
+//                            System.out.println( "Port " + port + " read " + read + " bytes. Sleeping " + SLEEP_PERIOD + "ms before continuing with another read attempt." );
+//                            try
+//                            {
+//                                Thread.sleep( SLEEP_PERIOD );
+//                            }
+//                            catch ( InterruptedException e )
+//                            {
+//                            }
+
+                            continue;
+                        }
+                    }
+                    catch ( SocketException e )
+                    {
+           //             System.out.println( "Port " + port + ": " + e.getMessage() + "...Closing connection." );
+                        break;
+                    }
+
+                    if ( command > -1 )
+                    {
+                        switch ( command )
+                        {
+                            case ( ControllerVocabulary.SHUTDOWN_SERVICE ):
+                            {
+                                System.out.println( "Port " + ctlRunnable.port + " Received shutdown command. Shutting down application." );
+                                doShutdown = true;
+                                stopLooping = true;
+                                break;
+                            }
+                            case ( ControllerVocabulary.STOP_SERVICE ):
+                            {
+                                System.out.println( "Port " + ctlRunnable.port + " Received stop command.  Stopping application." );
+                                service.stop();
+                                break;
+                            }
+                            case ( ControllerVocabulary.START_SERVICE ):
+                            {
+                                System.out.println( "Port " + ctlRunnable.port + " Received start command.  Starting application." );
+                                service.start();
+                                break;
+                            }
+                            case ( ControllerVocabulary.SHUTDOWN_ON_CLOSE ):
+                            {
+                                System.out.println( "Port " + ctlRunnable.port + " Received shutdown-on-close command. Application will be terminated if socket is closed." );
+                                doShutdown = true;
+                                stopLooping = false;
+                                break;
+                            }
+                            case ( ControllerVocabulary.DETACH_ON_CLOSE ):
+                            {
+                                System.out.println( "Port " + ctlRunnable.port + " Received detach-on-close command. Application will -NOT- be terminated if socket is closed." );
+                                ctlRunnable.stop = false;
+                                doShutdown = false;
+                                break;
+                            }
+                            default:
+                            {
+                                System.out.println( "Unknown command: 0x" + Integer.toHexString( command & 0xf ));
+                            }
+                        }
+
+                        socket.getOutputStream().write( command );
+                    }
+                }
+            }
+            catch ( SocketException e )
+            {
+                System.out.println( "Port " + ctlRunnable.port + " Control socket closed. Cleaning up." );
+            }
+            catch ( IOException e )
+            {
+                if ( "Socket Closed".equals( e.getMessage() ) )
+                {
+                    System.out.println( "Port " + ctlRunnable.port + " Control socket closed. Cleaning up." );
+                }
+                else
+                {
+                    e.printStackTrace();
+                    System.out.println( "Port " + ctlRunnable.port + " Error while servicing control socket: " + e.getMessage() + "\nKilling connection." );
+                }
+            }
+            catch ( AppBooterServiceException e )
+            {
+                e.printStackTrace();
+                System.out.println( "Port " + ctlRunnable.port + " Error while servicing control socket: " + e.getMessage() + "\nKilling connection." );
+            }
+            finally
+            {
+                System.out.println( "Shutdown management thread? " + doShutdown );
+                if ( doShutdown )
+                {
+                    try
+                    {
+                        ctlRunnable.close();
+                    }
+                    catch ( AppBooterServiceException e )
+                    {
+                        e.printStackTrace();
+                        System.out.println( "Port " + ctlRunnable.port + " Error while shutting down service: " + e.getMessage() );
+                    }
+                }
+                else
+                {
+                    ctlRunnable.sockets.remove( socket.getRemoteSocketAddress().toString() );
+                    ControllerUtil.close( socket );
+                }
+            }
+        }
     }
 }
