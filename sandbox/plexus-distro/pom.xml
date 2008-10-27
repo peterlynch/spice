@@ -1,10 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
+  <parent>                                                                                                                                 
+    <groupId>org.sonatype.spice</groupId>                                                                                                  
+    <artifactId>spice-parent</artifactId>                                                                                                  
+    <version>5</version>                                                                                                                   
+  </parent>       
   <groupId>org.sonatype.plexus.distro</groupId>
   <artifactId>plexus-distro</artifactId>
   <packaging>jar</packaging>
-  <version>1.0-SNAPSHOT</version>
+  <version>0.8-SNAPSHOT</version>
   <name>plexus-distro</name>
   <url>http://maven.apache.org</url>
   <properties>
@@ -46,7 +51,7 @@
       <plugin>
         <groupId>org.sonatype.plexus.template</groupId>
         <artifactId>plexus-template</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>0.8</version>
         <executions>
           <execution>
             <goals>
@@ -79,7 +84,7 @@
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-container-default</artifactId>
-      <version>1.0-beta-2-SNAPSHOT</version>
+      <version>1.0-beta-1</version>
     </dependency>
     <!-- We need a way to boot the container -->
     <dependency>
