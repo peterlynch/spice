@@ -8,6 +8,7 @@
   <name>plexus-distro</name>
   <url>http://maven.apache.org</url>
   <properties>
+    <distro>${basedir}/target/${artifactId}-${version}</distro>
     <applicationId>application</applicationId>
     <applicationName>My Application</applicationName>
     <mainClass>org.codehaus.plexus.classworlds.launcher.Launcher</mainClass>
@@ -25,7 +26,7 @@
               <goal>copy-dependencies</goal>
             </goals>
             <configuration>
-              <outputDirectory>${basedir}/target/distro/lib</outputDirectory>
+              <outputDirectory>${distro}/lib</outputDirectory>
               <excludeArtifactIds>jsw-binaries,junit,aspectjrt</excludeArtifactIds>
             </configuration>
           </execution>
@@ -37,7 +38,7 @@
             </goals>
             <configuration>
               <includeArtifactIds>jsw-binaries</includeArtifactIds>
-              <outputDirectory>${basedir}/target/distro/bin/jsw</outputDirectory>
+              <outputDirectory>${distro}/bin/jsw</outputDirectory>
             </configuration>
           </execution>
         </executions>
@@ -55,15 +56,15 @@
               <templates>
                 <template>
                   <source>${basedir}/src/main/templates/plexus/classworlds.conf</source>
-                  <target>${basedir}/target/distro/conf/classworlds.conf</target>
+                  <target>${distro}/conf/classworlds.conf</target>
                 </template>
                 <template>
                   <source>${basedir}/src/main/templates/jsw/conf/wrapper.conf</source>
-                  <target>${basedir}/target/distro/conf/wrapper.conf</target>
+                  <target>${distro}/conf/wrapper.conf</target>
                 </template>
                 <template>
                   <source>${basedir}/src/main/templates/jsw/bin/sh.script.in</source>
-                  <target>${basedir}/target/distro/bin/plexus.sh</target>
+                  <target>${distro}/bin/plexus.sh</target>
                   <perms>+x</perms>
                 </template>
               </templates>
@@ -74,22 +75,25 @@
     </plugins>
   </build>
   <dependencies>
+    <!-- We need the container -->
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-container-default</artifactId>
       <version>1.0-beta-2-SNAPSHOT</version>
     </dependency>
-    <dependency>
-      <groupId>org.sonatype.jsw-binaries</groupId>
-      <artifactId>jsw-binaries</artifactId>
-      <version>3.2.3.3-SNAPSHOT</version>
-      <type>tar.gz</type>
-      <scope>provided</scope>
-    </dependency>
+    <!-- We need a way to boot the container -->
     <dependency>
       <groupId>org.sonatype.appbooter.plexus-booters</groupId>
       <artifactId>plexus-jsw-app-booter</artifactId>
-      <version>1.6.2-SNAPSHOT</version>
+      <version>1.6.1</version>
+    </dependency>
+    <!-- We need a way to start start/monitor the booter -->
+    <dependency>
+      <groupId>org.sonatype.jsw-binaries</groupId>
+      <artifactId>jsw-binaries</artifactId>
+      <version>3.2.3.3</version>
+      <type>tar.gz</type>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 </project>
