@@ -484,7 +484,7 @@ public abstract class AbstractForkedAppBooter
     public void shutdown() throws AppBooterServiceException
     {
         this.stop();
-        if ( tempDir != null && tempDir.exists() )
+        if ( !getLogger().isDebugEnabled() && !debug && tempDir != null && tempDir.exists() )
         {
             try
             {
