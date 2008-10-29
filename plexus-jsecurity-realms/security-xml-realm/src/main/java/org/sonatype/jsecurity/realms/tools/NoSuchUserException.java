@@ -12,4 +12,14 @@ public class NoSuchUserException
     {
         super( "User with id='" + userId + "' not found!" );
     }
+    
+    public NoSuchUserException( String userId, String message )
+    {
+        super( "User with id='" + userId + "' not found!: "+ message );
+    }
+    
+    public NoSuchUserException( String userId, String message, Throwable throwable )
+    {
+        super( "User with id='" + userId + "' not found!: "+ message, throwable );
+    }
 }

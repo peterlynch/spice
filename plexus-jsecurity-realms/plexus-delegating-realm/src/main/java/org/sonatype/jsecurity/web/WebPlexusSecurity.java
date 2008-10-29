@@ -94,12 +94,18 @@ import java.util.List;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.codehaus.plexus.logging.LogEnabled;
+import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
+import org.jsecurity.authc.AccountException;
 import org.jsecurity.authc.AuthenticationException;
 import org.jsecurity.authc.AuthenticationInfo;
 import org.jsecurity.authc.AuthenticationToken;
+import org.jsecurity.authc.pam.FirstSuccessfulAuthenticationStrategy;
+import org.jsecurity.authc.pam.ModularRealmAuthenticator;
 import org.jsecurity.authz.AuthorizationException;
+import org.jsecurity.authz.ModularRealmAuthorizer;
 import org.jsecurity.authz.Permission;
 import org.jsecurity.realm.Realm;
 import org.jsecurity.subject.PrincipalCollection;
@@ -116,14 +122,17 @@ import org.sonatype.jsecurity.selectors.RealmSelector;
 @Component( role = PlexusSecurity.class, hint = "web" )
 public class WebPlexusSecurity
     extends DefaultWebSecurityManager
-    implements PlexusSecurity, Realm, Initializable
+    implements PlexusSecurity, Initializable, LogEnabled
 {
     @Requirement
     private RememberMeLocator rememberMeLocator;
 
     @Requirement
     private RealmSelector realmSelector;
-
+    
+    @Requirement
+    private Logger logger;
+    
     public Realm selectRealm( RealmCriteria criteria )
     {
         return realmSelector.selectRealm( criteria );
@@ -148,36 +157,16 @@ public class WebPlexusSecurity
     {
         return WebPlexusSecurity.class.getName();
     }
-
+    
     // Authentication
 
-    public AuthenticationInfo getAuthenticationInfo( AuthenticationToken token )
-        throws AuthenticationException
+    /* (non-Javadoc)
+     * @see org.jsecurity.mgt.RealmSecurityManager#getRealms()
+     */
+    @Override
+    public Collection<Realm> getRealms()
     {
-        for ( Realm realm : realmSelector.selectAllRealms() )
-        {
-            AuthenticationInfo ai = realm.getAuthenticationInfo( token );
-
-            if ( ai != null )
-            {
-                return ai;
-            }
-        }
-
-        return null;
-    }
-
-    public boolean supports( AuthenticationToken token )
-    {
-        for ( Realm realm : realmSelector.selectAllRealms() )
-        {
-            if ( realm.supports( token ) )
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return realmSelector.selectAllRealms();
     }
 
     // Authorization
@@ -187,7 +176,14 @@ public class WebPlexusSecurity
     {
         for ( Realm realm : realmSelector.selectAllRealms() )
         {
-            realm.checkPermission( subjectPrincipal, permission );
+            try
+            {
+                realm.checkPermission( subjectPrincipal, permission );
+            }
+            catch ( AuthorizationException e )
+            {
+                logger.debug( "Realm: '" + realm.getName() + "', caused: " + e.getMessage(), e );
+            }
         }
     }
 
@@ -196,7 +192,14 @@ public class WebPlexusSecurity
     {
         for ( Realm realm : realmSelector.selectAllRealms() )
         {
-            realm.checkPermission( subjectPrincipal, permission );
+            try
+            {
+                realm.checkPermission( subjectPrincipal, permission );
+            }
+            catch ( AuthorizationException e )
+            {
+                logger.debug( "Realm: '" + realm.getName() + "', caused: " + e.getMessage(), e );
+            }
         }
     }
 
@@ -223,7 +226,14 @@ public class WebPlexusSecurity
     {
         for ( Realm realm : realmSelector.selectAllRealms() )
         {
-            realm.checkRole( subjectPrincipal, roleIdentifier );
+            try
+            {
+                realm.checkRole( subjectPrincipal, roleIdentifier );
+            }
+            catch ( AuthorizationException e )
+            {
+                logger.debug( "Realm: '" + realm.getName() + "', caused: " + e.getMessage(), e );
+            }
         }
     }
 
@@ -253,9 +263,18 @@ public class WebPlexusSecurity
     {
         for ( Realm realm : realmSelector.selectAllRealms() )
         {
-            if ( realm.hasRole( subjectPrincipal, roleIdentifier ) )
+
+            // need to catch an AuthorizationException, the user might only belong to on of the realms
+            try
             {
-                return true;
+                if ( realm.hasRole( subjectPrincipal, roleIdentifier ) )
+                {
+                    return true;
+                }
+            }
+            catch ( AuthorizationException e )
+            {
+                logger.debug( "Realm: '" + realm.getName() + "', caused: " + e.getMessage(), e );
             }
         }
 
@@ -268,24 +287,41 @@ public class WebPlexusSecurity
 
         for ( Realm realm : realmSelector.selectAllRealms() )
         {
-            boolean[] result = realm.hasRoles( subjectPrincipal, roleIdentifiers );
-
-            for ( int i = 0; i < combinedResult.length; i++ )
+            try
             {
-                combinedResult[i] = combinedResult[i] | result[i];
+                boolean[] result = realm.hasRoles( subjectPrincipal, roleIdentifiers );
+
+                for ( int i = 0; i < combinedResult.length; i++ )
+                {
+                    combinedResult[i] = combinedResult[i] | result[i];
+                }
+
+            }
+            catch ( AuthorizationException e )
+            {
+                logger.debug( "Realm: '" + realm.getName() + "', caused: " + e.getMessage(), e );
             }
         }
 
         return combinedResult;
     }
+    
 
     public boolean isPermitted( PrincipalCollection subjectPrincipal, String permission )
     {
         for ( Realm realm : realmSelector.selectAllRealms() )
         {
-            if ( realm.isPermitted( subjectPrincipal, permission ) )
+            try
             {
-                return true;
+                if ( realm.isPermitted( subjectPrincipal, permission ) )
+                {
+                    return true;
+                }
+
+            }
+            catch ( AuthorizationException e )
+            {
+                logger.debug( "Realm: '" + realm.getName() + "', caused: " + e.getMessage(), e );
             }
         }
 
@@ -296,9 +332,16 @@ public class WebPlexusSecurity
     {
         for ( Realm realm : realmSelector.selectAllRealms() )
         {
-            if ( realm.isPermitted( subjectPrincipal, permission ) )
+            try
             {
-                return true;
+                if ( realm.isPermitted( subjectPrincipal, permission ) )
+                {
+                    return true;
+                }
+            }
+            catch ( AuthorizationException e )
+            {
+                logger.debug( "Realm: '" + realm.getName() + "', caused: " + e.getMessage(), e );
             }
         }
 
@@ -311,11 +354,18 @@ public class WebPlexusSecurity
 
         for ( Realm realm : realmSelector.selectAllRealms() )
         {
-            boolean[] result = realm.isPermitted( subjectPrincipal, permissions );
-
-            for ( int i = 0; i < combinedResult.length; i++ )
+            try
             {
-                combinedResult[i] = combinedResult[i] | result[i];
+                boolean[] result = realm.isPermitted( subjectPrincipal, permissions );
+
+                for ( int i = 0; i < combinedResult.length; i++ )
+                {
+                    combinedResult[i] = combinedResult[i] | result[i];
+                }
+            }
+            catch ( AuthorizationException e )
+            {
+                logger.debug( "Realm: '" + realm.getName() + "', caused: " + e.getMessage(), e );
             }
         }
 
@@ -328,11 +378,18 @@ public class WebPlexusSecurity
 
         for ( Realm realm : realmSelector.selectAllRealms() )
         {
-            boolean[] result = realm.isPermitted( subjectPrincipal, permissions );
-
-            for ( int i = 0; i < combinedResult.length; i++ )
+            try
             {
-                combinedResult[i] = combinedResult[i] | result[i];
+                boolean[] result = realm.isPermitted( subjectPrincipal, permissions );
+
+                for ( int i = 0; i < combinedResult.length; i++ )
+                {
+                    combinedResult[i] = combinedResult[i] | result[i];
+                }
+            }
+            catch ( AuthorizationException e )
+            {
+                logger.debug( "Realm: '" + realm.getName() + "', caused: " + e.getMessage(), e );
             }
         }
 
@@ -376,13 +433,21 @@ public class WebPlexusSecurity
     public void initialize()
         throws InitializationException
     {
-        /*
-         * We are setting our implementation to the realm for the security manager so that we can delegate to any realm
-         * setup we wish to construct.
-         */
-
-        setRealm( this );
-
+        // set the realm authenticator, that will automatically deligate the authentication to all the realms.
+        ModularRealmAuthenticator realmAuthenticator = new ModularRealmAuthenticator();
+        realmAuthenticator.setModularAuthenticationStrategy( new FirstSuccessfulAuthenticationStrategy() );
+        
+//        realmAuthorizer.
+        this.setAuthenticator( realmAuthenticator );
+        
+        this.setRealms( this.getRealms() );
+        
         setRememberMeManager( rememberMeLocator.getRememberMeManager() );
+    }
+
+    public void enableLogging( Logger logger )
+    {
+        this.logger = logger;
+
     }
 }
