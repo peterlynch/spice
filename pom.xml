@@ -38,6 +38,8 @@ under the License.
       <module>plexus-task-scheduler</module>
       <module>plexus-webdav</module>
       <module>spice-parent</module>
+      <module>plexus-ldap-testsuite</module>
+      
     </modules>
     
     <distributionManagement>
