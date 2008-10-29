@@ -307,6 +307,7 @@ public abstract class AbstractForkedAppBooter
             velocityProperties.setProperty( "runtime.log.logsystem.class", VelocityLogChute.class.getName() );
 
             writer.write( classworldsConf, config, velocityProperties );
+            getLogger().info( "Wrote classworlds.conf to: " + classworldsConf );
         }
         catch ( ClassworldsIOException e )
         {
@@ -486,6 +487,7 @@ public abstract class AbstractForkedAppBooter
         this.stop();
         if ( !getLogger().isDebugEnabled() && !debug && tempDir != null && tempDir.exists() )
         {
+            getLogger().info( "Cleaning up appbooter temp directory: " + tempDir );
             try
             {
                 FileUtils.deleteDirectory( tempDir );
@@ -494,6 +496,10 @@ public abstract class AbstractForkedAppBooter
             {
                 throw new AppBooterServiceException( "Failed to delete appbooter temp dir: " + tempDir, e );
             }
+        }
+        else
+        {
+            getLogger().info( "Debug mode is enabled; LEAVING appbooter temp directory for inspection: " + tempDir );
         }
     }
 
