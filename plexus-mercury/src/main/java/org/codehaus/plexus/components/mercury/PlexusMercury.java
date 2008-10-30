@@ -8,6 +8,9 @@ import java.util.Set;
 
 import org.apache.maven.mercury.artifact.Artifact;
 import org.apache.maven.mercury.artifact.ArtifactBasicMetadata;
+import org.apache.maven.mercury.artifact.ArtifactMetadata;
+import org.apache.maven.mercury.artifact.ArtifactScopeEnum;
+import org.apache.maven.mercury.builder.api.DependencyProcessor;
 import org.apache.maven.mercury.crypto.api.StreamObserverFactory;
 import org.apache.maven.mercury.crypto.api.StreamVerifierException;
 import org.apache.maven.mercury.crypto.api.StreamVerifierFactory;
@@ -147,4 +150,18 @@ public interface PlexusMercury
   public Collection<Artifact> read( Collection<Repository> repo, ArtifactBasicMetadata... artifacts )
   throws RepositoryException;
 
+  /**
+   * resolve Artifact dependencies
+   * 
+   * @param repo repository instance to search
+   * @param artfifacts to read
+   * @return
+   * @throws PlexusMercuryException
+   */
+  public Collection<? extends ArtifactBasicMetadata> resolve( Collection<Repository> repos
+                                                            , DependencyProcessor dependencyProcessor
+                                                            , ArtifactScopeEnum   scope
+                                                            , ArtifactBasicMetadata... artifacts
+                                                            )
+  throws RepositoryException;
 }

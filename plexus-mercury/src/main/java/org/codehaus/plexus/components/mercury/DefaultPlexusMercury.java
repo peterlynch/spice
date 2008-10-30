@@ -30,6 +30,8 @@ import java.util.Set;
 
 import org.apache.maven.mercury.artifact.Artifact;
 import org.apache.maven.mercury.artifact.ArtifactBasicMetadata;
+import org.apache.maven.mercury.artifact.ArtifactMetadata;
+import org.apache.maven.mercury.artifact.ArtifactScopeEnum;
 import org.apache.maven.mercury.builder.api.DependencyProcessor;
 import org.apache.maven.mercury.builder.api.MetadataReader;
 import org.apache.maven.mercury.builder.api.MetadataReaderException;
@@ -38,6 +40,10 @@ import org.apache.maven.mercury.crypto.api.StreamVerifierAttributes;
 import org.apache.maven.mercury.crypto.api.StreamVerifierException;
 import org.apache.maven.mercury.crypto.api.StreamVerifierFactory;
 import org.apache.maven.mercury.crypto.pgp.PgpStreamVerifierFactory;
+import org.apache.maven.mercury.metadata.DependencyBuilder;
+import org.apache.maven.mercury.metadata.DependencyBuilderFactory;
+import org.apache.maven.mercury.metadata.MetadataTreeException;
+import org.apache.maven.mercury.metadata.MetadataTreeNode;
 import org.apache.maven.mercury.repository.api.ArtifactResults;
 import org.apache.maven.mercury.repository.api.Repository;
 import org.apache.maven.mercury.repository.api.RepositoryException;
@@ -209,6 +215,33 @@ implements PlexusMercury, Initializable
         new StreamVerifierAttributes(PgpStreamVerifierFactory.DEFAULT_EXTENSION,lenient,sufficient )
         , secRing , keyId, keyPass
                                       );
+  }
+  //---------------------------------------------------------------
+
+  public Collection<ArtifactMetadata> resolve( Collection<Repository> repos
+                                            , DependencyProcessor dependencyProcessor
+                                            , ArtifactScopeEnum   scope
+                                            , ArtifactBasicMetadata... artifacts
+                                            )
+  throws RepositoryException
+  {
+    
+    if( artifacts.length > 1 )
+      throw new RepositoryException( "I dont support more'n 1 artifact now" );
+    
+    try
+    {
+      DependencyBuilder depBuilder = DependencyBuilderFactory.create( DependencyBuilderFactory.JAVA_DEPENDENCY_MODEL, null, null, null, repos, dependencyProcessor );
+      
+      MetadataTreeNode root = depBuilder.buildTree( artifacts[0] );
+      Collection<ArtifactMetadata> res = depBuilder.resolveConflicts( root, scope );
+    
+      return res;
+    }
+    catch( MetadataTreeException e )
+    {
+      throw new RepositoryException( e );
+    }
   }
   //---------------------------------------------------------------
   //---------------------------------------------------------------

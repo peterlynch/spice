@@ -33,8 +33,11 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.apache.maven.mercury.MavenDependencyProcessor;
 import org.apache.maven.mercury.artifact.Artifact;
 import org.apache.maven.mercury.artifact.ArtifactBasicMetadata;
+import org.apache.maven.mercury.artifact.ArtifactMetadata;
+import org.apache.maven.mercury.artifact.ArtifactScopeEnum;
 import org.apache.maven.mercury.artifact.DefaultArtifact;
 import org.apache.maven.mercury.crypto.api.StreamVerifierFactory;
 import org.apache.maven.mercury.crypto.pgp.PgpStreamVerifierFactory;
@@ -43,6 +46,7 @@ import org.apache.maven.mercury.repository.api.Repository;
 import org.apache.maven.mercury.repository.api.RepositoryException;
 import org.apache.maven.mercury.repository.local.m2.LocalRepositoryM2;
 import org.apache.maven.mercury.repository.remote.m2.RemoteRepositoryM2;
+import org.apache.maven.mercury.transport.api.Server;
 import org.apache.maven.mercury.util.FileUtil;
 
 /**
@@ -173,6 +177,21 @@ extends TestCase
     assertNotNull( pomBytes );
     
     assertTrue( pomBytes.length > 10 );
+  }
+  //-------------------------------------------------------------------------------------
+  public void testResolve()
+  throws Exception
+  {
+    Server central = new Server( "central", new URL("http://repo1.maven.org/maven2") );
+    repos.add( new RemoteRepositoryM2(central) );
+
+    String artifactId = "asm:asm-xml:3.0";
+
+    ArtifactBasicMetadata bmd = new ArtifactBasicMetadata( artifactId );
+    
+    Collection<ArtifactMetadata> res = pm.resolve( repos, new MavenDependencyProcessor(), ArtifactScopeEnum.compile, bmd );
+    
+    System.out.println("Resolved as "+res);
   }
   //-------------------------------------------------------------------------------------
   //-------------------------------------------------------------------------------------
