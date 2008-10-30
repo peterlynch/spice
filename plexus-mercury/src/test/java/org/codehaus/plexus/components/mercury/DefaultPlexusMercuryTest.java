@@ -192,6 +192,24 @@ extends TestCase
     Collection<ArtifactMetadata> res = pm.resolve( repos, new MavenDependencyProcessor(), ArtifactScopeEnum.compile, bmd );
     
     System.out.println("Resolved as "+res);
+
+    assertEquals( 4, res.size() );
+    
+    assertTrue( assertHasArtifact( res, "asm:asm-xml:3.0" ) );
+    assertTrue( assertHasArtifact( res, "asm:asm-util:3.0" ) );
+    assertTrue( assertHasArtifact( res, "asm:asm-tree:3.0" ) );
+    assertTrue( assertHasArtifact( res, "asm:asm:3.0" ) );
+  }
+  //----------------------------------------------------------------------------------------------
+  private static boolean assertHasArtifact( Collection<ArtifactMetadata> res, String gav )
+  {
+    ArtifactMetadata gavMd = new ArtifactMetadata(gav);
+    
+    for( ArtifactMetadata md : res )
+      if( md.sameGAV( gavMd ) )
+        return true;
+    
+    return false;
   }
   //-------------------------------------------------------------------------------------
   //-------------------------------------------------------------------------------------
