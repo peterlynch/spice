@@ -161,7 +161,7 @@ implements PlexusMercury, Initializable
     
   }
   //---------------------------------------------------------------
-  public Collection<Artifact> read( Collection<Repository> repos, List<ArtifactBasicMetadata> artifacts )
+  public List<Artifact> read( List<Repository> repos, List<ArtifactBasicMetadata> artifacts )
   throws RepositoryException
   {
     if( Util.isEmpty( repos ) )
@@ -214,7 +214,7 @@ implements PlexusMercury, Initializable
   }
   //---------------------------------------------------------------
 
-  public Collection<ArtifactMetadata> resolve( Collection<Repository> repos
+  public List<ArtifactMetadata> resolve( List<Repository> repos
                                             , DependencyProcessor dependencyProcessor
                                             , ArtifactScopeEnum   scope
                                             , ArtifactBasicMetadata... artifacts
@@ -230,7 +230,7 @@ implements PlexusMercury, Initializable
       DependencyBuilder depBuilder = DependencyBuilderFactory.create( DependencyBuilderFactory.JAVA_DEPENDENCY_MODEL, null, null, null, repos, dependencyProcessor );
       
       MetadataTreeNode root = depBuilder.buildTree( artifacts[0] );
-      Collection<ArtifactMetadata> res = depBuilder.resolveConflicts( root, scope );
+      List<ArtifactMetadata> res = depBuilder.resolveConflicts( root, scope );
     
       return res;
     }
