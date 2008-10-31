@@ -152,12 +152,20 @@ implements PlexusMercury, Initializable
   public void write( Repository repo, Artifact... artifacts )
   throws RepositoryException
   {
+    write( repo, Arrays.asList( artifacts ) );
+  }
+  
+  public void write(
+      Repository repo,
+      Collection<Artifact> artifacts )
+      throws RepositoryException
+  {
     if( repo == null )
       throw new RepositoryException( _lang.getMessage( "null.repo" ) );
     
     RepositoryWriter wr = repo.getWriter();
     
-    wr.writeArtifacts( Arrays.asList( artifacts ) );
+    wr.writeArtifacts( artifacts );
     
   }
   //---------------------------------------------------------------
@@ -184,6 +192,11 @@ implements PlexusMercury, Initializable
 
     return al;
     
+  }
+  public List<Artifact> read( List<Repository> repo, ArtifactBasicMetadata... artifacts )
+      throws RepositoryException
+  {
+    return read( repo, Arrays.asList( artifacts ) );
   }
   //---------------------------------------------------------------
   public PgpStreamVerifierFactory createPgpReaderFactory(
@@ -214,22 +227,25 @@ implements PlexusMercury, Initializable
   }
   //---------------------------------------------------------------
 
-  public List<ArtifactMetadata> resolve( List<Repository> repos
-                                            , DependencyProcessor dependencyProcessor
-                                            , ArtifactScopeEnum   scope
-                                            , ArtifactBasicMetadata... artifacts
-                                            )
+  public List<ArtifactMetadata> resolve(
+                                        List<Repository> repos,
+                                        DependencyProcessor dependencyProcessor,
+                                        ArtifactScopeEnum scope,
+                                        List<ArtifactBasicMetadata> artifacts
+                                                      )
   throws RepositoryException
   {
+    if( Util.isEmpty( artifacts ) )
+      throw new IllegalArgumentException( _lang.getMessage( "no.artifacts" ) );
     
-    if( artifacts.length > 1 )
+    if( artifacts.size() > 1 )
       throw new RepositoryException( "I dont support more'n 1 artifact now" );
     
     try
     {
       DependencyBuilder depBuilder = DependencyBuilderFactory.create( DependencyBuilderFactory.JAVA_DEPENDENCY_MODEL, null, null, null, repos, dependencyProcessor );
       
-      MetadataTreeNode root = depBuilder.buildTree( artifacts[0] );
+      MetadataTreeNode root = depBuilder.buildTree( artifacts.get(0) );
       List<ArtifactMetadata> res = depBuilder.resolveConflicts( root, scope );
     
       return res;
@@ -238,6 +254,16 @@ implements PlexusMercury, Initializable
     {
       throw new RepositoryException( e );
     }
+  }
+
+  public List<ArtifactMetadata> resolve( List<Repository> repos
+                                            , DependencyProcessor dependencyProcessor
+                                            , ArtifactScopeEnum   scope
+                                            , ArtifactBasicMetadata... artifacts
+                                            )
+  throws RepositoryException
+  {
+    return resolve( repos, dependencyProcessor, scope, Arrays.asList( artifacts ) );
   }
   //---------------------------------------------------------------
   //---------------------------------------------------------------

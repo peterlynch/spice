@@ -58,7 +58,7 @@ import org.apache.maven.mercury.util.FileUtil;
 public class DefaultPlexusMercuryTest
 extends TestCase
 {
-  DefaultPlexusMercury pm;
+  PlexusMercury pm;
 
   RemoteRepositoryM2 remoteRepo;
   LocalRepositoryM2  localRepo;
@@ -191,7 +191,7 @@ extends TestCase
 
     ArtifactBasicMetadata bmd = new ArtifactBasicMetadata( artifactId );
     
-    Collection<ArtifactMetadata> res = pm.resolve( repos, new MavenDependencyProcessor(), ArtifactScopeEnum.compile, bmd );
+    List<ArtifactBasicMetadata> res = (List<ArtifactBasicMetadata>)pm.resolve( repos, new MavenDependencyProcessor(), ArtifactScopeEnum.compile, bmd );
     
     System.out.println("Resolved as "+res);
 
@@ -203,11 +203,11 @@ extends TestCase
     assertTrue( assertHasArtifact( res, "asm:asm:3.0" ) );
   }
   //----------------------------------------------------------------------------------------------
-  private static boolean assertHasArtifact( Collection<ArtifactMetadata> res, String gav )
+  private static boolean assertHasArtifact( List<ArtifactBasicMetadata> res, String gav )
   {
     ArtifactMetadata gavMd = new ArtifactMetadata(gav);
     
-    for( ArtifactMetadata md : res )
+    for( ArtifactBasicMetadata md : res )
       if( md.sameGAV( gavMd ) )
         return true;
     

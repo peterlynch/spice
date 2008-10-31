@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.apache.maven.mercury.artifact.Artifact;
 import org.apache.maven.mercury.artifact.ArtifactBasicMetadata;
+import org.apache.maven.mercury.artifact.ArtifactMetadata;
 import org.apache.maven.mercury.artifact.ArtifactScopeEnum;
 import org.apache.maven.mercury.builder.api.DependencyProcessor;
 import org.apache.maven.mercury.crypto.api.StreamObserverFactory;
@@ -138,6 +139,8 @@ public interface PlexusMercury
    */
   public void write( Repository repo, Artifact... artifacts )
   throws RepositoryException;
+  public void write( Repository repo, Collection<Artifact> artifacts )
+  throws RepositoryException;
 
   /**
    * read given Artifact(s) from the repository
@@ -149,6 +152,8 @@ public interface PlexusMercury
    */
   public List<Artifact> read( List<Repository> repo, List<ArtifactBasicMetadata> artifacts )
   throws RepositoryException;
+  public List<Artifact> read( List<Repository> repo, ArtifactBasicMetadata... artifacts )
+  throws RepositoryException;
 
   /**
    * resolve Artifact dependencies
@@ -159,9 +164,16 @@ public interface PlexusMercury
    * @throws PlexusMercuryException
    */
   public List<? extends ArtifactBasicMetadata> resolve( List<Repository> repos
-                                                            , DependencyProcessor dependencyProcessor
-                                                            , ArtifactScopeEnum   scope
-                                                            , ArtifactBasicMetadata... artifacts
-                                                            )
+                                        , DependencyProcessor dependencyProcessor
+                                        , ArtifactScopeEnum   scope
+                                        , ArtifactBasicMetadata... artifacts
+                                      )
+  throws RepositoryException;
+  
+  public List<? extends ArtifactBasicMetadata> resolve( List<Repository> repos
+                                      , DependencyProcessor dependencyProcessor
+                                      , ArtifactScopeEnum   scope
+                                      , List<ArtifactBasicMetadata> artifacts
+                                      )
   throws RepositoryException;
 }
