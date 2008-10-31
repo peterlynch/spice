@@ -4,11 +4,11 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.maven.mercury.artifact.Artifact;
 import org.apache.maven.mercury.artifact.ArtifactBasicMetadata;
-import org.apache.maven.mercury.artifact.ArtifactMetadata;
 import org.apache.maven.mercury.artifact.ArtifactScopeEnum;
 import org.apache.maven.mercury.builder.api.DependencyProcessor;
 import org.apache.maven.mercury.crypto.api.StreamObserverFactory;
@@ -147,7 +147,7 @@ public interface PlexusMercury
    * @return
    * @throws PlexusMercuryException
    */
-  public Collection<Artifact> read( Collection<Repository> repo, ArtifactBasicMetadata... artifacts )
+  public Collection<Artifact> read( Collection<Repository> repo, List<ArtifactBasicMetadata> artifacts )
   throws RepositoryException;
 
   /**

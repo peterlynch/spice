@@ -23,7 +23,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,8 +32,6 @@ import org.apache.maven.mercury.artifact.ArtifactBasicMetadata;
 import org.apache.maven.mercury.artifact.ArtifactMetadata;
 import org.apache.maven.mercury.artifact.ArtifactScopeEnum;
 import org.apache.maven.mercury.builder.api.DependencyProcessor;
-import org.apache.maven.mercury.builder.api.MetadataReader;
-import org.apache.maven.mercury.builder.api.MetadataReaderException;
 import org.apache.maven.mercury.crypto.api.StreamObserverFactory;
 import org.apache.maven.mercury.crypto.api.StreamVerifierAttributes;
 import org.apache.maven.mercury.crypto.api.StreamVerifierException;
@@ -47,7 +44,6 @@ import org.apache.maven.mercury.metadata.MetadataTreeNode;
 import org.apache.maven.mercury.repository.api.ArtifactResults;
 import org.apache.maven.mercury.repository.api.Repository;
 import org.apache.maven.mercury.repository.api.RepositoryException;
-import org.apache.maven.mercury.repository.api.RepositoryReader;
 import org.apache.maven.mercury.repository.api.RepositoryWriter;
 import org.apache.maven.mercury.repository.local.m2.LocalRepositoryM2;
 import org.apache.maven.mercury.repository.remote.m2.RemoteRepositoryM2;
@@ -165,7 +161,7 @@ implements PlexusMercury, Initializable
     
   }
   //---------------------------------------------------------------
-  public Collection<Artifact> read( Collection<Repository> repos, ArtifactBasicMetadata... artifacts )
+  public Collection<Artifact> read( Collection<Repository> repos, List<ArtifactBasicMetadata> artifacts )
   throws RepositoryException
   {
     if( Util.isEmpty( repos ) )
@@ -173,7 +169,7 @@ implements PlexusMercury, Initializable
     
     VirtualRepositoryReader vr = new VirtualRepositoryReader( repos, DependencyProcessor.NULL_PROCESSOR );
     
-    ArtifactResults ar = vr.readArtifacts( Arrays.asList( artifacts ) );
+    ArtifactResults ar = vr.readArtifacts( artifacts );
     if( ar.hasExceptions() )
       throw new RepositoryException( ar.getExceptions().toString() );
     

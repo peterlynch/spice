@@ -1,46 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
-  <parent>
-    <groupId>org.sonatype.spice</groupId>
-    <artifactId>spice-parent</artifactId>
-    <version>9</version>
-  </parent>
-
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <artifactId>plexus-mercury</artifactId>
   <name>Plexus Cypher Component</name>
   <version>1.0.0-SNAPSHOT</version>
-  
+  <groupId>org.codehaus.plexus</groupId>
   <properties>
     <mercury.version>1.0.0-alpha-2-SNAPSHOT</mercury.version>
   </properties>
 
-  <scm>
-    <connection>scm:svn:http://svn.sonatype.org/spice/trunk/plexus-mercury</connection>
-    <url>http://svn.sonatype.org/spice/trunk/plexus-mercury</url>
-    <developerConnection>scm:svn:https://svn.sonatype.org/spice/trunk/plexus-mercury</developerConnection>
-  </scm>
-  
-  <distributionManagement>
-    <repository>
-      <id>${distMgmtReleasesId}</id>
-      <name>${distMgmtReleasesName}</name>
-      <url>${distMgmtReleasesUrl}</url>
-    </repository>
-    <snapshotRepository>
-      <id>${distMgmtSnapshotsId}</id>
-      <name>${distMgmtSnapshotsName}</name>
-      <url>${distMgmtSnapshotsUrl}</url>
-    </snapshotRepository>
-  </distributionManagement>
-  
   <build>
     <plugins>
       <plugin>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-maven-plugin</artifactId>
-        <executions>
+        <executions> 
           <execution>
             <goals>
               <goal>descriptor</goal>
@@ -57,8 +32,9 @@
       </plugin>
     </plugins>
   </build>
-  
+
   <dependencies>
+
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
@@ -75,9 +51,9 @@
       <version>${mercury.version}</version>
     </dependency>
     <dependency>
-    	<groupId>org.apache.maven.mercury</groupId>
-    	<artifactId>mercury-md-sat</artifactId>
-    	<version>${mercury.version}</version>
+      <groupId>org.apache.maven.mercury</groupId>
+      <artifactId>mercury-md-sat</artifactId>
+      <version>${mercury.version}</version>
     </dependency>
 
     <dependency>
@@ -99,7 +75,11 @@
       <version>1.5.3</version>
       <scope>test</scope>
     </dependency>
-
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-container-default</artifactId>
+      <version>1.0-beta-1</version>
+    </dependency>
   </dependencies>
 </project>
 
