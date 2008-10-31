@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
   <parent>
-    <artifactId>plexus-components</artifactId>
-    <groupId>org.codehaus.plexus</groupId>
-    <version>1.1.12</version>
+    <groupId>org.sonatype.spice</groupId>
+    <artifactId>spice-parent</artifactId>
+    <version>9</version>
   </parent>
+
   <modelVersion>4.0.0</modelVersion>
   <artifactId>plexus-mercury</artifactId>
   <name>Plexus Cypher Component</name>
@@ -13,6 +15,25 @@
   <properties>
     <mercury.version>1.0.0-alpha-2-SNAPSHOT</mercury.version>
   </properties>
+
+  <scm>
+    <connection>scm:svn:http://svn.sonatype.org/spice/trunk/plexus-mercury</connection>
+    <url>http://svn.sonatype.org/spice/trunk/plexus-mercury</url>
+    <developerConnection>scm:svn:https://svn.sonatype.org/spice/trunk/plexus-mercury</developerConnection>
+  </scm>
+  
+  <distributionManagement>
+    <repository>
+      <id>${distMgmtReleasesId}</id>
+      <name>${distMgmtReleasesName}</name>
+      <url>${distMgmtReleasesUrl}</url>
+    </repository>
+    <snapshotRepository>
+      <id>${distMgmtSnapshotsId}</id>
+      <name>${distMgmtSnapshotsName}</name>
+      <url>${distMgmtSnapshotsUrl}</url>
+    </snapshotRepository>
+  </distributionManagement>
   
   <build>
     <plugins>
