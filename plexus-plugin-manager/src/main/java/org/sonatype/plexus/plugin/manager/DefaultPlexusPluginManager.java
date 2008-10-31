@@ -17,6 +17,8 @@ import org.apache.maven.mercury.repository.remote.m2.RemoteRepositoryM2;
 import org.apache.maven.mercury.transport.api.Server;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.codehaus.plexus.logging.Logger;
+import org.codehaus.plexus.util.ExceptionUtils;
 
 /*
 
@@ -83,9 +85,12 @@ public class DefaultPlexusPluginManager
     @Requirement
     private PlexusMercury mercury;
 
+    @Requirement
+    private Logger logger;
+    
     public PluginResolutionResult resolve( PluginResolutionRequest request )
         throws PluginResolutionException
-    {
+    {        
         PluginResolutionResult result = new PluginResolutionResult();
         
         List<Repository> repos = new ArrayList<Repository>();
@@ -114,15 +119,25 @@ public class DefaultPlexusPluginManager
         
         try
         {
+            logger.info(  "Start metadata resolution." );
+            
             List<ArtifactBasicMetadata> res = (List<ArtifactBasicMetadata>) 
                 mercury.resolve( repos, new MavenDependencyProcessor(), ArtifactScopeEnum.runtime, request.getArtifactMetadata() );
 
+            logger.info( "Resolution OK." );
+            
             List<Artifact> artifacts = mercury.read( repos, res );
+            
+            // Is the first artifact in the list going to be the plugin artifact? because I need to be able to grab that
+            // that artifact to process it in a certain way.
+            
+            logger.info( "Artifact retrieval OK." );
             
             result.setArtifacts( artifacts );
         }
         catch ( RepositoryException e )
         {
+            //ExceptionUtils.getRootCause( e ).printStackTrace();
             throw new PluginResolutionException( "Cannot retrieve plugin dependencies", e );
         }
 
