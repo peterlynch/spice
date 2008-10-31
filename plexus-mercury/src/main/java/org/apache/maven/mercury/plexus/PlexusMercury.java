@@ -1,4 +1,4 @@
-package org.codehaus.plexus.components.mercury;
+package org.apache.maven.mercury.plexus;
 
 import java.io.File;
 import java.io.InputStream;

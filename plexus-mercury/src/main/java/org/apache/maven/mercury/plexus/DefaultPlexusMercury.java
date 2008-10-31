@@ -1,4 +1,4 @@
-package org.codehaus.plexus.components.mercury;
+package org.apache.maven.mercury.plexus;
 
 /*
  * Copyright 2001-2007 Codehaus Foundation.

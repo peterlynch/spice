@@ -1,4 +1,4 @@
-package org.codehaus.plexus.components.mercury;
+package org.apache.maven.mercury.plexus;
 
 /*
  * The MIT License
@@ -42,6 +42,8 @@ import org.apache.maven.mercury.artifact.DefaultArtifact;
 import org.apache.maven.mercury.crypto.api.StreamVerifierFactory;
 import org.apache.maven.mercury.crypto.pgp.PgpStreamVerifierFactory;
 import org.apache.maven.mercury.crypto.sha.SHA1VerifierFactory;
+import org.apache.maven.mercury.plexus.DefaultPlexusMercury;
+import org.apache.maven.mercury.plexus.PlexusMercury;
 import org.apache.maven.mercury.repository.api.Repository;
 import org.apache.maven.mercury.repository.api.RepositoryException;
 import org.apache.maven.mercury.repository.local.m2.LocalRepositoryM2;
