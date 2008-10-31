@@ -182,7 +182,9 @@ extends TestCase
   public void testResolve()
   throws Exception
   {
-    Server central = new Server( "central", new URL("http://repo1.maven.org/maven2") );
+//    Server central = new Server( "central", new URL("http://repo1.maven.org/maven2") );
+    Server central = new Server( "central", new URL("http://repository.sonatype.org/content/groups/public") );
+    
     repos.add( new RemoteRepositoryM2(central) );
 
     String artifactId = "asm:asm-xml:3.0";
