@@ -360,9 +360,12 @@ public class PlexusConfiguration
     {
         try
         {
-            getLogger().info(
-                "Adding new protected resource with path='" + pathPattern + "' and filterExpression='"
-                    + filterExpression + "'" );
+            if ( getLogger().isDebugEnabled() )
+            {
+                getLogger().debug(
+                    "Adding new protected resource with path='" + pathPattern + "' and filterExpression='"
+                        + filterExpression + "'" );
+            }
 
             if ( chains == null )
             {
