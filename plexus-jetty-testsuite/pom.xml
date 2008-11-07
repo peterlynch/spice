@@ -1,29 +1,34 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.sonatype.spice</groupId>
-		<artifactId>spice-parent</artifactId>
-		<version>9</version>
-	</parent>
-    <groupId>org.sonatype.plexus</groupId>
-	<artifactId>plexus-jetty-testsuite</artifactId>
-	<version>1.2-SNAPSHOT</version>
-	<name>Plexus Jetty Testsuite</name>
-	
-    <scm>
-        <connection>scm:svn:http://svn.sonatype.org/spice/trunk/plexus-jetty-testsuite</connection>
-        <url>http://svn.sonatype.org/spice/trunk/plexus-jetty-testsuite</url>
-        <developerConnection>scm:svn:https://svn.sonatype.org/spice/trunk/plexus-jetty-testsuite</developerConnection>
-    </scm>
-    
-    <dependencies>
-		<dependency>
-			<groupId>org.codehaus.plexus</groupId>
-			<artifactId>plexus-container-default</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.mortbay.jetty</groupId>
-			<artifactId>jetty</artifactId>
-		</dependency>
-	</dependencies>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.sonatype.spice</groupId>
+    <artifactId>spice-parent</artifactId>
+    <version>10-SNAPSHOT</version>
+  </parent>
+  <groupId>org.sonatype.plexus</groupId>
+  <artifactId>plexus-jetty-testsuite</artifactId>
+  <version>1.2-SNAPSHOT</version>
+  <name>Plexus Jetty Testsuite</name>
+
+  <scm>
+    <connection>scm:svn:http://svn.sonatype.org/spice/trunk/plexus-jetty-testsuite</connection>
+    <url>http://svn.sonatype.org/spice/trunk/plexus-jetty-testsuite</url>
+    <developerConnection>scm:svn:https://svn.sonatype.org/spice/trunk/plexus-jetty-testsuite</developerConnection>
+  </scm>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-container-default</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.mortbay.jetty</groupId>
+      <artifactId>jetty</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.mortbay.jetty</groupId>
+      <artifactId>jetty-client</artifactId>
+    </dependency>
+  </dependencies>
+
 </project>
