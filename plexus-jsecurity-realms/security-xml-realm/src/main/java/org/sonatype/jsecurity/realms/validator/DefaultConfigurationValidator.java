@@ -366,10 +366,25 @@ public class DefaultConfigurationValidator
 
             existingIds = context.getExistingRoleIds();
         }
+        
+        if( !update
+            && existingIds.contains( role
+                .getId() ) )
+        {
+            ValidationMessage message = new ValidationMessage( "id", "Role ID must be unique." );
+            response.addValidationError( message );
+        }
+        
+        if( update
+            && !existingIds.contains( role
+                .getId() ) )
+        {
+            ValidationMessage message = new ValidationMessage( "id", "Role ID cannot be changed." );
+            response.addValidationError( message );
+        }
 
         if ( !update
-            && ( StringUtils.isEmpty( role.getId() ) || "0".equals( role.getId() ) || ( existingIds.contains( role
-                .getId() ) ) ) )
+            && ( StringUtils.isEmpty( role.getId() ) || "0".equals( role.getId() ) ) )
         {
             String newId = idGenerator.generateId();
 
