@@ -18,15 +18,20 @@ import org.apache.maven.mercury.repository.local.m2.LocalRepositoryM2;
 import org.apache.maven.mercury.repository.remote.m2.RemoteRepositoryM2;
 import org.apache.maven.mercury.transport.api.Server;
 import org.codehaus.plexus.MutablePlexusContainer;
+import org.codehaus.plexus.PlexusConstants;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.component.repository.ComponentDescriptor;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.component.repository.exception.ComponentRepositoryException;
 import org.codehaus.plexus.configuration.PlexusConfigurationException;
+import org.codehaus.plexus.context.Context;
+import org.codehaus.plexus.context.ContextException;
 import org.codehaus.plexus.logging.Logger;
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
 
 /*
  * 
@@ -75,13 +80,15 @@ import org.codehaus.plexus.logging.Logger;
 
 @Component(role = PlexusPluginManager.class)
 public class DefaultPlexusPluginManager
-    implements PlexusPluginManager
+    implements PlexusPluginManager, Contextualizable
 {
     @Requirement
     private PlexusMercury mercury;
 
     @Requirement
     private Logger logger;
+
+    private MutablePlexusContainer container;
 
     public PluginResolutionResult resolve( PluginResolutionRequest request )
         throws PluginResolutionException
@@ -127,8 +134,7 @@ public class DefaultPlexusPluginManager
         {
             logger.info( "Start metadata resolution." );
 
-            List<ArtifactBasicMetadata> res = (List<ArtifactBasicMetadata>) 
-                mercury.resolve( repositories, ArtifactScopeEnum.runtime, request.getArtifactMetadata() );
+            List<ArtifactBasicMetadata> res = (List<ArtifactBasicMetadata>) mercury.resolve( repositories, ArtifactScopeEnum.runtime, request.getArtifactMetadata() );
 
             logger.info( "Resolution OK." );
 
@@ -173,11 +179,11 @@ public class DefaultPlexusPluginManager
         return realm;
     }
 
-    public List<ComponentDescriptor> discoverComponents( PlexusContainer container, ClassRealm realm )
+    public List<ComponentDescriptor> discoverComponents( ClassRealm realm )
     {
         try
         {
-            List<ComponentDescriptor> components = ( (MutablePlexusContainer) container ).discoverComponents( realm, false );
+            List<ComponentDescriptor> components = container.discoverComponents( realm, false );
             return components;
         }
         catch ( PlexusConfigurationException e )
@@ -188,5 +194,25 @@ public class DefaultPlexusPluginManager
         {
             return null;
         }
+    }
+
+    public Object findPlugin( Class pluginClass, String hint )
+        throws ComponentLookupException
+    {
+        return container.lookup( pluginClass );
+    }
+
+    public Object findPlugin( String role, String hint )
+        throws ComponentLookupException
+    {
+        return container.lookup( role, hint );
+    }
+
+    // Lifecycle
+
+    public void contextualize( Context context )
+        throws ContextException
+    {
+        container = (MutablePlexusContainer) context.get( PlexusConstants.PLEXUS_KEY );
     }
 }
