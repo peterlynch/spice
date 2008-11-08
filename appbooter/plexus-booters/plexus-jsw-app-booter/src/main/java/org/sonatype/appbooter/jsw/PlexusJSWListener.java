@@ -96,8 +96,6 @@ public class PlexusJSWListener
 
         try
         {
-            WrapperManager.signalStarting( 30000 );
-
             startContainer();
         }
         catch ( Exception e )
