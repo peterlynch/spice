@@ -13,6 +13,7 @@ import org.codehaus.plexus.component.repository.ComponentSetDescriptor;
 import org.codehaus.plexus.component.repository.io.PlexusTools;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
 import org.codehaus.plexus.configuration.PlexusConfigurationException;
+import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
 import org.sonatype.plexus.plugin.manager.maven.Mojo;
 import org.sonatype.plexus.plugin.manager.maven.PluginDescriptorBuilder;
 
@@ -77,10 +78,26 @@ public class PlexusPluginManagerTest
 
         // API from services
         
-        Mojo component = (Mojo) pm.findPlugin( role, hint );        
+        // The base plugin interface needs to be loaded in a base classloader before the children
+        // can be built on top of it.
+                
+        Object component = pm.findPlugin( role, hint );
+        System.out.println( Mojo.class.getClassLoader() );
+        System.out.println( component.getClass().getClassLoader() );
+        
         assertNotNull( component );
         
+        PlexusConfiguration pc = new XmlPlexusConfiguration( "configuration" );
+        PlexusConfiguration x = pc.addChild( "outputDirectory" );
+        x.setValue( "/tmp/foo" );
         
+        System.out.println( pc );
+        
+        // Now I need to configure this thing before I can run it. All the logic to produce a configuration
+        // is currently in the plugin manager. I also need all the validation we had for the parameters.
+        
+        
+        //component.execute();        
     }
 
     @Override
