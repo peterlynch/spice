@@ -7,7 +7,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-import org.mortbay.jetty.HttpURI;
 import org.mortbay.jetty.Request;
 import org.mortbay.proxy.AsyncProxyServlet;
 
@@ -19,27 +18,27 @@ public class MonitorableProxyServlet
     extends AsyncProxyServlet
 {
 
-    public List<HttpURI> getAccessedUris()
+    public List<String> getAccessedUris()
     {
         if ( accessedUris == null )
         {
-            accessedUris = new ArrayList<HttpURI>();
+            accessedUris = new ArrayList<String>();
         }
         return accessedUris;
     }
 
-    public void setAccessedUris( List<HttpURI> accessedUris )
+    public void setAccessedUris( List<String> accessedUris )
     {
         this.accessedUris = accessedUris;
     }
 
-    private List<HttpURI> accessedUris;
+    private List<String> accessedUris;
 
     @Override
     public void service( ServletRequest req, ServletResponse res )
         throws ServletException, IOException
     {
-        HttpURI uri = ( (Request) req ).getUri();
+        String uri = ( (Request) req ).getUri().toString();
         getAccessedUris().add( uri );
         super.service( req, res );
     }

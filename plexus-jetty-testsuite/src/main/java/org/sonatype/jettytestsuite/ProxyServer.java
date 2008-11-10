@@ -23,7 +23,6 @@ import org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StartingException;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StoppingException;
 import org.mortbay.jetty.Connector;
-import org.mortbay.jetty.HttpURI;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.servlet.Context;
@@ -95,7 +94,7 @@ public class ProxyServer
         return "http://localhost:" + getPort() + "/" + context;
     }
 
-    public List<HttpURI> getAccessedUris()
+    public List<String> getAccessedUris()
     {
         if ( proxyServlet == null )
         {
