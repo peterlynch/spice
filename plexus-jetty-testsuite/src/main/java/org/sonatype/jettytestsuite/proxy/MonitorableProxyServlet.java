@@ -112,11 +112,6 @@ public class MonitorableProxyServlet
 
     }
 
-    public void setAccessedUris( List<String> accessedUris )
-    {
-        this.accessedUris = accessedUris;
-    }
-
     public void setAuthentications( Map<String, String> authentications )
     {
         this.authentications = authentications;
