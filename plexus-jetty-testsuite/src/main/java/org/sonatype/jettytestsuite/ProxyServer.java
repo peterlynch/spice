@@ -38,42 +38,27 @@ public class ProxyServer
     implements Initializable, Startable
 {
 
-    public MonitorableProxyServlet getProxyServlet()
-    {
-        return proxyServlet;
-    }
-
     /** The Constant ROLE. */
     public static final String ROLE = ProxyServer.class.getName();
 
-    /** The server. */
-    private Server server;
+    private Context context;
 
     /** The port. */
     private int port;
 
     private MonitorableProxyServlet proxyServlet;
 
-    private Context context;
+    /** The server. */
+    private Server server;
 
-    /**
-     * Gets the server.
-     *
-     * @return the server
-     */
-    public Server getServer()
+    public List<String> getAccessedUris()
     {
-        return server;
-    }
+        if ( proxyServlet == null )
+        {
+            return null;
+        }
 
-    /**
-     * Sets the server.
-     *
-     * @param server the new server
-     */
-    public void setServer( Server server )
-    {
-        this.server = server;
+        return proxyServlet.getAccessedUris();
     }
 
     /**
@@ -86,38 +71,30 @@ public class ProxyServer
         return port;
     }
 
-    /**
-     * Sets the port.
-     *
-     * @param port the new port
-     */
-    public void setPort( int port )
+    public Context getProxyingContext()
     {
-        this.port = port;
+        return context;
+    }
+
+    public MonitorableProxyServlet getProxyServlet()
+    {
+        return proxyServlet;
+    }
+
+    /**
+     * Gets the server.
+     *
+     * @return the server
+     */
+    public Server getServer()
+    {
+        return server;
     }
 
     public String getUrl( String context )
     {
         return "http://localhost:" + getPort() + "/" + context;
     }
-
-    public List<String> getAccessedUris()
-    {
-        if ( proxyServlet == null )
-        {
-            return null;
-        }
-
-        return proxyServlet.getAccessedUris();
-    }
-
-    public Context getProxyingContext()
-    {
-        return context;
-    }
-
-    // ===
-    // Initializable iface
 
     /*
      * (non-Javadoc)
@@ -135,6 +112,29 @@ public class ProxyServer
         context.addServlet( new ServletHolder( proxyServlet ), "/" );
 
         setServer( proxy );
+    }
+
+    /**
+     * Sets the port.
+     *
+     * @param port the new port
+     */
+    public void setPort( int port )
+    {
+        this.port = port;
+    }
+
+    // ===
+    // Initializable iface
+
+    /**
+     * Sets the server.
+     *
+     * @param server the new server
+     */
+    public void setServer( Server server )
+    {
+        this.server = server;
     }
 
     // ===
