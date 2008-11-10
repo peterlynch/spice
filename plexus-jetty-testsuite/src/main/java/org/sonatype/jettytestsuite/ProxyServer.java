@@ -38,6 +38,11 @@ public class ProxyServer
     implements Initializable, Startable
 {
 
+    public MonitorableProxyServlet getProxyServlet()
+    {
+        return proxyServlet;
+    }
+
     /** The Constant ROLE. */
     public static final String ROLE = ProxyServer.class.getName();
 
@@ -48,6 +53,8 @@ public class ProxyServer
     private int port;
 
     private MonitorableProxyServlet proxyServlet;
+
+    private Context context;
 
     /**
      * Gets the server.
@@ -104,6 +111,11 @@ public class ProxyServer
         return proxyServlet.getAccessedUris();
     }
 
+    public Context getProxyingContext()
+    {
+        return context;
+    }
+
     // ===
     // Initializable iface
 
@@ -118,7 +130,7 @@ public class ProxyServer
         Connector connector = new SocketConnector();
         connector.setPort( getPort() );
         proxy.addConnector( connector );
-        Context context = new Context( proxy, "/", 0 );
+        context = new Context( proxy, "/", 0 );
         proxyServlet = new MonitorableProxyServlet();
         context.addServlet( new ServletHolder( proxyServlet ), "/" );
 
