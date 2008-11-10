@@ -16,6 +16,8 @@
 package org.sonatype.plexus.jetty;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,7 +38,8 @@ import org.mortbay.jetty.handler.ContextHandlerCollection;
 import org.mortbay.jetty.handler.DefaultHandler;
 import org.mortbay.jetty.nio.SelectChannelConnector;
 import org.mortbay.jetty.webapp.WebAppContext;
-import org.mortbay.log.Log;
+import org.mortbay.xml.XmlConfiguration;
+import org.xml.sax.SAXException;
 
 /**
  * The Class ServletServer. Heavily based on Joakim Erfeldt's work in wagon-webdav tests.
@@ -57,6 +60,9 @@ public class DefaultServletContainer
 
     /** @plexus.configuration default-value="8080" */
     private int defaultPort = 8081;
+    
+    /** @plexus.configuration */
+    private String jettyXmlUrl;
 
     /** @plexus.configuration */
     private List<ConnectorInfo> connectorInfos;
@@ -102,6 +108,16 @@ public class DefaultServletContainer
         this.defaultPort = port;
     }
 
+    public String getJettyXmlUrl()
+    {
+        return jettyXmlUrl;
+    }
+
+    public void setJettyXmlUrl( String jettyXmlUrl )
+    {
+        this.jettyXmlUrl = jettyXmlUrl;
+    }
+
     // ===
     // Plexus lifecycle
 
@@ -117,6 +133,30 @@ public class DefaultServletContainer
         // Log.setLog( new PlexusJettyLogger( getLogger() ) );
 
         setServer( new Server() );
+        
+        if ( jettyXmlUrl != null )
+        {
+            getLogger().debug( "Loading configuration from jetty.xml file at: " + jettyXmlUrl );
+            
+            try
+            {
+                new XmlConfiguration( new File( jettyXmlUrl ).toURL() ).configure( getServer() );
+            }
+            catch ( SAXException e )
+            {
+                getLogger().error( "Failed to load configuration from jetty.xml at: " + jettyXmlUrl, e );
+            }
+            catch ( IOException e )
+            {
+                getLogger().error( "Failed to load configuration from jetty.xml at: " + jettyXmlUrl, e );
+            }
+            catch ( Exception e )
+            {
+                getLogger().error( "Failed to configure server instance from jetty.xml at: " + jettyXmlUrl, e );
+            }
+            
+            getLogger().debug( "Configuration from jetty.xml will now be overridden by any Jetty configuration defined for the component: " + getClass().getName() );
+        }
 
         try
         {

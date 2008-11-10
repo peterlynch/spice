@@ -14,8 +14,8 @@ package org.sonatype.plexus.webcontainer;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -30,23 +30,16 @@ import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationExce
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StartingException;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StoppingException;
-import org.mortbay.jetty.HandlerContainer;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.deployer.WebAppDeployer;
 import org.mortbay.jetty.handler.ContextHandler;
 import org.mortbay.jetty.handler.ContextHandlerCollection;
 import org.mortbay.jetty.handler.DefaultHandler;
-import org.mortbay.jetty.handler.ErrorHandler;
-import org.mortbay.jetty.handler.HandlerCollection;
-import org.mortbay.jetty.handler.ContextHandler.SContext;
 import org.mortbay.jetty.nio.SelectChannelConnector;
-import org.mortbay.jetty.security.SecurityHandler;
-import org.mortbay.jetty.servlet.ServletHandler;
-import org.mortbay.jetty.servlet.SessionHandler;
 import org.mortbay.jetty.webapp.WebAppClassLoader;
 import org.mortbay.jetty.webapp.WebAppContext;
-import org.mortbay.resource.Resource;
-import org.mortbay.util.URIUtil;
+import org.mortbay.xml.XmlConfiguration;
+import org.xml.sax.SAXException;
 
 /**
  * @author cstamas
@@ -66,6 +59,8 @@ public class DefaultServletContainer
 
     /** @plexus.configuration default-value="8080" */
     private int defaultPort = 8081;
+    
+    private String jettyXmlUrl;
 
     /** @plexus.configuration */
     private List<Connector> connectors;
@@ -97,6 +92,11 @@ public class DefaultServletContainer
         return defaultPort;
     }
 
+    public String getJettyXmlUrl()
+    {
+        return jettyXmlUrl;
+    }
+
     public void contextualize( Context context )
         throws ContextException
     {
@@ -109,6 +109,30 @@ public class DefaultServletContainer
         // Log.setLog( new PlexusJettyLogger( getLogger() ) );
 
         server = new Server();
+
+        if ( jettyXmlUrl != null )
+        {
+            getLogger().debug( "Loading configuration from jetty.xml file at: " + jettyXmlUrl );
+            
+            try
+            {
+                new XmlConfiguration( new File( jettyXmlUrl ).toURL() ).configure( getServer() );
+            }
+            catch ( SAXException e )
+            {
+                getLogger().error( "Failed to load configuration from jetty.xml at: " + jettyXmlUrl, e );
+            }
+            catch ( IOException e )
+            {
+                getLogger().error( "Failed to load configuration from jetty.xml at: " + jettyXmlUrl, e );
+            }
+            catch ( Exception e )
+            {
+                getLogger().error( "Failed to configure server instance from jetty.xml at: " + jettyXmlUrl, e );
+            }
+            
+            getLogger().debug( "Configuration from jetty.xml will now be overridden by any Jetty configuration defined for the component: " + getClass().getName() );
+        }
 
         try
         {
