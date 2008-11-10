@@ -13,6 +13,7 @@ import org.codehaus.plexus.component.repository.ComponentSetDescriptor;
 import org.codehaus.plexus.component.repository.io.PlexusTools;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
 import org.codehaus.plexus.configuration.PlexusConfigurationException;
+import org.sonatype.plexus.plugin.manager.maven.Mojo;
 import org.sonatype.plexus.plugin.manager.maven.PluginDescriptorBuilder;
 
 // Can i give this plugin manager magical OSGi adaptive powers. I think so. Can I get this stuff
@@ -67,7 +68,7 @@ public class PlexusPluginManagerTest
         // this is the clean plugin.
 
         // Now I need some special processing to grab the metadata and do the right thing
-        // Maven: driven by the POM
+        // Maven: driven by the POM     
         // Nexus: driven by some components declared and retrieved and place and loaded.
         // separate the retrieval and loading.
 
@@ -75,11 +76,11 @@ public class PlexusPluginManagerTest
         // A nexus plugin should have a model for dependencies
 
         // API from services
-
         
-        Object component = pm.findPlugin( role, hint );
-        
+        Mojo component = (Mojo) pm.findPlugin( role, hint );        
         assertNotNull( component );
+        
+        
     }
 
     @Override
