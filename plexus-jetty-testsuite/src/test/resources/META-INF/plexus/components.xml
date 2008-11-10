@@ -1,0 +1,12 @@
+<component-set>
+  <components>
+    <component>
+      <role>org.sonatype.jettytestsuite.ProxyServer</role>
+      <implementation>org.sonatype.jettytestsuite.ProxyServer</implementation>
+      <instantiation-strategy>singleton</instantiation-strategy>
+      <configuration>
+        <port>3102</port>
+      </configuration>
+    </component>
+  </components>
+</component-set>
