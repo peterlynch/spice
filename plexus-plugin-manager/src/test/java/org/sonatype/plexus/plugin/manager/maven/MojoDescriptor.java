@@ -19,7 +19,7 @@ package org.sonatype.plexus.plugin.manager.maven;
  * under the License.
  */
 
-import org.apache.maven.plugin.Mojo;
+//import org.apache.maven.plugin.Mojo;
 import org.codehaus.plexus.component.repository.ComponentDescriptor;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
 import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
@@ -411,7 +411,7 @@ public class MojoDescriptor
     /** {@inheritDoc} */
     public String getRole()
     {
-        return Mojo.ROLE;
+        return "org.apache.maven.plugin.Mojo";//Mojo.ROLE;
     }
 
     /** {@inheritDoc} */

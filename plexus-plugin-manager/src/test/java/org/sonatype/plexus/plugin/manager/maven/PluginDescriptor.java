@@ -19,11 +19,6 @@ package org.sonatype.plexus.plugin.manager.maven;
  * under the License.
  */
 
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.ArtifactUtils;
-import org.apache.maven.plugin.lifecycle.Lifecycle;
-import org.apache.maven.plugin.lifecycle.LifecycleConfiguration;
-import org.apache.maven.plugin.lifecycle.io.xpp3.LifecycleMappingsXpp3Reader;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.ComponentSetDescriptor;
 import org.codehaus.plexus.util.IOUtil;
@@ -73,8 +68,6 @@ public class PluginDescriptor
     private String name;
 
     private String description;
-
-    private Artifact pluginArtifact;
 
     // ----------------------------------------------------------------------
     //
@@ -231,16 +224,6 @@ public class PluginDescriptor
         artifactMap = null;
     }
 
-    public Map getArtifactMap()
-    {
-        if ( artifactMap == null )
-        {
-            artifactMap = ArtifactUtils.artifactMapByVersionlessId( getArtifacts() );
-        }
-
-        return artifactMap;
-    }
-
     public boolean equals( Object object )
     {
         if ( this == object )
@@ -276,43 +259,6 @@ public class PluginDescriptor
             }
         }
         return mojoDescriptor;
-    }
-
-    public Lifecycle getLifecycleMapping( String lifecycle )
-        throws IOException, XmlPullParserException
-    {
-        if ( lifecycleMappings == null )
-        {
-            LifecycleMappingsXpp3Reader reader = new LifecycleMappingsXpp3Reader();
-            InputStreamReader r = null;
-            LifecycleConfiguration config;
-
-            try
-            {
-                InputStream resourceAsStream = classRealm.getResourceAsStream( "/META-INF/maven/lifecycle.xml" );
-                if ( resourceAsStream == null )
-                {
-                    throw new FileNotFoundException( "Unable to find /META-INF/maven/lifecycle.xml in the plugin" );
-                }
-                r = new InputStreamReader( resourceAsStream );
-                config = reader.read( r, true );
-            }
-            finally
-            {
-                IOUtil.close( r );
-            }
-
-            Map map = new HashMap();
-
-            for ( Iterator i = config.getLifecycles().iterator(); i.hasNext(); )
-            {
-                Lifecycle l = (Lifecycle) i.next();
-                map.put( l.getId(), l );
-            }
-
-            lifecycleMappings = map;
-        }
-        return (Lifecycle) lifecycleMappings.get( lifecycle );
     }
 
     public void setClassRealm( ClassRealm classRealm )
@@ -353,15 +299,5 @@ public class PluginDescriptor
     public String getDescription()
     {
         return description;
-    }
-
-    public Artifact getPluginArtifact()
-    {
-        return pluginArtifact;
-    }
-
-    public void setPluginArtifact( Artifact pluginArtifact )
-    {
-        this.pluginArtifact = pluginArtifact;
     }
 }

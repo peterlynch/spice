@@ -27,6 +27,10 @@ public interface PlexusPluginManager
     // for pico for example.
     List<ComponentDescriptor> discoverComponents( ClassRealm realm );
 
+    ComponentDescriptor getComponentDescriptor( String role, String hint );
+
+    // We need to find all available plugins without loading them.
+    
     // Looking up the plugin by the class might not be the best thing to do especially if the class is not
     // loaded yet.
     Object findPlugin( Class pluginClass, String hint )

@@ -10,6 +10,7 @@ import java.util.List;
 import org.apache.maven.mercury.MavenDependencyProcessor;
 import org.apache.maven.mercury.artifact.Artifact;
 import org.apache.maven.mercury.artifact.ArtifactBasicMetadata;
+import org.apache.maven.mercury.artifact.ArtifactMetadata;
 import org.apache.maven.mercury.artifact.ArtifactScopeEnum;
 import org.apache.maven.mercury.plexus.PlexusMercury;
 import org.apache.maven.mercury.repository.api.Repository;
@@ -32,6 +33,10 @@ import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.context.ContextException;
 import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
+
+// 1 the metadata -> model plugin/mojo descriptor
+// 2 tools for doing the mapping
+// 3 the component model -> interfaces for the plugin
 
 /*
  * 
@@ -134,7 +139,8 @@ public class DefaultPlexusPluginManager
         {
             logger.info( "Start metadata resolution." );
 
-            List<ArtifactBasicMetadata> res = (List<ArtifactBasicMetadata>) mercury.resolve( repositories, ArtifactScopeEnum.runtime, request.getArtifactMetadata() );
+            List<ArtifactMetadata> res = (List<ArtifactMetadata>) 
+                mercury.resolve( repositories, ArtifactScopeEnum.runtime, request.getArtifactMetadata() );
 
             logger.info( "Resolution OK." );
 
@@ -157,10 +163,8 @@ public class DefaultPlexusPluginManager
 
     public ClassRealm createClassRealm( List<Artifact> artifacts )
     {
-        // Having to create a ClassWorld is really problematic
-        ClassWorld world = new ClassWorld();
-
-        ClassRealm realm = new ClassRealm( world, "realm" );
+        // This realm id is going to have to be unique. I need to be able to rename it afterward.
+        ClassRealm realm = container.createChildRealm( "realm" );
 
         for ( Iterator<Artifact> i = artifacts.iterator(); i.hasNext(); )
         {
@@ -184,6 +188,13 @@ public class DefaultPlexusPluginManager
         try
         {
             List<ComponentDescriptor> components = container.discoverComponents( realm, false );
+            
+            for ( Iterator<ComponentDescriptor> i = components.iterator(); i.hasNext(); )
+            {
+                ComponentDescriptor cd = i.next();
+                System.out.println( cd.getRole() + " : " + cd.getRoleHint());
+            }
+            
             return components;
         }
         catch ( PlexusConfigurationException e )
@@ -196,6 +207,13 @@ public class DefaultPlexusPluginManager
         }
     }
 
+    public ComponentDescriptor getComponentDescriptor( String role, String hint )
+    {
+        ClassRealm realm = container.getComponentRealm( "realm" );
+        
+        return container.getComponentDescriptor( role, hint, realm );
+    }
+    
     public Object findPlugin( Class pluginClass, String hint )
         throws ComponentLookupException
     {
@@ -205,7 +223,9 @@ public class DefaultPlexusPluginManager
     public Object findPlugin( String role, String hint )
         throws ComponentLookupException
     {
-        return container.lookup( role, hint );
+        ClassRealm realm = container.getComponentRealm( "realm" );
+        
+        return container.lookup( role, hint, realm );
     }
 
     // Lifecycle

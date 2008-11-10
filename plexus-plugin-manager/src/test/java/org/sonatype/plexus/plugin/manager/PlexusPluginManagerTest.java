@@ -13,6 +13,7 @@ import org.codehaus.plexus.component.repository.ComponentSetDescriptor;
 import org.codehaus.plexus.component.repository.io.PlexusTools;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
 import org.codehaus.plexus.configuration.PlexusConfigurationException;
+import org.sonatype.plexus.plugin.manager.maven.PluginDescriptorBuilder;
 
 // Can i give this plugin manager magical OSGi adaptive powers. I think so. Can I get this stuff
 // registered
@@ -50,7 +51,17 @@ public class PlexusPluginManagerTest
         //
         // In maven we know this by using the artifact id as the role hint.
         List<ComponentDescriptor> components = pm.discoverComponents( realm );
-
+        System.out.println( "size = " + components.size() );
+        assertTrue( components.size() > 0 );
+        
+        String role = "org.apache.maven.plugin.Mojo";
+        String hint = "org.apache.maven.plugins:maven-clean-plugin:2.2:clean";        
+        
+        ComponentDescriptor cd = pm.getComponentDescriptor( role, hint );        
+        assertEquals( role, cd.getRole() );
+        assertEquals( hint, cd.getRoleHint() );
+        assertEquals( "org.apache.maven.plugin.clean.CleanMojo", cd.getImplementation() );
+        
         // So now I can verify that the plugin I want has been discovered
         // But I should have metadata about the plugin that I want to run so let's pretend
         // this is the clean plugin.
@@ -65,11 +76,10 @@ public class PlexusPluginManagerTest
 
         // API from services
 
-        String role = "role";
-        String hint = "hint";
-
+        
         Object component = pm.findPlugin( role, hint );
-
+        
+        assertNotNull( component );
     }
 
     @Override
@@ -81,16 +91,13 @@ public class PlexusPluginManagerTest
     class PluginDiscoverer
         extends AbstractComponentDiscoverer
     {
+        private PluginDescriptorBuilder builder = new PluginDescriptorBuilder();
 
         @Override
         protected ComponentSetDescriptor createComponentDescriptors( Reader reader, String source )
             throws PlexusConfigurationException
         {
-            PlexusConfiguration c = PlexusTools.buildConfiguration( source, reader );
-            
-            
-            
-            return null;
+            return builder.build( reader, source );
         }
 
         @Override
