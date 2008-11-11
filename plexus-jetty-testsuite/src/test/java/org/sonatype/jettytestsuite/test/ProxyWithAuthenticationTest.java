@@ -18,9 +18,8 @@ import org.codehaus.plexus.PlexusContainer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mortbay.jetty.security.B64Code;
 import org.sonatype.jettytestsuite.ProxyServer;
-
-import sun.misc.BASE64Encoder;
 
 public class ProxyWithAuthenticationTest
 {
@@ -49,8 +48,7 @@ public class ProxyWithAuthenticationTest
         URL url = new URL( "http://www.google.com/index.html" );
         HttpURLConnection con = (HttpURLConnection) url.openConnection( p );
 
-        BASE64Encoder encoder = new BASE64Encoder();
-        String encodedUserPwd = encoder.encode( "admin:123".getBytes() );
+        String encodedUserPwd = B64Code.encode( "admin:123" );
         con.setRequestProperty( "Proxy-Authorization", "Basic " + encodedUserPwd );
         con.getInputStream();
 
@@ -81,8 +79,7 @@ public class ProxyWithAuthenticationTest
         URL url = new URL( "http://www.google.com/index.html" );
         HttpURLConnection con = (HttpURLConnection) url.openConnection( p );
 
-        BASE64Encoder encoder = new BASE64Encoder();
-        String encodedUserPwd = encoder.encode( "admin:1234".getBytes() );
+        String encodedUserPwd = B64Code.encode( "admin:1234" );
         con.setRequestProperty( "Proxy-Authorization", "Basic " + encodedUserPwd );
         con.getInputStream();
 

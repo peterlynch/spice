@@ -13,9 +13,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.mortbay.jetty.Request;
+import org.mortbay.jetty.security.B64Code;
 import org.mortbay.proxy.AsyncProxyServlet;
-
-import sun.misc.BASE64Decoder;
 
 /**
  *
@@ -43,7 +42,8 @@ public class MonitorableProxyServlet
     }
 
     private void addUris( ServletRequest req, ServletResponse res )
-        throws ServletException, IOException
+        throws ServletException,
+            IOException
     {
         String uri = ( (Request) req ).getUri().toString();
         getAccessedUris().add( uri );
@@ -75,7 +75,8 @@ public class MonitorableProxyServlet
 
     @Override
     public void service( ServletRequest req, ServletResponse res )
-        throws ServletException, IOException
+        throws ServletException,
+            IOException
     {
         final HttpServletRequest request = (HttpServletRequest) req;
         final HttpServletResponse response = (HttpServletResponse) res;
@@ -86,9 +87,7 @@ public class MonitorableProxyServlet
             if ( proxyAuthorization != null && proxyAuthorization.startsWith( "Basic " ) )
             {
                 String proxyAuth = proxyAuthorization.substring( 6 );
-                BASE64Decoder dec = new BASE64Decoder();
-                byte[] auth = dec.decodeBuffer( proxyAuth );
-                String authorization = new String( auth );
+                String authorization = B64Code.decode( proxyAuth );
                 String[] authTokens = authorization.split( ":" );
                 String user = authTokens[0];
                 String password = authTokens[1];
