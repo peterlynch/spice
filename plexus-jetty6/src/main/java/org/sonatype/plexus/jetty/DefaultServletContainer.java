@@ -62,7 +62,7 @@ public class DefaultServletContainer
     private int defaultPort = 8081;
     
     /** @plexus.configuration */
-    private String jettyXmlUrl;
+    private String jettyXml;
 
     /** @plexus.configuration */
     private List<ConnectorInfo> connectorInfos;
@@ -110,12 +110,12 @@ public class DefaultServletContainer
 
     public String getJettyXmlUrl()
     {
-        return jettyXmlUrl;
+        return jettyXml;
     }
 
     public void setJettyXmlUrl( String jettyXmlUrl )
     {
-        this.jettyXmlUrl = jettyXmlUrl;
+        this.jettyXml = jettyXmlUrl;
     }
 
     // ===
@@ -134,25 +134,25 @@ public class DefaultServletContainer
 
         setServer( new Server() );
         
-        if ( jettyXmlUrl != null )
+        if ( jettyXml != null )
         {
-            getLogger().debug( "Loading configuration from jetty.xml file at: " + jettyXmlUrl );
+            getLogger().debug( "Loading configuration from jetty.xml file at: " + jettyXml );
             
             try
             {
-                new XmlConfiguration( new File( jettyXmlUrl ).toURL() ).configure( getServer() );
+                new XmlConfiguration( new File( jettyXml ).toURL() ).configure( getServer() );
             }
             catch ( SAXException e )
             {
-                getLogger().error( "Failed to load configuration from jetty.xml at: " + jettyXmlUrl, e );
+                getLogger().error( "Failed to load configuration from jetty.xml at: " + jettyXml, e );
             }
             catch ( IOException e )
             {
-                getLogger().error( "Failed to load configuration from jetty.xml at: " + jettyXmlUrl, e );
+                getLogger().error( "Failed to load configuration from jetty.xml at: " + jettyXml, e );
             }
             catch ( Exception e )
             {
-                getLogger().error( "Failed to configure server instance from jetty.xml at: " + jettyXmlUrl, e );
+                getLogger().error( "Failed to configure server instance from jetty.xml at: " + jettyXml, e );
             }
             
             getLogger().debug( "Configuration from jetty.xml will now be overridden by any Jetty configuration defined for the component: " + getClass().getName() );
