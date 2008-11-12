@@ -1,4 +1,4 @@
-package org.sonatype.plexus.plugin.manager.maven;
+package org.sonatype.plexus.plugin.manager.maven.metadata.io;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -26,6 +26,9 @@ import org.codehaus.plexus.configuration.PlexusConfigurationException;
 import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
 import org.codehaus.plexus.util.xml.Xpp3DomBuilder;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.sonatype.plexus.plugin.manager.maven.metadata.MojoDescriptor;
+import org.sonatype.plexus.plugin.manager.maven.metadata.Parameter;
+import org.sonatype.plexus.plugin.manager.maven.metadata.PluginDescriptor;
 
 import java.io.IOException;
 import java.io.Reader;

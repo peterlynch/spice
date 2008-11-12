@@ -64,7 +64,7 @@
               <goal>generate-metadata</goal>
             </goals>
           </execution>
-        </executions>
+        </executions> 
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -72,6 +72,8 @@
         <version>2.4.3</version>
         <configuration>
           <forkMode>once</forkMode>
+          <useSystemClassLoader>false</useSystemClassLoader>
+          <useManifestOnlyJar>false</useManifestOnlyJar>
         </configuration>
       </plugin>
     </plugins>

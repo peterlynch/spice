@@ -1,4 +1,4 @@
-package org.sonatype.plexus.plugin.manager.maven;
+package org.sonatype.plexus.plugin.manager.maven.metadata;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,37 +19,13 @@ package org.sonatype.plexus.plugin.manager.maven;
  * under the License.
  */
 
-/**
- * Describes a component requirement.
- *
- * @author <a href="mailto:brett@apache.org">Brett Porter</a>
- * @version $Id$
- */
-public class Requirement
+public class DuplicateMojoDescriptorException
+    extends InvalidPluginDescriptorException
 {
-    private final String role;
 
-    private final String roleHint;
-
-    public Requirement( String role )
+    public DuplicateMojoDescriptorException( String goalPrefix, String goal, String existingImplementation, String newImplementation )
     {
-        this.role = role;
-        this.roleHint = null;
+        super( "Goal: " + goal + " already exists in the plugin descriptor for prefix: " + goalPrefix + "\nExisting implementation is: " + existingImplementation + "\nConflicting implementation is: " + newImplementation );
     }
 
-    public Requirement( String role, String roleHint )
-    {
-        this.role = role;
-        this.roleHint = roleHint;
-    }
-
-    public String getRole()
-    {
-        return role;
-    }
-
-    public String getRoleHint()
-    {
-        return roleHint;
-    }
 }

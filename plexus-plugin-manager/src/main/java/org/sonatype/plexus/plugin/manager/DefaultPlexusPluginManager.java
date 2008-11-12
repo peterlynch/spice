@@ -189,11 +189,13 @@ public class DefaultPlexusPluginManager
         {
             List<ComponentDescriptor> components = container.discoverComponents( realm, false );
             
+            /*
             for ( Iterator<ComponentDescriptor> i = components.iterator(); i.hasNext(); )
             {
                 ComponentDescriptor cd = i.next();
                 System.out.println( cd.getRole() + " : " + cd.getRoleHint());
             }
+            */
             
             return components;
         }

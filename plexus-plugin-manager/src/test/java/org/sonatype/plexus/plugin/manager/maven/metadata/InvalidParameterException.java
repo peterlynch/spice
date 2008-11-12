@@ -1,4 +1,4 @@
-package org.sonatype.plexus.plugin.manager.maven;
+package org.sonatype.plexus.plugin.manager.maven.metadata;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,13 +19,21 @@ package org.sonatype.plexus.plugin.manager.maven;
  * under the License.
  */
 
-public class DuplicateMojoDescriptorException
+/**
+ * @author Jason van Zyl
+ * @version $Id: InvalidParameterException.java,v 1.1 2005/02/20 16:25:21
+ *          jdcasey Exp $
+ */
+public class InvalidParameterException
     extends InvalidPluginDescriptorException
 {
-
-    public DuplicateMojoDescriptorException( String goalPrefix, String goal, String existingImplementation, String newImplementation )
+    public InvalidParameterException( String element, int i )
     {
-        super( "Goal: " + goal + " already exists in the plugin descriptor for prefix: " + goalPrefix + "\nExisting implementation is: " + existingImplementation + "\nConflicting implementation is: " + newImplementation );
+        super( "The " + element + " element in parameter # " + i + " is invalid. It cannot be null." );
     }
 
+    public InvalidParameterException( String message, Throwable cause )
+    {
+        super( message, cause );
+    }
 }

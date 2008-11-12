@@ -1,4 +1,4 @@
-package org.sonatype.plexus.plugin.manager.maven;
+package org.sonatype.plexus.plugin.manager.maven.metadata;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -20,20 +20,36 @@ package org.sonatype.plexus.plugin.manager.maven;
  */
 
 /**
+ * Describes a component requirement.
+ *
  * @author Jason van Zyl
- * @version $Id: InvalidParameterException.java,v 1.1 2005/02/20 16:25:21
- *          jdcasey Exp $
+ * @version $Id$
  */
-public class InvalidParameterException
-    extends InvalidPluginDescriptorException
+public class Requirement
 {
-    public InvalidParameterException( String element, int i )
+    private final String role;
+
+    private final String roleHint;
+
+    public Requirement( String role )
     {
-        super( "The " + element + " element in parameter # " + i + " is invalid. It cannot be null." );
+        this.role = role;
+        this.roleHint = null;
     }
 
-    public InvalidParameterException( String message, Throwable cause )
+    public Requirement( String role, String roleHint )
     {
-        super( message, cause );
+        this.role = role;
+        this.roleHint = roleHint;
+    }
+
+    public String getRole()
+    {
+        return role;
+    }
+
+    public String getRoleHint()
+    {
+        return roleHint;
     }
 }

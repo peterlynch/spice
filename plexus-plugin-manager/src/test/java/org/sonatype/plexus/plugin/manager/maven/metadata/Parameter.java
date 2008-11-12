@@ -1,4 +1,4 @@
-package org.sonatype.plexus.plugin.manager.maven;
+package org.sonatype.plexus.plugin.manager.maven.metadata;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one

@@ -1,4 +1,4 @@
-package org.sonatype.plexus.plugin.manager.maven;
+package org.sonatype.plexus.plugin.manager.maven.metadata;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -19,11 +19,18 @@ package org.sonatype.plexus.plugin.manager.maven;
  * under the License.
  */
 
-public class DuplicateParameterException
-    extends InvalidPluginDescriptorException
+import org.codehaus.plexus.configuration.PlexusConfigurationException;
+
+public class InvalidPluginDescriptorException
+    extends PlexusConfigurationException
 {
 
-    public DuplicateParameterException( String message )
+    public InvalidPluginDescriptorException( String message, Throwable cause )
+    {
+        super( message, cause );
+    }
+
+    public InvalidPluginDescriptorException( String message )
     {
         super( message );
     }

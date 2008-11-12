@@ -2,6 +2,8 @@ package org.sonatype.plexus.plugin.manager;
 
 import java.io.File;
 import java.io.Reader;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.List;
 
 import org.codehaus.plexus.ContainerConfiguration;
@@ -14,8 +16,8 @@ import org.codehaus.plexus.component.repository.io.PlexusTools;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
 import org.codehaus.plexus.configuration.PlexusConfigurationException;
 import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
-import org.sonatype.plexus.plugin.manager.maven.Mojo;
-import org.sonatype.plexus.plugin.manager.maven.PluginDescriptorBuilder;
+import org.sonatype.plexus.plugin.manager.maven.metadata.io.PluginDescriptorBuilder;
+import org.sonatype.plexus.plugin.manager.maven.model.Mojo;
 
 // Can i give this plugin manager magical OSGi adaptive powers. I think so. Can I get this stuff
 // registered
@@ -82,7 +84,17 @@ public class PlexusPluginManagerTest
         // can be built on top of it.
                 
         Object component = pm.findPlugin( role, hint );
-        System.out.println( Mojo.class.getClassLoader() );
+        ClassLoader cl = Mojo.class.getClassLoader();
+        boolean a = cl instanceof URLClassLoader;
+        URLClassLoader base = (URLClassLoader)cl;
+        
+        for ( int i = 0; i < base.getURLs().length; i++ )
+        {
+            URL url = base.getURLs()[i];
+            System.out.println( url );            
+        }
+        
+        System.out.println( Mojo.class.getClassLoader() + "URLClassLoader " + a );
         System.out.println( component.getClass().getClassLoader() );
         
         assertNotNull( component );
