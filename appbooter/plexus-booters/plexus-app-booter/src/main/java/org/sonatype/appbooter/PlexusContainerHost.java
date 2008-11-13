@@ -19,11 +19,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
@@ -130,17 +128,25 @@ public class PlexusContainerHost
         }
     }
 
-    @SuppressWarnings("unchecked")
+    
+    @SuppressWarnings( "unchecked" )
     protected Map createContainerContext()
         throws InterpolationException
     {
         Map containerContext = new HashMap();
 
+        // A temporary map for holding properties
+        Map tempHolder = new HashMap();
+
         if ( basedir != null )
         {
-            containerContext.put( "basedir", basedir.getAbsolutePath() );
+            tempHolder.put( "basedir", basedir.getAbsolutePath() );
         }
 
+        /*
+         * Iterate through plexus.properties, insert all items into a map (without using an interpolator, just straight
+         * insertion into map)
+         */
         File containerPropertiesFile = new File( configuration.getParentFile(), "plexus.properties" );
 
         if ( containerPropertiesFile.exists() )
@@ -156,74 +162,81 @@ public class PlexusContainerHost
                 System.err.println( "Failed to load plexus properties: " + containerPropertiesFile );
             }
 
-            RegexBasedInterpolator ip = new RegexBasedInterpolator();
-
-            ip.addValueSource( new MapBasedValueSource( containerProperties ) );
-
-            ip.addValueSource( new MapBasedValueSource( System.getProperties() ) );
-
-            for ( Enumeration n = containerProperties.propertyNames(); n.hasMoreElements(); )
-            {
-                String propertyKey = (String) n.nextElement();
-
-                String propertyValue = ip.interpolate( containerProperties.getProperty( propertyKey ), "" );
-
-                System.out.println( "plexus.properties KEY " + propertyKey + " VALUE " + propertyValue + " inserted into plexus context." );
-                
-                containerContext.put( propertyKey, propertyValue );
-            }
+            tempHolder.putAll( containerProperties );
         }
-        
-        // Now get the environment variables, as these should override properties file        
-        Map<String,String> envmap = System.getenv();
-        
-        for ( String key : envmap.keySet() )
+
+        /*
+         * Iterate through environment variables, insert all items into a map (making sure to do translation needed,
+         * remove PLEXUS_ , change all _ to - and convert to lower case)
+         */
+        Map<String, String> envMap = System.getenv();
+
+        for ( String key : envMap.keySet() )
         {
             if ( key.toUpperCase().startsWith( PLEXUS_ENV_VAR_PREFIX ) && key.length() > PLEXUS_ENV_VAR_PREFIX.length() )
             {
-                System.out.println( "Replacing " + key + " with value in ENVIRONMENT + " + envmap.get( key ) );
-                
-                // Convert to lowercase, Strip off the PLEXUS- prefix, and replace '_' with '-'
-                String plexusKey = key.toLowerCase().substring( PLEXUS_ENV_VAR_PREFIX.length() ).replace('_', '-');
-                
-                System.out.println( "environment KEY " + plexusKey + " VALUE " + envmap.get( key ) + " inserted into plexus context." );
-                
-                containerContext.put( plexusKey, envmap.get( key ) );
+                String plexusKey = key.toLowerCase().substring( PLEXUS_ENV_VAR_PREFIX.length() ).replace( '_', '-' );
+
+                tempHolder.put( plexusKey, envMap.get( key ) );
             }
         }
-        
-        // now do the same for the system properties, as these should override the ENV's
+
+        /*
+         * Iterate through system properties, insert all items into a map (making sure to do the translation needed,
+         * remove plexus. )
+         */
         Properties sysProps = System.getProperties();
-        
-        for ( Object objectKey : sysProps.keySet() )
+
+        for ( Object obj : sysProps.keySet() )
         {
-            String stringKey = objectKey.toString();
-            if ( stringKey.startsWith( PLEXUS_SYSTEM_PROP_PREFIX ) && stringKey.length() > PLEXUS_SYSTEM_PROP_PREFIX.length() )
+            String key = obj.toString();
+
+            if ( key.startsWith( PLEXUS_SYSTEM_PROP_PREFIX ) && key.length() > PLEXUS_SYSTEM_PROP_PREFIX.length() )
             {
-                System.out.println( "Replacing " + stringKey + " with value in System Property + " + sysProps.get( stringKey ) );
-                
-                // Convert to lowercase, Strip off the PLEXUS- prefix, and replace '_' with '-'
-                String plexusKey = stringKey.toLowerCase().substring( PLEXUS_ENV_VAR_PREFIX.length() ).replace('_', '-');
-                
-                System.out.println( "system-property KEY " + plexusKey + " VALUE " + sysProps.get( stringKey ) + " inserted into plexus context." );
-                
-                //  Strip off the plexus. prefix
-                containerContext.put( plexusKey, sysProps.get( stringKey ) );
+                String plexusKey = key.substring( PLEXUS_SYSTEM_PROP_PREFIX.length() );
+
+                tempHolder.put( plexusKey, sysProps.get( plexusKey ) );
             }
         }
-        
-        for ( String key : ( Set<String> ) containerContext.keySet() )
+
+        /*
+         * Iterate through this map, and place each item into system properties (prepended with plexus. )
+         */
+        for ( Object obj : tempHolder.keySet() )
         {
-            String sysPropKey = PLEXUS_SYSTEM_PROP_PREFIX + key;
-            
+            String sysPropKey = PLEXUS_SYSTEM_PROP_PREFIX + obj.toString();
+
             if ( System.getProperty( sysPropKey ) == null )
             {
-                System.setProperty( sysPropKey, ( String ) containerContext.get( key ) );
+                System.setProperty( sysPropKey, (String) tempHolder.get( obj ) );
             }
+        }
+
+        /*
+         * Iterate through this map, and add into plexus context using a RegexBasedInterpolator, adding this map as a
+         * valueSource to that interpolator.
+         */
+        RegexBasedInterpolator interpolator = new RegexBasedInterpolator();
+
+        interpolator.addValueSource( new MapBasedValueSource( tempHolder ) );
+
+        for ( Object obj : tempHolder.keySet() )
+        {
+            String key = obj.toString();
+
+            String value = interpolator.interpolate( (String) tempHolder.get( obj ), "" );
+
+            System.out
+                .println( "Property with KEY: " + key + " , VALUE: " + value + " inserted into plexus context." );
+
+            containerContext.put( key, value );
         }
 
         return containerContext;
     }
+    
+    
+
 
     /**
      * This method will start the container, this is a non-blocking method, and will return once container has started
@@ -446,5 +459,10 @@ public class PlexusContainerHost
         {
             waitObj.notify();
         }
+    }
+    
+    public static void main(String[] args)
+    {
+        System.out.println("${nexus-work}/conf/security.xml".replace( "${nexus-work}", "C:\\Users\\Juven Xu\\sonatype-work1" ));
     }
 }
