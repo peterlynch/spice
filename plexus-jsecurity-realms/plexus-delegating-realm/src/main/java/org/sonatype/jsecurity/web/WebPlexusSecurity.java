@@ -122,17 +122,17 @@ import org.sonatype.jsecurity.selectors.RealmSelector;
 @Component( role = PlexusSecurity.class, hint = "web" )
 public class WebPlexusSecurity
     extends DefaultWebSecurityManager
-    implements PlexusSecurity, Initializable, LogEnabled
+    implements PlexusSecurity, Initializable, Realm
 {
     @Requirement
     private RememberMeLocator rememberMeLocator;
 
     @Requirement
     private RealmSelector realmSelector;
-    
+
     @Requirement
     private Logger logger;
-    
+
     public Realm selectRealm( RealmCriteria criteria )
     {
         return realmSelector.selectRealm( criteria );
@@ -157,10 +157,50 @@ public class WebPlexusSecurity
     {
         return WebPlexusSecurity.class.getName();
     }
-    
+
     // Authentication
 
-    /* (non-Javadoc)
+    // Authentication
+
+    public AuthenticationInfo getAuthenticationInfo( AuthenticationToken token )
+        throws AuthenticationException
+    {
+
+        for ( Realm realm : realmSelector.selectAllRealms() )
+        {
+            try
+            {
+                AuthenticationInfo ai = realm.getAuthenticationInfo( token );
+
+                if ( ai != null )
+                {
+                    return ai;
+                }
+            }
+            catch ( AuthenticationException e )
+            {
+                logger.debug( "Realm: '" + realm.getName() + "', caused: " + e.getMessage(), e );
+            }
+        }
+
+        throw new AuthenticationException( "User: '"+ token.getPrincipal() + " could be authenticated." );
+    }
+
+    public boolean supports( AuthenticationToken token )
+    {
+        for ( Realm realm : realmSelector.selectAllRealms() )
+        {
+            if ( realm.supports( token ) )
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.jsecurity.mgt.RealmSecurityManager#getRealms()
      */
     @Override
@@ -305,7 +345,6 @@ public class WebPlexusSecurity
 
         return combinedResult;
     }
-    
 
     public boolean isPermitted( PrincipalCollection subjectPrincipal, String permission )
     {
@@ -433,16 +472,19 @@ public class WebPlexusSecurity
     public void initialize()
         throws InitializationException
     {
-        // set the realm authenticator, that will automatically deligate the authentication to all the realms.
-        ModularRealmAuthenticator realmAuthenticator = new ModularRealmAuthenticator();
-        realmAuthenticator.setModularAuthenticationStrategy( new FirstSuccessfulAuthenticationStrategy() );
-        
-//        realmAuthorizer.
-        this.setAuthenticator( realmAuthenticator );
-        
-        this.setRealms( this.getRealms() );
-        
+        // // set the realm authenticator, that will automatically deligate the authentication to all the realms.
+        // ModularRealmAuthenticator realmAuthenticator = new ModularRealmAuthenticator();
+        // realmAuthenticator.setModularAuthenticationStrategy( new FirstSuccessfulAuthenticationStrategy() );
+        //        
+        // // realmAuthorizer.
+        // this.setAuthenticator( realmAuthenticator );
+        //        
+        // this.setRealms( this.getRealms() );
+
+        this.setRealm( this );
+
         setRememberMeManager( rememberMeLocator.getRememberMeManager() );
+
     }
 
     public void enableLogging( Logger logger )
