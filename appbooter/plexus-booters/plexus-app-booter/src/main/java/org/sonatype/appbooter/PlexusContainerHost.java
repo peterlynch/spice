@@ -19,11 +19,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
@@ -145,36 +143,6 @@ public class PlexusContainerHost
             tempHolder.put( "basedir", basedir.getAbsolutePath() );
         }
 
-        /*
-         * Iterate through plexus.properties, insert all items into a map (without using an interpolator, just straight
-         * insertion into map)
-         */
-        
-        File containerPropertiesFile = new File( configuration.getParentFile(), "plexus.properties" );
-
-        if ( containerPropertiesFile.exists() )
-        {
-            Properties containerProperties = new Properties();
-
-            try
-            {
-                containerProperties.load( new FileInputStream( containerPropertiesFile ) );
-            }
-            catch ( IOException e )
-            {
-                System.err.println( "Failed to load plexus properties: " + containerPropertiesFile );
-            }
-            
-            RegexBasedInterpolator interpolator = new RegexBasedInterpolator();
-
-            interpolator.addValueSource( new MapBasedValueSource( containerProperties ) );
-            interpolator.addValueSource( new MapBasedValueSource( System.getProperties() ) );
-            
-            for ( Object key : containerProperties.keySet() )
-            {
-                tempHolder.put( key, interpolator.interpolate( (String) containerProperties.get( key ) ) );
-            }
-        }
 
         /*
          * Iterate through environment variables, insert all items into a map (making sure to do translation needed,
@@ -209,7 +177,40 @@ public class PlexusContainerHost
                 tempHolder.put( plexusKey, sysProps.get( obj ) );
             }
         }
+        
+        /*
+         * Iterate through plexus.properties, insert all items into a map add into plexus context using a RegexBasedInterpolator.
+         */        
+        File containerPropertiesFile = new File( configuration.getParentFile(), "plexus.properties" );
 
+        if ( containerPropertiesFile.exists() )
+        {
+            Properties containerProperties = new Properties();
+
+            try
+            {
+                containerProperties.load( new FileInputStream( containerPropertiesFile ) );
+            }
+            catch ( IOException e )
+            {
+                System.err.println( "Failed to load plexus properties: " + containerPropertiesFile );
+            }
+            
+            RegexBasedInterpolator interpolator = new RegexBasedInterpolator();
+
+            interpolator.addValueSource( new MapBasedValueSource( containerProperties ) );
+            interpolator.addValueSource( new MapBasedValueSource( System.getProperties() ) );
+            interpolator.addValueSource( new MapBasedValueSource( tempHolder ) );
+            
+            for ( Object key : containerProperties.keySet() )
+            {
+                if ( ! tempHolder.containsKey( key ) )
+                {
+                    tempHolder.put( key, interpolator.interpolate( (String) containerProperties.get( key ) ) );
+                }
+            }
+        }
+        
         /*
          * Iterate through this map, and place each item into system properties (prepended with plexus. )
          */
