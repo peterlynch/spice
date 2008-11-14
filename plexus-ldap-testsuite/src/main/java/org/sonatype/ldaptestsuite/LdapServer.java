@@ -307,6 +307,27 @@ public class LdapServer
         throws Exception
     {
 
+        // apacheds has a test: org/apache/directory/server/core/operations/search/SearchWithIndicesITest.java
+        // that does something like:
+        // Attributes nisAttrs = schemaRoot.getAttributes( "cn=nis" );
+        // boolean isNisDisabled = false;
+        // if ( nisAttrs.get( "m-disabled" ) != null )
+        // {
+        // isNisDisabled = ( ( String ) nisAttrs.get( "m-disabled" ).get() ).equalsIgnoreCase( "TRUE" );
+        // }
+        //
+        // // if nis is disabled then enable it
+        // if ( isNisDisabled )
+        // {
+        // Attribute disabled = new BasicAttribute( "m-disabled" );
+        // ModificationItem[] mods = new ModificationItem[] {
+        // new ModificationItem( DirContext.REMOVE_ATTRIBUTE, disabled ) };
+        // schemaRoot.modifyAttributes( "cn=nis", mods );
+        // }
+        // its still a bit of a hack, but way better then below. however this is not really class based, and relies on
+        // the schema's
+        // alreadying being in the ldap server, i don't know if thats an issue or not.
+
         // dirty hack
         PartitionSchemaLoader schemaLoader = SchemaPartitionAccessor
             .getSchemaLoader( (DefaultRegistries) directoryService.getRegistries() );
