@@ -460,9 +460,4 @@ public class PlexusContainerHost
             waitObj.notify();
         }
     }
-    
-    public static void main(String[] args)
-    {
-        System.out.println("${nexus-work}/conf/security.xml".replace( "${nexus-work}", "C:\\Users\\Juven Xu\\sonatype-work1" ));
-    }
 }
