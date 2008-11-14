@@ -19,9 +19,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
@@ -128,8 +130,8 @@ public class PlexusContainerHost
         }
     }
 
-    
-    @SuppressWarnings( "unchecked" )
+    @SuppressWarnings("unchecked")
+
     protected Map createContainerContext()
         throws InterpolationException
     {
@@ -147,6 +149,7 @@ public class PlexusContainerHost
          * Iterate through plexus.properties, insert all items into a map (without using an interpolator, just straight
          * insertion into map)
          */
+        
         File containerPropertiesFile = new File( configuration.getParentFile(), "plexus.properties" );
 
         if ( containerPropertiesFile.exists() )
@@ -161,8 +164,16 @@ public class PlexusContainerHost
             {
                 System.err.println( "Failed to load plexus properties: " + containerPropertiesFile );
             }
+            
+            RegexBasedInterpolator interpolator = new RegexBasedInterpolator();
 
-            tempHolder.putAll( containerProperties );
+            interpolator.addValueSource( new MapBasedValueSource( containerProperties ) );
+            interpolator.addValueSource( new MapBasedValueSource( System.getProperties() ) );
+            
+            for ( Object key : containerProperties.keySet() )
+            {
+                tempHolder.put( key, interpolator.interpolate( (String) containerProperties.get( key ) ) );
+            }
         }
 
         /*
@@ -216,15 +227,12 @@ public class PlexusContainerHost
          * Iterate through this map, and add into plexus context using a RegexBasedInterpolator, adding this map as a
          * valueSource to that interpolator.
          */
-        RegexBasedInterpolator interpolator = new RegexBasedInterpolator();
-
-        interpolator.addValueSource( new MapBasedValueSource( tempHolder ) );
 
         for ( Object obj : tempHolder.keySet() )
         {
             String key = obj.toString();
 
-            String value = interpolator.interpolate( (String) tempHolder.get( obj ), "" );
+            String value = (String) tempHolder.get( obj );
 
             System.out
                 .println( "Property with KEY: " + key + " , VALUE: " + value + " inserted into plexus context." );
@@ -234,8 +242,8 @@ public class PlexusContainerHost
 
         return containerContext;
     }
-    
-    
+
+
 
 
     /**
@@ -460,4 +468,9 @@ public class PlexusContainerHost
             waitObj.notify();
         }
     }
+
+
+
+
+
 }
