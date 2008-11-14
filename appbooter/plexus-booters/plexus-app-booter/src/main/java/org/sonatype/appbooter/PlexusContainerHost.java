@@ -195,7 +195,7 @@ public class PlexusContainerHost
             {
                 String plexusKey = key.substring( PLEXUS_SYSTEM_PROP_PREFIX.length() );
 
-                tempHolder.put( plexusKey, sysProps.get( plexusKey ) );
+                tempHolder.put( plexusKey, sysProps.get( obj ) );
             }
         }
 
