@@ -33,6 +33,7 @@ import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.context.ContextException;
 import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
 
 // 1 the metadata -> model plugin/mojo descriptor
 // 2 tools for doing the mapping
@@ -85,7 +86,7 @@ import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
 
 @Component(role = PlexusPluginManager.class)
 public class DefaultPlexusPluginManager
-    implements PlexusPluginManager, Contextualizable
+    implements PlexusPluginManager
 {
     @Requirement
     private PlexusMercury mercury;
@@ -93,7 +94,8 @@ public class DefaultPlexusPluginManager
     @Requirement
     private Logger logger;
 
-    private MutablePlexusContainer container;
+    @Requirement
+    private PlexusContainer container;
 
     public PluginResolutionResult resolve( PluginResolutionRequest request )
         throws PluginResolutionException
@@ -102,9 +104,9 @@ public class DefaultPlexusPluginManager
 
         List<Repository> repositories = new ArrayList<Repository>();
 
-        for ( Iterator i = request.getLocalRepositories().iterator(); i.hasNext(); )
+        for ( Iterator<File> i = request.getLocalRepositories().iterator(); i.hasNext(); )
         {
-            File repository = (File) i.next();
+            File repository = i.next();
             if ( !repository.exists() )
             {
                 repository.mkdirs();
@@ -139,8 +141,7 @@ public class DefaultPlexusPluginManager
         {
             logger.info( "Start metadata resolution." );
 
-            List<ArtifactMetadata> res = (List<ArtifactMetadata>) 
-                mercury.resolve( repositories, ArtifactScopeEnum.runtime, request.getArtifactMetadata() );
+            List<ArtifactMetadata> res = (List<ArtifactMetadata>) mercury.resolve( repositories, ArtifactScopeEnum.runtime, request.getArtifactMetadata() );
 
             logger.info( "Resolution OK." );
 
@@ -159,6 +160,12 @@ public class DefaultPlexusPluginManager
         }
 
         return result;
+    }
+
+    public ClassRealm createClassRealm( String id )
+    {
+        ClassRealm realm = container.createChildRealm( id );
+        return realm;
     }
 
     public ClassRealm createClassRealm( List<Artifact> artifacts )
@@ -183,12 +190,12 @@ public class DefaultPlexusPluginManager
         return realm;
     }
 
-    public List<ComponentDescriptor> discoverComponents( ClassRealm realm )
+    public List<ComponentDescriptor<?>> discoverComponents( ClassRealm realm )
     {
         try
         {
-            List<ComponentDescriptor> components = container.discoverComponents( realm, false );
-            
+            List<ComponentDescriptor<?>> components = container.discoverComponents( realm, false );
+
             /*
             for ( Iterator<ComponentDescriptor> i = components.iterator(); i.hasNext(); )
             {
@@ -196,7 +203,7 @@ public class DefaultPlexusPluginManager
                 System.out.println( cd.getRole() + " : " + cd.getRoleHint());
             }
             */
-            
+
             return components;
         }
         catch ( PlexusConfigurationException e )
@@ -211,30 +218,41 @@ public class DefaultPlexusPluginManager
 
     public ComponentDescriptor getComponentDescriptor( String role, String hint )
     {
-        ClassRealm realm = container.getComponentRealm( "realm" );
-        
-        return container.getComponentDescriptor( role, hint, realm );
+        ComponentDescriptor cd = container.getComponentDescriptor( role, hint );       
+        return cd;
     }
-    
+
     public Object findPlugin( Class pluginClass, String hint )
         throws ComponentLookupException
     {
-        return container.lookup( pluginClass );
+        return container.lookup( pluginClass, hint );
     }
 
-    public Object findPlugin( String role, String hint )
-        throws ComponentLookupException
-    {
-        ClassRealm realm = container.getComponentRealm( "realm" );
+    public void processPlugins( File pluginsDirectory )
+    {                        
+        File[] plugins = pluginsDirectory.listFiles();
         
-        return container.lookup( role, hint, realm );
-    }
+        for ( int i = 0; i < plugins.length; i++ )
+        {
+            File plugin = plugins[i];
 
-    // Lifecycle
+            if ( !plugin.getName().endsWith( ".jar" ) )
+            {
+                continue;
+            }
+                        
+            ClassRealm realm = createClassRealm( "realm" );
 
-    public void contextualize( Context context )
-        throws ContextException
-    {
-        container = (MutablePlexusContainer) context.get( PlexusConstants.PLEXUS_KEY );
+            try
+            {
+                realm.addURL( plugin.toURL() );
+            }
+            catch ( MalformedURLException e )
+            {
+                // Won't happen
+            }
+
+            discoverComponents( realm );            
+        }        
     }
 }

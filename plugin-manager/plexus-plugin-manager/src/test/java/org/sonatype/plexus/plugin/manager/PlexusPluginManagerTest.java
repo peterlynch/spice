@@ -2,7 +2,6 @@ package org.sonatype.plexus.plugin.manager;
 
 import java.io.File;
 import java.io.Reader;
-import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
 
@@ -12,7 +11,6 @@ import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.discovery.AbstractComponentDiscoverer;
 import org.codehaus.plexus.component.repository.ComponentDescriptor;
 import org.codehaus.plexus.component.repository.ComponentSetDescriptor;
-import org.codehaus.plexus.component.repository.io.PlexusTools;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
 import org.codehaus.plexus.configuration.PlexusConfigurationException;
 import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
@@ -54,14 +52,14 @@ public class PlexusPluginManagerTest
         // way to look it up.
         //
         // In maven we know this by using the artifact id as the role hint.
-        List<ComponentDescriptor> components = pm.discoverComponents( realm );
+        List<ComponentDescriptor<?>> components = pm.discoverComponents( realm );
         System.out.println( "size = " + components.size() );
         assertTrue( components.size() > 0 );
         
         String role = "org.apache.maven.plugin.Mojo";
         String hint = "org.apache.maven.plugins:maven-clean-plugin:2.2:clean";        
         
-        ComponentDescriptor cd = pm.getComponentDescriptor( role, hint );        
+        ComponentDescriptor<?> cd = pm.getComponentDescriptor( role, hint );        
         assertEquals( role, cd.getRole() );
         assertEquals( hint, cd.getRoleHint() );
         assertEquals( "org.apache.maven.plugin.clean.CleanMojo", cd.getImplementation() );
@@ -83,16 +81,18 @@ public class PlexusPluginManagerTest
         // The base plugin interface needs to be loaded in a base classloader before the children
         // can be built on top of it.
                 
-        Object component = pm.findPlugin( role, hint );
+        Object component = pm.findPlugin( Mojo.class, hint );
         ClassLoader cl = Mojo.class.getClassLoader();
         boolean a = cl instanceof URLClassLoader;
         URLClassLoader base = (URLClassLoader)cl;
-        
+
+        /*
         for ( int i = 0; i < base.getURLs().length; i++ )
         {
             URL url = base.getURLs()[i];
             System.out.println( url );            
         }
+        */
         
         System.out.println( Mojo.class.getClassLoader() + "URLClassLoader " + a );
         System.out.println( component.getClass().getClassLoader() );
@@ -102,7 +102,7 @@ public class PlexusPluginManagerTest
         PlexusConfiguration pc = new XmlPlexusConfiguration( "configuration" );
         PlexusConfiguration x = pc.addChild( "outputDirectory" );
         x.setValue( "/tmp/foo" );
-        
+                
         System.out.println( pc );
         
         // Now I need to configure this thing before I can run it. All the logic to produce a configuration

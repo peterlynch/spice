@@ -1,5 +1,6 @@
 package org.sonatype.plexus.plugin.manager;
 
+import java.io.File;
 import java.util.List;
 
 import org.apache.maven.mercury.artifact.Artifact;
@@ -21,11 +22,12 @@ public interface PlexusPluginManager
     // but i need to detach the realm from the classworld. it's nice having the encapsulation but it
     // really makes creating a new realm a pain in the ass
     ClassRealm createClassRealm( List<Artifact> artifacts );
+    ClassRealm createClassRealm( String id );
 
     // This is also very plexus specific but do i care. If I'm trying to make something that's
     // appealing to people using things other then plexus it matter. could we just do this
     // for pico for example.
-    List<ComponentDescriptor> discoverComponents( ClassRealm realm );
+    List<ComponentDescriptor<?>> discoverComponents( ClassRealm realm );
 
     ComponentDescriptor getComponentDescriptor( String role, String hint );
 
@@ -36,8 +38,7 @@ public interface PlexusPluginManager
     Object findPlugin( Class pluginClass, String hint )
         throws ComponentLookupException;
 
-    Object findPlugin( String role, String hint )
-        throws ComponentLookupException;
-
+    void processPlugins( File pluginsDirectory );
+    
     // registering component listeners
 }
