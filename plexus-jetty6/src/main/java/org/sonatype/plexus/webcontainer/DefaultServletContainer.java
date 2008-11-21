@@ -205,7 +205,7 @@ public class DefaultServletContainer
                                 webAppDeployer.setExtract( true );
                                 webAppDeployer.setAllowDuplicates( false );
                                 webAppDeployer.setWebAppDir( webapp.getWarPath().getAbsolutePath() );
-                                server.addLifeCycle( webAppDeployer );
+                                getServer().addLifeCycle( webAppDeployer );
                             }                        
                         }
                     }
@@ -238,7 +238,7 @@ public class DefaultServletContainer
                 */
 
                 DefaultHandler defHandler = new DefaultHandler();
-                defHandler.setServer( server );
+                defHandler.setServer( getServer() );
                 defHandler.setServeIcon( false );
                 getLogger().info( "Adding default Jetty Handler " + defHandler.getClass().getName() );
                 getServer().addHandler( defHandler );
