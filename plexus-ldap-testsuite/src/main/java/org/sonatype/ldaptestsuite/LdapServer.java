@@ -522,6 +522,11 @@ public class LdapServer
             throw new StartingException( "Error starting embedded ApacheDS server.", e );
         }
     }
+    
+    public boolean isStarted()
+    {
+        return directoryService.isStarted();
+    }
 
     /*
      * (non-Javadoc)
