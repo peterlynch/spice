@@ -17,9 +17,9 @@ package org.sonatype.plexus.jetty;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.context.ContextException;
@@ -155,58 +155,104 @@ public class DefaultServletContainer
                 getLogger().error( "Failed to configure server instance from jetty.xml at: " + jettyXml, e );
             }
             
-            getLogger().debug( "Configuration from jetty.xml will now be overridden by any Jetty configuration defined for the component: " + getClass().getName() );
         }
+        
+        Map<String, String> configuredEndpoints = new LinkedHashMap<String, String>();
+        
+        StringBuilder msg = new StringBuilder( "The following connectors were configured from: " + jettyXml + ":" );
+        
+        Connector[] existingConnectors = getServer().getConnectors();
+        for ( int i = 0; existingConnectors != null && i < existingConnectors.length; i++ )
+        {
+            String endpoint = endpointKey( existingConnectors[i].getHost(), existingConnectors[i].getPort() );
+            String className = existingConnectors[i].getClass().getName();
+            
+            configuredEndpoints.put( endpoint, className );
+            
+            msg.append( "\n" ).append( endpoint ).append( " (" ).append( className ).append( ")" );
+        }
+        
+        getLogger().debug( msg.toString() );
 
         try
         {
             // connectors
-
-            Connector[] connectors;
-
             if ( connectorInfos != null && connectorInfos.size() > 0 )
             {
-                connectors = new Connector[connectorInfos.size()];
-
                 for ( int i = 0; i < connectorInfos.size(); i++ )
                 {
-                    connectors[i] = connectorInfos.get( i ).getConnector( context );
+                    ConnectorInfo info = connectorInfos.get( i );
+                    String endpoint = endpointKey( info.getHost(), info.getPort() );
+                    
+                    if ( configuredEndpoints.containsKey( endpoint ) )
+                    {
+                        getLogger().info(
+                                          "Skipping component-defined connector for: " + endpoint
+                                              + ".\nIt has been overridden from: " + jettyXml
+                                              + "\nusing connector of type: " + configuredEndpoints.get( endpoint ) );
+                    }
+                    else
+                    {
+                        Connector conn  = connectorInfos.get( i ).getConnector( context );
 
-                    getLogger().info(
-                        "Adding Jetty Connector " + connectors[i].getClass().getName() + " on port "
-                            + connectors[i].getPort() );
+                        getLogger().info(
+                            "Adding Jetty Connector " + conn.getClass().getName() + " on port "
+                                + conn.getPort() );
+                        
+                        getServer().addConnector( conn );
+                    }
                 }
             }
             else
             {
-                connectors = new Connector[1];
+                String endpoint = endpointKey( getDefaultHost(), getDefaultPort() );
+                if ( configuredEndpoints.containsKey( endpoint ) )
+                {
+                    getLogger().info(
+                                     "Skipping component-defined default connector: " + endpoint
+                                         + ".\nIt has been overridden from: " + jettyXml
+                                         + "\nusing connector of type: " + configuredEndpoints.get( endpoint ) );
+                }
+                else
+                {
+                    Connector conn = new SelectChannelConnector();
 
-                connectors[0] = new SelectChannelConnector();
+                    conn.setHost( getDefaultHost() );
 
-                connectors[0].setHost( getDefaultHost() );
+                    conn.setPort( getDefaultPort() );
 
-                connectors[0].setPort( getDefaultPort() );
-
-                getLogger().info(
-                    "Adding default Jetty Connector " + connectors[0].getClass().getName() + " on port "
-                        + getDefaultPort() );
+                    getLogger().info(
+                        "Adding default Jetty Connector " + conn.getClass().getName() + " on port "
+                            + getDefaultPort() );
+                    
+                    getServer().addConnector( conn );
+                }
             }
-            getServer().setConnectors( connectors );
 
             // gathering stuff
 
-            int jettyHandlers = ( handlerInfos != null ? handlerInfos.size() : 0 )
-                + ( webappInfos != null ? webappInfos.size() : 0 );
-
-            List<Handler> handlers = new ArrayList<Handler>( jettyHandlers );
-
+            Handler[] handlers = getServer().getHandlers();
+            Map<String, Handler> handlersByClassname = new LinkedHashMap<String, Handler>();
+            for ( int j = 0; handlers != null && j < handlers.length; j++ )
+            {
+                handlersByClassname.put( handlers[j].getClass().getName(), handlers[j] );
+            }
+            
             Handler handler;
 
             // webapps
 
             if ( ( webappInfos != null && webappInfos.size() > 0 ) || ( webapps != null && webapps.isDirectory() ) )
             {
-                ContextHandlerCollection ctxHandler = new ContextHandlerCollection();
+                boolean handlerIsNew = false;
+                ContextHandlerCollection ctxHandler = (ContextHandlerCollection) handlersByClassname.get( ContextHandlerCollection.class.getName() );
+                
+                if ( ctxHandler == null )
+                {
+                    getLogger().debug( "Constructing new ContextHandlerCollection for webapp deployment." );
+                    ctxHandler = new ContextHandlerCollection();
+                    handlerIsNew = true;
+                }
 
                 if ( webappInfos != null && webappInfos.size() > 0 )
                 {
@@ -232,12 +278,15 @@ public class DefaultServletContainer
 
                     webAppDeployer.setWebAppDir( webapps.getAbsolutePath() );
                     
-                    server.addLifeCycle( webAppDeployer );
+                    getServer().addLifeCycle( webAppDeployer );
                 }
 
                 ctxHandler.mapContexts();
 
-                handlers.add( ctxHandler );
+                if ( handlerIsNew )
+                {
+                    getServer().addHandler( ctxHandler );
+                }
             }
 
             // handlers
@@ -247,36 +296,55 @@ public class DefaultServletContainer
                 for ( HandlerInfo handlerInfo : handlerInfos )
                 {
                     handler = handlerInfo.getHandler( context );
+                    if ( handlersByClassname.containsKey( handler.getClass().getName() ) )
+                    {
+                        getLogger().info(
+                                          "Skipping component-defined handler: " + handler
+                                              + ".\nIt has been overridden from: " + jettyXml
+                                              + "\nusing handler of type: "
+                                              + handlersByClassname.get( handler.getClass().getName() ) );
+                    }
+                    else
+                    {
+                        handler.setServer( getServer() );
 
-                    handler.setServer( getServer() );
+                        getLogger().info( "Adding Jetty Handler " + handler.getClass().getName() );
 
-                    handlers.add( handler );
-
-                    getLogger().info( "Adding Jetty Handler " + handler.getClass().getName() );
+                        getServer().addHandler( handler );
+                    }
                 }
             }
             else
             {
-                DefaultHandler defHandler = new DefaultHandler();
+                if ( handlersByClassname.containsKey( DefaultHandler.class.getName() ) )
+                {
+                    getLogger().info(
+                                      "Skipping component-defined DefaultHandler.\nIt has been overridden from: "
+                                          + jettyXml );
+                }
+                else
+                {
+                    DefaultHandler defHandler = new DefaultHandler();
 
-                defHandler.setServer( server );
-                
-                defHandler.setServeIcon( false );
-                
-                handlers.add( defHandler );
-
-                getLogger().info( "Adding default Jetty Handler " + defHandler.getClass().getName() );
+                    defHandler.setServer( server );
+                    
+                    defHandler.setServeIcon( false );
+                    
+                    getLogger().info( "Adding default Jetty Handler " + defHandler.getClass().getName() );
+                    
+                    getServer().addHandler( defHandler );
+                }
             }
-
-            // register them with server
-
-            getServer().setHandlers( handlers.toArray( new Handler[handlers.size()] ) );
-
         }
         catch ( Exception e )
         {
             throw new InitializationException( "Could not initialize ServletContainer!", e );
         }
+    }
+
+    private String endpointKey( String host, int port )
+    {
+        return ( host == null ? "" : host ) + ":" + port;
     }
 
     // ===

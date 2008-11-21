@@ -1,0 +1,26 @@
+<plexus>
+	<components>
+		<component>
+			<role>org.sonatype.plexus.jetty.ServletContainer</role>
+			<implementation>
+				org.sonatype.plexus.jetty.DefaultServletContainer
+			</implementation>
+			<configuration>
+                <jettyXml>${jetty.xml}</jettyXml>
+				<!-- Used if no connectors given -->
+				<defaultHost>localhost</defaultHost>
+				<!-- Used if no connectors given -->
+				<defaultPort>8088</defaultPort>
+				<!-- Uses WebAppDeployer to deploy all discovered WAR/Webapps -->
+				<webapps>${basedir}/src/test/webapps</webapps>
+				<handlerInfos>
+					<handlerInfo>
+						<clazz>
+							org.mortbay.jetty.handler.DefaultHandler
+						</clazz>
+					</handlerInfo>
+				</handlerInfos>
+			</configuration>
+		</component>
+	</components>
+</plexus>

@@ -14,10 +14,10 @@ package org.sonatype.plexus.webcontainer;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.codehaus.plexus.PlexusConstants;
 import org.codehaus.plexus.PlexusContainer;
@@ -30,6 +30,8 @@ import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationExce
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StartingException;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StoppingException;
+import org.mortbay.jetty.Connector;
+import org.mortbay.jetty.Handler;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.deployer.WebAppDeployer;
 import org.mortbay.jetty.handler.ContextHandler;
@@ -63,7 +65,7 @@ public class DefaultServletContainer
     private String jettyXml;
 
     /** @plexus.configuration */
-    private List<Connector> connectors;
+    private List<org.sonatype.plexus.webcontainer.Connector> connectors;
 
     /** @plexus.configuration */
     private List<Handler> handlers;
@@ -130,46 +132,96 @@ public class DefaultServletContainer
             {
                 getLogger().error( "Failed to configure server instance from jetty.xml at: " + jettyXml, e );
             }
-            
-            getLogger().debug( "Configuration from jetty.xml will now be overridden by any Jetty configuration defined for the component: " + getClass().getName() );
         }
+
+        Map<String, String> configuredEndpoints = new LinkedHashMap<String, String>();
+        
+        StringBuilder msg = new StringBuilder( "The following connectors were configured from: " + jettyXml + ":" );
+        
+        Connector[] existingConnectors = getServer().getConnectors();
+        for ( int i = 0; existingConnectors != null && i < existingConnectors.length; i++ )
+        {
+            String endpoint = endpointKey( existingConnectors[i].getHost(), existingConnectors[i].getPort() );
+            String className = existingConnectors[i].getClass().getName();
+            
+            configuredEndpoints.put( endpoint, className );
+            
+            msg.append( "\n" ).append( endpoint ).append( " (" ).append( className ).append( ")" );
+        }
+        
+        getLogger().debug( msg.toString() );
 
         try
         {
             // connectors
 
-            org.mortbay.jetty.Connector[] jettyConnectors;
-
             if ( connectors != null && connectors.size() > 0 )
             {
-                jettyConnectors = new org.mortbay.jetty.Connector[connectors.size()];
-
                 for ( int i = 0; i < connectors.size(); i++ )
                 {
-                    jettyConnectors[i] = connectors.get( i ).getConnector( context );
+                    org.sonatype.plexus.webcontainer.Connector conn = connectors.get( i );
+                    String endpoint = endpointKey( conn.getHost(), conn.getPort() );
+                    if ( configuredEndpoints.containsKey( endpoint ) )
+                    {
+                        getLogger().info(
+                                         "Skipping component-defined connector for: " + endpoint
+                                             + ".\nIt has been overridden from: " + jettyXml
+                                             + "\nusing connector of type: " + configuredEndpoints.get( endpoint ) );
+                    }
+                    else
+                    {
+                        Connector jettyConnector = conn.getConnector( context );
 
-                    getLogger().info( "Adding Jetty Connector " + jettyConnectors[i].getClass().getName() + " on port " + jettyConnectors[i].getPort() );
+                        getLogger().info( "Adding Jetty Connector " + jettyConnector.getClass().getName() + " on port " + jettyConnector.getPort() );
+                        getServer().addConnector( jettyConnector );
+                    }
                 }
             }
             else
             {
-                jettyConnectors = new org.mortbay.jetty.Connector[1];
-                jettyConnectors[0] = new SelectChannelConnector();
-                jettyConnectors[0].setHost( getDefaultHost() );
-                jettyConnectors[0].setPort( getDefaultPort() );
+                String endpoint = endpointKey( getDefaultHost(), getDefaultPort() );
+                if ( configuredEndpoints.containsKey( endpoint ) )
+                {
+                    getLogger().info(
+                                     "Skipping component-defined default connector: " + endpoint
+                                         + ".\nIt has been overridden from: " + jettyXml
+                                         + "\nusing connector of type: " + configuredEndpoints.get( endpoint ) );
+                }
+                else
+                {
+                    Connector jettyConnector = new SelectChannelConnector();
+                    jettyConnector.setHost( getDefaultHost() );
+                    jettyConnector.setPort( getDefaultPort() );
 
-                getLogger().info( "Adding default Jetty Connector " + jettyConnectors[0].getClass().getName() + " on port " + getDefaultPort() );
+                    getLogger().info( "Adding default Jetty Connector " + jettyConnector.getClass().getName() + " on port " + getDefaultPort() );
+                    
+                    getServer().addConnector( jettyConnector );
+                }
             }
 
-            getServer().setConnectors( jettyConnectors );
-
-            List<org.mortbay.jetty.Handler> jettyHandlers = new ArrayList<org.mortbay.jetty.Handler>();
-
+            Handler[] handlers = getServer().getHandlers();
             // webapps
 
             if ( ( webapps != null && webapps.size() > 0 ) )
             {
-                ContextHandlerCollection contextHandlerCollection = new ContextHandlerCollection();
+                ContextHandlerCollection contextHandlerCollection = null;
+                boolean handlerIsNew = false;
+                
+                for ( int j = 0; handlers != null && j < handlers.length; j++ )
+                {
+                    if ( handlers[j] instanceof ContextHandlerCollection )
+                    {
+                        contextHandlerCollection = (ContextHandlerCollection) handlers[j];
+                    }
+                }
+                
+                if ( contextHandlerCollection == null )
+                {
+                    getLogger().debug( "Constructing new ContextHandlerCollection for webapp deployment." );
+                    contextHandlerCollection = new ContextHandlerCollection();
+                    handlerIsNew = true;
+                }
+
                 org.mortbay.jetty.Handler jettyHandler;
                 
                 if ( webapps != null && webapps.size() > 0 )
@@ -224,7 +276,11 @@ public class DefaultServletContainer
                 }
                 
                 contextHandlerCollection.mapContexts();
-                jettyHandlers.add( contextHandlerCollection );                
+                
+                if ( handlerIsNew )
+                {
+                    getServer().addHandler( contextHandlerCollection );                
+                }
             }
 
             // handlers
@@ -250,21 +306,35 @@ public class DefaultServletContainer
             }
             */
 
-            DefaultHandler defHandler = new DefaultHandler();
-            defHandler.setServer( server );
-            defHandler.setServeIcon( false );
-            jettyHandlers.add( defHandler );
-            getLogger().info( "Adding default Jetty Handler " + defHandler.getClass().getName() );
-
-            // register them with server
+            boolean foundDefaultHandler = false;
+            for ( int j = 0; handlers != null && j < handlers.length; j++ )
+            {
+                if ( handlers[j] instanceof DefaultHandler )
+                {
+                    foundDefaultHandler = true;
+                    break;
+                }
+            }
             
-            getServer().setHandlers( jettyHandlers.toArray( new org.mortbay.jetty.Handler[jettyHandlers.size()]) );
+            if ( !foundDefaultHandler )
+            {
+                DefaultHandler defHandler = new DefaultHandler();
+                defHandler.setServer( server );
+                defHandler.setServeIcon( false );
+                getLogger().info( "Adding default Jetty Handler " + defHandler.getClass().getName() );
+                getServer().addHandler( defHandler );
+            }
 
         }
         catch ( Exception e )
         {
             throw new InitializationException( "Could not initialize ServletContainer!", e );
         }
+    }
+
+    private String endpointKey( String host, int port )
+    {
+        return ( host == null ? "" : host ) + ":" + port;
     }
 
     protected void deployStandardWebApplication()
