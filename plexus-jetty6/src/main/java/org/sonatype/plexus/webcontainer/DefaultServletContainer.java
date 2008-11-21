@@ -13,11 +13,8 @@
 package org.sonatype.plexus.webcontainer;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.codehaus.plexus.PlexusConstants;
 import org.codehaus.plexus.PlexusContainer;
@@ -40,8 +37,7 @@ import org.mortbay.jetty.handler.DefaultHandler;
 import org.mortbay.jetty.nio.SelectChannelConnector;
 import org.mortbay.jetty.webapp.WebAppClassLoader;
 import org.mortbay.jetty.webapp.WebAppContext;
-import org.mortbay.xml.XmlConfiguration;
-import org.xml.sax.SAXException;
+import org.sonatype.plexus.util.JettyUtils;
 
 /**
  * @author cstamas
@@ -62,6 +58,7 @@ public class DefaultServletContainer
     /** @plexus.configuration default-value="8080" */
     private int defaultPort = 8081;
     
+    /** @plexus.configuration */
     private String jettyXml;
 
     /** @plexus.configuration */
@@ -94,9 +91,14 @@ public class DefaultServletContainer
         return defaultPort;
     }
 
-    public String getJettyXmlUrl()
+    public String getJettyXml()
     {
         return jettyXml;
+    }
+    
+    public void setJettyXml( String jettyXml )
+    {
+        this.jettyXml = jettyXml;
     }
 
     public void contextualize( Context context )
@@ -112,80 +114,31 @@ public class DefaultServletContainer
 
         server = new Server();
 
-        if ( jettyXml != null )
+        if ( jettyXml != null && new File( jettyXml ).isFile() )
         {
-            getLogger().debug( "Loading configuration from jetty.xml file at: " + jettyXml );
+            JettyUtils.configureServer( getServer(), new File( jettyXml ), context, getLogger() );
+        }
+        else
+        {
+            if ( jettyXml != null && new File( jettyXml ).isFile() )
+            {
+                getLogger().debug( "Cannot load: " + jettyXml + "; it is not a valid configuration file." );
+            }
             
             try
             {
-                new XmlConfiguration( new File( jettyXml ).toURL() ).configure( getServer() );
-            }
-            catch ( SAXException e )
-            {
-                getLogger().error( "Failed to load configuration from jetty.xml at: " + jettyXml, e );
-            }
-            catch ( IOException e )
-            {
-                getLogger().error( "Failed to load configuration from jetty.xml at: " + jettyXml, e );
-            }
-            catch ( Exception e )
-            {
-                getLogger().error( "Failed to configure server instance from jetty.xml at: " + jettyXml, e );
-            }
-        }
+                // connectors
 
-        Map<String, String> configuredEndpoints = new LinkedHashMap<String, String>();
-        
-        StringBuilder msg = new StringBuilder( "The following connectors were configured from: " + jettyXml + ":" );
-        
-        Connector[] existingConnectors = getServer().getConnectors();
-        for ( int i = 0; existingConnectors != null && i < existingConnectors.length; i++ )
-        {
-            String endpoint = endpointKey( existingConnectors[i].getHost(), existingConnectors[i].getPort() );
-            String className = existingConnectors[i].getClass().getName();
-            
-            configuredEndpoints.put( endpoint, className );
-            
-            msg.append( "\n" ).append( endpoint ).append( " (" ).append( className ).append( ")" );
-        }
-        
-        getLogger().debug( msg.toString() );
-
-        try
-        {
-            // connectors
-
-            if ( connectors != null && connectors.size() > 0 )
-            {
-                for ( int i = 0; i < connectors.size(); i++ )
+                if ( connectors != null && connectors.size() > 0 )
                 {
-                    org.sonatype.plexus.webcontainer.Connector conn = connectors.get( i );
-                    String endpoint = endpointKey( conn.getHost(), conn.getPort() );
-                    if ( configuredEndpoints.containsKey( endpoint ) )
+                    for ( int i = 0; i < connectors.size(); i++ )
                     {
-                        getLogger().info(
-                                         "Skipping component-defined connector for: " + endpoint
-                                             + ".\nIt has been overridden from: " + jettyXml
-                                             + "\nusing connector of type: " + configuredEndpoints.get( endpoint ) );
-                    }
-                    else
-                    {
+                        org.sonatype.plexus.webcontainer.Connector conn = connectors.get( i );
                         Connector jettyConnector = conn.getConnector( context );
 
                         getLogger().info( "Adding Jetty Connector " + jettyConnector.getClass().getName() + " on port " + jettyConnector.getPort() );
                         getServer().addConnector( jettyConnector );
                     }
-                }
-            }
-            else
-            {
-                String endpoint = endpointKey( getDefaultHost(), getDefaultPort() );
-                if ( configuredEndpoints.containsKey( endpoint ) )
-                {
-                    getLogger().info(
-                                     "Skipping component-defined default connector: " + endpoint
-                                         + ".\nIt has been overridden from: " + jettyXml
-                                         + "\nusing connector of type: " + configuredEndpoints.get( endpoint ) );
                 }
                 else
                 {
@@ -197,144 +150,105 @@ public class DefaultServletContainer
                     
                     getServer().addConnector( jettyConnector );
                 }
-            }
 
-            Handler[] handlers = getServer().getHandlers();
-            // webapps
+                // webapps
 
-            if ( ( webapps != null && webapps.size() > 0 ) )
-            {
-                ContextHandlerCollection contextHandlerCollection = null;
-                boolean handlerIsNew = false;
-                
-                for ( int j = 0; handlers != null && j < handlers.length; j++ )
+                if ( ( webapps != null && webapps.size() > 0 ) )
                 {
-                    if ( handlers[j] instanceof ContextHandlerCollection )
+                    ContextHandlerCollection contextHandlerCollection = new ContextHandlerCollection();
+
+                    org.mortbay.jetty.Handler jettyHandler;
+                    
+                    if ( webapps != null && webapps.size() > 0 )
                     {
-                        contextHandlerCollection = (ContextHandlerCollection) handlers[j];
-                    }
-                }
-                
-                if ( contextHandlerCollection == null )
-                {
-                    getLogger().debug( "Constructing new ContextHandlerCollection for webapp deployment." );
-                    contextHandlerCollection = new ContextHandlerCollection();
-                    handlerIsNew = true;
-                }
-
-                org.mortbay.jetty.Handler jettyHandler;
-                
-                if ( webapps != null && webapps.size() > 0 )
-                {
-                    for ( Webapp webapp : webapps )
-                    {
-                        if ( webapp.getWarPath().isDirectory() && new File( webapp.getWarPath(), "WEB-INF" ).exists() )
+                        for ( Webapp webapp : webapps )
                         {
-                            // The case where we have an exploded webapplication. We are also making the assumption here that everything
-                            // that his web application needs is already in the classloader being used by the system.
-                            jettyHandler = getWebAppContext( webapp, context, contextHandlerCollection );
-                            getLogger().info( "Adding Jetty WebAppContext " + jettyHandler.getClass().getName() + " on context path " + webapp.getContextPath() + " from " + webapp.getWarPath() );
-                        }                             
-                        else if ( webapp.getWarPath().isFile() && webapp.getWarPath().getName().endsWith( ".war" ) )
-                        {
-                            // The case where we have an exploded webapplication. We need to deal with actually setting up the classloader
-                            // properly because we are running plexus which controls the classloader.
-
-                            File webappDir;
-
-                            if ( webapp.getWebappDir() != null )
+                            if ( webapp.getWarPath().isDirectory() && new File( webapp.getWarPath(), "WEB-INF" ).exists() )
                             {
-                                webappDir = webapp.getWebappDir();
-                            }
-                            else
+                                // The case where we have an exploded webapplication. We are also making the assumption here that everything
+                                // that his web application needs is already in the classloader being used by the system.
+                                jettyHandler = getWebAppContext( webapp, context, contextHandlerCollection );
+                                getLogger().info( "Adding Jetty WebAppContext " + jettyHandler.getClass().getName() + " on context path " + webapp.getContextPath() + " from " + webapp.getWarPath() );
+                            }                             
+                            else if ( webapp.getWarPath().isFile() && webapp.getWarPath().getName().endsWith( ".war" ) )
                             {
-                                webappDir = new File( webapp.getWarPath().getParentFile(), webapp.getContextPath() );
-                            }
+                                // The case where we have an exploded webapplication. We need to deal with actually setting up the classloader
+                                // properly because we are running plexus which controls the classloader.
 
-                            if ( !webappDir.exists() )
+                                File webappDir;
+
+                                if ( webapp.getWebappDir() != null )
+                                {
+                                    webappDir = webapp.getWebappDir();
+                                }
+                                else
+                                {
+                                    webappDir = new File( webapp.getWarPath().getParentFile(), webapp.getContextPath() );
+                                }
+
+                                if ( !webappDir.exists() )
+                                {
+                                    webappDir.mkdirs();
+                                }
+
+                                archiver.unzip( webapp.getWarPath(), webappDir );
+                                jettyHandler = (WebAppContext) getWebAppContext( webapp, context, contextHandlerCollection );
+                                getLogger().info( "Adding Jetty WebAppContext " + jettyHandler.getClass().getName() + " on context path " + webapp.getContextPath() + " from " + webapp.getWarPath() );
+                            }
+                            else if ( webapp.getWarPath().isDirectory() && webapp.getWarPath().getName().equals( "webapps" ) )
                             {
-                                webappDir.mkdirs();
-                            }
+                                getLogger().info( "Processing webapps!" );
 
-                            archiver.unzip( webapp.getWarPath(), webappDir );
-                            jettyHandler = (WebAppContext) getWebAppContext( webapp, context, contextHandlerCollection );
-                            getLogger().info( "Adding Jetty WebAppContext " + jettyHandler.getClass().getName() + " on context path " + webapp.getContextPath() + " from " + webapp.getWarPath() );
+                                // The case where we have a WAR file that has not been exploded                                                                                  
+                                WebAppDeployer webAppDeployer = new WebAppDeployer();
+                                webAppDeployer.setContexts( contextHandlerCollection );
+                                webAppDeployer.setExtract( true );
+                                webAppDeployer.setAllowDuplicates( false );
+                                webAppDeployer.setWebAppDir( webapp.getWarPath().getAbsolutePath() );
+                                server.addLifeCycle( webAppDeployer );
+                            }                        
                         }
-                        else if ( webapp.getWarPath().isDirectory() && webapp.getWarPath().getName().equals( "webapps" ) )
-                        {
-                            getLogger().info( "Processing webapps!" );
-
-                            // The case where we have a WAR file that has not been exploded                                                                                  
-                            WebAppDeployer webAppDeployer = new WebAppDeployer();
-                            webAppDeployer.setContexts( contextHandlerCollection );
-                            webAppDeployer.setExtract( true );
-                            webAppDeployer.setAllowDuplicates( false );
-                            webAppDeployer.setWebAppDir( webapp.getWarPath().getAbsolutePath() );
-                            server.addLifeCycle( webAppDeployer );
-                        }                        
                     }
-                }
-                
-                contextHandlerCollection.mapContexts();
-                
-                if ( handlerIsNew )
-                {
+                    
+                    contextHandlerCollection.mapContexts();
                     getServer().addHandler( contextHandlerCollection );                
                 }
-            }
 
-            // handlers
+                // handlers
 
-            /*
-            if ( handlers != null && handlers.size() > 0 )
-            {
-                for ( Handler handlerInfo : handlers )
+                /*
+                if ( handlers != null && handlers.size() > 0 )
                 {
-                    ContextHandler jettyHandler = handlerInfo.getHandler( context );
-                    jettyHandler.setServer( getServer() );
-                    jettyHandlers.add( jettyHandler );
-                    getLogger().info( "Adding Jetty Handler " + jettyHandler.getClass().getName() );
+                    for ( Handler handlerInfo : handlers )
+                    {
+                        ContextHandler jettyHandler = handlerInfo.getHandler( context );
+                        jettyHandler.setServer( getServer() );
+                        jettyHandlers.add( jettyHandler );
+                        getLogger().info( "Adding Jetty Handler " + jettyHandler.getClass().getName() );
+                    }
                 }
-            }
-            else
-            {
-                DefaultHandler defHandler = new DefaultHandler();
-                defHandler.setServer( server );
-                defHandler.setServeIcon( false );
-                jettyHandlers.add( defHandler );
-                getLogger().info( "Adding default Jetty Handler " + defHandler.getClass().getName() );
-            }
-            */
-
-            boolean foundDefaultHandler = false;
-            for ( int j = 0; handlers != null && j < handlers.length; j++ )
-            {
-                if ( handlers[j] instanceof DefaultHandler )
+                else
                 {
-                    foundDefaultHandler = true;
-                    break;
+                    DefaultHandler defHandler = new DefaultHandler();
+                    defHandler.setServer( server );
+                    defHandler.setServeIcon( false );
+                    jettyHandlers.add( defHandler );
+                    getLogger().info( "Adding default Jetty Handler " + defHandler.getClass().getName() );
                 }
-            }
-            
-            if ( !foundDefaultHandler )
-            {
+                */
+
                 DefaultHandler defHandler = new DefaultHandler();
                 defHandler.setServer( server );
                 defHandler.setServeIcon( false );
                 getLogger().info( "Adding default Jetty Handler " + defHandler.getClass().getName() );
                 getServer().addHandler( defHandler );
+
             }
-
+            catch ( Exception e )
+            {
+                throw new InitializationException( "Could not initialize ServletContainer!", e );
+            }
         }
-        catch ( Exception e )
-        {
-            throw new InitializationException( "Could not initialize ServletContainer!", e );
-        }
-    }
-
-    private String endpointKey( String host, int port )
-    {
-        return ( host == null ? "" : host ) + ":" + port;
     }
 
     protected void deployStandardWebApplication()

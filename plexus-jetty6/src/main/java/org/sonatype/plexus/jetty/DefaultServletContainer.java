@@ -16,10 +16,7 @@
 package org.sonatype.plexus.jetty;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.context.ContextException;
@@ -38,8 +35,7 @@ import org.mortbay.jetty.handler.ContextHandlerCollection;
 import org.mortbay.jetty.handler.DefaultHandler;
 import org.mortbay.jetty.nio.SelectChannelConnector;
 import org.mortbay.jetty.webapp.WebAppContext;
-import org.mortbay.xml.XmlConfiguration;
-import org.xml.sax.SAXException;
+import org.sonatype.plexus.util.JettyUtils;
 
 /**
  * The Class ServletServer. Heavily based on Joakim Erfeldt's work in wagon-webdav tests.
@@ -108,14 +104,14 @@ public class DefaultServletContainer
         this.defaultPort = port;
     }
 
-    public String getJettyXmlUrl()
+    public String getJettyXml()
     {
         return jettyXml;
     }
 
-    public void setJettyXmlUrl( String jettyXmlUrl )
+    public void setJettyXml( String jettyXml )
     {
-        this.jettyXml = jettyXmlUrl;
+        this.jettyXml = jettyXml;
     }
 
     // ===
@@ -134,64 +130,23 @@ public class DefaultServletContainer
 
         setServer( new Server() );
         
-        if ( jettyXml != null )
+        if ( jettyXml != null && new File( jettyXml ).isFile() )
         {
-            getLogger().debug( "Loading configuration from jetty.xml file at: " + jettyXml );
+            JettyUtils.configureServer( getServer(), new File( jettyXml ), context, getLogger() );
+        }
+        else
+        {
+            if ( jettyXml != null && new File( jettyXml ).isFile() )
+            {
+                getLogger().debug( "Cannot load: " + jettyXml + "; it is not a valid configuration file." );
+            }
             
             try
             {
-                new XmlConfiguration( new File( jettyXml ).toURL() ).configure( getServer() );
-            }
-            catch ( SAXException e )
-            {
-                getLogger().error( "Failed to load configuration from jetty.xml at: " + jettyXml, e );
-            }
-            catch ( IOException e )
-            {
-                getLogger().error( "Failed to load configuration from jetty.xml at: " + jettyXml, e );
-            }
-            catch ( Exception e )
-            {
-                getLogger().error( "Failed to configure server instance from jetty.xml at: " + jettyXml, e );
-            }
-            
-        }
-        
-        Map<String, String> configuredEndpoints = new LinkedHashMap<String, String>();
-        
-        StringBuilder msg = new StringBuilder( "The following connectors were configured from: " + jettyXml + ":" );
-        
-        Connector[] existingConnectors = getServer().getConnectors();
-        for ( int i = 0; existingConnectors != null && i < existingConnectors.length; i++ )
-        {
-            String endpoint = endpointKey( existingConnectors[i].getHost(), existingConnectors[i].getPort() );
-            String className = existingConnectors[i].getClass().getName();
-            
-            configuredEndpoints.put( endpoint, className );
-            
-            msg.append( "\n" ).append( endpoint ).append( " (" ).append( className ).append( ")" );
-        }
-        
-        getLogger().debug( msg.toString() );
-
-        try
-        {
-            // connectors
-            if ( connectorInfos != null && connectorInfos.size() > 0 )
-            {
-                for ( int i = 0; i < connectorInfos.size(); i++ )
+                // connectors
+                if ( connectorInfos != null && connectorInfos.size() > 0 )
                 {
-                    ConnectorInfo info = connectorInfos.get( i );
-                    String endpoint = endpointKey( info.getHost(), info.getPort() );
-                    
-                    if ( configuredEndpoints.containsKey( endpoint ) )
-                    {
-                        getLogger().info(
-                                          "Skipping component-defined connector for: " + endpoint
-                                              + ".\nIt has been overridden from: " + jettyXml
-                                              + "\nusing connector of type: " + configuredEndpoints.get( endpoint ) );
-                    }
-                    else
+                    for ( int i = 0; i < connectorInfos.size(); i++ )
                     {
                         Connector conn  = connectorInfos.get( i ).getConnector( context );
 
@@ -201,17 +156,6 @@ public class DefaultServletContainer
                         
                         getServer().addConnector( conn );
                     }
-                }
-            }
-            else
-            {
-                String endpoint = endpointKey( getDefaultHost(), getDefaultPort() );
-                if ( configuredEndpoints.containsKey( endpoint ) )
-                {
-                    getLogger().info(
-                                     "Skipping component-defined default connector: " + endpoint
-                                         + ".\nIt has been overridden from: " + jettyXml
-                                         + "\nusing connector of type: " + configuredEndpoints.get( endpoint ) );
                 }
                 else
                 {
@@ -227,100 +171,61 @@ public class DefaultServletContainer
                     
                     getServer().addConnector( conn );
                 }
-            }
 
-            // gathering stuff
+                // gathering stuff
 
-            Handler[] handlers = getServer().getHandlers();
-            Map<String, Handler> handlersByClassname = new LinkedHashMap<String, Handler>();
-            for ( int j = 0; handlers != null && j < handlers.length; j++ )
-            {
-                handlersByClassname.put( handlers[j].getClass().getName(), handlers[j] );
-            }
-            
-            Handler handler;
+                Handler handler;
 
-            // webapps
+                // webapps
 
-            if ( ( webappInfos != null && webappInfos.size() > 0 ) || ( webapps != null && webapps.isDirectory() ) )
-            {
-                boolean handlerIsNew = false;
-                ContextHandlerCollection ctxHandler = (ContextHandlerCollection) handlersByClassname.get( ContextHandlerCollection.class.getName() );
-                
-                if ( ctxHandler == null )
+                if ( ( webappInfos != null && webappInfos.size() > 0 ) || ( webapps != null && webapps.isDirectory() ) )
                 {
-                    getLogger().debug( "Constructing new ContextHandlerCollection for webapp deployment." );
-                    ctxHandler = new ContextHandlerCollection();
-                    handlerIsNew = true;
-                }
-
-                if ( webappInfos != null && webappInfos.size() > 0 )
-                {
-                    for ( WebappInfo webappInfo : webappInfos )
+                    ContextHandlerCollection ctxHandler = new ContextHandlerCollection();
+                    
+                    if ( webappInfos != null && webappInfos.size() > 0 )
                     {
-                        handler = (WebAppContext) webappInfo.getWebAppContext( context, ctxHandler );
+                        for ( WebappInfo webappInfo : webappInfos )
+                        {
+                            handler = (WebAppContext) webappInfo.getWebAppContext( context, ctxHandler );
 
-                        getLogger().info(
-                            "Adding Jetty WebAppContext " + handler.getClass().getName() + " on context path "
-                                + webappInfo.getContextPath() + " from " + webappInfo.getWarPath() );
+                            getLogger().info(
+                                "Adding Jetty WebAppContext " + handler.getClass().getName() + " on context path "
+                                    + webappInfo.getContextPath() + " from " + webappInfo.getWarPath() );
+                        }
+
+                    }
+                    else if ( webapps != null && webapps.isDirectory() )
+                    {
+                        WebAppDeployer webAppDeployer = new WebAppDeployer();
+
+                        webAppDeployer.setContexts( ctxHandler );
+
+                        webAppDeployer.setExtract( true );
+
+                        webAppDeployer.setAllowDuplicates( false );
+
+                        webAppDeployer.setWebAppDir( webapps.getAbsolutePath() );
+                        
+                        getServer().addLifeCycle( webAppDeployer );
                     }
 
-                }
-                else if ( webapps != null && webapps.isDirectory() )
-                {
-                    WebAppDeployer webAppDeployer = new WebAppDeployer();
-
-                    webAppDeployer.setContexts( ctxHandler );
-
-                    webAppDeployer.setExtract( true );
-
-                    webAppDeployer.setAllowDuplicates( false );
-
-                    webAppDeployer.setWebAppDir( webapps.getAbsolutePath() );
-                    
-                    getServer().addLifeCycle( webAppDeployer );
-                }
-
-                ctxHandler.mapContexts();
-
-                if ( handlerIsNew )
-                {
+                    ctxHandler.mapContexts();
                     getServer().addHandler( ctxHandler );
                 }
-            }
 
-            // handlers
+                // handlers
 
-            if ( handlerInfos != null && handlerInfos.size() > 0 )
-            {
-                for ( HandlerInfo handlerInfo : handlerInfos )
+                if ( handlerInfos != null && handlerInfos.size() > 0 )
                 {
-                    handler = handlerInfo.getHandler( context );
-                    if ( handlersByClassname.containsKey( handler.getClass().getName() ) )
+                    for ( HandlerInfo handlerInfo : handlerInfos )
                     {
-                        getLogger().info(
-                                          "Skipping component-defined handler: " + handler
-                                              + ".\nIt has been overridden from: " + jettyXml
-                                              + "\nusing handler of type: "
-                                              + handlersByClassname.get( handler.getClass().getName() ) );
-                    }
-                    else
-                    {
+                        handler = handlerInfo.getHandler( context );
                         handler.setServer( getServer() );
 
                         getLogger().info( "Adding Jetty Handler " + handler.getClass().getName() );
 
                         getServer().addHandler( handler );
                     }
-                }
-            }
-            else
-            {
-                if ( handlersByClassname.containsKey( DefaultHandler.class.getName() ) )
-                {
-                    getLogger().info(
-                                      "Skipping component-defined DefaultHandler.\nIt has been overridden from: "
-                                          + jettyXml );
                 }
                 else
                 {
@@ -335,16 +240,11 @@ public class DefaultServletContainer
                     getServer().addHandler( defHandler );
                 }
             }
+            catch ( Exception e )
+            {
+                throw new InitializationException( "Could not initialize ServletContainer!", e );
+            }
         }
-        catch ( Exception e )
-        {
-            throw new InitializationException( "Could not initialize ServletContainer!", e );
-        }
-    }
-
-    private String endpointKey( String host, int port )
-    {
-        return ( host == null ? "" : host ) + ":" + port;
     }
 
     // ===

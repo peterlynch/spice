@@ -15,7 +15,17 @@
     <url>http://svn.sonatype.org/spice/trunk/plexus-jetty6</url>
     <developerConnection>scm:svn:https://svn.sonatype.org/spice/trunk/plexus-jetty6</developerConnection>
   </scm>
+  
+  <properties>
+    <jetty.version>6.1.14</jetty.version>
+  </properties>
+  
   <dependencies>
+    <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-interpolation</artifactId>
+        <version>1.6</version>
+    </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-container-default</artifactId>
@@ -36,9 +46,9 @@
     	<scope>test</scope>
     </dependency>
     <dependency>
-    	<groupId>org.codehaus.plexus</groupId>
-    	<artifactId>plexus-interpolation</artifactId>
-    	<version>1.6</version>
+    	<groupId>org.mortbay.jetty</groupId>
+    	<artifactId>jetty-rewrite-handler</artifactId>
+    	<version>${jetty.version}</version>
     	<scope>test</scope>
     </dependency>
   </dependencies>
