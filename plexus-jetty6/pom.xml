@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.sonatype.spice</groupId>
     <artifactId>spice-parent</artifactId>
-    <version>9</version>
+    <version>10</version>
   </parent>
   <groupId>org.sonatype.plexus</groupId>
   <artifactId>plexus-jetty6</artifactId>
@@ -15,10 +15,6 @@
     <url>http://svn.sonatype.org/spice/trunk/plexus-jetty6</url>
     <developerConnection>scm:svn:https://svn.sonatype.org/spice/trunk/plexus-jetty6</developerConnection>
   </scm>
-  
-  <properties>
-    <jetty.version>6.1.14</jetty.version>
-  </properties>
   
   <dependencies>
     <dependency>
