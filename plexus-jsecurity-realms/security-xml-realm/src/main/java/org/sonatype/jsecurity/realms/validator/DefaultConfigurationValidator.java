@@ -295,6 +295,22 @@ public class DefaultConfigurationValidator
         return response;
     }
 
+    private boolean isRoleNameAlreadyInUse( Map<String, String> existingRoleNameMap, CRole role )
+    {
+        for ( String roleId : existingRoleNameMap.keySet() )
+        {
+            if ( roleId.equals( role.getId() ) )
+            {
+                continue;
+            }
+            if ( existingRoleNameMap.get( roleId ).equals( role.getName() ) )
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     private ValidationResponse isRecursive( String baseRoleId, String roleId, ValidationContext ctx )
     {
         ValidationResponse response = new ValidationResponse();
@@ -359,7 +375,7 @@ public class DefaultConfigurationValidator
         ValidationContext context = response.getContext();
 
         List<String> existingIds = context.getExistingRoleIds();
-
+        
         if ( existingIds == null )
         {
             context.addExistingRoleIds();
@@ -395,11 +411,23 @@ public class DefaultConfigurationValidator
             response.setModified( true );
         }
 
+        Map<String, String> existingRoleNameMap = context.getExistingRoleNameMap();
+        
         if ( StringUtils.isEmpty( role.getName() ) )
         {
             ValidationMessage message = new ValidationMessage( "name", "Role ID '" + role.getId()
                 + "' requires a name.", "Name is required." );
             response.addValidationError( message );
+        }
+        else if ( isRoleNameAlreadyInUse( existingRoleNameMap, role ) )
+        {
+            ValidationMessage message = new ValidationMessage( "name", "Role ID '" + role.getId()
+                + "' can't use the name '" + role.getName() + "'.", "Name is already in use." );
+            response.addValidationError( message );
+        }
+        else
+        {
+            existingRoleNameMap.put( role.getId(), role.getName() );
         }
 
         if ( 1 > role.getSessionTimeout() )

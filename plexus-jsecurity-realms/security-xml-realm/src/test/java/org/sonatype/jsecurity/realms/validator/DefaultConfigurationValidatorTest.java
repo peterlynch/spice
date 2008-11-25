@@ -64,7 +64,7 @@ public class DefaultConfigurationValidatorTest
 
         assertEquals( 2, response.getValidationWarnings().size() );
         
-        assertEquals( 12, response.getValidationErrors().size() );
+        assertEquals( 16, response.getValidationErrors().size() );
     }
     
     public void testBad3()

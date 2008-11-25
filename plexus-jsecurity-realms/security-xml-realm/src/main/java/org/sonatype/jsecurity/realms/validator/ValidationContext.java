@@ -16,6 +16,8 @@ public class ValidationContext
     private Map<String, String> existingEmailMap;
 
     private Map<String, List<String>> roleContainmentMap;
+    
+    private Map<String, String> existingRoleNameMap;
 
     public void addExistingPrivilegeIds()
     {
@@ -35,6 +37,11 @@ public class ValidationContext
         if ( this.roleContainmentMap == null )
         {
             this.roleContainmentMap = new HashMap<String, List<String>>();
+        }
+        
+        if ( this.existingRoleNameMap == null)
+        {
+            this.existingRoleNameMap = new HashMap<String, String>();
         }
     }
 
@@ -75,4 +82,11 @@ public class ValidationContext
     {
         return roleContainmentMap;
     }
+
+    public Map<String, String> getExistingRoleNameMap()
+    {
+        return existingRoleNameMap;
+    }
+    
+    
 }

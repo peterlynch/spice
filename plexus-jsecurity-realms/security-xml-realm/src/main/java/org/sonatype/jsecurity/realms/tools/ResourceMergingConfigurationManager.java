@@ -156,6 +156,7 @@ public class ResourceMergingConfigurationManager
         for ( CUser user : listUsers() )
         {
             context.getExistingUserIds().add( user.getId() );
+            
             context.getExistingEmailMap().put( user.getId(), user.getEmail() );
         }
 
@@ -168,6 +169,8 @@ public class ResourceMergingConfigurationManager
             containedRoles.addAll( role.getRoles() );
 
             context.getRoleContainmentMap().put( role.getId(), containedRoles );
+            
+            context.getExistingRoleNameMap().put( role.getId(), role.getName() );
         }
 
         for ( CPrivilege priv : listPrivileges() )
