@@ -12,14 +12,14 @@ public interface PlexusUserManager
      * Retrieve all PlexusUser objects defined by the PlexusUserLocator components
      * @return
      */
-    List<PlexusUser> listUsers();
+    List<PlexusUser> listUsers( String source );
     
     /**
      * Retrieve all userids defined by the PlexusUserLocator components (if managing full object
      * list is to heavy handed)
      * @return
      */
-    List<String> listUserIds();
+    List<String> listUserIds( String source );
     
     /**
      * Get a PlexusUser object by id from a PlexusUserLocator component

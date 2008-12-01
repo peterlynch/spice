@@ -9,6 +9,7 @@ public class PlexusUser
     private String userId;
     private String name;
     private String emailAddress;
+    private String source;
     private List<PlexusRole> roles = new ArrayList<PlexusRole>();
     
     public String getUserId()
@@ -34,6 +35,14 @@ public class PlexusUser
     public void setEmailAddress( String emailAddress )
     {
         this.emailAddress = emailAddress;
+    }
+    public String getSource()
+    {
+        return source;
+    }
+    public void setSource( String source )
+    {
+        this.source = source;
     }
     public List<PlexusRole> getRoles()
     {

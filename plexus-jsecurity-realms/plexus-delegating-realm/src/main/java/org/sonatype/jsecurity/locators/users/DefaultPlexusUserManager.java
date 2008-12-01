@@ -11,16 +11,22 @@ import org.codehaus.plexus.component.annotations.Requirement;
 public class DefaultPlexusUserManager
     implements PlexusUserManager
 {
+    public static final String SOURCE_ALL = "all";
+    
     @Requirement( role = PlexusUserLocator.class )
     private List<PlexusUserLocator> locators;
     
-    public List<PlexusUser> listUsers()
+    public List<PlexusUser> listUsers( String source )
     {
         ArrayList<PlexusUser> users = new ArrayList<PlexusUser>();
         
         for ( PlexusUserLocator locator : locators )
         {
-            users.addAll( locator.listUsers() );
+            if ( SOURCE_ALL.equals( source )
+                || locator.getSource().equals( source ) )
+            {
+                users.addAll( locator.listUsers() );
+            }
         }
         
         Collections.sort( users );
@@ -28,13 +34,17 @@ public class DefaultPlexusUserManager
         return users;
     }
     
-    public List<String> listUserIds()
+    public List<String> listUserIds( String source )
     {
         ArrayList<String> userIds = new ArrayList<String>();
         
         for ( PlexusUserLocator locator : locators )
         {
-            userIds.addAll( locator.listUserIds() );
+            if ( SOURCE_ALL.equals( source )
+                || locator.getSource().equals( source ) )
+            {
+                userIds.addAll( locator.listUserIds() );
+            }
         }
         
         Collections.sort( userIds );

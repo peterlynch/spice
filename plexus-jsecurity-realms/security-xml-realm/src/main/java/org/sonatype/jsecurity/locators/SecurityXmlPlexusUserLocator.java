@@ -17,6 +17,8 @@ import org.sonatype.jsecurity.realms.tools.NoSuchUserException;
 public class SecurityXmlPlexusUserLocator
     implements PlexusUserLocator
 {
+    public static final String SOURCE = "security-xml";
+    
     @Requirement( role = ConfigurationManager.class, hint = "resourceMerging" )
     private ConfigurationManager configuration;
     
@@ -76,6 +78,7 @@ public class SecurityXmlPlexusUserLocator
         plexusUser.setUserId( user.getId() );
         plexusUser.setName( user.getName() );
         plexusUser.setEmailAddress( user.getEmail() );
+        plexusUser.setSource( SOURCE );
         
         for ( CRole role : ( List<CRole> ) user.getRoles() )
         {
@@ -96,8 +99,13 @@ public class SecurityXmlPlexusUserLocator
         
         plexusRole.setRoleId( role.getId() );
         plexusRole.setName( role.getName() );
-        plexusRole.setSource( "plexus-xml" );
+        plexusRole.setSource( SOURCE );
         
         return plexusRole;
+    }
+    
+    public String getSource()
+    {
+        return SOURCE;
     }
 }

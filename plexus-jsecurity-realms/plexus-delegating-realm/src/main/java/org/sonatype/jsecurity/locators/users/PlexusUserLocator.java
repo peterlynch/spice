@@ -33,4 +33,10 @@ public interface PlexusUserLocator
      * @return
      */
     boolean isPrimary();
+    
+    /**
+     * Get the source string of this locator
+     * @return
+     */
+    String getSource();
 }
