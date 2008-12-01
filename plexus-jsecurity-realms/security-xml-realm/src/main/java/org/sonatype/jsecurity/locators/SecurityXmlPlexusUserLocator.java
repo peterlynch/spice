@@ -5,8 +5,10 @@ import java.util.List;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.sonatype.jsecurity.locators.users.PlexusRole;
 import org.sonatype.jsecurity.locators.users.PlexusUser;
 import org.sonatype.jsecurity.locators.users.PlexusUserLocator;
+import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUser;
 import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
 import org.sonatype.jsecurity.realms.tools.NoSuchUserException;
@@ -75,6 +77,27 @@ public class SecurityXmlPlexusUserLocator
         plexusUser.setName( user.getName() );
         plexusUser.setEmailAddress( user.getEmail() );
         
+        for ( CRole role : ( List<CRole> ) user.getRoles() )
+        {
+            plexusUser.addRole( toPlexusRole( role ) );
+        }
+        
         return plexusUser;
+    }
+    
+    protected PlexusRole toPlexusRole( CRole role )
+    {
+        if ( role == null )
+        {
+            return null;
+        }
+        
+        PlexusRole plexusRole = new PlexusRole();
+        
+        plexusRole.setRoleId( role.getId() );
+        plexusRole.setName( role.getName() );
+        plexusRole.setSource( "plexus-xml" );
+        
+        return plexusRole;
     }
 }
