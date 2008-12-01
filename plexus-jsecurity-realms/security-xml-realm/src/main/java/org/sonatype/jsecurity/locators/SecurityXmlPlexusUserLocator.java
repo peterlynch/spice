@@ -11,6 +11,7 @@ import org.sonatype.jsecurity.locators.users.PlexusUserLocator;
 import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUser;
 import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
+import org.sonatype.jsecurity.realms.tools.NoSuchRoleException;
 import org.sonatype.jsecurity.realms.tools.NoSuchUserException;
 
 @Component( role = PlexusUserLocator.class, hint = "SecurityXmlPlexusUserLocator" )
@@ -80,7 +81,7 @@ public class SecurityXmlPlexusUserLocator
         plexusUser.setEmailAddress( user.getEmail() );
         plexusUser.setSource( SOURCE );
         
-        for ( CRole role : ( List<CRole> ) user.getRoles() )
+        for ( String role : ( List<String> ) user.getRoles() )
         {
             plexusUser.addRole( toPlexusRole( role ) );
         }
@@ -88,20 +89,29 @@ public class SecurityXmlPlexusUserLocator
         return plexusUser;
     }
     
-    protected PlexusRole toPlexusRole( CRole role )
+    protected PlexusRole toPlexusRole( String roleId )
     {
-        if ( role == null )
+        if ( roleId == null )
         {
             return null;
         }
         
-        PlexusRole plexusRole = new PlexusRole();
-        
-        plexusRole.setRoleId( role.getId() );
-        plexusRole.setName( role.getName() );
-        plexusRole.setSource( SOURCE );
-        
-        return plexusRole;
+        try
+        {
+            CRole role = configuration.readRole( roleId );
+            
+            PlexusRole plexusRole = new PlexusRole();
+            
+            plexusRole.setRoleId( role.getId() );
+            plexusRole.setName( role.getName() );
+            plexusRole.setSource( SOURCE );
+            
+            return plexusRole;
+        }
+        catch ( NoSuchRoleException e )
+        {
+            return null;
+        }
     }
     
     public String getSource()
