@@ -1,25 +1,42 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"><!--
   <parent>
-    <artifactId>plexus-components</artifactId>
     <groupId>org.codehaus.plexus</groupId>
-    <version>1.1.12</version>
+    <artifactId>plexus-components</artifactId>
+    <version>1.1.13</version>
   </parent>
+  -->
+  
   <modelVersion>4.0.0</modelVersion>
+  
+  <groupId>org.codehaus.plexus</groupId>
   <artifactId>plexus-lang</artifactId>
   <name>Plexus language bundle access component</name>
   <version>1.1-SNAPSHOT</version>
   
   <properties>
-  	<distMgmtSnapshotsName>Plexus Central Development Repository</distMgmtSnapshotsName>
-  	<distMgmtSnapshotsUrl>dav:https://dav.codehaus.org/snapshots.repository/plexus</distMgmtSnapshotsUrl>
+  
+    <distMgmtSnapshotsName>Plexus Central Development Repository</distMgmtSnapshotsName>
+    <distMgmtSnapshotsUrl>dav:https://dav.codehaus.org/snapshots.repository/plexus</distMgmtSnapshotsUrl>
+  
+    <distMgmtReleasesName>Release Repository</distMgmtReleasesName>
+    <distMgmtReleasesUrl>dav:http://localhost:8081/nexus/content/repositories/releases</distMgmtReleasesUrl>
+    
+    <plexus.container.version>1.0-beta-3.0.1</plexus.container.version>
+    <plexus.utild.version>1.5.5</plexus.utild.version>
+    
   </properties>
   
   <distributionManagement>
-	<snapshotRepository>
-		<id>codehaus.org</id>
-		<name>${distMgmtSnapshotsName}</name>
-		<url>${distMgmtSnapshotsUrl}</url>
-	</snapshotRepository>
+    <repository>
+      <id>codehaus.org</id>
+      <name>${distMgmtReleasesName}</name>
+      <url>${distMgmtReleasesUrl}</url>
+    </repository>
+    <snapshotRepository>
+      <id>codehaus.org</id>
+      <name>${distMgmtSnapshotsName}</name>
+      <url>${distMgmtSnapshotsUrl}</url>
+    </snapshotRepository>
   </distributionManagement>
   
   <build>
@@ -45,17 +62,26 @@
       </plugin>
     </plugins>
   </build>
+
   <dependencies>
+  
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
-      <version>1.4.5</version>
+      <version>${plexus.utild.version}</version>
     </dependency>
+    
+    <dependency>
+    	<groupId>org.codehaus.plexus</groupId>
+    	<artifactId>plexus-container-default</artifactId>
+    	<version>${plexus.container.version}</version>
+    </dependency>
+    
   </dependencies>
 
   <scm>
-    <connection>scm:svn:http://svn.codehaus.org/plexus/plexus-components/tags/plexus-lang-1.0</connection>
-    <developerConnection>scm:svn:https://svn.codehaus.org/plexus/plexus-components/tags/plexus-lang-1.0</developerConnection>
-    <url>http://fisheye.codehaus.org/browse/plexus/plexus-components/tags/plexus-lang-1.0</url>
+    <connection>scm:svn:http://svn.sonatype.org/spice/trunk/plexus-lang</connection>
+    <developerConnection>scm:svn:https://svn.sonatype.org/spice/trunk/plexus-lang</developerConnection>
   </scm>
+
 </project>
