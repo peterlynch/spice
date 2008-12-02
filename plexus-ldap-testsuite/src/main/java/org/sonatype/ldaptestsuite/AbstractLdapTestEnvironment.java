@@ -66,5 +66,7 @@ public abstract class AbstractLdapTestEnvironment
         super.tearDown();
         
         ldapServer.stop();
+        ldapServer = null;
+        
     }
 }
