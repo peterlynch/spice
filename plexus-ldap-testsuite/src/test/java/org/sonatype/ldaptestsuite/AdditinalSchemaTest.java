@@ -17,17 +17,6 @@ public class AdditinalSchemaTest  extends AbstractLdapTestEnvironment
         Map<String,Schema> schemas = this.getLdapServer().directoryService.getRegistries().getLoadedSchemas();
 
         Assert.assertNotNull( schemas.get( "nis" ) );
-        
-
-        for ( Entry<String, Schema> entry : schemas.entrySet() )
-        {
-            System.out.println( "entry: "+ entry.getValue().getSchemaName() );
-        }
-
-        for ( String dep : schemas.get( "nis" ).getDependencies() )
-        {
-            System.out.println( "dep: "+ dep );
-        }
         Assert.assertFalse( schemas.get( "nis" ).isDisabled() );
         
     }
