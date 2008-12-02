@@ -12,7 +12,7 @@
 
 	<artifactId>micromailer</artifactId>
 
-	<version>1.0.2-SNAPSHOT</version>
+	<version>1.0.2</version>
 
 	<packaging>jar</packaging>
 
@@ -20,9 +20,9 @@
 
 	<!-- SCM -->
 	<scm>
-		<connection>scm:svn:http://svn.sonatype.org/spice/trunk/micromailer</connection>
-		<url>http://svn.sonatype.org/spice/trunk/micromailer</url>
-		<developerConnection>scm:svn:https://svn.sonatype.org/spice/trunk/micromailer</developerConnection>
+		<connection>scm:svn:http://svn.sonatype.org/spice/tags/micromailer-1.0.2</connection>
+		<url>http://svn.sonatype.org/spice/tags/micromailer-1.0.2</url>
+		<developerConnection>scm:svn:https://svn.sonatype.org/spice/tags/micromailer-1.0.2</developerConnection>
 	</scm>
 
 	<dependencies>
