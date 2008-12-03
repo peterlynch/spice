@@ -13,6 +13,7 @@
 package org.sonatype.plexus.webcontainer;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -21,7 +22,6 @@ import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.context.ContextException;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
-import org.codehaus.plexus.logging.LogEnabled;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
@@ -157,10 +157,41 @@ public class DefaultServletContainer
                 }
 
                 // webapps
+                List<Listener> listeners = new ArrayList<Listener>(); 
+                
+                if ( lifecycleListeners != null && !lifecycleListeners.isEmpty() )
+                {
+                    for ( LifecycleListener listenerInfo : lifecycleListeners )
+                    {
+                        if ( listenerInfo != null )
+                        {
+                            try
+                            {
+                                Listener listener = listenerInfo.getListener( context );
+                                
+                                listeners.add( listener );
+                            }
+                            catch ( Exception e )
+                            {
+                                throw new InitializationException( "Could not initialize ServletContainer!", e );
+                            }
+                        }
+                    }
+                }
 
                 if ( ( webapps != null && webapps.size() > 0 ) )
                 {
                     ContextHandlerCollection contextHandlerCollection = new ContextHandlerCollection();
+                    if ( !listeners.isEmpty() )
+                    {
+                        for ( Listener listener : listeners )
+                        {
+                            if ( listener != null )
+                            {
+                                contextHandlerCollection.addLifeCycleListener( listener );
+                            }
+                        }
+                    }
 
                     org.mortbay.jetty.Handler jettyHandler;
                     
@@ -252,30 +283,6 @@ public class DefaultServletContainer
             catch ( Exception e )
             {
                 throw new InitializationException( "Could not initialize ServletContainer!", e );
-            }
-        }
-        
-        if ( lifecycleListeners != null && !lifecycleListeners.isEmpty() )
-        {
-            for ( LifecycleListener listenerInfo : lifecycleListeners )
-            {
-                if ( listenerInfo != null )
-                {
-                    try
-                    {
-                        Listener listener = listenerInfo.getListener( context );
-                        if ( listener instanceof LogEnabled )
-                        {
-                            ( (LogEnabled) listener ).enableLogging( getLogger() );
-                        }
-                        
-                        getServer().addLifeCycleListener( listener );
-                    }
-                    catch ( Exception e )
-                    {
-                        throw new InitializationException( "Could not initialize ServletContainer!", e );
-                    }
-                }
             }
         }
     }

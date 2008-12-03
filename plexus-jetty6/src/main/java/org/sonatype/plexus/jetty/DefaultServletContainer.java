@@ -22,7 +22,6 @@ import java.util.List;
 import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.context.ContextException;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
-import org.codehaus.plexus.logging.LogEnabled;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
@@ -187,14 +186,9 @@ public class DefaultServletContainer
                     {
                         if ( listenerInfo != null )
                         {
-                            getLogger().info( "Adding LifeCycleListener: " + listenerInfo.getClazz() );
                             try
                             {
                                 Listener listener = listenerInfo.getListener( context );
-                                if ( listener instanceof LogEnabled )
-                                {
-                                    ( (LogEnabled) listener ).enableLogging( getLogger() );
-                                }
                                 
                                 listeners.add( listener );
                             }

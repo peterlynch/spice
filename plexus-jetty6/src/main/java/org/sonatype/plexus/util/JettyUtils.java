@@ -5,6 +5,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.context.ContextMapAdapter;
@@ -15,8 +17,11 @@ import org.codehaus.plexus.interpolation.StringSearchInterpolator;
 import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
 import org.codehaus.plexus.util.IOUtil;
+import org.mortbay.component.LifeCycle.Listener;
 import org.mortbay.jetty.Server;
 import org.mortbay.xml.XmlConfiguration;
+import org.sonatype.plexus.jetty.LifecycleListenerInfo;
+import org.sonatype.plexus.webcontainer.LifecycleListener;
 
 public final class JettyUtils
 {

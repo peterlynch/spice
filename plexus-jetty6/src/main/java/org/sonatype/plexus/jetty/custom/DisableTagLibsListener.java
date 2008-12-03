@@ -3,20 +3,18 @@ package org.sonatype.plexus.jetty.custom;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.codehaus.plexus.logging.LogEnabled;
-import org.codehaus.plexus.logging.Logger;
 import org.mortbay.component.LifeCycle;
 import org.mortbay.jetty.Handler;
 import org.mortbay.jetty.handler.ContextHandlerCollection;
 import org.mortbay.jetty.webapp.Configuration;
 import org.mortbay.jetty.webapp.TagLibConfiguration;
 import org.mortbay.jetty.webapp.WebAppContext;
+import org.mortbay.log.Log;
+import org.mortbay.log.Logger;
 
 public class DisableTagLibsListener
-    implements LifeCycle.Listener, LogEnabled
+    implements LifeCycle.Listener
 {
-
-    private Logger logger;
 
     public void lifeCycleFailure( LifeCycle lifecycle, Throwable cause )
     {
@@ -32,6 +30,8 @@ public class DisableTagLibsListener
 
     private void disableTagLibs( ContextHandlerCollection collection )
     {
+        Logger logger = Log.getLogger( getClass().getName() );
+        
         Handler[] childHandlers = collection.getChildHandlers();
         
         if ( childHandlers != null && childHandlers.length > 0 )
@@ -42,9 +42,9 @@ public class DisableTagLibsListener
                 {
                     WebAppContext webapp = (WebAppContext) child;
                     
-                    if ( logger != null/* && logger.isDebugEnabled() */)
+                    if ( logger != null )
                     {
-                        logger.info( "Disabling TLD support for: " + webapp.getDisplayName() + " (context path: " + webapp.getContextPath() + ")" );
+                        logger.info( "Disabling TLD support for: {} (context path: {})", webapp.getDisplayName(), webapp.getContextPath() );
                     }
                     
                     Configuration[] configs = webapp.getConfigurations();
@@ -106,7 +106,7 @@ public class DisableTagLibsListener
                         webapp.setConfigurationClasses( configClasses );
                     }
                     
-                    if ( logger != null )
+                    if ( logger != null && logger.isDebugEnabled() )
                     {
                         StringBuilder builder = new StringBuilder();
                         if ( webapp.getConfigurations() != null )
@@ -116,7 +116,7 @@ public class DisableTagLibsListener
                                 builder.append( "\n" ).append( configuration.getClass().getName() );
                             }
                             
-                            logger.info( "\n\nThe following configurations are in use for this webapp:" + builder.toString() );
+                            logger.debug( "\n\nThe following configurations are in use for this webapp: {}", builder, null );
                         }
                         
                         builder.setLength( 0 );
@@ -127,17 +127,12 @@ public class DisableTagLibsListener
                                 builder.append( "\n" ).append( configClass );
                             }
                             
-                            logger.info( "\n\nThe following configurationClasses are in use for this webapp:" + builder.toString() );
+                            logger.debug( "\n\nThe following configurationClasses are in use for this webapp: {}", builder, null );
                         }
                     }
                 }
             }
         }
-    }
-
-    public void enableLogging( Logger logger )
-    {
-        this.logger = logger;
     }
 
     public void lifeCycleStarted( LifeCycle lifecycle )
