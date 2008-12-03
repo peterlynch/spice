@@ -14,14 +14,14 @@
 			<configuration>
 				<!-- Not used if connectors given -->
 				<defaultHost>localhost</defaultHost>
-				<defaultPort>8081</defaultPort>
+				<defaultPort>${test-connector-port}</defaultPort>
 				<connectorInfos>
 					<connectorInfo>
 						<clazz>
 							org.mortbay.jetty.nio.SelectChannelConnector
 						</clazz>
 						<host>localhost</host>
-						<port>8088</port>
+						<port>${default-jetty-port}</port>
 					</connectorInfo>
 					<connectorInfo>
 						<clazz>org.mortbay.jetty.LocalConnector</clazz>

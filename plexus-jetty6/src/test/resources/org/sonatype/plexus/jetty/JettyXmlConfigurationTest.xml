@@ -10,7 +10,7 @@
 				<!-- Used if no connectors given -->
 				<defaultHost>localhost</defaultHost>
 				<!-- Used if no connectors given -->
-				<defaultPort>8088</defaultPort>
+				<defaultPort>${default-jetty-port}</defaultPort>
 				<!-- Uses WebAppDeployer to deploy all discovered WAR/Webapps -->
 				<webapps>${basedir}/src/test/webapps</webapps>
 				<handlerInfos>

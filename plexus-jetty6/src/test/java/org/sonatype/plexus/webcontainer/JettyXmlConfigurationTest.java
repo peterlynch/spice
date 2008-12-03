@@ -27,6 +27,21 @@ public class JettyXmlConfigurationTest
     extends TestCase
 {
 
+    private String defaultPort;
+    
+    private String testConnectorPort;
+    
+    private String testAJPPort;
+    
+    public void setUp() throws Exception
+    {
+        super.setUp();
+        
+        defaultPort = System.getProperty( "default-jetty-port", "18088" );
+        testConnectorPort = System.getProperty( "test-connector-port", "18081" );
+        testAJPPort = System.getProperty( "test-ajp-port", "18009" );
+    }
+
     public void testConfigureAJPConnector()
         throws Exception
     {
@@ -124,7 +139,7 @@ public class JettyXmlConfigurationTest
             assertEquals( 1, connectors.length );
             assertTrue( connectors[0] instanceof SelectChannelConnector );
             assertEquals( "localhost", connectors[0].getHost() );
-            assertEquals( 8088, connectors[0].getPort() );
+            assertEquals( defaultPort, "" + connectors[0].getPort() );
 
             Handler[] handlers = server.getHandlers();
             if ( handlers == null )
@@ -168,6 +183,9 @@ public class JettyXmlConfigurationTest
         if ( jettyXmlPath != null )
         {
             context.put( "jetty.xml", jettyXmlPath );
+            context.put( "default-jetty-port", defaultPort );
+            context.put( "test-connector-port", testConnectorPort );
+            context.put( "test-ajp-port", testAJPPort );
         }
 
         boolean hasPlexusHome = context.containsKey( "plexus.home" );

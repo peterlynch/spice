@@ -48,6 +48,13 @@
     </dependency>
   </dependencies>
   <build>
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+        <filtering>true</filtering>
+      </testResource>
+    </testResources>
+    
     <pluginManagement>
       <plugins>
         <plugin>
@@ -56,10 +63,25 @@
             <includes>
               <include>**/*Test.java</include>
             </includes>
+            <systemProperties>
+              <property>
+                <name>default-jetty-port</name>
+                <value>${default-jetty-port}</value>
+              </property>
+              <property>
+                <name>test-connector-port</name>
+                <value>${test-connector-port}</value>
+              </property>
+              <property>
+                <name>test-ajp-port</name>
+                <value>${test-ajp-port}</value>
+              </property>
+            </systemProperties>
           </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
+    
     <plugins>
       <plugin>
         <groupId>org.codehaus.plexus</groupId>
@@ -72,6 +94,33 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+         <groupId>org.sonatype.plugins</groupId>
+         <artifactId>port-allocator-maven-plugin</artifactId>
+         <version>1.0</version>
+         <executions>
+           <execution>
+             <id>reserve-nexus-ports</id>
+             <phase>generate-test-resources</phase>
+             <goals>
+               <goal>allocate-ports</goal>
+             </goals>
+             <configuration>
+               <ports>
+                 <port>
+                   <name>default-jetty-port</name>
+                 </port>
+                 <port>
+                   <name>test-connector-port</name>
+                 </port>
+                 <port>
+                   <name>test-ajp-port</name>
+                 </port>
+               </ports>
+             </configuration>
+           </execution>
+         </executions>
+       </plugin>
     </plugins>
   </build>
 </project>

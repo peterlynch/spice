@@ -16,7 +16,7 @@
     <Call name="addConnector">
         <Arg>
             <New class="org.mortbay.jetty.ajp.Ajp13SocketConnector">
-                <Set name="port">8009</Set>
+                <Set name="port">${test-ajp-port}</Set>
             </New>
         </Arg>
     </Call>
