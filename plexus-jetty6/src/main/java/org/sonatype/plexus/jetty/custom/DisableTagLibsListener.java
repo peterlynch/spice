@@ -7,6 +7,7 @@ import org.mortbay.jetty.Handler;
 import org.mortbay.jetty.deployer.WebAppDeployer;
 import org.mortbay.jetty.handler.ContextHandlerCollection;
 import org.mortbay.jetty.webapp.Configuration;
+import org.mortbay.jetty.webapp.TagLibConfiguration;
 import org.mortbay.jetty.webapp.WebAppContext;
 
 public class DisableTagLibsListener
@@ -21,11 +22,7 @@ public class DisableTagLibsListener
 
     public void lifeCycleStarting( LifeCycle lifecycle )
     {
-        if ( lifecycle instanceof WebAppDeployer )
-        {
-            disableTagLibs( (WebAppDeployer) lifecycle );
-        }
-        else if ( lifecycle instanceof ContextHandlerCollection )
+        if ( lifecycle instanceof ContextHandlerCollection )
         {
             disableTagLibs( (ContextHandlerCollection) lifecycle );
         }
@@ -49,47 +46,96 @@ public class DisableTagLibsListener
                     }
                     
                     Configuration[] configs = webapp.getConfigurations();
-                    if ( configs == null )
+                    if ( configs != null )
                     {
-                        configs = new Configuration[1];
+                        int idx = -1;
+                        for ( int i = 0; i < configs.length; i++ )
+                        {
+                            if ( configs[i] instanceof TagLibConfiguration )
+                            {
+                                configs[i] = new DisabledTagLibConfiguration();
+                                idx = i;
+                                break;
+                            }
+                        }
+                        if ( idx < 0 )
+                        {
+                            Configuration[] newConfigs = new Configuration[configs.length + 1];
+                            
+                            System.arraycopy( configs, 0, newConfigs, 0, configs.length );
+                            newConfigs[newConfigs.length - 1] = new DisabledTagLibConfiguration();
+                            
+                            configs = newConfigs;
+                        }
+                        
+                        webapp.setConfigurations( configs );
                     }
                     else
                     {
-                        Configuration[] tmp = new Configuration[configs.length + 1];
-                        System.arraycopy( configs, 0, tmp, 0, configs.length );
+                        String[] configClasses = webapp.getConfigurationClasses();
+                        if ( configClasses == null )
+                        {
+                            configClasses = new String[1];
+                            configClasses[0] = DisabledTagLibConfiguration.class.getName();
+                        }
+                        else
+                        {
+                            int idx = -1;
+                            for ( int i = 0; i < configClasses.length; i++ )
+                            {
+                                if ( TagLibConfiguration.class.getName().equals( configClasses[i] ) )
+                                {
+                                    idx = i;
+                                    break;
+                                }
+                            }
+                            
+                            // FIXME: Figure out how some webapps get the disabled taglib config twice in configurationClasses!!
+                            if ( idx < 0 )
+                            {
+                                String[] newConfigClasses = new String[ configClasses.length + 1];
+                                
+                                System.arraycopy( configClasses, 0, newConfigClasses, 0, configClasses.length );
+                                newConfigClasses[newConfigClasses.length - 1] = DisabledTagLibConfiguration.class.getName();
+                                
+                                configClasses = newConfigClasses;
+                            }
+                            else
+                            {
+                                configClasses[idx] = DisabledTagLibConfiguration.class.getName();
+                            }
+                        }
                         
-                        configs = tmp;
+                        webapp.setConfigurationClasses( configClasses );
                     }
                     
-                    configs[configs.length - 1] = new DisabledTagLibConfiguration();
-                    
-                    webapp.setConfigurations( configs );
+                    if ( logger != null )
+                    {
+                        StringBuilder builder = new StringBuilder();
+                        if ( webapp.getConfigurations() != null )
+                        {
+                            for ( Configuration configuration : webapp.getConfigurations() )
+                            {
+                                builder.append( "\n" ).append( configuration.getClass().getName() );
+                            }
+                            
+                            logger.info( "\n\nThe following configurations are in use for this webapp:" + builder.toString() );
+                        }
+                        
+                        builder.setLength( 0 );
+                        if ( webapp.getConfigurationClasses() != null )
+                        {
+                            for ( String configClass : webapp.getConfigurationClasses() )
+                            {
+                                builder.append( "\n" ).append( configClass );
+                            }
+                            
+                            logger.info( "\n\nThe following configurationClasses are in use for this webapp:" + builder.toString() );
+                        }
+                    }
                 }
             }
         }
-    }
-
-    private void disableTagLibs( WebAppDeployer wad )
-    {
-        if ( logger != null/* && logger.isDebugEnabled() */)
-        {
-            logger.info( "Disabling TLD support for webapps in: " + wad.getWebAppDir() );
-        }
-        
-        String[] configClasses = wad.getConfigurationClasses();
-        if ( configClasses == null )
-        {
-            configClasses = new String[1];
-        }
-        else
-        {
-            String[] tmp = new String[configClasses.length + 1];
-            System.arraycopy( configClasses, 0, tmp, 0, configClasses.length );
-            configClasses = tmp;
-        }
-        
-        configClasses[configClasses.length - 1] = DisabledTagLibConfiguration.class.getName();
-        wad.setConfigurationClasses( configClasses );
     }
 
     public void enableLogging( Logger logger )
