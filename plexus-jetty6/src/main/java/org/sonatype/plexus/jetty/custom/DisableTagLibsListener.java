@@ -1,10 +1,12 @@
 package org.sonatype.plexus.jetty.custom;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.codehaus.plexus.logging.LogEnabled;
 import org.codehaus.plexus.logging.Logger;
 import org.mortbay.component.LifeCycle;
 import org.mortbay.jetty.Handler;
-import org.mortbay.jetty.deployer.WebAppDeployer;
 import org.mortbay.jetty.handler.ContextHandlerCollection;
 import org.mortbay.jetty.webapp.Configuration;
 import org.mortbay.jetty.webapp.TagLibConfiguration;
@@ -48,27 +50,32 @@ public class DisableTagLibsListener
                     Configuration[] configs = webapp.getConfigurations();
                     if ( configs != null )
                     {
-                        int idx = -1;
+                        List<Configuration> toSet = new ArrayList<Configuration>();
+                        
                         for ( int i = 0; i < configs.length; i++ )
                         {
-                            if ( configs[i] instanceof TagLibConfiguration )
+                            if ( !( configs[i] instanceof TagLibConfiguration ) )
                             {
-                                configs[i] = new DisabledTagLibConfiguration();
-                                idx = i;
+                                toSet.add( configs[i] );
+                            }
+                        }
+                        
+                        boolean hasDisabledTaglibs = false;
+                        for ( Configuration configuration : toSet )
+                        {
+                            if ( configuration instanceof DisabledTagLibConfiguration )
+                            {
+                                hasDisabledTaglibs = true;
                                 break;
                             }
                         }
-                        if ( idx < 0 )
+                        
+                        if ( !hasDisabledTaglibs )
                         {
-                            Configuration[] newConfigs = new Configuration[configs.length + 1];
-                            
-                            System.arraycopy( configs, 0, newConfigs, 0, configs.length );
-                            newConfigs[newConfigs.length - 1] = new DisabledTagLibConfiguration();
-                            
-                            configs = newConfigs;
+                            toSet.add( new DisabledTagLibConfiguration() );
                         }
                         
-                        webapp.setConfigurations( configs );
+                        webapp.setConfigurations( toSet.toArray( configs ) );
                     }
                     else
                     {
@@ -80,30 +87,20 @@ public class DisableTagLibsListener
                         }
                         else
                         {
-                            int idx = -1;
+                            List<String> toSet = new ArrayList<String>();
                             for ( int i = 0; i < configClasses.length; i++ )
                             {
-                                if ( TagLibConfiguration.class.getName().equals( configClasses[i] ) )
-                                {
-                                    idx = i;
-                                    break;
-                                }
+                                toSet.add( configClasses[i] );
                             }
                             
-                            // FIXME: Figure out how some webapps get the disabled taglib config twice in configurationClasses!!
-                            if ( idx < 0 )
+                            toSet.remove( TagLibConfiguration.class.getName() );
+                            
+                            if ( !toSet.contains( DisabledTagLibConfiguration.class.getName() ) )
                             {
-                                String[] newConfigClasses = new String[ configClasses.length + 1];
-                                
-                                System.arraycopy( configClasses, 0, newConfigClasses, 0, configClasses.length );
-                                newConfigClasses[newConfigClasses.length - 1] = DisabledTagLibConfiguration.class.getName();
-                                
-                                configClasses = newConfigClasses;
+                                toSet.add( DisabledTagLibConfiguration.class.getName() );
                             }
-                            else
-                            {
-                                configClasses[idx] = DisabledTagLibConfiguration.class.getName();
-                            }
+                            
+                            configClasses = toSet.toArray( configClasses );
                         }
                         
                         webapp.setConfigurationClasses( configClasses );
