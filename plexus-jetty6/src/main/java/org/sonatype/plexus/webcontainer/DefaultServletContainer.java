@@ -21,12 +21,14 @@ import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.context.ContextException;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
+import org.codehaus.plexus.logging.LogEnabled;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StartingException;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StoppingException;
+import org.mortbay.component.LifeCycle.Listener;
 import org.mortbay.jetty.Connector;
 import org.mortbay.jetty.Handler;
 import org.mortbay.jetty.Server;
@@ -60,6 +62,9 @@ public class DefaultServletContainer
     
     /** @plexus.configuration */
     private String jettyXml;
+    
+    /** @plexus.configuration */
+    private List<LifecycleListener> lifecycleListeners;
 
     /** @plexus.configuration */
     private List<org.sonatype.plexus.webcontainer.Connector> connectors;
@@ -247,6 +252,30 @@ public class DefaultServletContainer
             catch ( Exception e )
             {
                 throw new InitializationException( "Could not initialize ServletContainer!", e );
+            }
+        }
+        
+        if ( lifecycleListeners != null && !lifecycleListeners.isEmpty() )
+        {
+            for ( LifecycleListener listenerInfo : lifecycleListeners )
+            {
+                if ( listenerInfo != null )
+                {
+                    try
+                    {
+                        Listener listener = listenerInfo.getListener( context );
+                        if ( listener instanceof LogEnabled )
+                        {
+                            ( (LogEnabled) listener ).enableLogging( getLogger() );
+                        }
+                        
+                        getServer().addLifeCycleListener( listener );
+                    }
+                    catch ( Exception e )
+                    {
+                        throw new InitializationException( "Could not initialize ServletContainer!", e );
+                    }
+                }
             }
         }
     }

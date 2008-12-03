@@ -16,17 +16,20 @@
 package org.sonatype.plexus.jetty;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.context.ContextException;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
+import org.codehaus.plexus.logging.LogEnabled;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StartingException;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StoppingException;
+import org.mortbay.component.LifeCycle.Listener;
 import org.mortbay.jetty.Connector;
 import org.mortbay.jetty.Handler;
 import org.mortbay.jetty.Server;
@@ -59,6 +62,9 @@ public class DefaultServletContainer
     
     /** @plexus.configuration */
     private String jettyXml;
+    
+    /** @plexus.configuration */
+    private List<LifecycleListenerInfo> lifecycleListenerInfos;
 
     /** @plexus.configuration */
     private List<ConnectorInfo> connectorInfos;
@@ -172,6 +178,34 @@ public class DefaultServletContainer
                     getServer().addConnector( conn );
                 }
 
+                // customizations, such as disabling TLD scanning.
+                List<Listener> listeners = new ArrayList<Listener>(); 
+                
+                if ( lifecycleListenerInfos != null && !lifecycleListenerInfos.isEmpty() )
+                {
+                    for ( LifecycleListenerInfo listenerInfo : lifecycleListenerInfos )
+                    {
+                        if ( listenerInfo != null )
+                        {
+                            getLogger().info( "Adding LifeCycleListener: " + listenerInfo.getClazz() );
+                            try
+                            {
+                                Listener listener = listenerInfo.getListener( context );
+                                if ( listener instanceof LogEnabled )
+                                {
+                                    ( (LogEnabled) listener ).enableLogging( getLogger() );
+                                }
+                                
+                                listeners.add( listener );
+                            }
+                            catch ( Exception e )
+                            {
+                                throw new InitializationException( "Could not initialize ServletContainer!", e );
+                            }
+                        }
+                    }
+                }
+                
                 // gathering stuff
 
                 Handler handler;
@@ -181,6 +215,16 @@ public class DefaultServletContainer
                 if ( ( webappInfos != null && webappInfos.size() > 0 ) || ( webapps != null && webapps.isDirectory() ) )
                 {
                     ContextHandlerCollection ctxHandler = new ContextHandlerCollection();
+                    if ( !listeners.isEmpty() )
+                    {
+                        for ( Listener listener : listeners )
+                        {
+                            if ( listener != null )
+                            {
+                                ctxHandler.addLifeCycleListener( listener );
+                            }
+                        }
+                    }
                     
                     if ( webappInfos != null && webappInfos.size() > 0 )
                     {
@@ -198,6 +242,17 @@ public class DefaultServletContainer
                     {
                         WebAppDeployer webAppDeployer = new WebAppDeployer();
 
+                        if ( !listeners.isEmpty() )
+                        {
+                            for ( Listener listener : listeners )
+                            {
+                                if ( listener != null )
+                                {
+                                    webAppDeployer.addLifeCycleListener( listener );
+                                }
+                            }
+                        }
+                        
                         webAppDeployer.setContexts( ctxHandler );
 
                         webAppDeployer.setExtract( true );
@@ -245,6 +300,7 @@ public class DefaultServletContainer
                 throw new InitializationException( "Could not initialize ServletContainer!", e );
             }
         }
+        
     }
 
     // ===

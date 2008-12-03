@@ -1,0 +1,45 @@
+<plexus>
+    <components>
+        <component>
+            <role>org.sonatype.plexus.webcontainer.ServletContainer
+            </role>
+            <role-hint>default</role-hint>
+            <implementation>
+                org.sonatype.plexus.webcontainer.DefaultServletContainer
+            </implementation>
+            <configuration>
+				<!-- Used if no connectors given -->
+                <defaultHost>localhost</defaultHost>
+				<!-- Used if no connectors given -->
+                <defaultPort>8088</defaultPort>
+                <webapps>
+                    <webapp>
+                        <warPath>${basedir}/src/test/webapps
+                        </warPath>
+                        <contextPath>/webapp0</contextPath>
+                    </webapp>
+                    <webapp>
+                        <warPath>${basedir}/src/test/webapps/monkey.war
+                        </warPath>
+                        <webappDir>${basedir}/target/monkey
+                        </webappDir>
+                        <contextPath>/monkey</contextPath>
+                    </webapp>
+                </webapps>
+                <handlers>
+                    <handler>
+                        <clazz>org.mortbay.jetty.handler.DefaultHandler
+                        </clazz>
+                    </handler>
+                </handlers>
+                <lifecycleListeners>
+                    <lifecycleListener>
+                        <clazz>
+                            org.sonatype.plexus.jetty.custom.DisableTagLibsListener
+                        </clazz>
+                    </lifecycleListener>
+                </lifecycleListeners>
+            </configuration>
+        </component>
+    </components>
+</plexus>
