@@ -12,6 +12,7 @@ import org.apache.maven.mercury.artifact.Artifact;
 import org.apache.maven.mercury.artifact.ArtifactBasicMetadata;
 import org.apache.maven.mercury.artifact.ArtifactMetadata;
 import org.apache.maven.mercury.artifact.ArtifactScopeEnum;
+import org.apache.maven.mercury.builder.api.DependencyProcessor;
 import org.apache.maven.mercury.plexus.PlexusMercury;
 import org.apache.maven.mercury.repository.api.Repository;
 import org.apache.maven.mercury.repository.api.RepositoryException;
@@ -97,6 +98,9 @@ public class DefaultPlexusPluginManager
     @Requirement
     private PlexusContainer container;
 
+    @Requirement
+    private DependencyProcessor dependencyProcessor;
+
     public PluginResolutionResult resolve( PluginResolutionRequest request )
         throws PluginResolutionException
     {
@@ -111,7 +115,9 @@ public class DefaultPlexusPluginManager
             {
                 repository.mkdirs();
             }
-            LocalRepositoryM2 localRepository = new LocalRepositoryM2( "local", repository );
+            // Oleg 200.12.04: all IDs need to be unique as they are used by the cache to identify metadata
+            // it's not that critical for local repo, but better safe'n sorry
+            LocalRepositoryM2 localRepository = new LocalRepositoryM2( "local-"+repository.getName(), repository, dependencyProcessor );
             repositories.add( localRepository );
         }
 
@@ -131,10 +137,11 @@ public class DefaultPlexusPluginManager
             }
 
             //!! Why do repositories need IDs. We probably want to avoid this.
+            // Oleg 200.12.04: all IDs need to be unique as they are used by the cache to identify metadata
             Server repository = new Server( "id", url );
 
             // We really don't want to hardcode the repository type
-            repositories.add( new RemoteRepositoryM2( repository ) );
+            repositories.add( new RemoteRepositoryM2( repository, dependencyProcessor ) );
         }
 
         try
@@ -194,7 +201,7 @@ public class DefaultPlexusPluginManager
     {
         try
         {
-            List<ComponentDescriptor<?>> components = container.discoverComponents( realm, false );
+            List<ComponentDescriptor<?>> components = container.discoverComponents( realm );
 
             /*
             for ( Iterator<ComponentDescriptor> i = components.iterator(); i.hasNext(); )
