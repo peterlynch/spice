@@ -9,8 +9,6 @@ import java.util.Properties;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
-import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
-import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.CommandLineException;
@@ -39,7 +37,7 @@ public abstract class AbstractForkedAppBooter
     extends AbstractLogEnabled
     implements ForkedAppBooter
 {
-    
+
 
     /**
      * If true, do NOT wait for CTL-C to terminate the application, just start
@@ -114,7 +112,7 @@ public abstract class AbstractForkedAppBooter
 
     /** @plexus.configuration default-value="${basedir}/target/appbooter.tmp"*/
     private File tempDir;
-    
+
     /**
      * Number of milliseconds to wait after the application starts.
      * @plexus.configuration default-value="5000"
@@ -141,19 +139,19 @@ public abstract class AbstractForkedAppBooter
 
     /**
      * Returns the location of the plexus platform jar, i.e. plexus-platform-base.jar
-     * 
-     * @return 
+     *
+     * @return
      * @throws AppBooterServiceException
      */
     public abstract File getPlatformFile() throws AppBooterServiceException;
 
     /**
      * Returns the Classworlds configuration for the process to be started.
-     * 
+     *
      * @return
      */
     public abstract ClassworldsRealmConfiguration getClassworldsRealmConfig();
-    
+
 
     @SuppressWarnings( "unchecked" )
     public void start() throws AppBooterServiceException
@@ -187,15 +185,16 @@ public abstract class AbstractForkedAppBooter
 
         if ( debug )
         {
-            getLogger().info( "\n\n\nWaiting for you to attach your debugger. Press -ENTER- when attached." );
-            try
-            {
-                System.in.read();
-            }
-            catch ( IOException e )
-            {
-                getLogger().info( "Failed to read from System.in. Proceeding anyway..." );
-            }
+            //this is not working at windows
+//            getLogger().info( "\n\n\nWaiting for you to attach your debugger. Press -ENTER- when attached." );
+//            try
+//            {
+//                System.in.read();
+//            }
+//            catch ( IOException e )
+//            {
+//                getLogger().info( "Failed to read from System.in. Proceeding anyway..." );
+//            }
         }
         else
         {
@@ -277,7 +276,7 @@ public abstract class AbstractForkedAppBooter
            .setLine( "-Dclassworlds.conf=\'" + classworldsConf.getAbsolutePath() + "\'" );
         cli.createArg().setLine( "-jar" );
         cli.createArg().setLine( "\'" + platformFile.getAbsolutePath() + "\'" );
-        
+
         // add the control port if it was defined
         if( controlPort > -1)
         {
@@ -288,10 +287,10 @@ public abstract class AbstractForkedAppBooter
         {
             getLogger().info( "Executing:\n\n" + StringUtils.join( cli.getCommandline(), " " ) );
         }
-       
+
         return cli;
     }
-    
+
     private File writeConfig( ClassworldsAppConfiguration config )
         throws AppBooterServiceException
     {
@@ -300,9 +299,9 @@ public abstract class AbstractForkedAppBooter
         try
         {
             ClassworldsConfWriter writer = new ClassworldsConfWriter();
-            
+
             Properties velocityProperties = writer.getDefaultVelocityProperties();
-            
+
             VelocityLogChute.setPlexusLogger( getLogger() );
             velocityProperties.setProperty( "runtime.log.logsystem.class", VelocityLogChute.class.getName() );
 
@@ -327,15 +326,15 @@ public abstract class AbstractForkedAppBooter
     {
         return debug || getLogger().isDebugEnabled();
     }
-    
-    
-        
+
+
+
 
     private ClassworldsAppConfiguration buildConfig()
         throws AppBooterServiceException
     {
         ClassworldsRealmConfiguration rootRealmConfig = this.getClassworldsRealmConfig();
-        
+
         ClassworldsAppConfiguration config = new ClassworldsAppConfiguration();
 
         config.setMainClass( launcherClass );
@@ -353,7 +352,7 @@ public abstract class AbstractForkedAppBooter
         // allow the override of the basedir...
         // NOTE, this MUST be after the putAll, because this value gets lost. (its not suppose to...)
         sysProps.put( "basedir", basedir.getAbsolutePath() );
-        
+
         sysProps.put( PlexusContainerHost.CONFIGURATION_FILE_PROPERTY,
                       configuration.getAbsolutePath() );
         sysProps.put( PlexusContainerHost.ENABLE_CONTROL_SOCKET, "true" );
@@ -369,7 +368,7 @@ public abstract class AbstractForkedAppBooter
         return config;
     }
 
-    
+
     private void stopStreamPumps()
     {
         if ( outPumper != null )
@@ -434,8 +433,8 @@ public abstract class AbstractForkedAppBooter
                                               + e.getMessage(), e );
         }
     }
-   
-    
+
+
     /* (non-Javadoc)
      * @see org.sonatype.appbooter.ForkedAppBooter#stop()
      */
@@ -468,7 +467,7 @@ public abstract class AbstractForkedAppBooter
             }
         }
     }
-    
+
 
     public boolean isShutdown()
     {
@@ -572,5 +571,5 @@ public abstract class AbstractForkedAppBooter
     {
         this.controlClient = controlClient;
     }
-    
+
 }
