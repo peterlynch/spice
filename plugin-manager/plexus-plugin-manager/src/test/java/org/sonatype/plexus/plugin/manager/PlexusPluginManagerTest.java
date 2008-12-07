@@ -1,21 +1,11 @@
 package org.sonatype.plexus.plugin.manager;
 
 import java.io.File;
-import java.io.Reader;
-import java.net.URLClassLoader;
 import java.util.List;
 
-import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.PlexusTestCase;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
-import org.codehaus.plexus.component.discovery.AbstractComponentDiscoverer;
 import org.codehaus.plexus.component.repository.ComponentDescriptor;
-import org.codehaus.plexus.component.repository.ComponentSetDescriptor;
-import org.codehaus.plexus.configuration.PlexusConfiguration;
-import org.codehaus.plexus.configuration.PlexusConfigurationException;
-import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
-import org.sonatype.plexus.plugin.manager.maven.metadata.io.PluginDescriptorBuilder;
-import org.sonatype.plexus.plugin.manager.maven.model.Mojo;
 
 // Can i give this plugin manager magical OSGi adaptive powers. I think so. Can I get this stuff
 // registered
@@ -80,19 +70,12 @@ public class PlexusPluginManagerTest
         
         // The base plugin interface needs to be loaded in a base classloader before the children
         // can be built on top of it.
-                
+        
+        /*
         Object component = pm.findPlugin( Mojo.class, hint );
         ClassLoader cl = Mojo.class.getClassLoader();
         boolean a = cl instanceof URLClassLoader;
         URLClassLoader base = (URLClassLoader)cl;
-
-        /*
-        for ( int i = 0; i < base.getURLs().length; i++ )
-        {
-            URL url = base.getURLs()[i];
-            System.out.println( url );            
-        }
-        */
         
         System.out.println( Mojo.class.getClassLoader() + "URLClassLoader " + a );
         System.out.println( component.getClass().getClassLoader() );
@@ -104,36 +87,11 @@ public class PlexusPluginManagerTest
         x.setValue( "/tmp/foo" );
                 
         System.out.println( pc );
+        */
         
         // Now I need to configure this thing before I can run it. All the logic to produce a configuration
         // is currently in the plugin manager. I also need all the validation we had for the parameters.
-        
-        
+                
         //component.execute();        
-    }
-
-    @Override
-    protected void customizeContainerConfiguration( ContainerConfiguration containerConfiguration )
-    {
-        containerConfiguration.addComponentDiscoverer( new PluginDiscoverer() );
-    }
-
-    class PluginDiscoverer
-        extends AbstractComponentDiscoverer
-    {
-        private PluginDescriptorBuilder builder = new PluginDescriptorBuilder();
-
-        @Override
-        protected ComponentSetDescriptor createComponentDescriptors( Reader reader, String source )
-            throws PlexusConfigurationException
-        {
-            return builder.build( reader, source );
-        }
-
-        @Override
-        protected String getComponentDescriptorLocation()
-        {
-            return "META-INF/maven/plugin.xml";                                                                                                         
-        }
     }
 }

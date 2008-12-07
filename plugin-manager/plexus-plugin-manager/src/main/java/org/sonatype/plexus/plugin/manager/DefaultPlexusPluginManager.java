@@ -36,55 +36,6 @@ import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
 
-// 1 the metadata -> model plugin/mojo descriptor
-// 2 tools for doing the mapping
-// 3 the component model -> interfaces for the plugin
-
-/*
- * 
- * h2. Concerns for the plugin manager
- * 
- * h3. resolving the dependencies of a plugin - these could be resolved remotely at runtime or, -
- * they could be resolved from a local repository - i think we need a simple dependency model here
- * that is more mercury related and not Maven related i.e no POMs - workspace resolver - we need
- * tools to pre-populate this repository
- * 
- * h3. create an isolated classloader
- * 
- * h3. lookup the plugin with a configuration
- * 
- * h3. execute the plugin
- * 
- * h3. plugins may have to deal with particular actions when a plugin is - installed - loaded -
- * unloaded - update - uninstalled
- * 
- * h3. plugins should be able to have specific metadata for a plugin model and that be translated -
- * dependencies - resources - configuration - extension points of plugins
- * 
- * For a particular application plugin there will be a declarative descriptor for that plugin type.
- * 
- * - nexus - the plugin class - UI to contribute - what JS to hook into the UI - what resources to
- * load into the UI - having packed or unpacked plugins, and positioning resources if necessary -
- * maven can work out of the classloader, nexus plugins probably couldn't given the js and image
- * resources
- * 
- * We need to look at Maven, and Nexus as use cases and figure out what each of them needs to be
- * able to do
- * 
- * - now what is really the difference between this and loading a component in plexus - custom
- * classloading capability - remote resolution of dependencies - do we want a model for sharing
- * information among plugins, is this more like an extension point - do we need a sort of bus for
- * application data - do we need a dictionary for our applications like Apple does. We could easily
- * hook into this and this is the model we need to follow - how many of our REST services do not map
- * directory to a method in the application interface?
- * 
- * - research extension points versus plugins
- * 
- * from igor: two plugins A and B, both depend on the same library but use different versions, say
- * lib 1.0 and lib 2.0 when debugger hits a breakpoint inside a class from the library, IDE needs to
- * know which version of library the class comes from
- */
-
 @Component(role = PlexusPluginManager.class)
 public class DefaultPlexusPluginManager
     implements PlexusPluginManager
@@ -203,14 +154,6 @@ public class DefaultPlexusPluginManager
         {
             List<ComponentDescriptor<?>> components = container.discoverComponents( realm );
 
-            /*
-            for ( Iterator<ComponentDescriptor> i = components.iterator(); i.hasNext(); )
-            {
-                ComponentDescriptor cd = i.next();
-                System.out.println( cd.getRole() + " : " + cd.getRoleHint());
-            }
-            */
-
             return components;
         }
         catch ( PlexusConfigurationException e )
@@ -223,9 +166,9 @@ public class DefaultPlexusPluginManager
         }
     }
 
-    public ComponentDescriptor getComponentDescriptor( String role, String hint )
+    public ComponentDescriptor<?> getComponentDescriptor( String role, String hint )
     {
-        ComponentDescriptor cd = container.getComponentDescriptor( role, hint );       
+        ComponentDescriptor<?> cd = container.getComponentDescriptor( role, hint );       
         return cd;
     }
 
@@ -247,7 +190,7 @@ public class DefaultPlexusPluginManager
             {
                 continue;
             }
-                        
+
             ClassRealm realm = createClassRealm( "realm" );
 
             try

@@ -32,6 +32,12 @@ public class PluginResolutionRequest
         return artifactMetadata;
     }
 
+    public PluginResolutionRequest setPluginMetadata( PluginMetadata pm )
+    {
+        this.artifactMetadata = new ArtifactMetadata( pm.getGroupId() + ":" + pm.getArtifactId() + ":" + pm.getVersion() );
+        return this;
+    }
+    
     public PluginResolutionRequest setArtifactMetadata( String artifactMetadata )
     {
         this.artifactMetadata = new ArtifactMetadata( artifactMetadata );        
@@ -59,6 +65,12 @@ public class PluginResolutionRequest
     {
         remoteRepositories.add( remoteRepository );        
         return this;
+    }
+    
+    public PluginResolutionRequest setRemoteRepositories( List<String> remoteRepositories )    
+    {
+        this.remoteRepositories = remoteRepositories;
+        return this;        
     }
     
     public List<String> getRemoteRepositories()
