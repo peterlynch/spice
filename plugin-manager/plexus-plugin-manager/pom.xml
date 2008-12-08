@@ -11,26 +11,31 @@
   <version>1.0-SNAPSHOT</version>
   <name>project</name>
   <url>http://maven.apache.org</url>
+  <properties>
+    <plexusVersion>1.0-beta-3.0.1</plexusVersion>
+    <mercuryVersion>1.0.0-alpha-2-SNAPSHOT</mercuryVersion>
+    <mavenVersion>3.0-SNAPSHOT</mavenVersion>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-container-default</artifactId>
-      <version>1.0-beta-3.0.1</version>
+      <version>${plexusVersion}</version>
     </dependency>        
     <dependency>
       <groupId>org.apache.maven.mercury</groupId>
       <artifactId>mercury-plexus</artifactId>
-      <version>1.0.0-alpha-2</version>
+      <version>${mercuryVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-component-annotations</artifactId>
-      <version>1.0-beta-3.0.1</version>
+      <version>${plexusVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-mercury</artifactId>
-      <version>3.0-SNAPSHOT</version>
+      <version>${mavenVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -51,7 +56,7 @@
     <dependency>
     	<groupId>org.apache.maven</groupId>
     	<artifactId>maven-plugin-api</artifactId>
-    	<version>3.0-SNAPSHOT</version>
+    	<version>${mavenVersion}</version>
     </dependency>
   </dependencies>
   <build>
@@ -67,7 +72,7 @@
       <plugin>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-component-metadata</artifactId>
-        <version>1.0-beta-1.1</version>
+        <version>${plexusVersion}</version>
         <executions>
           <execution>
             <goals>

@@ -49,7 +49,7 @@ public class DefaultPlexusPluginManager
     @Requirement
     private PlexusContainer container;
 
-    @Requirement
+    @Requirement(hint = "maven")
     private DependencyProcessor dependencyProcessor;
 
     public PluginResolutionResult resolve( PluginResolutionRequest request )

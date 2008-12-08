@@ -30,6 +30,8 @@ public class PlexusPluginManagerTest
 
         realm.display();
 
+        /*
+          
         // The component discovery mechanism here needs to be specific to the type of
         // plugin we have here so let's start with the maven specific one here. Basically
         // We want to get plugin specific descriptors here.
@@ -53,6 +55,8 @@ public class PlexusPluginManagerTest
         assertEquals( role, cd.getRole() );
         assertEquals( hint, cd.getRoleHint() );
         assertEquals( "org.apache.maven.plugin.clean.CleanMojo", cd.getImplementation() );
+        
+        */
         
         // So now I can verify that the plugin I want has been discovered
         // But I should have metadata about the plugin that I want to run so let's pretend
