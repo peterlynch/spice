@@ -22,6 +22,13 @@
       <configuration>
         <property-file>${realm-locator-property-file}</property-file>
       </configuration>
+	  <requirements>
+        <requirement>
+          <role>org.codehaus.plexus.PlexusContainer</role>
+          <role-hint>default</role-hint>
+          <field-name>container</field-name>
+        </requirement>
+      </requirements>
     </component>
     <component>
       <role>org.sonatype.jsecurity.locators.RememberMeLocator</role>

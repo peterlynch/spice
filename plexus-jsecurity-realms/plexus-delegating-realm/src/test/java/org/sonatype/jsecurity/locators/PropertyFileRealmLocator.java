@@ -6,12 +6,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Configuration;
+import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
-import org.codehaus.plexus.personality.plexus.lifecycle.phase.ServiceLocator;
-import org.codehaus.plexus.personality.plexus.lifecycle.phase.Serviceable;
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.util.PropertyUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.jsecurity.realm.Realm;
@@ -19,7 +20,7 @@ import org.jsecurity.realm.Realm;
 @Component( role = RealmLocator.class )
 public class PropertyFileRealmLocator
     extends AbstractLogEnabled
-    implements RealmLocator, Serviceable
+    implements RealmLocator, Initializable
 {
     private ArrayList<Realm> locatedRealms = new ArrayList<Realm>();
 
@@ -29,8 +30,11 @@ public class PropertyFileRealmLocator
 
     @Configuration( value = "${realm-locator-property-file}" )
     private File propertyFile;
+    
+    @Requirement
+    private PlexusContainer container;
 
-    public void service( ServiceLocator locator )
+    public void initialize()
     {
         Properties properties = PropertyUtils.loadProperties( propertyFile );
 
@@ -59,7 +63,7 @@ public class PropertyFileRealmLocator
             {
                 try
                 {
-                    locatedRealms.add( (Realm) locator.lookup( Realm.class.getName(), realm.trim() ) );
+                    locatedRealms.add( (Realm) container.lookup( Realm.class.getName(), realm.trim() ) );
                 }
                 catch ( ComponentLookupException e )
                 {
