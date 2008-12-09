@@ -44,7 +44,7 @@
     	<groupId>org.mortbay.jetty</groupId>
     	<artifactId>jetty-rewrite-handler</artifactId>
     	<version>${jetty.version}</version>
-    	<scope>test</scope>
+    	<scope>provided</scope>
     </dependency>
   </dependencies>
   <build>
