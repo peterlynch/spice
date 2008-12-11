@@ -7,6 +7,18 @@ public class PlexusRole
     private String name;
     private String source;   
     
+    public PlexusRole()
+    {
+        
+    }
+    
+    public PlexusRole( String roleId, String name, String source )
+    {
+        this.roleId = roleId;
+        this.name = name;
+        this.source = source;
+    }
+
     public String getRoleId()
     {
         return roleId;

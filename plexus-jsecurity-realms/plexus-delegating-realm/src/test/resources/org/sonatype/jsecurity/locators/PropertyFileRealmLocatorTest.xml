@@ -1,4 +1,4 @@
-<component-set>
+<plexus>
   <components>
     <component>
       <role>org.jsecurity.realm.Realm</role>
@@ -22,7 +22,7 @@
       <configuration>
         <property-file>${realm-locator-property-file}</property-file>
       </configuration>
-	  <requirements>
+      <requirements>
         <requirement>
           <role>org.codehaus.plexus.PlexusContainer</role>
           <role-hint>default</role-hint>
@@ -36,5 +36,6 @@
       <description></description>
       <isolated-realm>false</isolated-realm>
     </component>
+    
   </components>
-</component-set>
+</plexus>

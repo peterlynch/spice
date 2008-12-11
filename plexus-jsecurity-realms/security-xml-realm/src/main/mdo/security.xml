@@ -1,5 +1,5 @@
-<model xsd.namespace="http://www.sonatype.com/xsd/security-configuration-2.0.0"
-    xsd.target-namespace="http://www.sonatype.com/xsd/security-configuration-2.0.0">
+<model xsd.namespace="http://www.sonatype.com/xsd/security-configuration-2.0.2"
+    xsd.target-namespace="http://www.sonatype.com/xsd/security-configuration-2.0.2">
 
     <id>security</id>
 
@@ -67,6 +67,21 @@
                     </association>
                     <required>false</required>
                 </field>
+                
+                <!--  ALSO NEW STUFF, TODO, upgrade -->
+                <field>
+                    <name>userRoleMappings</name>
+                    <version>2.0.2+</version>
+                    <description>
+                        List of User. 
+                    </description>
+                    <association>
+                        <type>CUserRoleMapping</type>
+                        <multiplicity>*</multiplicity>
+                    </association>
+                    <required>false</required>
+                </field>
+                
             </fields>
             <codeSegments>
                 <codeSegment>
@@ -79,6 +94,12 @@
                     <version>2.0.1</version>
                     <code><![CDATA[
     public static final String MODEL_VERSION = "2.0.1";
+]]></code>
+                </codeSegment>
+                <codeSegment>
+                    <version>2.0.2</version>
+                    <code><![CDATA[
+    public static final String MODEL_VERSION = "2.0.2";
 ]]></code>
                 </codeSegment>
             </codeSegments>
@@ -127,7 +148,7 @@
                 </field>
                 <field>
                     <name>roles</name>
-                    <version>2.0.0+</version>
+                    <version>2.0.0/2.0.1</version>
                     <description>
                         List of role ids that will define this user. 
                     </description>
@@ -282,6 +303,42 @@
                     <type>String</type>
                     <required>true</required>
                     <description>Value associated to the key</description>
+                </field>
+            </fields>
+        </class>
+        
+        
+        
+        <!-- MY NEW STUFF TODO: talk to max, about upgrade -->
+
+		<class>
+            <name>CUserRoleMapping</name>
+            <version>2.0.2+</version>
+            <description>Defines the mapping between users and roles, if LDAP groups are not used.</description>
+            <fields>
+                <field>
+                    <name>userId</name>
+                    <version>2.0.2+</version>
+                    <type>String</type>
+                    <required>true</required>
+                    <description>User ID.  The id of the user.</description>
+                </field>
+                <field>
+                    <name>source</name>
+                    <version>2.0.2+</version>
+                    <type>String</type>
+                    <required>false</required>
+                    <description>The source or realm id, of the user.  For example an CROWD realm might have a source id of CROWD.</description>
+                </field>
+                 <field>
+                    <name>roles</name>
+                    <version>2.0.2+</version>
+                    <association>
+                        <type>String</type>
+                        <multiplicity>*</multiplicity>
+                    </association>
+                    <required>true</required>
+                    <description>List of the users roles.</description>
                 </field>
             </fields>
         </class>

@@ -20,6 +20,7 @@ import org.sonatype.jsecurity.model.io.xpp3.SecurityConfigurationXpp3Reader;
 import org.sonatype.jsecurity.realms.tools.dao.SecurityPrivilege;
 import org.sonatype.jsecurity.realms.tools.dao.SecurityRole;
 import org.sonatype.jsecurity.realms.tools.dao.SecurityUser;
+import org.sonatype.jsecurity.realms.tools.dao.SecurityUserRoleMapping;
 import org.sonatype.jsecurity.realms.validator.ValidationContext;
 
 @Component( role = ConfigurationManager.class, hint = "resourceMerging" )
@@ -259,6 +260,64 @@ public class ResourceMergingConfigurationManager
         return manager.readUser( id );
     }
     
+    
+    
+    
+    public void createUserRoleMapping( SecurityUserRoleMapping userRoleMapping, String source, ValidationContext context )
+        throws InvalidConfigurationException,
+            NoSuchRoleMappingException
+    {
+        if( context == null)
+        {
+            context = this.initializeContext();
+        }
+        
+        this.manager.createUserRoleMapping( userRoleMapping, source, context );
+    }
+
+    public void createUserRoleMapping( SecurityUserRoleMapping userRoleMapping, String source )
+        throws InvalidConfigurationException,
+            NoSuchRoleMappingException
+    {
+        this.manager.createUserRoleMapping( userRoleMapping, source, this.initializeContext() );
+    }
+
+    public void deleteUserRoleMapping( String userId, String source )
+        throws NoSuchRoleMappingException
+    {
+        this.manager.deleteUserRoleMapping( userId, source );        
+    }
+
+    public List<SecurityUserRoleMapping> listUserRoleMappings()
+    {
+        return this.manager.listUserRoleMappings();
+    }
+
+    public SecurityUserRoleMapping readUserRoleMapping( String userId, String source )
+        throws NoSuchRoleMappingException
+    {
+        return this.manager.readUserRoleMapping( userId, source );
+    }
+
+    public void updateUserRoleMapping( SecurityUserRoleMapping userRoleMapping, String source, ValidationContext context )
+        throws InvalidConfigurationException,
+            NoSuchRoleMappingException
+    {
+        if( context == null)
+        {
+            context = this.initializeContext();
+        }
+        
+        this.manager.updateUserRoleMapping( userRoleMapping, source, context );
+    }
+
+    public void updateUserRoleMapping( SecurityUserRoleMapping userRoleMapping, String source )
+        throws InvalidConfigurationException,
+            NoSuchRoleMappingException
+    {
+       this.updateUserRoleMapping( userRoleMapping, source, this.initializeContext() );
+    }
+
     private Configuration initializeStaticConfiguration()
     {
         lock.lock();

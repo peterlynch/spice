@@ -28,13 +28,13 @@ public class ObjectCloner
         cloned.setStatus( user.getStatus() );
         cloned.setId( user.getId() );
      
-        if ( user.getRoles() != null )
-        {
-            for ( String roleId : ( List<String> ) user.getRoles() )
-            {
-                cloned.addRole( roleId );
-            }
-        }
+//        if ( user.getRoles() != null )
+//        {
+//            for ( String roleId : ( List<String> ) user.getRoles() )
+//            {
+//                cloned.addRole( roleId );
+//            }
+//        }
         
         return cloned;
     }

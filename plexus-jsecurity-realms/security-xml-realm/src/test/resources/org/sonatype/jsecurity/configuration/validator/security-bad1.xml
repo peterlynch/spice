@@ -4,7 +4,7 @@
 <!-- This config will cause 0 validation warnings -->
 
 <security>
-	<version>2.0.0</version>
+	<version>2.0.2</version>
 	<privileges>      
       <privilege>
         <id>1</id>
@@ -33,17 +33,18 @@
 	  </role>
 	</roles>
 	<users>		
-	    <!-- no id -->
+	
+		<!-- no id -->
 	    <!-- no name -->
 	    <!-- no email address -->
 	    <!-- invalid role id -->
 	    <!-- no password -->
 	    <!-- invalid status -->
-	    <user>     
-	      <roles>
-	        <role>id1</role>
-	      </roles>
-        </user>	
+		<user>      
+            <id></id>
+        </user>
+	
+
         <!-- invalid status -->
         <!-- no roles -->
         <user>      
@@ -73,4 +74,15 @@
             <status>active</status>
         </user>        
 	</users>
+	
+	<userRoleMappings>
+	  <userRoleMapping>
+	  
+	  <roles>
+	        <role>id1</role>
+	      </roles>
+	  
+	  </userRoleMapping>
+	</userRoleMappings>
+	
 </security>

@@ -1,12 +1,17 @@
 
 package org.sonatype.jsecurity.realms.tools;
 
+import java.util.Collections;
 import java.util.List;
 
+import org.sonatype.jsecurity.model.CUserRoleMapping;
 import org.sonatype.jsecurity.realms.tools.dao.SecurityPrivilege;
 import org.sonatype.jsecurity.realms.tools.dao.SecurityRole;
 import org.sonatype.jsecurity.realms.tools.dao.SecurityUser;
+import org.sonatype.jsecurity.realms.tools.dao.SecurityUserRoleMapping;
 import org.sonatype.jsecurity.realms.validator.ValidationContext;
+import org.sonatype.jsecurity.realms.validator.ValidationMessage;
+import org.sonatype.jsecurity.realms.validator.ValidationResponse;
 
 public interface ConfigurationManager
 {
@@ -159,6 +164,21 @@ public interface ConfigurationManager
     void updateRole( SecurityRole role, ValidationContext context )
         throws InvalidConfigurationException,
         NoSuchRoleException;
+    
+    
+    
+    void createUserRoleMapping( SecurityUserRoleMapping userRoleMapping, String source ) throws InvalidConfigurationException, NoSuchRoleMappingException;
+    void createUserRoleMapping( SecurityUserRoleMapping userRoleMapping, String source, ValidationContext context ) throws InvalidConfigurationException, NoSuchRoleMappingException;
+
+    void updateUserRoleMapping( SecurityUserRoleMapping userRoleMapping, String source ) throws InvalidConfigurationException, NoSuchRoleMappingException;
+    void updateUserRoleMapping( SecurityUserRoleMapping userRoleMapping, String source, ValidationContext context ) throws InvalidConfigurationException, NoSuchRoleMappingException;
+    
+    SecurityUserRoleMapping readUserRoleMapping( String userId, String source ) throws NoSuchRoleMappingException;
+    List<SecurityUserRoleMapping> listUserRoleMappings();
+    void deleteUserRoleMapping( String userId, String source ) throws NoSuchRoleMappingException;
+    
+    
+    
     
     /**
      * Update an existing privilege

@@ -1,91 +1,106 @@
 package org.sonatype.jsecurity.locators.users;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.codehaus.plexus.util.StringUtils;
 
 @Component( role = PlexusUserManager.class )
 public class DefaultPlexusUserManager
     implements PlexusUserManager
 {
-    public static final String SOURCE_ALL = "all";
-    
+
     @Requirement( role = PlexusUserLocator.class )
-    private List<PlexusUserLocator> locators;
-    
-    public List<PlexusUser> listUsers( String source )
+    private List<PlexusUserLocator> userlocators;
+
+    public Set<PlexusUser> listUsers( String source )
     {
-        ArrayList<PlexusUser> users = new ArrayList<PlexusUser>();
-        
-        for ( PlexusUserLocator locator : locators )
+        Set<PlexusUser> users = new TreeSet<PlexusUser>();
+
+        // FIXME add something that would make the primary user win over the other realms?
+
+        for ( PlexusUserLocator locator : userlocators )
         {
-            if ( SOURCE_ALL.equals( source )
-                || locator.getSource().equals( source ) )
+            if ( SOURCE_ALL.equals( source ) || locator.getSource().equals( source ) )
             {
                 users.addAll( locator.listUsers() );
             }
         }
-        
-        Collections.sort( users );
 
         return users;
     }
+
     
-    public List<String> listUserIds( String source )
+
+    public Set<PlexusUser> searchUserById( String source, String userId )
     {
-        ArrayList<String> userIds = new ArrayList<String>();
-        
-        for ( PlexusUserLocator locator : locators )
+        Set<PlexusUser> users = new TreeSet<PlexusUser>();
+
+        for ( PlexusUserLocator locator : userlocators )
         {
-            if ( SOURCE_ALL.equals( source )
-                || locator.getSource().equals( source ) )
+            if ( SOURCE_ALL.equals( source ) || locator.getSource().equals( source ) )
+            {
+                users.addAll( locator.searchUserById( userId ) );
+            }
+        }
+
+        return users;
+    }
+
+    public Set<String> listUserIds( String source )
+    {
+        Set<String> userIds = new TreeSet<String>();
+
+        for ( PlexusUserLocator locator : userlocators )
+        {
+            if ( SOURCE_ALL.equals( source ) || locator.getSource().equals( source ) )
             {
                 userIds.addAll( locator.listUserIds() );
             }
         }
-        
-        Collections.sort( userIds );
 
         return userIds;
     }
-    
+
     public PlexusUser getUser( String userId )
     {
         PlexusUserLocator primary = getPrimaryLocator();
-        
+        PlexusUser user = null;
         if ( primary != null )
         {
-            return primary.getUser( userId );
+            user =  primary.getUser( userId );
         }
-        else
-        {            
-            for ( PlexusUserLocator locator : locators )
+        
+        if( user == null)
+        {
+            for ( PlexusUserLocator locator : userlocators )
             {
                 PlexusUser found = locator.getUser( userId );
-                
+
                 if ( found != null )
                 {
-                    return found;
+                    break;
                 }
             }
         }
 
-        return null;
+        return user;
     }
-    
+
     private PlexusUserLocator getPrimaryLocator()
     {
-        for ( PlexusUserLocator locator : locators )
+        for ( PlexusUserLocator locator : userlocators )
         {
             if ( locator.isPrimary() )
             {
                 return locator;
             }
-        } 
-        
+        }
+
         return null;
     }
+
 }

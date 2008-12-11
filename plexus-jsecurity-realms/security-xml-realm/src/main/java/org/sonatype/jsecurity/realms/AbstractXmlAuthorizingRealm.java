@@ -20,9 +20,12 @@ import org.jsecurity.realm.Realm;
 import org.jsecurity.subject.PrincipalCollection;
 import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUser;
+import org.sonatype.jsecurity.model.CUserRoleMapping;
 import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
 import org.sonatype.jsecurity.realms.tools.NoSuchRoleException;
+import org.sonatype.jsecurity.realms.tools.NoSuchRoleMappingException;
 import org.sonatype.jsecurity.realms.tools.NoSuchUserException;
+import org.sonatype.jsecurity.realms.tools.dao.SecurityUser;
 
 public abstract class AbstractXmlAuthorizingRealm
     extends AuthorizingRealm
@@ -66,7 +69,7 @@ public abstract class AbstractXmlAuthorizingRealm
 
         String username = (String) principals.iterator().next();
 
-        CUser user;
+        SecurityUser user;
         try
         {
             user = configuration.readUser( username );
@@ -77,7 +80,8 @@ public abstract class AbstractXmlAuthorizingRealm
         }
 
         LinkedList<String> rolesToProcess = new LinkedList<String>();
-        List<String> roles = user.getRoles();
+        Set<String> roles = user.getRoles();
+        
         if ( roles != null )
         {
             rolesToProcess.addAll( roles );

@@ -1,6 +1,7 @@
 package org.sonatype.jsecurity.locators.users;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * The PlexusUserManager is responsible for retrieving user data from different
@@ -8,18 +9,26 @@ import java.util.List;
  */
 public interface PlexusUserManager
 {
+    public static final String SOURCE_ALL = "all";
+    
     /**
      * Retrieve all PlexusUser objects defined by the PlexusUserLocator components
      * @return
      */
-    List<PlexusUser> listUsers( String source );
+    Set<PlexusUser> listUsers( String source );
+    
+    /**
+     * Searches for PlexusUser objects by userId.
+     * @return
+     */
+    Set<PlexusUser> searchUserById(String source, String userId );
     
     /**
      * Retrieve all userids defined by the PlexusUserLocator components (if managing full object
      * list is to heavy handed)
      * @return
      */
-    List<String> listUserIds( String source );
+    Set<String> listUserIds( String source );
     
     /**
      * Get a PlexusUser object by id from a PlexusUserLocator component
@@ -27,4 +36,5 @@ public interface PlexusUserManager
      * @return
      */
     PlexusUser getUser( String userId );
+    
 }

@@ -18,7 +18,9 @@ public class ValidationContext
     private Map<String, List<String>> roleContainmentMap;
     
     private Map<String, String> existingRoleNameMap;
-
+    
+    private Map<String, List<String>> existingUserRoleMap;
+   
     public void addExistingPrivilegeIds()
     {
         if ( this.existingPrivilegeIds == null )
@@ -42,6 +44,11 @@ public class ValidationContext
         if ( this.existingRoleNameMap == null)
         {
             this.existingRoleNameMap = new HashMap<String, String>();
+        }
+        
+        if ( this.existingUserRoleMap == null)
+        {
+            this.existingUserRoleMap = new HashMap<String, List<String>>();
         }
     }
 
@@ -86,6 +93,11 @@ public class ValidationContext
     public Map<String, String> getExistingRoleNameMap()
     {
         return existingRoleNameMap;
+    }
+
+    public Map<String, List<String>> getExistingUserRoleMap()
+    {
+        return existingUserRoleMap;
     }
     
     

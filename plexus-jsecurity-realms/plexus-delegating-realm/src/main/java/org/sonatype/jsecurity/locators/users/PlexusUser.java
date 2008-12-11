@@ -1,7 +1,9 @@
 package org.sonatype.jsecurity.locators.users;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class PlexusUser
     implements Comparable<PlexusUser>
@@ -10,7 +12,7 @@ public class PlexusUser
     private String name;
     private String emailAddress;
     private String source;
-    private List<PlexusRole> roles = new ArrayList<PlexusRole>();
+    private Set<PlexusRole> roles = new HashSet<PlexusRole>();
     
     public String getUserId()
     {
@@ -44,11 +46,11 @@ public class PlexusUser
     {
         this.source = source;
     }
-    public List<PlexusRole> getRoles()
+    public Set<PlexusRole> getRoles()
     {
         return roles;
     }
-    public void setRoles( List<PlexusRole> roles )
+    public void setRoles( Set<PlexusRole> roles )
     {
         this.roles = roles;
     }

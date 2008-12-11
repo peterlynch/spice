@@ -1,8 +1,10 @@
 package org.sonatype.jsecurity.realms.validator;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
@@ -12,6 +14,7 @@ import org.sonatype.jsecurity.model.CPrivilege;
 import org.sonatype.jsecurity.model.CProperty;
 import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUser;
+import org.sonatype.jsecurity.model.CUserRoleMapping;
 import org.sonatype.jsecurity.model.Configuration;
 
 @Component( role = ConfigurationValidator.class )
@@ -58,7 +61,16 @@ public class DefaultConfigurationValidator
         {
             for ( CUser user : users )
             {
-                response.append( validateUser( context, user, false ) );
+                Set<String> roleIds = new HashSet<String>();
+                for ( CUserRoleMapping userRoleMapping : (List<CUserRoleMapping>)model.getUserRoleMappings() )
+                {
+                    if ( userRoleMapping.getUserId() != null && userRoleMapping.getUserId().equals( user.getId() ) &&( userRoleMapping.getSource() == null) )
+                    {
+                        roleIds.addAll( userRoleMapping.getRoles() );
+                    }
+                }
+                
+                response.append( validateUser( context, user, roleIds, false ) );
             }
         }
 
@@ -499,7 +511,7 @@ public class DefaultConfigurationValidator
         return response;
     }
 
-    public ValidationResponse validateUser( ValidationContext ctx, CUser user, boolean update )
+    public ValidationResponse validateUser( ValidationContext ctx, CUser user, Set<String> roles, boolean update )
     {
         ValidationResponse response = new ValidationResponse();
 
@@ -561,28 +573,30 @@ public class DefaultConfigurationValidator
             response.addValidationError( message );
         }
 
-        if ( context.getExistingRoleIds() != null )
+        if ( context.getExistingRoleIds() != null && context.getExistingUserRoleMap() != null )
         {
-            List<String> roleIds = user.getRoles();
 
-            for ( String roleId : roleIds )
+            if( roles == null || roles.isEmpty() )
             {
-                if ( !context.getExistingRoleIds().contains( roleId ) )
+                ValidationMessage message = new ValidationMessage( "roles", "User ID '" + user.getId()
+                    + "' has no roles assigned.", "User requires one or more roles." );
+                response.addValidationError( message );
+            }
+            else
+            {
+                for ( String roleId : roles )
                 {
-                    ValidationMessage message = new ValidationMessage( "roles", "User ID '" + user.getId()
-                        + "' Invalid role id '" + roleId + "' found.", "User cannot contain invalid role ID '" + roleId
-                        + "'." );
-                    response.addValidationError( message );
+                    if ( !context.getExistingRoleIds().contains( roleId ) )
+                    {
+                        ValidationMessage message = new ValidationMessage( "roles", "User ID '" + user.getId()
+                            + "' Invalid role id '" + roleId + "' found.", "User cannot contain invalid role ID '" + roleId
+                            + "'." );
+                        response.addValidationError( message );
+                    }
                 }
             }
         }
 
-        if ( user.getRoles().size() == 0 )
-        {
-            ValidationMessage message = new ValidationMessage( "roles", "User ID '" + user.getId()
-                + "' has no roles assigned.", "User requires one or more roles." );
-            response.addValidationError( message );
-        }
 
         if ( !StringUtils.isEmpty( user.getId() ) )
         {
@@ -590,5 +604,12 @@ public class DefaultConfigurationValidator
         }
 
         return response;
+    }
+
+    public ValidationResponse validateUserRoleMapping( ValidationContext ctx, CUserRoleMapping userRoleMapping,
+        boolean update )
+    {
+        // TODO Auto-generated method stub
+        return null;
     }
 }
