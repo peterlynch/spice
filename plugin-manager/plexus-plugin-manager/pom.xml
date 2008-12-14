@@ -1,11 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <parent>                                                                                                                                                          
-    <groupId>org.sonatype.spice</groupId>                                                                                                                     
-    <artifactId>spice-parent</artifactId>                                                                                                                     
-    <version>11-SNAPSHOT</version>                                                                                                                                      
-  </parent>      
+  <parent>
+    <groupId>org.sonatype.spice</groupId>
+    <artifactId>spice-parent</artifactId>
+    <version>10</version>                                                                                                                      
+  </parent>
   <groupId>org.sonatype.plexus</groupId>
   <artifactId>plexus-plugin-manager</artifactId>
   <version>1.0-SNAPSHOT</version>
@@ -13,7 +13,7 @@
   <url>http://maven.apache.org</url>
   <properties>
     <plexusVersion>1.0-beta-3.0.1</plexusVersion>
-    <mercuryVersion>1.0.0-alpha-2-SNAPSHOT</mercuryVersion>
+    <mercuryVersion>1.0.0-alpha-2</mercuryVersion>
     <mavenVersion>3.0-SNAPSHOT</mavenVersion>
   </properties>
   <dependencies>
@@ -33,11 +33,6 @@
       <version>${plexusVersion}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-mercury</artifactId>
-      <version>${mavenVersion}</version>
-    </dependency>
-    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
       <version>1.5.3</version>
@@ -52,11 +47,6 @@
       <artifactId>junit</artifactId>
       <version>3.8.2</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-    	<groupId>org.apache.maven</groupId>
-    	<artifactId>maven-plugin-api</artifactId>
-    	<version>${mavenVersion}</version>
     </dependency>
   </dependencies>
   <build>
@@ -80,16 +70,6 @@
             </goals>
           </execution>
         </executions> 
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.4.3</version>
-        <configuration>
-          <forkMode>once</forkMode>
-          <useSystemClassLoader>false</useSystemClassLoader>
-          <useManifestOnlyJar>false</useManifestOnlyJar>
-        </configuration>
       </plugin>
     </plugins>
   </build>
