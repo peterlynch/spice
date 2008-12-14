@@ -1,0 +1,93 @@
+h3. Plugins
+
+* Execution model
+* Metadata model
+* Metadata tooling
+ ** Metadata extractor
+ ** Metadata reader
+ ** Metadata writer
+ ** Metadata adapter (if required for the target system)
+* Maven packaging and lifecycle
+* Maven test harness for plugin execution model
+* Eclipse IDE tooling for plugin execution model and metadata model
+
+- we also seem to have information like the plugin lifecycle model that's burried inside the maven execution model
+- we also seem to have artifact information tangled inside the plugin model
+- we have to deal with scripting implementations (groovy, beanshell, ruby)
+- we need to deal with a shared context for plugins, like the guarded mojos
+- we need to deal with plugins as core application logic which can also interact with plugins
+
+* Along with this comes the testing strategies that make this work
+* The repository model where plugins can be stored and cataloged
+* Bridging this into an OSGi system: if this could be done then we can basically take over p2
+
+TODO
+
+- dealing with processing of input and adapting GAVs before searching i.e. plugin groups in Maven and default searching
+- how to deal with resolution from different places like local/remote/workspace
+- how to incorporate the metadata processor to start with
+- create a hook to programmatically configure the test
+- create a plugin processor
+- directory
+- jar
+- hooks for loading
+
+- i could make an annotation that marked another class as its plugin discoverer, i could just add it to the
+  the component descriptor and when it's loaded we can add the discoverer, that would be simpler. i could
+  also do this with the lister as well
+i'l
+// 1 the metadata -> model plugin/mojo descriptor
+// 2 tools for doing the mapping
+// 3 the component model -> interfaces for the plugin
+
+// The plugin manager should load up a directory structure of plugins.
+// - a plugin per directory where the plugin is present with its deps
+// - a plugin that has its dependencies packaged up with it
+// - implement filters and create a test where a plugin fails if the right classes are not filtered
+// - plugins with a dependency the same as the core but different versions, make it fail then fix it
+
+  /*
+ * 
+ * h2. Concerns for the plugin manager
+ * 
+ * h3. resolving the dependencies of a plugin - these could be resolved remotely at runtime or, -
+ * they could be resolved from a local repository - i think we need a simple dependency model here
+ * that is more mercury related and not Maven related i.e no POMs - workspace resolver - we need
+ * tools to pre-populate this repository
+ * 
+ * h3. create an isolated classloader
+ * 
+ * h3. lookup the plugin with a configuration
+ * 
+ * h3. execute the plugin
+ * 
+ * h3. plugins may have to deal with particular actions when a plugin is - installed - loaded -
+ * unloaded - update - uninstalled
+ * 
+ * h3. plugins should be able to have specific metadata for a plugin model and that be translated -
+ * dependencies - resources - configuration - extension points of plugins
+ * 
+ * For a particular application plugin there will be a declarative descriptor for that plugin type.
+ * 
+ * - nexus - the plugin class - UI to contribute - what JS to hook into the UI - what resources to
+ * load into the UI - having packed or unpacked plugins, and positioning resources if necessary -
+ * maven can work out of the classloader, nexus plugins probably couldn't given the js and image
+ * resources
+ * 
+ * We need to look at Maven, and Nexus as use cases and figure out what each of them needs to be
+ * able to do
+ * 
+ * - now what is really the difference between this and loading a component in plexus - custom
+ * classloading capability - remote resolution of dependencies - do we want a model for sharing
+ * information among plugins, is this more like an extension point - do we need a sort of bus for
+ * application data - do we need a dictionary for our applications like Apple does. We could easily
+ * hook into this and this is the model we need to follow - how many of our REST services do not map
+ * directory to a method in the application interface?
+ * 
+ * - research extension points versus plugins
+ * 
+ * from igor: two plugins A and B, both depend on the same library but use different versions, say
+ * lib 1.0 and lib 2.0 when debugger hits a breakpoint inside a class from the library, IDE needs to
+ * know which version of library the class comes from
+ */
+  
