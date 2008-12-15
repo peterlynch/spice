@@ -18,6 +18,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
+import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.sonatype.jsecurity.model.CPrivilege;
 import org.sonatype.jsecurity.model.CProperty;
@@ -207,11 +208,12 @@ public class DefaultConfigurationManager
             throw new InvalidConfigurationException( vr );
         }
     }
-    
+
     private void createOrUpdateUserRoleMapping( SecurityUserRoleMapping roleMapping )
-    {   
+    {
         // delete first, ask questions later
-        // we are always updating, its possible that this object could have already existed, because we cannot fully sync with external realms.
+        // we are always updating, its possible that this object could have already existed, because we cannot fully
+        // sync with external realms.
         try
         {
             this.deleteUserRoleMapping( roleMapping.getUserId(), roleMapping.getSource() );
@@ -220,23 +222,22 @@ public class DefaultConfigurationManager
         {
             // it didn't exist, thats ok.
         }
-        
+
         // now add it
         this.getConfiguration().addUserRoleMapping( roleMapping );
-        
-        
+
     }
-    
+
     private SecurityUserRoleMapping getRoleMappingFromUser( SecurityUser user )
     {
         SecurityUserRoleMapping roleMapping = new SecurityUserRoleMapping();
-        
+
         roleMapping.setUserId( user.getId() );
         roleMapping.setSource( null );
-        roleMapping.setRoles( new ArrayList<String>(user.getRoles()) );
-        
+        roleMapping.setRoles( new ArrayList<String>( user.getRoles() ) );
+
         return roleMapping;
-        
+
     }
 
     @SuppressWarnings( "unchecked" )
@@ -473,16 +474,14 @@ public class DefaultConfigurationManager
     }
 
     // TODO:
-    public void createUserRoleMapping( SecurityUserRoleMapping userRoleMapping, String source )
-        throws InvalidConfigurationException,
-            NoSuchRoleMappingException
+    public void createUserRoleMapping( SecurityUserRoleMapping userRoleMapping )
+        throws InvalidConfigurationException
     {
-        this.createUserRoleMapping( userRoleMapping, source, this.initializeContext() );
+        this.createUserRoleMapping( userRoleMapping, this.initializeContext() );
     }
 
-    public void createUserRoleMapping( SecurityUserRoleMapping userRoleMapping, String source, ValidationContext context )
-        throws InvalidConfigurationException,
-            NoSuchRoleMappingException
+    public void createUserRoleMapping( SecurityUserRoleMapping userRoleMapping, ValidationContext context )
+        throws InvalidConfigurationException
     {
 
         if ( context == null )
@@ -490,16 +489,23 @@ public class DefaultConfigurationManager
             context = this.initializeContext();
         }
 
-        if ( this.readUserRoleMapping( userRoleMapping.getUserId(), source ) != null )
+        try
         {
+            // this will throw a NoSuchRoleMappingException, if there isn't one
+            this.readUserRoleMapping( userRoleMapping.getUserId(), userRoleMapping.getSource() );
+
             ValidationResponse vr = new ValidationResponse();
             vr.addValidationError( new ValidationMessage( "*", "User Role Mapping for user '"
                 + userRoleMapping.getUserId() + "' already exists." ) );
 
             throw new InvalidConfigurationException( vr );
         }
+        catch ( NoSuchRoleMappingException e )
+        {
+            // expected
+        }
 
-        ValidationResponse vr = validator.validateUserRoleMapping( null, userRoleMapping, false );
+        ValidationResponse vr = validator.validateUserRoleMapping( context, userRoleMapping, false );
 
         if ( vr.getValidationErrors().size() > 0 )
         {
@@ -514,10 +520,10 @@ public class DefaultConfigurationManager
         throws NoSuchRoleMappingException
     {
         for ( CUserRoleMapping userRoleMapping : (List<CUserRoleMapping>) getConfiguration().getUserRoleMappings() )
-        {
-            if ( userRoleMapping.getUserId().equals( userId ) &&( (source == null && userRoleMapping.getSource() == null) ||  userRoleMapping.getSource().equals( source )) )
+        {   
+            if (  StringUtils.equals( userRoleMapping.getUserId(), userId ) && StringUtils.equals( userRoleMapping.getSource(), source ))
             {
-                return new SecurityUserRoleMapping(userRoleMapping);
+                return new SecurityUserRoleMapping( userRoleMapping );
             }
         }
 
@@ -525,14 +531,14 @@ public class DefaultConfigurationManager
 
     }
 
-    public void updateUserRoleMapping( SecurityUserRoleMapping userRoleMapping, String source )
+    public void updateUserRoleMapping( SecurityUserRoleMapping userRoleMapping )
         throws InvalidConfigurationException,
             NoSuchRoleMappingException
     {
-        this.updateUserRoleMapping( userRoleMapping, source, this.initializeContext() );
+        this.updateUserRoleMapping( userRoleMapping, this.initializeContext() );
     }
 
-    public void updateUserRoleMapping( SecurityUserRoleMapping userRoleMapping, String source, ValidationContext context )
+    public void updateUserRoleMapping( SecurityUserRoleMapping userRoleMapping, ValidationContext context )
         throws InvalidConfigurationException,
             NoSuchRoleMappingException
     {
@@ -541,7 +547,7 @@ public class DefaultConfigurationManager
             context = this.initializeContext();
         }
 
-        if ( this.readUserRoleMapping( userRoleMapping.getUserId(), source ) == null )
+        if ( this.readUserRoleMapping( userRoleMapping.getUserId(), userRoleMapping.getSource() ) == null )
         {
             ValidationResponse vr = new ValidationResponse();
             vr.addValidationError( new ValidationMessage( "*", "No User found for ID '" + userRoleMapping.getUserId()
@@ -557,7 +563,7 @@ public class DefaultConfigurationManager
             throw new InvalidConfigurationException( vr );
         }
 
-        SecurityUserRoleMapping stored = readUserRoleMapping( userRoleMapping.getUserId(), source );
+        SecurityUserRoleMapping stored = readUserRoleMapping( userRoleMapping.getUserId(), userRoleMapping.getSource() );
 
         if ( stored != null )
         {
@@ -580,14 +586,17 @@ public class DefaultConfigurationManager
     }
 
     @SuppressWarnings( "unchecked" )
-    public void deleteUserRoleMapping( String userId, String source ) throws NoSuchRoleMappingException
+    public void deleteUserRoleMapping( String userId, String source )
+        throws NoSuchRoleMappingException
     {
         boolean found = false;
 
         for ( Iterator<CUserRoleMapping> iter = getConfiguration().getUserRoleMappings().iterator(); iter.hasNext(); )
         {
             CUserRoleMapping userRoleMapping = iter.next();
-            if ( userRoleMapping.getUserId().equals( userId ) &&( (source == null && userRoleMapping.getSource() == null) ||  userRoleMapping.getSource().equals( source )) )
+            if ( userRoleMapping.getUserId().equals( userId )
+                && ( ( source == null && userRoleMapping.getSource() == null ) || userRoleMapping.getSource().equals(
+                    source ) ) )
             {
                 found = true;
                 iter.remove();
@@ -754,8 +763,8 @@ public class DefaultConfigurationManager
         {
             context.getExistingPrivilegeIds().add( priv.getId() );
         }
-        
-        for( CUserRoleMapping roleMappings : listUserRoleMappings() )
+
+        for ( CUserRoleMapping roleMappings : listUserRoleMappings() )
         {
             context.getExistingUserRoleMap().put( roleMappings.getUserId(), roleMappings.getRoles() );
         }

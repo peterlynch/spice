@@ -37,4 +37,12 @@ public interface PlexusUserManager
      */
     PlexusUser getUser( String userId );
     
+    /**
+     * Get a PlexusUser object by id from a PlexusUserLocator component
+     * @param userId
+     * @param source
+     * @return
+     */
+    PlexusUser getUser( String userId, String source );
+    
 }

@@ -72,17 +72,32 @@
             <name>Alex User</name>
             <email>auser@auser.com</email>
             <status>active</status>
-        </user>        
+        </user>   
+        <user>
+            <id>buser</id>
+            <password>fjsf8j4r3</password>
+            <name>Alex User</name>
+            <email>unique@auser.com</email>
+            <status>active</status>
+        </user>     
 	</users>
 	
 	<userRoleMappings>
-	  <userRoleMapping>
-	  
-	  <roles>
-	        <role>id1</role>
-	      </roles>
-	  
-	  </userRoleMapping>
+		<!-- missing user id -->
+		<!-- invalid role id -->
+		<userRoleMapping>
+
+			<roles>
+				<role>id1</role>
+			</roles>
+		</userRoleMapping>
+
+		<userRoleMapping>
+			<userId>buser</userId>
+			<roles>
+				<role>id</role>
+			</roles>
+		</userRoleMapping>
 	</userRoleMappings>
-	
+
 </security>

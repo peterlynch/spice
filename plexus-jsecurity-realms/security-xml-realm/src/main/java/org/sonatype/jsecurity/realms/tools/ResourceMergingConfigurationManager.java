@@ -263,23 +263,21 @@ public class ResourceMergingConfigurationManager
     
     
     
-    public void createUserRoleMapping( SecurityUserRoleMapping userRoleMapping, String source, ValidationContext context )
-        throws InvalidConfigurationException,
-            NoSuchRoleMappingException
+    public void createUserRoleMapping( SecurityUserRoleMapping userRoleMapping, ValidationContext context )
+        throws InvalidConfigurationException
     {
         if( context == null)
         {
             context = this.initializeContext();
         }
         
-        this.manager.createUserRoleMapping( userRoleMapping, source, context );
+        this.manager.createUserRoleMapping( userRoleMapping, context );
     }
 
-    public void createUserRoleMapping( SecurityUserRoleMapping userRoleMapping, String source )
-        throws InvalidConfigurationException,
-            NoSuchRoleMappingException
+    public void createUserRoleMapping( SecurityUserRoleMapping userRoleMapping)
+        throws InvalidConfigurationException
     {
-        this.manager.createUserRoleMapping( userRoleMapping, source, this.initializeContext() );
+        this.manager.createUserRoleMapping( userRoleMapping, this.initializeContext() );
     }
 
     public void deleteUserRoleMapping( String userId, String source )
@@ -299,7 +297,7 @@ public class ResourceMergingConfigurationManager
         return this.manager.readUserRoleMapping( userId, source );
     }
 
-    public void updateUserRoleMapping( SecurityUserRoleMapping userRoleMapping, String source, ValidationContext context )
+    public void updateUserRoleMapping( SecurityUserRoleMapping userRoleMapping, ValidationContext context )
         throws InvalidConfigurationException,
             NoSuchRoleMappingException
     {
@@ -308,14 +306,14 @@ public class ResourceMergingConfigurationManager
             context = this.initializeContext();
         }
         
-        this.manager.updateUserRoleMapping( userRoleMapping, source, context );
+        this.manager.updateUserRoleMapping( userRoleMapping, context );
     }
 
-    public void updateUserRoleMapping( SecurityUserRoleMapping userRoleMapping, String source )
+    public void updateUserRoleMapping( SecurityUserRoleMapping userRoleMapping )
         throws InvalidConfigurationException,
             NoSuchRoleMappingException
     {
-       this.updateUserRoleMapping( userRoleMapping, source, this.initializeContext() );
+       this.updateUserRoleMapping( userRoleMapping, this.initializeContext() );
     }
 
     private Configuration initializeStaticConfiguration()

@@ -167,11 +167,11 @@ public interface ConfigurationManager
     
     
     
-    void createUserRoleMapping( SecurityUserRoleMapping userRoleMapping, String source ) throws InvalidConfigurationException, NoSuchRoleMappingException;
-    void createUserRoleMapping( SecurityUserRoleMapping userRoleMapping, String source, ValidationContext context ) throws InvalidConfigurationException, NoSuchRoleMappingException;
+    void createUserRoleMapping( SecurityUserRoleMapping userRoleMapping ) throws InvalidConfigurationException;
+    void createUserRoleMapping( SecurityUserRoleMapping userRoleMapping, ValidationContext context ) throws InvalidConfigurationException;
 
-    void updateUserRoleMapping( SecurityUserRoleMapping userRoleMapping, String source ) throws InvalidConfigurationException, NoSuchRoleMappingException;
-    void updateUserRoleMapping( SecurityUserRoleMapping userRoleMapping, String source, ValidationContext context ) throws InvalidConfigurationException, NoSuchRoleMappingException;
+    void updateUserRoleMapping( SecurityUserRoleMapping userRoleMapping ) throws InvalidConfigurationException, NoSuchRoleMappingException;
+    void updateUserRoleMapping( SecurityUserRoleMapping userRoleMapping, ValidationContext context ) throws InvalidConfigurationException, NoSuchRoleMappingException;
     
     SecurityUserRoleMapping readUserRoleMapping( String userId, String source ) throws NoSuchRoleMappingException;
     List<SecurityUserRoleMapping> listUserRoleMappings();

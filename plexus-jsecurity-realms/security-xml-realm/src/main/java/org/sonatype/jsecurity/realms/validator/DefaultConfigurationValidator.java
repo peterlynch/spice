@@ -62,15 +62,25 @@ public class DefaultConfigurationValidator
             for ( CUser user : users )
             {
                 Set<String> roleIds = new HashSet<String>();
-                for ( CUserRoleMapping userRoleMapping : (List<CUserRoleMapping>)model.getUserRoleMappings() )
+                for ( CUserRoleMapping userRoleMapping : (List<CUserRoleMapping>) model.getUserRoleMappings() )
                 {
-                    if ( userRoleMapping.getUserId() != null && userRoleMapping.getUserId().equals( user.getId() ) &&( userRoleMapping.getSource() == null) )
+                    if ( userRoleMapping.getUserId() != null && userRoleMapping.getUserId().equals( user.getId() )
+                        && ( userRoleMapping.getSource() == null ) )
                     {
                         roleIds.addAll( userRoleMapping.getRoles() );
                     }
                 }
-                
+
                 response.append( validateUser( context, user, roleIds, false ) );
+            }
+        }
+
+        List<CUserRoleMapping> userRoleMappings = model.getUserRoleMappings();
+        if ( userRoleMappings != null )
+        {
+            for ( CUserRoleMapping userRoleMapping : userRoleMappings )
+            {
+                response.append( this.validateUserRoleMapping( context, userRoleMapping, false ) );
             }
         }
 
@@ -322,7 +332,7 @@ public class DefaultConfigurationValidator
         }
         return false;
     }
-    
+
     private ValidationResponse isRecursive( String baseRoleId, String roleId, ValidationContext ctx )
     {
         ValidationResponse response = new ValidationResponse();
@@ -387,32 +397,27 @@ public class DefaultConfigurationValidator
         ValidationContext context = response.getContext();
 
         List<String> existingIds = context.getExistingRoleIds();
-        
+
         if ( existingIds == null )
         {
             context.addExistingRoleIds();
 
             existingIds = context.getExistingRoleIds();
         }
-        
-        if( !update
-            && existingIds.contains( role
-                .getId() ) )
+
+        if ( !update && existingIds.contains( role.getId() ) )
         {
             ValidationMessage message = new ValidationMessage( "id", "Role ID must be unique." );
             response.addValidationError( message );
         }
-        
-        if( update
-            && !existingIds.contains( role
-                .getId() ) )
+
+        if ( update && !existingIds.contains( role.getId() ) )
         {
             ValidationMessage message = new ValidationMessage( "id", "Role ID cannot be changed." );
             response.addValidationError( message );
         }
 
-        if ( !update
-            && ( StringUtils.isEmpty( role.getId() ) || "0".equals( role.getId() ) ) )
+        if ( !update && ( StringUtils.isEmpty( role.getId() ) || "0".equals( role.getId() ) ) )
         {
             String newId = idGenerator.generateId();
 
@@ -424,7 +429,7 @@ public class DefaultConfigurationValidator
         }
 
         Map<String, String> existingRoleNameMap = context.getExistingRoleNameMap();
-        
+
         if ( StringUtils.isEmpty( role.getName() ) )
         {
             ValidationMessage message = new ValidationMessage( "name", "Role ID '" + role.getId()
@@ -576,7 +581,7 @@ public class DefaultConfigurationValidator
         if ( context.getExistingRoleIds() != null && context.getExistingUserRoleMap() != null )
         {
 
-            if( roles == null || roles.isEmpty() )
+            if ( roles == null || roles.isEmpty() )
             {
                 ValidationMessage message = new ValidationMessage( "roles", "User ID '" + user.getId()
                     + "' has no roles assigned.", "User requires one or more roles." );
@@ -589,14 +594,13 @@ public class DefaultConfigurationValidator
                     if ( !context.getExistingRoleIds().contains( roleId ) )
                     {
                         ValidationMessage message = new ValidationMessage( "roles", "User ID '" + user.getId()
-                            + "' Invalid role id '" + roleId + "' found.", "User cannot contain invalid role ID '" + roleId
-                            + "'." );
+                            + "' Invalid role id '" + roleId + "' found.", "User cannot contain invalid role ID '"
+                            + roleId + "'." );
                         response.addValidationError( message );
                     }
                 }
             }
         }
-
 
         if ( !StringUtils.isEmpty( user.getId() ) )
         {
@@ -606,10 +610,45 @@ public class DefaultConfigurationValidator
         return response;
     }
 
-    public ValidationResponse validateUserRoleMapping( ValidationContext ctx, CUserRoleMapping userRoleMapping,
+    public ValidationResponse validateUserRoleMapping( ValidationContext context, CUserRoleMapping userRoleMapping,
         boolean update )
     {
-        // TODO Auto-generated method stub
-        return null;
+        ValidationResponse response = new ValidationResponse();
+
+        // ID must be not empty
+        if ( StringUtils.isEmpty( userRoleMapping.getUserId() ) )
+        {
+            ValidationMessage message = new ValidationMessage( "userId", "UserRoleMapping has no userId."
+                + "  This is a required field.", "UserId is required." );
+            response.addValidationError( message );
+        }
+
+        List<String> roles = userRoleMapping.getRoles();
+        // all roles must be real
+        if ( context.getExistingRoleIds() != null && context.getExistingUserRoleMap() != null )
+        {
+
+            if ( roles == null || roles.isEmpty() )
+            {
+                ValidationMessage message = new ValidationMessage( "roles", "User Role Mapping for user '" + userRoleMapping.getUserId()
+                    + "' has no roles assigned.", "User requires one or more roles." );
+                response.addValidationError( message );
+            }
+            else
+            {
+                for ( String roleId : roles )
+                {
+                    if ( !context.getExistingRoleIds().contains( roleId ) )
+                    {
+                        ValidationMessage message = new ValidationMessage( "roles", "User Role Mapping for user '" + userRoleMapping.getUserId()
+                            + "' Invalid role id '" + roleId + "' found.", "User cannot contain invalid role ID '"
+                            + roleId + "'." );
+                        response.addValidationError( message );
+                    }
+                }
+            }
+        }
+
+        return response;
     }
 }

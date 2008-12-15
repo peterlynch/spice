@@ -6,7 +6,6 @@ import java.util.TreeSet;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.codehaus.plexus.util.StringUtils;
 
 @Component( role = PlexusUserManager.class )
 public class DefaultPlexusUserManager
@@ -32,8 +31,6 @@ public class DefaultPlexusUserManager
 
         return users;
     }
-
-    
 
     public Set<PlexusUser> searchUserById( String source, String userId )
     {
@@ -71,22 +68,43 @@ public class DefaultPlexusUserManager
         PlexusUser user = null;
         if ( primary != null )
         {
-            user =  primary.getUser( userId );
+            user = primary.getUser( userId );
         }
-        
-        if( user == null)
+
+        if ( user == null )
         {
             for ( PlexusUserLocator locator : userlocators )
             {
-                PlexusUser found = locator.getUser( userId );
+                user = locator.getUser( userId );
 
-                if ( found != null )
+                if ( user != null )
                 {
                     break;
                 }
             }
         }
 
+        return user;
+    }
+
+    public PlexusUser getUser( String userId, String source )
+    {
+        PlexusUser user = null;
+        if ( SOURCE_ALL.equals( source ) )
+        {
+            user =  this.getUser( userId );
+        }
+        else
+        {
+            for ( PlexusUserLocator locator : userlocators )
+            {
+                if ( locator.getSource().equals( source ) )
+                {
+                    user = locator.getUser( userId );
+                }
+            }
+        }
+        
         return user;
     }
 
@@ -102,5 +120,4 @@ public class DefaultPlexusUserManager
 
         return null;
     }
-
 }

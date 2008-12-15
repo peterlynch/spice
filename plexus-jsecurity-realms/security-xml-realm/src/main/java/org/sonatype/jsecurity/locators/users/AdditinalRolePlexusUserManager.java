@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUserRoleMapping;
@@ -11,22 +12,23 @@ import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
 import org.sonatype.jsecurity.realms.tools.NoSuchRoleException;
 import org.sonatype.jsecurity.realms.tools.NoSuchRoleMappingException;
 
+@Component( role=PlexusUserManager.class, hint="additinalRoles")
 public class AdditinalRolePlexusUserManager
     extends DefaultPlexusUserManager
 {
-    @Requirement
+    @Requirement( hint = "resourceMerging" )
     private ConfigurationManager configManager;
 
     @Override
     public PlexusUser getUser( String userId )
     {
         PlexusUser user = super.getUser( userId );
-        
-        if( user != null)
+
+        if ( user != null )
         {
             this.populateAdditionalRoles( user );
         }
-        
+
         return user;
     }
 

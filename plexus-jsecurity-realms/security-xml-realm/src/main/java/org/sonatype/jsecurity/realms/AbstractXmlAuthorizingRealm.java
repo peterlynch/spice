@@ -18,14 +18,12 @@ import org.jsecurity.cache.HashtableCache;
 import org.jsecurity.realm.AuthorizingRealm;
 import org.jsecurity.realm.Realm;
 import org.jsecurity.subject.PrincipalCollection;
+import org.sonatype.jsecurity.locators.users.PlexusRole;
+import org.sonatype.jsecurity.locators.users.PlexusUser;
+import org.sonatype.jsecurity.locators.users.PlexusUserManager;
 import org.sonatype.jsecurity.model.CRole;
-import org.sonatype.jsecurity.model.CUser;
-import org.sonatype.jsecurity.model.CUserRoleMapping;
 import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
 import org.sonatype.jsecurity.realms.tools.NoSuchRoleException;
-import org.sonatype.jsecurity.realms.tools.NoSuchRoleMappingException;
-import org.sonatype.jsecurity.realms.tools.NoSuchUserException;
-import org.sonatype.jsecurity.realms.tools.dao.SecurityUser;
 
 public abstract class AbstractXmlAuthorizingRealm
     extends AuthorizingRealm
@@ -33,6 +31,9 @@ public abstract class AbstractXmlAuthorizingRealm
 {
     @Requirement( role = ConfigurationManager.class, hint = "resourceMerging" )
     private ConfigurationManager configuration;
+    
+    @Requirement(hint="additinalRoles")
+    private PlexusUserManager userManager;
 
     public AbstractXmlAuthorizingRealm()
     {
@@ -69,22 +70,22 @@ public abstract class AbstractXmlAuthorizingRealm
 
         String username = (String) principals.iterator().next();
 
-        SecurityUser user;
-        try
+        PlexusUser user = this.userManager.getUser( username );
+        
+        if ( user == null )
         {
-            user = configuration.readUser( username );
-        }
-        catch ( NoSuchUserException e )
-        {
-            throw new AuthorizationException( "User '" + username + "' cannot be retrieved.", e );
+            throw new AuthorizationException( "User '" + username + "' cannot be retrieved." );
         }
 
         LinkedList<String> rolesToProcess = new LinkedList<String>();
-        Set<String> roles = user.getRoles();
+        Set<PlexusRole> roles = user.getRoles();
         
         if ( roles != null )
         {
-            rolesToProcess.addAll( roles );
+            for ( PlexusRole plexusRole : roles )
+            {
+                rolesToProcess.add( plexusRole.getRoleId() );
+            }
         }
 
         Set<String> roleIds = new LinkedHashSet<String>();
