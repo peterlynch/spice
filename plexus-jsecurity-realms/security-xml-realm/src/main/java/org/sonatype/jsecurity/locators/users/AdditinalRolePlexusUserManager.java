@@ -6,6 +6,7 @@ import java.util.TreeSet;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.sonatype.jsecurity.locators.SecurityXmlPlexusUserLocator;
 import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUserRoleMapping;
 import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
@@ -35,7 +36,7 @@ public class AdditinalRolePlexusUserManager
     @Override
     public Set<PlexusUser> listUsers( String source )
     {
-        Set<PlexusUser> users = new TreeSet<PlexusUser>();
+        Set<PlexusUser> users = super.listUsers( source );
         for ( PlexusUser user : users )
         {
             this.populateAdditionalRoles( user );
@@ -46,7 +47,7 @@ public class AdditinalRolePlexusUserManager
     @Override
     public Set<PlexusUser> searchUserById( String source, String userId )
     {
-        Set<PlexusUser> users = new TreeSet<PlexusUser>();
+        Set<PlexusUser> users = super.searchUserById( source, userId );
         for ( PlexusUser user : users )
         {
             this.populateAdditionalRoles( user );
@@ -87,7 +88,7 @@ public class AdditinalRolePlexusUserManager
 
             plexusRole.setRoleId( role.getId() );
             plexusRole.setName( role.getName() );
-            plexusRole.setSource( null );
+            plexusRole.setSource( SecurityXmlPlexusUserLocator.SOURCE );
 
             return plexusRole;
         }

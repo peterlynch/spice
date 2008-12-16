@@ -58,14 +58,39 @@ public class PlexusRole
     }
     
     @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ( ( roleId == null ) ? 0 : roleId.hashCode() );
+        result = prime * result + ( ( source == null ) ? 0 : source.hashCode() );
+        return result;
+    }
+
+    @Override
     public boolean equals( Object obj )
     {
-        if ( obj == null
-            || ( !PlexusRole.class.isAssignableFrom( obj.getClass() ) ) )
-        {
+        if ( this == obj )
+            return true;
+        if ( obj == null )
             return false;
+        if ( getClass() != obj.getClass() )
+            return false;
+        final PlexusRole other = (PlexusRole) obj;
+        if ( roleId == null )
+        {
+            if ( other.roleId != null )
+                return false;
         }
-        
-        return getRoleId().equals( ( ( PlexusRole ) obj ).getRoleId() );
+        else if ( !roleId.equals( other.roleId ) )
+            return false;
+        if ( source == null )
+        {
+            if ( other.source != null )
+                return false;
+        }
+        else if ( !source.equals( other.source ) )
+            return false;
+        return true;
     }
 }
