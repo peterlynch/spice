@@ -20,6 +20,7 @@ import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.sonatype.jsecurity.locators.SecurityXmlPlexusUserLocator;
 import org.sonatype.jsecurity.model.CPrivilege;
 import org.sonatype.jsecurity.model.CProperty;
 import org.sonatype.jsecurity.model.CRole;
@@ -233,7 +234,7 @@ public class DefaultConfigurationManager
         SecurityUserRoleMapping roleMapping = new SecurityUserRoleMapping();
 
         roleMapping.setUserId( user.getId() );
-        roleMapping.setSource( null );
+        roleMapping.setSource( SecurityXmlPlexusUserLocator.SOURCE );
         roleMapping.setRoles( new ArrayList<String>( user.getRoles() ) );
 
         return roleMapping;
@@ -348,7 +349,7 @@ public class DefaultConfigurationManager
                 List<String> roles = null;
                 try
                 {
-                    SecurityUserRoleMapping roleMapping = this.readUserRoleMapping( id, null );
+                    SecurityUserRoleMapping roleMapping = this.readUserRoleMapping( id, SecurityXmlPlexusUserLocator.SOURCE );
                     if ( roleMapping != null )
                     {
                         roles = roleMapping.getRoles();
@@ -595,8 +596,7 @@ public class DefaultConfigurationManager
         {
             CUserRoleMapping userRoleMapping = iter.next();
             if ( userRoleMapping.getUserId().equals( userId )
-                && ( ( source == null && userRoleMapping.getSource() == null ) || userRoleMapping.getSource().equals(
-                    source ) ) )
+                && ( StringUtils.equals( userRoleMapping.getSource(), source )) )
             {
                 found = true;
                 iter.remove();

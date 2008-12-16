@@ -21,7 +21,7 @@ public class SecurityXmlPlexusUserLocatorTest
     public PlexusUserLocator getLocator()
         throws Exception
     {
-        return (PlexusUserLocator) this.lookup( PlexusUserLocator.class, "SecurityXmlPlexusUserLocator" );
+        return (PlexusUserLocator) this.lookup( PlexusUserLocator.class );
     }
 
     public void testListUserIds()

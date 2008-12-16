@@ -18,11 +18,11 @@ import org.sonatype.jsecurity.realms.tools.NoSuchRoleException;
 import org.sonatype.jsecurity.realms.tools.NoSuchRoleMappingException;
 import org.sonatype.jsecurity.realms.tools.NoSuchUserException;
 
-@Component( role = PlexusUserLocator.class, hint = "SecurityXmlPlexusUserLocator" )
+@Component( role = PlexusUserLocator.class, description="Default" )
 public class SecurityXmlPlexusUserLocator
     implements PlexusUserLocator
 {
-    public static final String SOURCE = "security-xml";
+    public static final String SOURCE = "default";
 
     @Requirement( role = ConfigurationManager.class, hint = "resourceMerging" )
     private ConfigurationManager configuration;
@@ -105,7 +105,7 @@ public class SecurityXmlPlexusUserLocator
         CUserRoleMapping roleMapping;
         try
         {
-            roleMapping = this.configuration.readUserRoleMapping( user.getId(), null );
+            roleMapping = this.configuration.readUserRoleMapping( user.getId(), SOURCE );
 
             if ( roleMapping != null )
             {

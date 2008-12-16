@@ -139,6 +139,7 @@
 	<userRoleMappings>
 		<userRoleMapping>
 			<userId>other-user</userId>
+			<source>default</source>
 			<roles>
 				<role>role2</role>
 				<role>role3</role>
@@ -149,6 +150,7 @@
 
 		<userRoleMapping>
 			<userId>admin</userId>
+			<source>default</source>
 			<roles>
 				<role>role1</role>
 			</roles>
@@ -158,6 +160,7 @@
 
 		<userRoleMapping>
 			<userId>test-user</userId>
+			<source>default</source>
 			<roles>
 				<role>role1</role>
 				<role>role2</role>
@@ -167,6 +170,7 @@
 
 		<userRoleMapping>
 			<userId>anonymous</userId>
+			<source>default</source>
 			<roles>
 				<role>role2</role>
 			</roles>

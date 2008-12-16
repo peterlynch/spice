@@ -84,6 +84,7 @@
 	
 	<userRoleMappings>
 		<!-- missing user id -->
+		<!-- missing source -->
 		<!-- invalid role id -->
 		<userRoleMapping>
 
@@ -91,9 +92,20 @@
 				<role>id1</role>
 			</roles>
 		</userRoleMapping>
+		
+		<!-- missing user id -->
+		<!-- invalid role id -->
+		<userRoleMapping>
+
+			    <source>default</source>
+			<roles>
+				<role>id1</role>
+			</roles>
+		</userRoleMapping>
 
 		<userRoleMapping>
 			<userId>buser</userId>
+			    <source>default</source>
 			<roles>
 				<role>id</role>
 			</roles>

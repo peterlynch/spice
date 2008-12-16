@@ -10,6 +10,7 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.util.StringUtils;
+import org.sonatype.jsecurity.locators.SecurityXmlPlexusUserLocator;
 import org.sonatype.jsecurity.model.CPrivilege;
 import org.sonatype.jsecurity.model.CProperty;
 import org.sonatype.jsecurity.model.CRole;
@@ -65,7 +66,7 @@ public class DefaultConfigurationValidator
                 for ( CUserRoleMapping userRoleMapping : (List<CUserRoleMapping>) model.getUserRoleMappings() )
                 {
                     if ( userRoleMapping.getUserId() != null && userRoleMapping.getUserId().equals( user.getId() )
-                        && ( userRoleMapping.getSource() == null ) )
+                        && ( SecurityXmlPlexusUserLocator.SOURCE.equals(userRoleMapping.getSource() ) ) )
                     {
                         roleIds.addAll( userRoleMapping.getRoles() );
                     }
@@ -623,6 +624,14 @@ public class DefaultConfigurationValidator
             response.addValidationError( message );
         }
 
+        // source must be not empty
+        if ( StringUtils.isEmpty( userRoleMapping.getSource() ) )
+        {
+            ValidationMessage message = new ValidationMessage( "source", "User Role Mapping for user '"
+                + userRoleMapping.getUserId() + "' has no source.  This is a required field.", "UserId is required." );
+            response.addValidationError( message );
+        }
+
         List<String> roles = userRoleMapping.getRoles();
         // all roles must be real
         if ( context.getExistingRoleIds() != null && context.getExistingUserRoleMap() != null )
@@ -630,8 +639,8 @@ public class DefaultConfigurationValidator
 
             if ( roles == null || roles.isEmpty() )
             {
-                ValidationMessage message = new ValidationMessage( "roles", "User Role Mapping for user '" + userRoleMapping.getUserId()
-                    + "' has no roles assigned.", "User requires one or more roles." );
+                ValidationMessage message = new ValidationMessage( "roles", "User Role Mapping for user '"
+                    + userRoleMapping.getUserId() + "' has no roles assigned.", "User requires one or more roles." );
                 response.addValidationError( message );
             }
             else
@@ -640,9 +649,11 @@ public class DefaultConfigurationValidator
                 {
                     if ( !context.getExistingRoleIds().contains( roleId ) )
                     {
-                        ValidationMessage message = new ValidationMessage( "roles", "User Role Mapping for user '" + userRoleMapping.getUserId()
-                            + "' Invalid role id '" + roleId + "' found.", "User cannot contain invalid role ID '"
-                            + roleId + "'." );
+                        ValidationMessage message = new ValidationMessage(
+                            "roles",
+                            "User Role Mapping for user '" + userRoleMapping.getUserId() + "' Invalid role id '"
+                                + roleId + "' found.",
+                            "User cannot contain invalid role ID '" + roleId + "'." );
                         response.addValidationError( message );
                     }
                 }

@@ -32,7 +32,7 @@ public abstract class AbstractXmlAuthorizingRealm
     @Requirement( role = ConfigurationManager.class, hint = "resourceMerging" )
     private ConfigurationManager configuration;
     
-    @Requirement(hint="additinalRoles")
+    @Requirement(role=PlexusUserManager.class, hint="additinalRoles")
     private PlexusUserManager userManager;
 
     public AbstractXmlAuthorizingRealm()
