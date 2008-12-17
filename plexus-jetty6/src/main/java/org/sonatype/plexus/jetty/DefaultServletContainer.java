@@ -19,6 +19,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.codehaus.plexus.PlexusConstants;
+import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.context.ContextException;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
@@ -37,6 +39,7 @@ import org.mortbay.jetty.handler.ContextHandlerCollection;
 import org.mortbay.jetty.handler.DefaultHandler;
 import org.mortbay.jetty.nio.SelectChannelConnector;
 import org.mortbay.jetty.webapp.WebAppContext;
+import org.sonatype.plexus.jetty.custom.PlexusContainerHolder;
 import org.sonatype.plexus.util.JettyUtils;
 
 /**
@@ -305,6 +308,7 @@ public class DefaultServletContainer
     {
         try
         {
+            PlexusContainerHolder.set( (PlexusContainer) context.get( PlexusConstants.PLEXUS_KEY ) );
             getServer().start();
         }
         catch ( Exception e )
@@ -319,6 +323,7 @@ public class DefaultServletContainer
         try
         {
             getServer().stop();
+            PlexusContainerHolder.clear();
         }
         catch ( Exception e )
         {

@@ -39,6 +39,7 @@ import org.mortbay.jetty.handler.DefaultHandler;
 import org.mortbay.jetty.nio.SelectChannelConnector;
 import org.mortbay.jetty.webapp.WebAppClassLoader;
 import org.mortbay.jetty.webapp.WebAppContext;
+import org.sonatype.plexus.jetty.custom.PlexusContainerHolder;
 import org.sonatype.plexus.util.JettyUtils;
 
 /**
@@ -348,6 +349,7 @@ public class DefaultServletContainer
     {
         try
         {
+            PlexusContainerHolder.set( (PlexusContainer) context.get( PlexusConstants.PLEXUS_KEY ) );
             getServer().start();
         }
         catch ( Exception e )
@@ -362,6 +364,7 @@ public class DefaultServletContainer
         try
         {
             getServer().stop();
+            PlexusContainerHolder.clear();
         }
         catch ( Exception e )
         {

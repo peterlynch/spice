@@ -62,6 +62,12 @@ public final class JettyUtils
         {
             config = interpolator.interpolate( sWriter.toString() );
             
+            File tempDir = new File( System.getProperty( "java.io.tmpdir" ) );
+            if ( !tempDir.exists() )
+            {
+                tempDir.mkdirs();
+            }
+            
             tempJettyXml = File.createTempFile( "jetty.", ".xml" );
             tempJettyXml.deleteOnExit();
             
