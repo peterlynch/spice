@@ -516,20 +516,24 @@ public class DefaultConfigurationManager
         getConfiguration().addUserRoleMapping( userRoleMapping );
     }
 
-    @SuppressWarnings( "unchecked" )
-    public SecurityUserRoleMapping readUserRoleMapping( String userId, String source )
-        throws NoSuchRoleMappingException
+    private CUserRoleMapping readCUserRoleMapping( String userId, String source ) throws NoSuchRoleMappingException
     {
         for ( CUserRoleMapping userRoleMapping : (List<CUserRoleMapping>) getConfiguration().getUserRoleMappings() )
         {   
             if (  StringUtils.equals( userRoleMapping.getUserId(), userId ) && StringUtils.equals( userRoleMapping.getSource(), source ))
             {
-                return new SecurityUserRoleMapping( userRoleMapping );
+                return userRoleMapping;
             }
         }
 
         throw new NoSuchRoleMappingException( "No User Role Mapping for user: " + userId );
-
+    }
+    
+    @SuppressWarnings( "unchecked" )
+    public SecurityUserRoleMapping readUserRoleMapping( String userId, String source )
+        throws NoSuchRoleMappingException
+    {
+        return new SecurityUserRoleMapping( this.readCUserRoleMapping( userId, source ) );
     }
 
     public void updateUserRoleMapping( SecurityUserRoleMapping userRoleMapping )
@@ -551,26 +555,21 @@ public class DefaultConfigurationManager
         if ( this.readUserRoleMapping( userRoleMapping.getUserId(), userRoleMapping.getSource() ) == null )
         {
             ValidationResponse vr = new ValidationResponse();
-            vr.addValidationError( new ValidationMessage( "*", "No User found for ID '" + userRoleMapping.getUserId()
+            vr.addValidationError( new ValidationMessage( "*", "No User Role Mapping found for user '" + userRoleMapping.getUserId()
                 + "'." ) );
 
             throw new InvalidConfigurationException( vr );
         }
 
-        ValidationResponse vr = validator.validateUserRoleMapping( null, userRoleMapping, true );
+        ValidationResponse vr = validator.validateUserRoleMapping( context, userRoleMapping, true );
 
         if ( vr.getValidationErrors().size() > 0 )
         {
             throw new InvalidConfigurationException( vr );
         }
 
-        SecurityUserRoleMapping stored = readUserRoleMapping( userRoleMapping.getUserId(), userRoleMapping.getSource() );
-
-        if ( stored != null )
-        {
-            getConfiguration().removeUserRoleMapping( stored );
-            getConfiguration().addUserRoleMapping( userRoleMapping );
-        }
+        this.deleteUserRoleMapping( userRoleMapping.getUserId(), userRoleMapping.getSource() );
+        getConfiguration().addUserRoleMapping( userRoleMapping );
     }
 
     @SuppressWarnings( "unchecked" )
