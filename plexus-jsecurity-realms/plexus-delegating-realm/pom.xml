@@ -2,7 +2,7 @@
     <parent>
         <groupId>org.sonatype.jsecurity</groupId>
         <artifactId>plexus-jsecurity-realms</artifactId>
-        <version>1.0.4</version>
+        <version>1.0.5-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>plexus-delegating-realm</artifactId>
