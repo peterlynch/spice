@@ -139,7 +139,7 @@ public class JettyXmlConfigurationTest
             assertEquals( 1, connectors.length );
             assertTrue( connectors[0] instanceof SelectChannelConnector );
             assertEquals( "localhost", connectors[0].getHost() );
-            assertEquals( defaultPort, "" + connectors[0].getPort() );
+            assertEquals( servletContainer.getDefaultPort(), connectors[0].getPort() );
 
             Handler[] handlers = server.getHandlers();
             if ( handlers == null )
