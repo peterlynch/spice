@@ -21,7 +21,7 @@ public interface PlexusUserManager
      * Searches for PlexusUser objects by userId.
      * @return
      */
-    Set<PlexusUser> searchUserById(String source, String userId );
+    Set<PlexusUser> searchUserById( String userId, String source );
     
     /**
      * Retrieve all userids defined by the PlexusUserLocator components (if managing full object

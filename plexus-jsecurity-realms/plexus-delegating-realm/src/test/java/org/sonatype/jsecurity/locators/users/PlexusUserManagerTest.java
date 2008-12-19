@@ -132,22 +132,22 @@ public class PlexusUserManagerTest
         throws Exception
     {
         PlexusUserManager userManager = this.getUserManager();
-        Set<PlexusUser> users = userManager.searchUserById( PlexusUserManager.SOURCE_ALL, "pperalez" );
+        Set<PlexusUser> users = userManager.searchUserById( "pperalez", PlexusUserManager.SOURCE_ALL );
         Assert.assertEquals( 1, users.size() );
         Assert.assertEquals( "pperalez", users.iterator().next().getUserId() );
 
-        users = userManager.searchUserById( PlexusUserManager.SOURCE_ALL, "ppera" );
+        users = userManager.searchUserById( "ppera", PlexusUserManager.SOURCE_ALL );
         Assert.assertEquals( 1, users.size() );
         Assert.assertEquals( "pperalez", users.iterator().next().getUserId() );
 
-        users = userManager.searchUserById( "MockUserLocatorB", "ppera" );
+        users = userManager.searchUserById("ppera",  "MockUserLocatorB" );
         Assert.assertEquals( 0, users.size() );
 
-        users = userManager.searchUserById( "MockUserLocatorB", "ksim" );
+        users = userManager.searchUserById( "ksim", "MockUserLocatorB" );
         Assert.assertEquals( 1, users.size() );
         Assert.assertEquals( "ksimmons", users.iterator().next().getUserId() );
 
-        users = userManager.searchUserById( PlexusUserManager.SOURCE_ALL, "jcod" );
+        users = userManager.searchUserById( "jcod", PlexusUserManager.SOURCE_ALL );
         Assert.assertEquals( 2, users.size() );
 
         // put users in map for easy search

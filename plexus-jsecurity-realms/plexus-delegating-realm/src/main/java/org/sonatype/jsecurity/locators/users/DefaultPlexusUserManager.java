@@ -32,7 +32,7 @@ public class DefaultPlexusUserManager
         return users;
     }
 
-    public Set<PlexusUser> searchUserById( String source, String userId )
+    public Set<PlexusUser> searchUserById( String userId, String source )
     {
         Set<PlexusUser> users = new TreeSet<PlexusUser>();
 

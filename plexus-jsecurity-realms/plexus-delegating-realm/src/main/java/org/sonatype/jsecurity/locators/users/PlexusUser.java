@@ -1,8 +1,6 @@
 package org.sonatype.jsecurity.locators.users;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class PlexusUser
@@ -77,14 +75,38 @@ public class PlexusUser
         return getUserId().compareTo( o.getUserId() );
     }
     @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ( ( source == null ) ? 0 : source.hashCode() );
+        result = prime * result + ( ( userId == null ) ? 0 : userId.hashCode() );
+        return result;
+    }
+    @Override
     public boolean equals( Object obj )
     {
-        if ( obj == null
-            || ( !PlexusUser.class.isAssignableFrom( obj.getClass() ) ) )
-        {
+        if ( this == obj )
+            return true;
+        if ( obj == null )
             return false;
+        if ( getClass() != obj.getClass() )
+            return false;
+        final PlexusUser other = (PlexusUser) obj;
+        if ( source == null )
+        {
+            if ( other.source != null )
+                return false;
         }
-        
-        return getUserId().equals( ( ( PlexusUser ) obj ).getUserId() );
+        else if ( !source.equals( other.source ) )
+            return false;
+        if ( userId == null )
+        {
+            if ( other.userId != null )
+                return false;
+        }
+        else if ( !userId.equals( other.userId ) )
+            return false;
+        return true;
     }
 }
