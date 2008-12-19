@@ -4,6 +4,7 @@
         <groupId>org.sonatype.spice</groupId>
         <artifactId>spice-parent</artifactId>
         <version>9</version>
+        <relativePath>../spice-parent/pom.xml</relativePath>
     </parent>
     <groupId>org.sonatype.appbooter</groupId>
     <artifactId>appbooter</artifactId>
