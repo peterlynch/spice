@@ -2,7 +2,6 @@ package org.sonatype.appbooter;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import java.util.Arrays;
 
 import junit.framework.Assert;
 
@@ -58,7 +57,7 @@ public class DefaultForkedAppBooterTest
         wow[0].setValue( "25" );
 
         // get the configurator:
-        ComponentConfigurator configurator = (ComponentConfigurator) this.lookup( ComponentConfigurator.ROLE );
+        ComponentConfigurator configurator = (ComponentConfigurator) this.lookup( ComponentConfigurator.ROLE, "basic" );
         // configure the component
         configurator.configureComponent( appBooter, config,
                                          this.getContainer().getComponentRealm( ForkedAppBooter.ROLE ) );

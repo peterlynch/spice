@@ -257,8 +257,7 @@ public class PlexusContainerHost
         ContainerConfiguration cc = new DefaultContainerConfiguration()
             .setClassWorld( world )
             .setContainerConfiguration( configuration.getAbsolutePath() )
-            .setContext( createContainerContext() )
-            .setDevMode( Boolean.getBoolean( DEV_MODE ) );
+            .setContext( createContainerContext() );
 
         container = new DefaultPlexusContainer( cc );
 
