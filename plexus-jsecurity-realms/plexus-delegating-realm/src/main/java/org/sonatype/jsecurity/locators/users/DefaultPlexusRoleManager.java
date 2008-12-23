@@ -25,7 +25,11 @@ public class DefaultPlexusRoleManager
         {
             if ( SOURCE_ALL.equals( source ) || locator.getSource().equals( source ) )
             {
-                roles.addAll( locator.listRoleIds());
+                Set<String> locatorRoles = locator.listRoleIds();
+                if( locatorRoles != null )
+                {
+                    roles.addAll( locatorRoles );
+                }
             }
         }
 
@@ -40,7 +44,11 @@ public class DefaultPlexusRoleManager
         {
             if ( SOURCE_ALL.equals( source ) || locator.getSource().equals( source ) )
             {
-                roles.addAll( locator.listRoles());
+                Set<PlexusRole> locatorRoles = locator.listRoles();
+                if( locatorRoles != null )
+                {
+                    roles.addAll( locatorRoles );
+                }
             }
         }
 
