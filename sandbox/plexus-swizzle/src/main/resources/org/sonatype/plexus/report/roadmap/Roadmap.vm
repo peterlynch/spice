@@ -1,0 +1,13 @@
+#set( $project = $jira.getProject($projectKey) )
+#set( $version = $jira.getVersion( $project, $projectVersion) )
+#set( $url = "${jiraServerUrl}/secure/IssueNavigator.jspa?view=rss&&pid=${project.id}&fixfor=${version.id}&tempMax=500&reset=true&decorator=none&os_username=${username}&os_password=${password}" )
+#set( $issues = $rss.fetch($url).issues )
+$project.name Roadmap [$issues.size()]
+
+#foreach( $issue in $issues.sort("id").sort("priority") )
+h1. $issue.summary
+#set( $s = $stringtool.replace( "<p>", "", $issue.description ) )
+#set( $s = $stringtool.replace( "</p>", "", $s ) )
+$s
+
+#end
