@@ -18,6 +18,7 @@ package org.codehaus.plexus.swizzle;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -25,27 +26,33 @@ import java.io.Writer;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.methods.MultipartPostMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.multipart.FilePart;
+import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
+import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.velocity.VelocityContext;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.swizzle.jira.Attachment;
+import org.codehaus.swizzle.jira.Issue;
 import org.codehaus.swizzle.jira.Jira;
+import org.codehaus.swizzle.jira.ServerInfo;
 import org.codehaus.swizzle.jirareport.Main;
 
 @Component(role = JiraReporter.class)
 public class DefaultJiraReporter
-    extends AbstractLogEnabled
     implements JiraReporter
 {
     private Jira jira;
     private VelocityContext context;
-    private String jiraServerUrl = "http://issues.sonatype.org";
-    private String username = "jvanzyl";
-    private String password = "foobar";
+    private String jiraServerUrl = "http://jira.codehaus.org";
+    private String username = "xxx";
+    private String password = "xxx";
 
-    // ----------------------------------------------------------------------
-    // JiraReport Implementation
-    // ----------------------------------------------------------------------
 
     public void generateReport( String template, Map configuration, OutputStream os )
         throws Exception

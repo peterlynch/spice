@@ -9,7 +9,4 @@ public interface AuthenticationSource
     String getLogin();
 
     String getPassword();
-
-    void initialize()
-        throws AuthenticationSourceInitializationException;
 }

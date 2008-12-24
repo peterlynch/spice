@@ -16,13 +16,9 @@
 package org.codehaus.plexus.swizzle;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.codehaus.plexus.PlexusTestCase;
+import org.codehaus.plexus.swizzle.jira.authentication.PropertiesFileAuthenticationSource;
 
 /**
  * @author jtolentino
@@ -43,5 +39,21 @@ public class JiraReporterTest
         OutputStream result = new FileOutputStream( file );
         reporter.generateReport( "org/sonatype/plexus/report/roadmap/Roadmap.vm", m, result );        
         */
+    }
+    
+    public void testAttachment()
+        throws Exception
+    {
+        IssueSubmitter is = new JiraIssueSubmitter( "http://jira.codehaus.org", new PropertiesFileAuthenticationSource( null ) );
+        
+        IssueSubmissionRequest r = new IssueSubmissionRequest();
+        r.setProjectId( "MNGECLIPSE" );
+        r.setSummary( "summary" );
+        r.setDescription( "description" );
+        r.setAssignee( "jason" );
+        r.setReporter( "jason" );
+        r.setProblemReportBundle( new File( getBasedir(), "src/test/bundle.zip" ) );
+        
+        is.submitIssue( r );
     }
 }

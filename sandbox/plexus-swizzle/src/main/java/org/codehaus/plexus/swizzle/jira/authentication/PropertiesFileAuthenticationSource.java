@@ -5,6 +5,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
+
 /**
  * <p>
  * A simple authentication source that uses a properties file. If you format the properties
@@ -17,11 +21,12 @@ import java.util.Properties;
  * password: monkey
  * </pre>
  *
- * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
+ * @author Jason van Zyl
  * @version $Id$
  */
+@Component(role = AuthenticationSource.class)
 public class PropertiesFileAuthenticationSource
-    implements AuthenticationSource
+    implements AuthenticationSource, Initializable
 {
     private String login;
 
@@ -29,17 +34,15 @@ public class PropertiesFileAuthenticationSource
 
     private File propertiesFile;
 
-    public PropertiesFileAuthenticationSource()
+    public PropertiesFileAuthenticationSource( File propertiesFile )
+        throws InitializationException
     {
+        this.propertiesFile = propertiesFile;
+        initialize();
     }
-
-    public PropertiesFileAuthenticationSource( File properties )
-    {
-        this.propertiesFile = properties;
-    }
-
+    
     public void initialize()
-        throws AuthenticationSourceInitializationException
+        throws InitializationException
     {
         if ( propertiesFile == null )
         {
@@ -52,24 +55,24 @@ public class PropertiesFileAuthenticationSource
         {
             p.load( new FileInputStream( propertiesFile ) );
 
-            login = p.getProperty( "user" );
+            login = p.getProperty( "username" );
 
             if ( login == null )
             {
-                throw new AuthenticationSourceInitializationException( "Source contains no login information." );
+                throw new InitializationException( "Source contains no login information." );
             }
 
             password = p.getProperty( "password" );
 
             if ( password == null )
             {
-                throw new AuthenticationSourceInitializationException( "Source contains no password information." );
+                throw new InitializationException( "Source contains no password information." );
             }
 
         }
         catch ( IOException e )
         {
-            throw new AuthenticationSourceInitializationException( "Cannot find " + propertiesFile + "for login and password information." );
+            throw new InitializationException( "Cannot find " + propertiesFile + "for login and password information." );
         }
     }
 
