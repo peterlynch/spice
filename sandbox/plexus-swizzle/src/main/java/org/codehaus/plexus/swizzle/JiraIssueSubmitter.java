@@ -55,12 +55,17 @@ public class JiraIssueSubmitter
     public void submitIssue( IssueSubmissionRequest request )
         throws IssueSubmissionException
     {
-        Issue i = jira.getIssue( "MNGECLIPSE-1110" );                
+        // This is a total hack because the JIRA API seems to have changed. In order to get the right project
+        // object we need to get an issue
+        Issue i = jira.getIssue( request.getProjectId() + "-1" );
+        Project project = i.getProject();
+        // This is supposed to work but doesn't seem to.
+        //Project project = jira.getProject( request.getProjectId() );
         IssueType type = jira.getIssueType( 2 );
         Priority priority = jira.getPriority( 1 );
         
         Issue issue = new Issue();                   
-        issue.setProject( i.getProject() );
+        issue.setProject( project );
         issue.setAssignee( jira.getUser( request.getAssignee() ) );
         issue.setDescription( request.getDescription() );
         issue.setReporter( jira.getUser( request.getReporter() ) );
@@ -72,19 +77,19 @@ public class JiraIssueSubmitter
         
         try
         {
-            addedIssue = jira.createIssue(issue);
+            //addedIssue = jira.createIssue(issue);
         }
         catch ( Exception e )
         {
             throw new IssueSubmissionException( "Error creating issue: ", e );
         }
         
-        String key = addedIssue.getKey();
-        System.out.println( key );
+        //String key = addedIssue.getKey();
+        //System.out.println( key );
         
         if ( request.getProblemReportBundle() != null )
         {
-            attachProblemReport( addedIssue.getId(), request.getProblemReportBundle() );
+            //attachProblemReport( addedIssue.getId(), request.getProblemReportBundle() );
         }
     }
 
