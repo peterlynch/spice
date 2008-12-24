@@ -9,7 +9,6 @@ import java.util.Set;
 import junit.framework.Assert;
 
 import org.codehaus.plexus.PlexusTestCase;
-import org.jsecurity.crypto.hash.Hash;
 
 public class PlexusUserManagerTest
     extends PlexusTestCase

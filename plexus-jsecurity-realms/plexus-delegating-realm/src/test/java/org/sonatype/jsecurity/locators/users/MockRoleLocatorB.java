@@ -18,6 +18,7 @@ public class MockRoleLocatorB extends AbstractTestRoleLocator
         ids.add( "role24" );
         ids.add( "role25" );
         ids.add( "role26" );
+        ids.add( "duplicateId" ); // this is also in A
         return ids;
     }
 

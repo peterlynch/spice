@@ -1,17 +1,21 @@
 package org.sonatype.jsecurity.locators.users;
 
+import org.codehaus.plexus.util.StringUtils;
+
 public class PlexusRole
     implements Comparable<PlexusRole>
 {
     private String roleId;
+
     private String name;
-    private String source;   
-    
+
+    private String source;
+
     public PlexusRole()
     {
-        
+
     }
-    
+
     public PlexusRole( String roleId, String name, String source )
     {
         this.roleId = roleId;
@@ -51,12 +55,32 @@ public class PlexusRole
 
     public int compareTo( PlexusRole o )
     {
-        if ( o == null )
-            return 1;
+        final int before = -1;
+        final int equal = 0;
+        final int after = 1;
+
+        if ( this == o ) 
+            return equal;
         
-        return getRoleId().compareTo( o.getRoleId() );
+        if ( o == null )
+            return after;
+        
+        if( getRoleId() == null && o.getRoleId() != null )
+            return before;
+        else if( getRoleId() != null && o.getRoleId() == null )
+            return after;
+        
+        // the roleIds are not null
+        int result = getRoleId().compareTo( o.getRoleId() );
+        if( result != equal)
+            return result;
+
+        if( getSource() == null )
+            return before;
+
+        // if we are all the way to this point, the RoleIds are equal and this.getSource != null, so just return a compareTo on the source
+        return getSource().compareTo( o.getSource() );
     }
-    
     @Override
     public int hashCode()
     {

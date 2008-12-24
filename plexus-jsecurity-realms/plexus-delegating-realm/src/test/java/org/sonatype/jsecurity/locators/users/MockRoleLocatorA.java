@@ -5,10 +5,11 @@ import java.util.Set;
 
 public class MockRoleLocatorA extends AbstractTestRoleLocator
 {
+    private static final String SOURCE = "MockRoleLocatorA";
 
     public String getSource()
     {
-        return "MockRoleLocatorA";
+        return SOURCE;
     }
 
     public Set<String> listRoleIds()
@@ -18,6 +19,7 @@ public class MockRoleLocatorA extends AbstractTestRoleLocator
         ids.add( "role124" );
         ids.add( "role125" );
         ids.add( "role126" );
+        ids.add( "duplicateId" );// this is also in B
         return ids;
     }   
 

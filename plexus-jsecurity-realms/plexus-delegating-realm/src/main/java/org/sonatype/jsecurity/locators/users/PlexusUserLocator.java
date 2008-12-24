@@ -1,6 +1,5 @@
 package org.sonatype.jsecurity.locators.users;
 
-import java.util.List;
 import java.util.Set;
 
 /**

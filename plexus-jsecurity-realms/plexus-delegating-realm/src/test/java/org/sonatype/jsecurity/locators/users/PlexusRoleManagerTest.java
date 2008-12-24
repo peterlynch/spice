@@ -35,7 +35,8 @@ public class PlexusRoleManagerTest
         Assert.assertTrue( roleMap.containsKey( "role23" ) );
         Assert.assertTrue( roleMap.containsKey( "role24" ) );
         Assert.assertTrue( roleMap.containsKey( "role25" ) );
-        Assert.assertTrue( roleMap.containsKey( "role26" ) );
+        Assert.assertTrue( roleMap.containsKey( "role26" ) );       
+        Assert.assertEquals( 10, roles.size() );
     }
 
     private Map<String, PlexusRole> getMapFromList( Set<PlexusRole> roles )

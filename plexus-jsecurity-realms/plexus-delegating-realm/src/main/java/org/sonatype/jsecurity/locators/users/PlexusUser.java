@@ -69,10 +69,31 @@ public class PlexusUser
     }
     public int compareTo( PlexusUser o )
     {
-        if ( o == null )
-            return 1;
+        final int before = -1;
+        final int equal = 0;
+        final int after = 1;
+
+        if ( this == o ) 
+            return equal;
         
-        return getUserId().compareTo( o.getUserId() );
+        if ( o == null )
+            return after;
+        
+        if( getUserId() == null && o.getUserId() != null )
+            return before;
+        else if( getUserId() != null && o.getUserId() == null )
+            return after;
+        
+        // the userIds are not null
+        int result = getUserId().compareTo( o.getUserId() );
+        if( result != equal)
+            return result;
+
+        if( getSource() == null )
+            return before;
+
+        // if we are all the way to this point, the userIds are equal and this.getSource != null, so just return a compareTo on the source
+        return getSource().compareTo( o.getSource() );
     }
     @Override
     public int hashCode()
