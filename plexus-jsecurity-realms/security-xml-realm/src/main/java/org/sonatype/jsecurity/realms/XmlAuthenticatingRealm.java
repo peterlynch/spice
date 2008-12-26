@@ -11,7 +11,6 @@ import org.jsecurity.authc.AuthenticationToken;
 import org.jsecurity.authc.DisabledAccountException;
 import org.jsecurity.authc.SimpleAuthenticationInfo;
 import org.jsecurity.authc.UsernamePasswordToken;
-import org.jsecurity.authc.credential.Sha1CredentialsMatcher;
 import org.jsecurity.authz.AuthorizationInfo;
 import org.jsecurity.realm.AuthorizingRealm;
 import org.jsecurity.realm.Realm;
@@ -19,6 +18,7 @@ import org.jsecurity.subject.PrincipalCollection;
 import org.sonatype.jsecurity.model.CUser;
 import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
 import org.sonatype.jsecurity.realms.tools.NoSuchUserException;
+import org.sonatype.jsecurity.realms.tools.Sha1ThenMd5CredentialsMatcher;
 
 @Component( role = Realm.class, hint = "XmlAuthenticatingRealm" )
 public class XmlAuthenticatingRealm
@@ -37,7 +37,7 @@ public class XmlAuthenticatingRealm
     public void initialize()
         throws InitializationException
     {
-        setCredentialsMatcher( new Sha1CredentialsMatcher() );
+        setCredentialsMatcher( new Sha1ThenMd5CredentialsMatcher() );
     }
 
     @Override
