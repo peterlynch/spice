@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Date;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
@@ -22,7 +23,9 @@ import org.codehaus.swizzle.jira.IssueType;
 import org.codehaus.swizzle.jira.Jira;
 import org.codehaus.swizzle.jira.Priority;
 import org.codehaus.swizzle.jira.Project;
+import org.codehaus.swizzle.jira.User;
 
+//TODO detect whether the remote api is enabled
 @Component(role=IssueSubmitter.class, hint="jira" )
 public class JiraIssueSubmitter
     implements IssueSubmitter, Initializable
@@ -34,7 +37,7 @@ public class JiraIssueSubmitter
     private Jira jira;
     
     /** JIRA server URL to connect to. */
-    private String serverUrl = "http://jira.codehaus.org";
+    private String serverUrl;
 
     @Requirement
     private AuthenticationSource authenticationSource;
@@ -55,49 +58,75 @@ public class JiraIssueSubmitter
     public void submitIssue( IssueSubmissionRequest request )
         throws IssueSubmissionException
     {
-        // This is a total hack because the JIRA API seems to have changed. In order to get the right project
-        // object we need to get an issue
-        Issue i = jira.getIssue( request.getProjectId() + "-1" );
-        Project project = i.getProject();
-        // This is supposed to work but doesn't seem to.
-        //Project project = jira.getProject( request.getProjectId() );
+        Project project = jira.getProject( request.getProjectId() );
         IssueType type = jira.getIssueType( 2 );
         Priority priority = jira.getPriority( 1 );
         
+        validateIssueSubmissionRequest( request );
+        
         Issue issue = new Issue();                   
         issue.setProject( project );
-        issue.setAssignee( jira.getUser( request.getAssignee() ) );
+        issue.setSummary( request.getSummary() );
         issue.setDescription( request.getDescription() );
         issue.setReporter( jira.getUser( request.getReporter() ) );
-        issue.setSummary( request.getSummary() );
+        issue.setAssignee( jira.getUser( request.getAssignee() ) );
         issue.setType( type );
-        issue.setPriority( priority );        
+        issue.setPriority( priority );         
+                
+         // We need to create an issue so that we can create an attachment. The XMLRPC API does not
+         // allow for attachments so we have to use separate http client call to submit the attachment. 
         
         Issue addedIssue;
         
         try
         {
-            //addedIssue = jira.createIssue(issue);
+            addedIssue = jira.createIssue(issue);
         }
         catch ( Exception e )
         {
             throw new IssueSubmissionException( "Error creating issue: ", e );
         }
         
-        //String key = addedIssue.getKey();
-        //System.out.println( key );
-        
         if ( request.getProblemReportBundle() != null )
         {
-            //attachProblemReport( addedIssue.getId(), request.getProblemReportBundle() );
+            attachProblemReport( addedIssue.getId(), request.getProblemReportBundle() );
         }
     }
 
+    private void validateIssueSubmissionRequest( IssueSubmissionRequest request )
+        throws IssueSubmissionException
+    {
+        if ( !userExists( request.getReporter() ) )
+        {
+            throw new IssueSubmissionException( "The reporter must exist in the JIRA users database. The user '" + request.getAssignee() + "' does not exist." );
+        }        
+
+        if ( !userExists( request.getAssignee() ) )
+        {
+            throw new IssueSubmissionException( "The assignee must exist in the JIRA users database. The user '" + request.getAssignee() + "' does not exist." );
+        }        
+    }
+    
+    private boolean userExists( String login )
+    {
+        if ( jira.getUser( login ).getName() != null )
+        {
+            return true;
+        }
+        
+        return false;
+    }
+    
     public void submitProblemReportForIssue( String issueKey, File bundle )
         throws IssueSubmissionException
     {
     }
 
+    // Attachment support is being provided by creating a direct call against the web interface. We need to use the following
+    // URL template:
+    //
+    // /secure/AttachFile.jspa?id=${issueId}&os_username=${username}&os_password=${password}
+    
     private void attachProblemReport( String issueKey, File bundle )
         throws IssueSubmissionException
     {
@@ -111,10 +140,8 @@ public class JiraIssueSubmitter
         String username = authenticationSource.getLogin();
         String password = authenticationSource.getPassword();
         
-        // Attachment support
-        // curl 'http://localhost:8080/secure/AttachFile.jspa?id=10000&os_username=test&os_password=test' -F filename.1=@small.txt
-        // The issue ID (10000) can be discovered by looking at the URLs for operations on the JIRA issue (comment, assign etc).
         String uploadUrl = serverUrl + "/secure/AttachFile.jspa?id=" + issueId + "&os_username=" + username + "&os_password=" + password;
+        
         HttpClient client = new HttpClient();
         client.getHttpConnectionManager().getParams().setConnectionTimeout( 8000 );
         PostMethod upload = new PostMethod( uploadUrl );
@@ -124,20 +151,17 @@ public class JiraIssueSubmitter
             Part[] parts = { new FilePart( FILE_ATTATCHMENT_PARAMETER, bundle ) };
             upload.setRequestEntity( new MultipartRequestEntity( parts, upload.getParams() ) );
             int status = client.executeMethod( upload );
-            System.out.println( "statusLine>>> " + upload.getStatusLine() );
 
-            if ( status == HttpStatus.SC_OK )
+            // JIRA returns temporarily moved because the web UI moves to another page when the attachment
+            // submission is done normally.
+            
+            if ( status != HttpStatus.SC_MOVED_TEMPORARILY )
             {
-                // Jira seems to return a 302 Move temporarily
-                System.out.println( "OK!" );
-            }
-            else
-            {
-                System.out.println( "Upload NO!" );
+                // This should not fail once we have successfully created the issue, but in the event the
+                // attachment does fail we should probably roll back the creation of the issue.
             }
 
             upload.releaseConnection();
-
         }
         catch ( FileNotFoundException e )
         {
@@ -158,7 +182,11 @@ public class JiraIssueSubmitter
     {
         try
         {
-            jira = new Jira( serverUrl + "/rpc/xmlrpc" );
+            System.out.println( "'"+authenticationSource.getLogin()+"'");
+            System.out.println( "'"+authenticationSource.getPassword()+"'");
+            String rpcUrl = serverUrl + "/rpc/xmlrpc";
+            System.out.println( rpcUrl );
+            jira = new Jira( rpcUrl );
             jira.login( authenticationSource.getLogin(), authenticationSource.getPassword() );
         }
         catch ( MalformedURLException e )
@@ -167,7 +195,7 @@ public class JiraIssueSubmitter
         }
         catch ( Exception e )
         {
-            throw new InitializationException( "The username and password combination is invalid." );
+            throw new InitializationException( "The username and password combination is invalid.", e );
         }
     }
 }

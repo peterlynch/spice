@@ -18,11 +18,11 @@ package org.codehaus.plexus.swizzle;
 import java.io.File;
 
 import org.codehaus.plexus.PlexusTestCase;
+import org.codehaus.plexus.swizzle.jira.authentication.DefaultAuthenticationSource;
 import org.codehaus.plexus.swizzle.jira.authentication.PropertiesFileAuthenticationSource;
 
 /**
- * @author jtolentino
- * @version $$Id$$
+ * @author Jason van Zyl
  */
 public class JiraReporterTest
     extends PlexusTestCase
@@ -44,14 +44,14 @@ public class JiraReporterTest
     public void testAttachment()
         throws Exception
     {
-        IssueSubmitter is = new JiraIssueSubmitter( "http://jira.codehaus.org", new PropertiesFileAuthenticationSource( null ) );
+        IssueSubmitter is = new JiraIssueSubmitter( "http://localhost:8080", new DefaultAuthenticationSource( "test", "test" ) );
         
         IssueSubmissionRequest r = new IssueSubmissionRequest();
-        r.setProjectId( "MNGECLIPSE" );
+        r.setProjectId( "TEST" );
         r.setSummary( "summary" );
         r.setDescription( "description" );
-        r.setAssignee( "jason" );
-        r.setReporter( "jason" );
+        r.setAssignee( "test" );
+        r.setReporter( "test" );
         r.setProblemReportBundle( new File( getBasedir(), "src/test/bundle.zip" ) );
         
         is.submitIssue( r );
