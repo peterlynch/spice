@@ -44,14 +44,14 @@ public class JiraReporterTest
     public void testAttachment()
         throws Exception
     {
-        IssueSubmitter is = new JiraIssueSubmitter( "http://localhost:8080", new DefaultAuthenticationSource( "test", "test" ) );
+        IssueSubmitter is = new JiraIssueSubmitter( "https://issues.sonatype.org", new DefaultAuthenticationSource( "sonatype_problem_reporting", "sonatype_problem_reporting" ) );
         
         IssueSubmissionRequest r = new IssueSubmissionRequest();
-        r.setProjectId( "TEST" );
+        r.setProjectId( "PR" );
         r.setSummary( "summary" );
         r.setDescription( "description" );
-        r.setAssignee( "test" );
-        r.setReporter( "test" );
+        r.setAssignee( "sonatype_problem_reporting" );
+        r.setReporter( "sonatype_problem_reporting" );
         r.setProblemReportBundle( new File( getBasedir(), "src/test/bundle.zip" ) );
         
         is.submitIssue( r );

@@ -84,7 +84,7 @@ public class JiraIssueSubmitter
         }
         catch ( Exception e )
         {
-            throw new IssueSubmissionException( "Error creating issue: ", e );
+            throw new IssueSubmissionException( "Error creating issue: " + e.getMessage(), e );
         }
         
         if ( request.getProblemReportBundle() != null )
@@ -117,11 +117,6 @@ public class JiraIssueSubmitter
         return false;
     }
     
-    public void submitProblemReportForIssue( String issueKey, File bundle )
-        throws IssueSubmissionException
-    {
-    }
-
     // Attachment support is being provided by creating a direct call against the web interface. We need to use the following
     // URL template:
     //
@@ -182,7 +177,7 @@ public class JiraIssueSubmitter
     {
         try
         {
-            jira = new Jira( rpcUrl );
+            jira = new Jira( serverUrl );
             jira.login( authenticationSource.getLogin(), authenticationSource.getPassword() );
         }
         catch ( MalformedURLException e )
