@@ -182,7 +182,6 @@ public class JiraIssueSubmitter
     {
         try
         {
-            System.out.println( rpcUrl );
             jira = new Jira( rpcUrl );
             jira.login( authenticationSource.getLogin(), authenticationSource.getPassword() );
         }
