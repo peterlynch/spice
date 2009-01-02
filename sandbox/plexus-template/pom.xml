@@ -3,12 +3,15 @@
   <parent>
     <groupId>org.sonatype.spice</groupId>
     <artifactId>spice-parent</artifactId>
-    <version>5</version>
+    <version>10</version>
   </parent>
   <groupId>org.sonatype.plexus.template</groupId>
   <artifactId>plexus-template</artifactId>
   <packaging>maven-plugin</packaging>
   <version>0.9.0-SNAPSHOT</version>
+  <properties>
+    <plexusVersion>1.0-beta-3.0.1</plexusVersion>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -19,7 +22,7 @@
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-container-default</artifactId>
-      <version>1.0-beta-1</version>
+      <version>${plexusVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.velocity</groupId>
@@ -29,7 +32,7 @@
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-component-annotations</artifactId>
-      <version>1.0-beta-1</version>
+      <version>${plexusVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -42,7 +45,7 @@
       <plugin>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-component-metadata</artifactId>
-        <version>1.0-beta-1</version>
+        <version>${plexusVersion}</version>
         <executions>
           <execution>
             <goals>
