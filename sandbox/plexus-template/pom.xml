@@ -8,7 +8,7 @@
   <groupId>org.sonatype.plexus.template</groupId>
   <artifactId>plexus-template</artifactId>
   <packaging>maven-plugin</packaging>
-  <version>0.9.3-SNAPSHOT</version>
+  <version>0.9.3</version>
   <properties>
     <plexusVersion>1.0-beta-3.0.1</plexusVersion>
   </properties>
@@ -65,4 +65,10 @@
       </plugin>
     </plugins>
   </build>
+
+  <scm>
+    <connection>scm:svn:http://svn.sonatype.org/spice/tags/plexus-template-0.9.3</connection>
+    <developerConnection>scm:svn:https://svn.sonatype.org/spice/tags/plexus-template-0.9.3</developerConnection>
+    <url>http://svn.sonatype.org/spice/tags/plexus-template-0.9.3</url>
+  </scm>
 </project>
