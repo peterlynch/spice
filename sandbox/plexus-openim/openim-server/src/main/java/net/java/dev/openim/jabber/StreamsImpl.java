@@ -1,12 +1,14 @@
-/*
- * BSD License http://open-im.net/bsd-license.html
- * Copyright (c) 2003, OpenIM Project http://open-im.net
- * All rights reserved.
+/**
+ * Copyright © 2008 Sonatype, Inc. All rights reserved.
  *
- * This software consists of voluntary contributions made by many
- * individuals on behalf of the OpenIM project. For more
- * information on the OpenIM project, please see
- * http://open-im.net/
+ * This program is licensed to you under the Apache License Version 2.0,
+ * and you may not use this file except in compliance with the Apache License Version 2.0.
+ * You may obtain a copy of the Apache License Version 2.0 at http://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the Apache License Version 2.0 is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
 package net.java.dev.openim.jabber;
 
