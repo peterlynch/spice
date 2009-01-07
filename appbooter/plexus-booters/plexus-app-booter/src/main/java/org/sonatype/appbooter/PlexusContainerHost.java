@@ -30,6 +30,7 @@ import org.codehaus.plexus.DefaultPlexusContainer;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.interpolation.InterpolationException;
+import org.codehaus.plexus.interpolation.Interpolator;
 import org.codehaus.plexus.interpolation.MapBasedValueSource;
 import org.codehaus.plexus.interpolation.RegexBasedInterpolator;
 import org.codehaus.plexus.util.StringUtils;
@@ -224,7 +225,7 @@ public class PlexusContainerHost
         }
 
         // interpolate what we have
-        RegexBasedInterpolator interpolator = new RegexBasedInterpolator();
+        Interpolator interpolator = new RegexBasedInterpolator();
 
         interpolator.addValueSource( new MapBasedValueSource( containerProperties ) );
         interpolator.addValueSource( new MapBasedValueSource( System.getProperties() ) );
