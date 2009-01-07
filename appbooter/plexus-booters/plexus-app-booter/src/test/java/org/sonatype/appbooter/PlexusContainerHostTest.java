@@ -1,6 +1,5 @@
 package org.sonatype.appbooter;
 
-import java.io.File;
 import java.util.Map;
 
 import org.codehaus.plexus.PlexusTestCase;
@@ -26,8 +25,7 @@ public class PlexusContainerHostTest
     {
         Map<Object, Object> ctx = createContainerContext();
 
-        assertEquals( true, ctx.get( "nexus-work" ).toString().endsWith(
-            "/sonatype-work/nexus".replace( '/', File.separatorChar ) ) );
+        assertEquals( true, ctx.get( "nexus-work" ).toString().endsWith( "/sonatype-work/nexus" ) );
     }
 
     public void testCreateContainerContextSystemPropsOverride()
@@ -37,8 +35,7 @@ public class PlexusContainerHostTest
 
         Map<Object, Object> ctx = createContainerContext();
 
-        assertEquals( false, ctx.get( "nexus-work" ).toString().endsWith(
-            "/sonatype-work/nexus".replace( '/', File.separatorChar ) ) );
+        assertEquals( false, ctx.get( "nexus-work" ).toString().endsWith( "/sonatype-work/nexus" ) );
 
         assertEquals( "ukulele", ctx.get( "nexus-work" ) );
 
