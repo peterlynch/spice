@@ -1,0 +1,222 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+<model>
+  <id>dd</id>
+  
+  <name>DeploymentDescriptor</name>
+  <description>Deployment descriptor</description>
+  
+  <defaults>
+    <default>
+      <key>package</key>
+      <value>org.sonatype.mercury.mp3.api.dd</value>
+    </default>
+  </defaults>
+  
+  <classes>
+
+    <class rootElement="true">
+      <name>NodeConfiguration</name>
+      <version>1.0.0</version>
+      <fields>
+
+        <field>
+          <name>lastUpdated</name>
+          <version>1.0.0</version>
+          <type>String</type>
+          <description>When this descriptor was last updated</description>
+        </field>
+
+        <field>
+          <name>containers</name>
+          <version>1.0.0</version>
+          <description>group of containers, exposed by this node</description>
+          <association>
+            <type>Container</type>
+            <multiplicity>*</multiplicity>
+          </association>
+        </field>
+
+      </fields>
+   </class>
+
+    <class>
+      <name>VirtualMachine</name>
+      <version>1.0.0</version>
+      <description>metadata element</description>
+
+      <fields>
+
+        <field>
+          <name>id</name>
+          <version>1.0.0</version>
+          <description>id to reference this VM</description>
+          <type>String</type>
+        </field>
+        
+        <field>
+          <name>type</name>
+          <version>1.0.0</version>
+          <description>type. jvm for java VM</description>
+          <type>String</type>
+        </field>
+
+        <field>
+          <name>coordinates</name>
+          <version>1.0.0</version>
+          <description>repository coordinates</description>
+          <association>
+            <type>Property</type>
+            <multiplicity>*</multiplicity>
+          </association>
+        </field>
+
+        <field>
+          <name>configuration</name>
+          <version>1.0.0</version>
+          <description>VM initialization params</description>
+          <association>
+            <type>Property</type>
+            <multiplicity>*</multiplicity>
+          </association>
+        </field>
+
+      </fields>
+    </class>
+
+    <class>
+      <name>Property</name>
+      <version>1.0.0</version>
+      <description>generic property - name/value pair</description>
+      <fields>
+        <field>
+          <name>name</name>
+          <type>String</type>
+          <required>true</required>
+          <version>1.0.0</version>
+          <description>name of this property</description>
+        </field>
+        <field>
+          <name>value</name>
+          <type>String</type>
+          <required>true</required>
+          <version>1.0.0</version>
+          <description>value of this property</description>
+        </field>
+      </fields>
+    </class>
+
+    <class>
+      <name>Container</name>
+      <version>1.0.0</version>
+      <description>container, exposed by the node</description>
+
+      <fields>
+
+        <field>
+          <name>id</name>
+          <version>1.0.0</version>
+          <description>id to reference this container by</description>
+          <type>String</type>
+        </field>
+
+        <field>
+          <name>type</name>
+          <version>1.0.0</version>
+          <description>container type - maps into the container handler</description>
+          <type>String</type>
+        </field>
+
+        <field>
+          <name>coordinates</name>
+          <version>1.0.0</version>
+          <description>repository coordinates</description>
+          <association>
+            <type>Property</type>
+            <multiplicity>*</multiplicity>
+          </association>
+        </field>
+
+        <field>
+          <name>vm</name>
+          <version>1.0.0</version>
+          <description>vm configuration</description>
+          <association>
+            <type>VirtualMachine</type>
+            <multiplicity>1</multiplicity>
+          </association>
+        </field>
+
+        <field>
+          <name>configuration</name>
+          <version>1.0.0</version>
+          <description>VM initialization params</description>
+          <association>
+            <type>Property</type>
+            <multiplicity>*</multiplicity>
+          </association>
+        </field>
+
+        <field>
+          <name>components</name>
+          <version>1.0.0</version>
+          <description>components to initially load into this container</description>
+          <association>
+            <type>Component</type>
+            <multiplicity>*</multiplicity>
+          </association>
+        </field>
+        
+      </fields>
+    </class>
+
+    <class>
+      <name>Component</name>
+      <version>1.0.0</version>
+      <description>generic attribute - name/value pair</description>
+
+      <fields>
+
+        <field>
+          <name>coordinates</name>
+          <version>1.0.0</version>
+          <description>repository coordinates</description>
+          <association>
+            <type>Property</type>
+            <multiplicity>*</multiplicity>
+          </association>
+        </field>
+
+        <field>
+          <name>configuration</name>
+          <version>1.0.0</version>
+          <description>component configuration params</description>
+          <association>
+            <type>Property</type>
+            <multiplicity>*</multiplicity>
+          </association>
+        </field>
+        
+      </fields>
+    </class>
+
+
+  </classes>
+</model>
