@@ -21,7 +21,7 @@ package org.sonatype.mercury.mp3.delta;
 
 import org.sonatype.mercury.mp3.api.DeltaManager;
 import org.sonatype.mercury.mp3.api.DeltaManagerException;
-import org.sonatype.mercury.mp3.api.dd.NodeConfiguration;
+import org.sonatype.mercury.mp3.api.cd.NodeConfiguration;
 
 /**
  *

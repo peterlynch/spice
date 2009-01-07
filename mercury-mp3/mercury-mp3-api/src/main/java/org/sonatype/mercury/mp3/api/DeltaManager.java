@@ -19,7 +19,7 @@ under the License.
 
 package org.sonatype.mercury.mp3.api;
 
-import org.sonatype.mercury.mp3.api.dd.NodeConfiguration;
+import org.sonatype.mercury.mp3.api.cd.NodeConfiguration;
 
 /**
  *

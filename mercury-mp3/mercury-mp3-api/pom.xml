@@ -42,7 +42,7 @@ under the License.
         <configuration>
           <version>1.0.0</version>
           <models>
-            <model>src/main/mdo/dd.mdo</model>
+            <model>src/main/mdo/cd.mdo</model>
           </models>
         </configuration>
         <executions>

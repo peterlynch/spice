@@ -18,15 +18,15 @@ under the License.
 -->
 
 <model>
-  <id>dd</id>
+  <id>cd</id>
   
-  <name>DeploymentDescriptor</name>
+  <name>ConfigurationDescriptor</name>
   <description>Deployment descriptor</description>
   
   <defaults>
     <default>
       <key>package</key>
-      <value>org.sonatype.mercury.mp3.api.dd</value>
+      <value>org.sonatype.mercury.mp3.api.cd</value>
     </default>
   </defaults>
   
