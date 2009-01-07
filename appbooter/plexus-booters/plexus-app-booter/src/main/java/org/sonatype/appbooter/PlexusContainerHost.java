@@ -1,18 +1,18 @@
- /**
-  * Copyright (C) 2008 Sonatype Inc.
-  * Sonatype Inc, licenses this file to you under the Apache License,
-  * Version 2.0 (the "License"); you may not use this file except in
-  * compliance with the License.  You may obtain a copy of the License at
-  *
-  * http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing,
-  * software distributed under the License is distributed on an
-  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-  * KIND, either express or implied.  See the License for the
-  * specific language governing permissions and limitations
-  * under the License.
-  */
+/**
+ * Copyright (C) 2008 Sonatype Inc.
+ * Sonatype Inc, licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.sonatype.appbooter;
 
 import java.io.File;
@@ -22,6 +22,7 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Map.Entry;
 
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
@@ -37,13 +38,13 @@ import org.sonatype.appbooter.ctl.Service;
 
 /**
  * Main class for booting plexus apps in standalone model
+ * 
  * @version $Id: PlexusContainerHost.java 5337 2008-04-23 21:09:39Z jdcasey $
  * @since 1.0
  */
 public class PlexusContainerHost
     implements Service
 {
-
     public static final String CONFIGURATION_FILE_PROPERTY = "plexus.configuration";
 
     public static final String ENABLE_CONTROL_SOCKET = "plexus.host.control.socket.enabled";
@@ -59,7 +60,7 @@ public class PlexusContainerHost
     private File configuration;
 
     private ClassWorld world;
-    
+
     private int controlPort = DEFAULT_CONTROL_PORT;
 
     private boolean isShutdown;
@@ -71,15 +72,15 @@ public class PlexusContainerHost
     private File basedir;
 
     private Thread managementThread;
-    
+
     private static final String PLEXUS_ENV_VAR_PREFIX = "PLEXUS_";
-    
+
     private static final String PLEXUS_SYSTEM_PROP_PREFIX = "plexus.";
 
     public PlexusContainerHost( ClassWorld world, int controlPort )
     {
         this.controlPort = controlPort;
-        
+
         this.world = world;
 
         String configPath = System.getProperty( CONFIGURATION_FILE_PROPERTY );
@@ -95,7 +96,7 @@ public class PlexusContainerHost
 
         initManagementThread();
     }
-    
+
     public PlexusContainerHost( ClassWorld world )
     {
         this( world, DEFAULT_CONTROL_PORT );
@@ -128,21 +129,37 @@ public class PlexusContainerHost
         }
     }
 
-    @SuppressWarnings("unchecked")
-
-    protected Map createContainerContext()
+    /**
+     * The Plexus Container Context map is created by inspecting various sources from environment (env vars, system
+     * props, plexus.properties) to allow users to override values as needed without tampering with config files.
+     * 
+     * @return
+     * @throws InterpolationException
+     */
+    protected Map<Object, Object> createContainerContext()
         throws InterpolationException
     {
-        Map containerContext = new HashMap();
+        // environment is a map of properties that comes from "environment": env vars and JVM system properties.
+        // Keys found in this map are collected in this order, and the latter added will always replace any pre-existing
+        // key:
+        //
+        // - basedir is put initially
+        // - env vars
+        // - system properties (will "stomp" env vars)
+        //
+        // As next step, the plexus.properties file is searched. If found, it will be loaded and filtered out for any
+        // key that exists in environment map, and finally interpolation will be made against the "union" of those two.
+        // The interpolation sources used in interpolation are: plexusProperties, environment and
+        // System.getProperties().
+        // The final interpolated values are put into containerContext map and returned.
+        Map<Object, Object> environment = new HashMap<Object, Object>();
 
-        // A temporary map for holding properties
-        Map tempHolder = new HashMap();
+        Map<Object, Object> containerContext = new HashMap<Object, Object>();
 
         if ( basedir != null )
         {
-            tempHolder.put( "basedir", basedir.getAbsolutePath() );
+            environment.put( "basedir", basedir.getAbsolutePath() );
         }
-
 
         /*
          * Iterate through environment variables, insert all items into a map (making sure to do translation needed,
@@ -156,7 +173,7 @@ public class PlexusContainerHost
             {
                 String plexusKey = key.toLowerCase().substring( PLEXUS_ENV_VAR_PREFIX.length() ).replace( '_', '-' );
 
-                tempHolder.put( plexusKey, envMap.get( key ) );
+                environment.put( plexusKey, envMap.get( key ) );
             }
         }
 
@@ -174,19 +191,20 @@ public class PlexusContainerHost
             {
                 String plexusKey = key.substring( PLEXUS_SYSTEM_PROP_PREFIX.length() );
 
-                tempHolder.put( plexusKey, sysProps.get( obj ) );
+                environment.put( plexusKey, sysProps.get( obj ) );
             }
         }
-        
+
         /*
-         * Iterate through plexus.properties, insert all items into a map add into plexus context using a RegexBasedInterpolator.
-         */        
+         * Iterate through plexus.properties, insert all items into a map add into plexus context using a
+         * RegexBasedInterpolator.
+         */
         File containerPropertiesFile = new File( configuration.getParentFile(), "plexus.properties" );
+
+        Properties containerProperties = new Properties();
 
         if ( containerPropertiesFile.exists() )
         {
-            Properties containerProperties = new Properties();
-
             try
             {
                 containerProperties.load( new FileInputStream( containerPropertiesFile ) );
@@ -194,70 +212,67 @@ public class PlexusContainerHost
             catch ( IOException e )
             {
                 System.err.println( "Failed to load plexus properties: " + containerPropertiesFile );
-            }
-            
-            RegexBasedInterpolator interpolator = new RegexBasedInterpolator();
 
-            interpolator.addValueSource( new MapBasedValueSource( containerProperties ) );
-            interpolator.addValueSource( new MapBasedValueSource( System.getProperties() ) );
-            interpolator.addValueSource( new MapBasedValueSource( tempHolder ) );
-            
-            for ( Object key : containerProperties.keySet() )
+                containerProperties.clear();
+            }
+
+            // filter the keys in containerProperties with keys from environment
+            for ( Object envKey : environment.keySet() )
             {
-                if ( ! tempHolder.containsKey( key ) )
-                {
-                    tempHolder.put( key, interpolator.interpolate( (String) containerProperties.get( key ) ) );
-                }
+                containerProperties.remove( envKey );
             }
         }
-        
-        /*
-         * Iterate through this map, and place each item into system properties (prepended with plexus. )
-         */
-        for ( Object obj : tempHolder.keySet() )
+
+        // interpolate what we have
+        RegexBasedInterpolator interpolator = new RegexBasedInterpolator();
+
+        interpolator.addValueSource( new MapBasedValueSource( containerProperties ) );
+        interpolator.addValueSource( new MapBasedValueSource( System.getProperties() ) );
+        interpolator.addValueSource( new MapBasedValueSource( environment ) );
+
+        for ( Object key : containerProperties.keySet() )
         {
-            String sysPropKey = PLEXUS_SYSTEM_PROP_PREFIX + obj.toString();
+            containerContext.put( key, interpolator.interpolate( (String) containerProperties.get( key ) ) );
+        }
+        for ( Object key : environment.keySet() )
+        {
+            containerContext.put( key, interpolator.interpolate( (String) environment.get( key ) ) );
+        }
+
+        // Now that we have containerContext with proper values, set them back into System properties and
+        // dump them to System.out for reference.
+        for ( Entry<Object, Object> entry : containerContext.entrySet() )
+        {
+            String key = (String) entry.getKey();
+
+            String value = (String) entry.getValue();
+
+            // adjust the key name and put it back to System properties
+            String sysPropKey = PLEXUS_SYSTEM_PROP_PREFIX + key;
 
             if ( System.getProperty( sysPropKey ) == null )
             {
-                System.setProperty( sysPropKey, (String) tempHolder.get( obj ) );
+                System.setProperty( sysPropKey, (String) value );
             }
-        }
 
-        /*
-         * Iterate through this map, and add into plexus context using a RegexBasedInterpolator, adding this map as a
-         * valueSource to that interpolator.
-         */
-
-        for ( Object obj : tempHolder.keySet() )
-        {
-            String key = obj.toString();
-
-            String value = (String) tempHolder.get( obj );
-
-            System.out
-                .println( "Property with KEY: " + key + " , VALUE: " + value + " inserted into plexus context." );
-
-            containerContext.put( key, value );
+            // dump it to System.out
+            System.out.println( "Property with KEY: '" + key + "', VALUE: '" + value + "' inserted into plexus context." );
         }
 
         return containerContext;
     }
 
-
-
-
     /**
      * This method will start the container, this is a non-blocking method, and will return once container has started
+     * 
      * @throws Exception
      */
     public void startContainer()
         throws Exception
     {
         ContainerConfiguration cc = new DefaultContainerConfiguration()
-            .setClassWorld( world )
-            .setContainerConfiguration( configuration.getAbsolutePath() )
-            .setContext( createContainerContext() );
+            .setClassWorld( world ).setContainerConfiguration( configuration.getAbsolutePath() ).setContext(
+                createContainerContext() );
 
         container = new DefaultPlexusContainer( cc );
 
@@ -276,7 +291,8 @@ public class PlexusContainerHost
     }
 
     /**
-     * This method will start the container, this is a blocking method, and will return once interrupted and told to shutdown
+     * This method will start the container, this is a blocking method, and will return once interrupted and told to
+     * shutdown
      */
     public void startPlexusContainer()
     {
@@ -292,19 +308,19 @@ public class PlexusContainerHost
                     {
                         waitObj.wait();
 
-                        //If a stop was requested, just stop the container, not everything
-                        //as we will have the ability to start at a later time
+                        // If a stop was requested, just stop the container, not everything
+                        // as we will have the ability to start at a later time
                         if ( isStopped() )
                         {
                             stopContainer();
                         }
-                        //On a shutodwn, we need to take everything down
+                        // On a shutodwn, we need to take everything down
                         else if ( isShutdown() )
                         {
                             stopContainer();
                             stopManagementThread();
                         }
-                        //If neither, we have been notified to start the container
+                        // If neither, we have been notified to start the container
                         else
                         {
                             startContainer();
@@ -313,19 +329,19 @@ public class PlexusContainerHost
                 }
                 catch ( InterruptedException e )
                 {
-                    //If a stop was requested, just stop the container, not everything
-                    //as we will have the ability to start at a later time
+                    // If a stop was requested, just stop the container, not everything
+                    // as we will have the ability to start at a later time
                     if ( isStopped() )
                     {
                         stopContainer();
                     }
-                    //On a shutodwn, we need to take everything down
+                    // On a shutodwn, we need to take everything down
                     else if ( isShutdown() )
                     {
                         stopContainer();
                         stopManagementThread();
                     }
-                    //If neither, we have been notified to start the container
+                    // If neither, we have been notified to start the container
                     else
                     {
                         startContainer();
@@ -340,11 +356,10 @@ public class PlexusContainerHost
         }
     }
 
-    public static void main( String[] args,
-                             ClassWorld classWorld )
+    public static void main( String[] args, ClassWorld classWorld )
     {
         // get the port from args
-        int controlPort = getControlPortFromArgs(args);
+        int controlPort = getControlPortFromArgs( args );
 
         PlexusContainerHost containerHost = new PlexusContainerHost( classWorld, controlPort );
 
@@ -356,7 +371,7 @@ public class PlexusContainerHost
         }
         containerHost.startPlexusContainer();
     }
-    
+
     /**
      * Parses the <code>args</code> if a single element exists and is a integer the value returned. Otherwise the
      * <code>DEFAULT_CONTROL_PORT</code> is used.
@@ -364,34 +379,34 @@ public class PlexusContainerHost
      * @param args Command line arguments.
      * @return The control port.
      */
-    private static int getControlPortFromArgs(String[] args)
+    private static int getControlPortFromArgs( String[] args )
     {
-        
+
         // if we need to get more involved we could use commons-cli's CommandLineParser
         // but for a single arg that seems overkill, what would be nice, is if we parsed
-        //all of the args and put them in the context of the container.
-                
+        // all of the args and put them in the context of the container.
+
         int controlPort = DEFAULT_CONTROL_PORT;
-        
+
         // grunt parsing..
-        if( args != null && args.length ==1 )
+        if ( args != null && args.length == 1 )
         {
             String tmpPortString = args[0];
-            if( StringUtils.isNotEmpty( tmpPortString ) && StringUtils.isNumeric( tmpPortString ) )
+            if ( StringUtils.isNotEmpty( tmpPortString ) && StringUtils.isNumeric( tmpPortString ) )
             {
                 try
                 {
-                  controlPort = Integer.parseInt( tmpPortString );
+                    controlPort = Integer.parseInt( tmpPortString );
                 }
                 // this should never happen, well, maybe if you pass in a long
-                catch( NumberFormatException e )
+                catch ( NumberFormatException e )
                 {
-                    System.out.println( "Error parsing command line args: "+ e.getMessage() );
-                    System.out.println( "Using default control port: "+ DEFAULT_CONTROL_PORT );
+                    System.out.println( "Error parsing command line args: " + e.getMessage() );
+                    System.out.println( "Using default control port: " + DEFAULT_CONTROL_PORT );
                 }
             }
         }
-        
+
         return controlPort;
     }
 
@@ -415,7 +430,7 @@ public class PlexusContainerHost
     {
         if ( managementThread != null && managementThread.isAlive() )
         {
-            synchronized( managementThread )
+            synchronized ( managementThread )
             {
                 managementThread.interrupt();
 
@@ -468,9 +483,5 @@ public class PlexusContainerHost
             waitObj.notify();
         }
     }
-
-
-
-
 
 }
