@@ -1,0 +1,14 @@
+ ------
+ Maven MP3
+ ------
+ Oleg Gusakov
+ ------
+ 05 Jan 2009
+ ------
+
+Provisioning subsystem overview
+
+ This subsystem provides provisioning extension to Mercury. 
+ 
+ Main responsibility of a provisioning system is to supply binaries and configurations to a 
+ network node, optimizing this process. This rather broad   

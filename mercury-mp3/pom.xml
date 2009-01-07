@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.sonatype.spice</groupId>
+    <artifactId>spice-parent</artifactId>
+    <version>10</version>
+  </parent>
+
+  <groupId>org.sonatype.mercury</groupId>
+  <artifactId>mercury-mp3</artifactId>
+  <version>1.0-alpha-1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>Mercury Provisioning subsystem</name>
+
+  <modules>
+    <module>mercury-mp3-delta</module>
+    <module>mercury-mp3-api</module>
+  </modules>
+
+
+  <scm>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/maven/mercury/trunk/mercury-mp3/</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/maven/mercury/trunk/mercury-mp3/</developerConnection>
+    <url>http://svn.apache.org/viewvc/maven/mercury/trunk/mercury-mp3/</url>
+  </scm>
+
+  <issueManagement>
+    <system>jira</system>
+    <url>http://jira.codehaus.org/browse/MERCURY</url>
+  </issueManagement>
+
+  <ciManagement>
+    <system>hudson</system>
+    <url>http://grid.sonatype.org/ci/view/Mercury/job/mercury</url>
+  </ciManagement>
+
+  <distributionManagement>
+
+    <repository>
+      <id>${distMgmtReleasesId}</id>
+      <name>${distMgmtReleasesName}</name>
+      <url>${distMgmtReleasesUrl}</url>
+    </repository>
+
+    <snapshotRepository>
+      <id>${distMgmtSnapshotsId}</id>
+      <name>${distMgmtSnapshotsName}</name>
+      <url>${distMgmtSnapshotsUrl}</url>
+    </snapshotRepository>
+
+    <site>
+      <id>${distMgmtSiteId}</id>
+      <name>${distMgmtSiteName}</name>
+      <url>${distMgmtSiteUrl}</url>
+    </site>
+
+  </distributionManagement>
+
+  <properties>
+    <mercury.version>1.0.0-alpha-3-SNAPSHOT</mercury.version>
+    <maven.version>3.0-alpha-1</maven.version>
+    <mercury.mp3.version>${project.version}</mercury.mp3.version>
+
+    <junit.version>3.8.2</junit.version>
+    <java.version>1.5</java.version>
+    
+    <distMgmtReleasesId>apache.releases</distMgmtReleasesId>
+    <distMgmtReleasesName>Apache Releases</distMgmtReleasesName>
+    <distMgmtReleasesUrl>scp://people.apache.org/www/people.apache.org/repo/m2-release-repository</distMgmtReleasesUrl>
+
+    <distMgmtSnapshotsId>apache.snapshots</distMgmtSnapshotsId>
+    <distMgmtSnapshotsName>Apache Snapshots</distMgmtSnapshotsName>
+    <distMgmtSnapshotsUrl>scp://people.apache.org/www/people.apache.org/repo/m2-snapshot-repository</distMgmtSnapshotsUrl>
+
+    <distMgmtSiteId>apache.snapshots</distMgmtSiteId>
+    <distMgmtSiteName>Apache Snapshots</distMgmtSiteName>
+    <distMgmtSiteUrl>scp://people.apache.org/home/ogusakov/public_html/sites/mercury-mp3</distMgmtSiteUrl>
+
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+
+      <dependency>
+        <groupId>org.apache.ant</groupId>
+        <artifactId>ant</artifactId>
+        <version>${ant.version}</version>
+      </dependency>
+    
+      <!-- Mercury deps -->
+      <dependency>
+        <groupId>org.apache.maven.mercury</groupId>
+        <artifactId>mercury-event</artifactId>
+        <version>${mercury.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.maven.mercury</groupId>
+        <artifactId>mercury-logging</artifactId>
+        <version>${mercury.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.maven.mercury</groupId>
+        <artifactId>mercury-artifact</artifactId>
+        <version>${mercury.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.apache.maven.mercury</groupId>
+        <artifactId>mercury-external</artifactId>
+        <version>${mercury.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.apache.maven.mercury</groupId>
+        <artifactId>mercury-repo-virtual</artifactId>
+        <version>${mercury.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.maven.mercury</groupId>
+        <artifactId>mercury-repo-local-m2</artifactId>
+        <version>${mercury.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.maven.mercury</groupId>
+        <artifactId>mercury-repo-local-map</artifactId>
+        <version>${mercury.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.apache.maven.mercury</groupId>
+        <artifactId>mercury-repo-remote-m2</artifactId>
+        <version>${mercury.version}</version>
+      </dependency>
+      
+       <dependency>
+        <groupId>org.apache.maven.mercury</groupId>
+        <artifactId>mercury-md-sat</artifactId>
+        <version>${mercury.version}</version>
+      </dependency>
+  
+      <!-- mp3 dependencies -->
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>mercury-mp3-dd</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>mercury-mp3-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+  
+      <!-- Maven dependencies -->
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-mercury</artifactId>
+        <version>${maven.version}</version>
+      </dependency>
+  
+      <!-- Test Dependencies -->
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${junit.version}</version>
+        <scope>test</scope>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.apache.maven.mercury</groupId>
+        <artifactId>mercury-transport-http</artifactId>
+        <classifier>tests</classifier>
+        <version>${mercury.version}</version>
+        <scope>test</scope>
+      </dependency>
+      
+    </dependencies>
+  </dependencyManagement>
+  
+  <dependencies>
+    <!-- Test Dependencies -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <defaultGoal>install</defaultGoal>
+    <resources>
+      <resource>
+        <directory>src/main/java</directory>
+        <filtering>false</filtering>
+        <includes>
+            <include>**/Messages.properties</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>false</filtering>
+      </resource>
+    </resources>
+
+    <testResources>
+      <testResource>
+        <directory>src/test/java</directory>
+        <filtering>false</filtering>
+        <includes>
+            <include>**/Messages.properties</include>
+        </includes>
+      </testResource>
+      <testResource>
+        <directory>src/test/resources</directory>
+        <filtering>false</filtering>
+      </testResource>
+    </testResources>
+
+    <plugins>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>package-tests</id>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+      </plugin>
+      
+      <plugin>
+         <artifactId>maven-enforcer-plugin</artifactId>
+         <version>1.0-alpha-4</version>
+         <executions>
+             <execution>
+                 <goals>
+                     <goal>enforce</goal>
+                 </goals>
+                 <id>enforce</id>
+                 <configuration>
+                     <rules>
+                         <bannedDependencies>
+                             <excludes>
+                                 <exclude>*:plexus-component-api</exclude>
+                             </excludes>
+                             <message> plexus-component-api conflicts with newer plexus-container-default. You probably added a dependency
+                                 that is plexus component made
+                                 with older plexus container. </message>
+                         </bannedDependencies>
+                         <!--  <requirePluginVersions>
+                             <banSnapshots>false</banSnapshots>
+                             </requirePluginVersions>-->
+                     </rules>
+                     <fail>true</fail>
+                 </configuration>
+             </execution>
+         </executions>
+     </plugin>
+
+    </plugins>
+
+  </build>
+
+
+</project>
