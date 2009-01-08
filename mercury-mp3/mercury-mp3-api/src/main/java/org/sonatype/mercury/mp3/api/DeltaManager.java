@@ -10,9 +10,15 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
+
 package org.sonatype.mercury.mp3.api;
 
-import org.sonatype.mercury.mp3.api.cd.NodeConfiguration;
+import java.util.Collection;
+import java.util.List;
+
+import org.apache.maven.mercury.repository.api.Repository;
+import org.sonatype.mercury.mp3.api.cd.ContainerConfig;
+import org.sonatype.mercury.mp3.api.cd.NodeConfig;
 
 /**
  *
@@ -23,14 +29,14 @@ import org.sonatype.mercury.mp3.api.cd.NodeConfiguration;
  */
 public interface DeltaManager
 {
+    public static final String ROLE = DeltaManager.class.getName();
+    
     /**
-     * retrieve current configuration descriptor
+     * container type
      * 
-     * @return
-     * @throws DeltaManagerException
+     * @return 
      */
-    public NodeConfiguration getCurrentConfiguration()
-    throws DeltaManagerException
+    public String getContainerType()
     ;
     
     /**
@@ -39,7 +45,7 @@ public interface DeltaManager
      * @param configuration
      * @throws DeltaManagerException
      */
-    public void applyConfiguration( NodeConfiguration configuration )
+    public Collection<ContainerConfig> applyConfiguration( NodeConfig configuration, List<Repository> repos )
     throws DeltaManagerException
     ;
 }

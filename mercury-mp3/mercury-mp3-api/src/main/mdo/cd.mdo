@@ -33,7 +33,7 @@ under the License.
   <classes>
 
     <class rootElement="true">
-      <name>NodeConfiguration</name>
+      <name>NodeConfig</name>
       <version>1.0.0</version>
       <fields>
 
@@ -45,11 +45,18 @@ under the License.
         </field>
 
         <field>
+          <name>configurationRoot</name>
+          <version>1.0.0</version>
+          <type>String</type>
+          <description>the path to the root of this installation. All managed containers are stored under this root</description>
+        </field>
+
+        <field>
           <name>containers</name>
           <version>1.0.0</version>
           <description>group of containers, exposed by this node</description>
           <association>
-            <type>Container</type>
+            <type>ContainerConfig</type>
             <multiplicity>*</multiplicity>
           </association>
         </field>
@@ -58,7 +65,7 @@ under the License.
    </class>
 
     <class>
-      <name>VirtualMachine</name>
+      <name>VirtualMachineConfig</name>
       <version>1.0.0</version>
       <description>metadata element</description>
 
@@ -79,12 +86,12 @@ under the License.
         </field>
 
         <field>
-          <name>coordinates</name>
+          <name>distribution</name>
           <version>1.0.0</version>
-          <description>repository coordinates</description>
+          <description>distribution package (zip)</description>
           <association>
-            <type>Property</type>
-            <multiplicity>*</multiplicity>
+            <type>DependencyConfig</type>
+            <multiplicity>1</multiplicity>
           </association>
         </field>
 
@@ -93,7 +100,7 @@ under the License.
           <version>1.0.0</version>
           <description>VM initialization params</description>
           <association>
-            <type>Property</type>
+            <type>ConfigProperty</type>
             <multiplicity>*</multiplicity>
           </association>
         </field>
@@ -102,7 +109,7 @@ under the License.
     </class>
 
     <class>
-      <name>Property</name>
+      <name>ConfigProperty</name>
       <version>1.0.0</version>
       <description>generic property - name/value pair</description>
       <fields>
@@ -113,6 +120,7 @@ under the License.
           <version>1.0.0</version>
           <description>name of this property</description>
         </field>
+
         <field>
           <name>value</name>
           <type>String</type>
@@ -124,7 +132,22 @@ under the License.
     </class>
 
     <class>
-      <name>Container</name>
+      <name>DependencyConfig</name>
+      <version>1.0.0</version>
+      <description>generic property - name/value pair</description>
+      <fields>
+        <field>
+          <name>name</name>
+          <type>String</type>
+          <required>true</required>
+          <version>1.0.0</version>
+          <description>GAV of this property</description>
+        </field>
+      </fields>
+    </class>
+
+    <class>
+      <name>ContainerConfig</name>
       <version>1.0.0</version>
       <description>container, exposed by the node</description>
 
@@ -145,11 +168,21 @@ under the License.
         </field>
 
         <field>
-          <name>coordinates</name>
+          <name>distribution</name>
+          <version>1.0.0</version>
+          <description>distribution package (zip)</description>
+          <association>
+            <type>DependencyConfig</type>
+            <multiplicity>1</multiplicity>
+          </association>
+        </field>
+
+        <field>
+          <name>dependencies</name>
           <version>1.0.0</version>
           <description>repository coordinates</description>
           <association>
-            <type>Property</type>
+            <type>DependencyConfig</type>
             <multiplicity>*</multiplicity>
           </association>
         </field>
@@ -159,7 +192,7 @@ under the License.
           <version>1.0.0</version>
           <description>vm configuration</description>
           <association>
-            <type>VirtualMachine</type>
+            <type>VirtualMachineConfig</type>
             <multiplicity>1</multiplicity>
           </association>
         </field>
@@ -169,7 +202,7 @@ under the License.
           <version>1.0.0</version>
           <description>VM initialization params</description>
           <association>
-            <type>Property</type>
+            <type>ConfigProperty</type>
             <multiplicity>*</multiplicity>
           </association>
         </field>
@@ -179,7 +212,7 @@ under the License.
           <version>1.0.0</version>
           <description>components to initially load into this container</description>
           <association>
-            <type>Component</type>
+            <type>ComponentConfig</type>
             <multiplicity>*</multiplicity>
           </association>
         </field>
@@ -188,18 +221,18 @@ under the License.
     </class>
 
     <class>
-      <name>Component</name>
+      <name>ComponentConfig</name>
       <version>1.0.0</version>
       <description>generic attribute - name/value pair</description>
 
       <fields>
 
         <field>
-          <name>coordinates</name>
+          <name>dependencies</name>
           <version>1.0.0</version>
           <description>repository coordinates</description>
           <association>
-            <type>Property</type>
+            <type>DependencyConfig</type>
             <multiplicity>*</multiplicity>
           </association>
         </field>
@@ -209,7 +242,7 @@ under the License.
           <version>1.0.0</version>
           <description>component configuration params</description>
           <association>
-            <type>Property</type>
+            <type>ConfigProperty</type>
             <multiplicity>*</multiplicity>
           </association>
         </field>
