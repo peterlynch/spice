@@ -38,10 +38,10 @@ under the License.
       <fields>
 
         <field>
-          <name>lastUpdated</name>
+          <name>id</name>
           <version>1.0.0</version>
           <type>String</type>
-          <description>When this descriptor was last updated</description>
+          <description>name of this configuration</description>
         </field>
 
         <field>

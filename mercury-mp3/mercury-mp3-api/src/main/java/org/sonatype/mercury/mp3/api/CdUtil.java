@@ -24,8 +24,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.maven.mercury.artifact.ArtifactBasicMetadata;
+import org.apache.maven.mercury.util.Util;
+import org.codehaus.plexus.lang.DefaultLanguage;
+import org.codehaus.plexus.lang.Language;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.sonatype.mercury.mp3.api.cd.ConfigProperty;
+import org.sonatype.mercury.mp3.api.cd.ContainerConfig;
 import org.sonatype.mercury.mp3.api.cd.DependencyConfig;
 import org.sonatype.mercury.mp3.api.cd.NodeConfig;
 import org.sonatype.mercury.mp3.api.cd.io.xpp3.ConfigurationDescriptorXpp3Reader;
@@ -33,64 +37,116 @@ import org.sonatype.mercury.mp3.api.cd.io.xpp3.ConfigurationDescriptorXpp3Writer
 
 /**
  * various cd manipulation routines
- *
+ * 
  * @author Oleg Gusakov
  * @version $Id$
- *
  */
 public class CdUtil
 {
-    public static Map<String,String> propsToMap( List<ConfigProperty> props )
+    private static final Language LANG = new DefaultLanguage( CdUtil.class );
+
+    public static Map<String, String> propsToMap( List<ConfigProperty> props )
     {
-        if( props == null )
+        if ( props == null )
             return null;
-        
-        if( props.isEmpty() )
-            return new HashMap<String, String>(1);
-        
+
+        if ( props.isEmpty() )
+            return new HashMap<String, String>( 1 );
+
         Map<String, String> res = new HashMap<String, String>( props.size() );
-        
-        for( ConfigProperty p : props )
+
+        for ( ConfigProperty p : props )
         {
             res.put( p.getName(), p.getValue() );
         }
-        
+
         return res;
     }
-    
+
     public static List<ArtifactBasicMetadata> toDepList( List<DependencyConfig> deps )
     {
-        if( deps == null )
+        if ( deps == null )
             return null;
-        
-        if( deps.isEmpty() )
-            return new ArrayList<ArtifactBasicMetadata>(1);
-        
+
+        if ( deps.isEmpty() )
+            return new ArrayList<ArtifactBasicMetadata>( 1 );
+
         List<ArtifactBasicMetadata> res = new ArrayList<ArtifactBasicMetadata>( deps.size() );
-        
-        for( DependencyConfig dc : deps )
+
+        for ( DependencyConfig dc : deps )
         {
             res.add( new ArtifactBasicMetadata( dc.getName() ) );
         }
-        
+
         return res;
     }
-    
+
+    public static ContainerConfig findContainer( NodeConfig nc, String type, String cid )
+        throws DeltaManagerException
+    {
+        if ( nc == null )
+            throw new IllegalArgumentException( LANG.getMessage( "config.is.null" ) );
+
+        if ( Util.isEmpty( type ) )
+            throw new IllegalArgumentException( LANG.getMessage( "container.type.is.null" ) );
+
+        if ( Util.isEmpty( cid ) )
+            throw new IllegalArgumentException( LANG.getMessage( "container.id.is.null" ) );
+
+        if ( Util.isEmpty( nc.getContainers() ) )
+            throw new DeltaManagerException( LANG.getMessage( "nc.containers.is.empty" ) );
+
+        List<ContainerConfig> containers = nc.getContainers();
+
+        for ( ContainerConfig cc : containers )
+            if ( cid.equals( cc.getId() ) && type.equals( cc.getType() ) )
+                return cc;
+
+        throw new DeltaManagerException( LANG.getMessage( "container.not.found", type, cid, nc.getId() ) );
+    }
+
     public static NodeConfig read( File cf )
-    throws FileNotFoundException, IOException, XmlPullParserException
+        throws FileNotFoundException, IOException, XmlPullParserException
     {
         ConfigurationDescriptorXpp3Reader reader = new ConfigurationDescriptorXpp3Reader();
-        
-        NodeConfig res = reader.read( new FileInputStream(cf) );
-        
+
+        NodeConfig res = reader.read( new FileInputStream( cf ) );
+
         return res;
     }
-    
+
     public static void write( NodeConfig nc, File cf )
-    throws FileNotFoundException, IOException
+        throws FileNotFoundException, IOException
     {
         ConfigurationDescriptorXpp3Writer writer = new ConfigurationDescriptorXpp3Writer();
-        
-        writer.write( new FileWriter(cf), nc );
+
+        writer.write( new FileWriter( cf ), nc );
     }
+
+    /**
+     * calculate set diff
+     * 
+     * @param minuend
+     * @param subtrahend
+     * @return
+     */
+    public static List<? extends ArtifactBasicMetadata> minus( List<? extends ArtifactBasicMetadata> minuend,
+                                                               List<? extends ArtifactBasicMetadata> subtrahend )
+    {
+        if ( Util.isEmpty( minuend ) )
+            return subtrahend;
+
+        if ( Util.isEmpty( subtrahend ) )
+            return minuend;
+
+        List<ArtifactBasicMetadata> difference = new ArrayList<ArtifactBasicMetadata>();
+
+        for ( ArtifactBasicMetadata bmd : minuend )
+            if ( !subtrahend.contains( bmd ) )
+                difference.add( bmd );
+
+        return difference;
+    }
+    // ----------------------------------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------------------
 }

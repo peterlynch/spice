@@ -14,11 +14,8 @@
 package org.sonatype.mercury.mp3.api;
 
 /**
- *
- *
  * @author Oleg Gusakov
  * @version $Id$
- *
  */
 public class DeltaManagerException
     extends Exception

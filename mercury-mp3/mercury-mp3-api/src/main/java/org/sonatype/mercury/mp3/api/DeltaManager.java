@@ -21,31 +21,27 @@ import org.sonatype.mercury.mp3.api.cd.ContainerConfig;
 import org.sonatype.mercury.mp3.api.cd.NodeConfig;
 
 /**
- *
- *
  * @author Oleg Gusakov
  * @version $Id$
- *
  */
 public interface DeltaManager
 {
     public static final String ROLE = DeltaManager.class.getName();
-    
+
     /**
      * container type
      * 
-     * @return 
+     * @return
      */
-    public String getContainerType()
-    ;
-    
+    public String getContainerType();
+
     /**
-     * up / down grade current configuration 
+     * up / down grade current configuration
      * 
      * @param configuration
      * @throws DeltaManagerException
      */
-    public Collection<ContainerConfig> applyConfiguration( NodeConfig configuration, List<Repository> repos )
-    throws DeltaManagerException
-    ;
+    public Collection<ContainerConfig> applyConfiguration( NodeConfig configuration, List<Repository> repos,
+                                                           Monitor monitor )
+        throws DeltaManagerException;
 }
