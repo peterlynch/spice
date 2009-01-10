@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<settings>
+
+  <localRepository>./target/repo</localRepository>
+
+  <profiles>
+
+    <profile>
+      <id>test</id>
+      <repositories>
+        <repository>
+          <id>central</id>
+          <url>http://localhost:${port}/maven2
+          </url>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+        </repository>
+      </repositories>
+
+    </profile>
+
+  </profiles>
+
+  <activeProfiles>
+    <activeProfile>test</activeProfile>
+  </activeProfiles>
+
+</settings>

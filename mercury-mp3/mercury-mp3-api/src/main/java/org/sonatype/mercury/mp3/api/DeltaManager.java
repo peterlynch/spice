@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.maven.mercury.repository.api.Repository;
+import org.apache.maven.mercury.util.Monitor;
 import org.sonatype.mercury.mp3.api.cd.ContainerConfig;
 import org.sonatype.mercury.mp3.api.cd.NodeConfig;
 

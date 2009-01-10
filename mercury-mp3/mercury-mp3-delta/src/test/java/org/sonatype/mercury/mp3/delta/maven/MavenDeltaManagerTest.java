@@ -25,10 +25,10 @@ import org.apache.maven.mercury.repository.local.m2.LocalRepositoryM2;
 import org.apache.maven.mercury.repository.remote.m2.RemoteRepositoryM2;
 import org.apache.maven.mercury.spi.http.server.HttpTestServer;
 import org.apache.maven.mercury.transport.api.Server;
+import org.apache.maven.mercury.util.DefaultMonitor;
 import org.apache.maven.mercury.util.FileUtil;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.PlexusTestCase;
-import org.sonatype.mercury.mp3.api.DefaultMonitor;
 import org.sonatype.mercury.mp3.api.DeltaManager;
 import org.sonatype.mercury.mp3.api.cd.ContainerConfig;
 import org.sonatype.mercury.mp3.api.cd.DependencyConfig;
@@ -77,7 +77,7 @@ public class MavenDeltaManagerTest
 
         _plexus = getContainer();
 
-        _mavenManager = _plexus.lookup( DeltaManager.class );
+        _mavenManager = _plexus.lookup( DeltaManager.class, "maven" );
 
         DependencyProcessor dp = new MavenDependencyProcessor();
 
@@ -145,7 +145,7 @@ public class MavenDeltaManagerTest
         FileUtil.delete( _configDir );
         _configDir.mkdirs();
 
-        File mavenLib = new File( _configDir, "maven/apache-maven-3.0-alpha-1/lib" );
+        File mavenLib = new File( _configDir, "apache-maven-3.0-alpha-1/lib" );
 
         assertFalse( mavenLib.exists() );
         
@@ -158,7 +158,7 @@ public class MavenDeltaManagerTest
     throws Exception
     {
 
-        File mavenLib = new File( _configDir, "maven/apache-maven-3.0-alpha-1/lib" );
+        File mavenLib = new File( _configDir, "apache-maven-3.0-alpha-1/lib" );
         assertTrue( mavenLib.exists() );
         
         install( "org.apache.maven:maven-distribution:3.0-alpha-2");

@@ -30,6 +30,7 @@ import org.apache.maven.mercury.plexus.PlexusMercury;
 import org.apache.maven.mercury.repository.api.Repository;
 import org.apache.maven.mercury.repository.api.RepositoryException;
 import org.apache.maven.mercury.util.FileUtil;
+import org.apache.maven.mercury.util.Monitor;
 import org.apache.maven.mercury.util.Util;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
@@ -38,7 +39,6 @@ import org.codehaus.plexus.lang.Language;
 import org.sonatype.mercury.mp3.api.CdUtil;
 import org.sonatype.mercury.mp3.api.DeltaManager;
 import org.sonatype.mercury.mp3.api.DeltaManagerException;
-import org.sonatype.mercury.mp3.api.Monitor;
 import org.sonatype.mercury.mp3.api.cd.ContainerConfig;
 import org.sonatype.mercury.mp3.api.cd.DependencyConfig;
 import org.sonatype.mercury.mp3.api.cd.NodeConfig;
@@ -47,9 +47,9 @@ import org.sonatype.mercury.mp3.api.cd.NodeConfig;
  * @author Oleg Gusakov
  * @version $Id$
  */
-@Component( role = DeltaManager.class )
+@Component( role = DeltaManager.class, hint = "maven" )
 public class MavenDeltaManager
-    implements DeltaManager
+implements DeltaManager
 {
     private static final Language LANG = new DefaultLanguage( MavenDeltaManager.class );
 
@@ -60,8 +60,10 @@ public class MavenDeltaManager
     @Requirement
     PlexusMercury _mercury;
 
-    public Collection<ContainerConfig> applyConfiguration( NodeConfig configuration, List<Repository> repos,
-                                                           Monitor monitor )
+    public Collection<ContainerConfig> applyConfiguration( NodeConfig configuration
+                                                           , List<Repository> repos
+                                                           , Monitor monitor
+                                                         )
         throws DeltaManagerException
     {
         if ( configuration == null )
@@ -104,21 +106,26 @@ public class MavenDeltaManager
         return configuredContainers;
     }
 
-    private ContainerConfig adjust( ContainerConfig cc, List<Repository> repos, NodeConfig configuration,
-                                    Monitor monitor )
+    private ContainerConfig adjust( ContainerConfig cc
+                                    , List<Repository> repos
+                                    , NodeConfig configuration
+                                    , Monitor monitor
+                                  )
         throws DeltaManagerException
     {
-        File mavenRoot = new File( _configurationRoot, "maven" );
+        String mavenHomeDir = cc.getConfigurationRoot();
+        
+        File mavenRoot = _configurationRoot;
 
         mavenRoot.mkdirs();
+        
+        File mavenHome = Util.isEmpty( mavenHomeDir) ? new File( mavenRoot, cc.getId() ) : new File( mavenHomeDir );
 
-        File mavenHome = new File( mavenRoot, cc.getId() );
-
-        File cdFile = new File( mavenRoot, cc.getId() + ".cd" );
+        File cdFile = new File( mavenRoot, cc.getId() + "/cd/" + cc.getId() + ".cd" );
         
         say( LANG.getMessage( "processing.container", cc.getId(), mavenRoot.getAbsolutePath() ) , monitor );
 
-        if ( !mavenHome.exists() ) // new installation
+        if ( !cdFile.exists() ) // new installation
         {
             DependencyConfig distroConf = cc.getDistribution();
 
@@ -229,6 +236,8 @@ public class MavenDeltaManager
 
         try
         {
+            cdFile.getParentFile().mkdirs();
+            
             CdUtil.write( configuration, cdFile );
             
             say( LANG.getMessage( "write.descriptor", cc.getId(), cdFile.getAbsolutePath() ) , monitor );

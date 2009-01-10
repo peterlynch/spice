@@ -18,7 +18,7 @@ package org.sonatype.mercury.mp3.api;
  * @version $Id$
  */
 public class DeltaManagerException
-    extends Exception
+extends Exception
 {
 
     /**

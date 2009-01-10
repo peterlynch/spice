@@ -43,12 +43,12 @@ under the License.
     <maven.version>3.0-alpha-1</maven.version>
     <mercury.mp3.version>${project.version}</mercury.mp3.version>
 
-    <plexus.container.version>1.0-beta-3.0.1</plexus.container.version>
-    <plexus.component.metadata.version>1.0-beta-3.0.1</plexus.component.metadata.version>
-    <plexus.component.annotations.version>1.0-beta-3.0.1</plexus.component.annotations.version>
+    <plexus.version>1.0-beta-3.0.3</plexus.version>
+    
     <classworlds.version>1.3</classworlds.version>
     <plexus.utils.version>1.5.5</plexus.utils.version>
     <plexus.lang.version>1.1</plexus.lang.version>
+    <plexus.cli.version>1.5</plexus.cli.version>
 
     <junit.version>3.8.2</junit.version>
     <java.version>1.5</java.version>
@@ -202,17 +202,23 @@ under the License.
         <version>${maven.version}</version>
       </dependency>
       
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-core</artifactId>
+        <version>${maven.version}</version>
+      </dependency>
+      
       <!--  Plexus dependencies -->
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-container-default</artifactId>
-        <version>${plexus.container.version}</version>
+        <version>${plexus.version}</version>
       </dependency>
       
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-component-annotations</artifactId>
-        <version>${plexus.component.annotations.version}</version>
+        <version>${plexus.version}</version>
       </dependency>
   
       <dependency>
@@ -230,7 +236,13 @@ under the License.
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-component-metadata</artifactId>
-        <version>${plexus.component.metadata.version}</version>
+        <version>${plexus.version}</version>
+      </dependency>
+ 
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-cli</artifactId>
+        <version>${plexus.cli.version}</version>
       </dependency>
   
       <!-- Test Dependencies -->
@@ -304,10 +316,18 @@ under the License.
 
     <plugins>
 
-      <plugin>
-        <groupId>org.codehaus.plexus</groupId>
-        <artifactId>plexus-component-metadata</artifactId>
-      </plugin>
+        <plugin>
+          <groupId>org.codehaus.plexus</groupId>
+          <artifactId>plexus-component-metadata</artifactId>
+          <version>${plexus.version}</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>generate-metadata</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

@@ -161,6 +161,13 @@ under the License.
         </field>
 
         <field>
+          <name>configurationRoot</name>
+          <version>1.0.0</version>
+          <description>if specified, points to the instance root directory</description>
+          <type>String</type>
+        </field>
+
+        <field>
           <name>type</name>
           <version>1.0.0</version>
           <description>container type - maps into the container handler</description>

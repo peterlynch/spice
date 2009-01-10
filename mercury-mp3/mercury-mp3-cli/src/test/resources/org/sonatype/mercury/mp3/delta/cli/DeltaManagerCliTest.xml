@@ -1,0 +1,43 @@
+<component-set>
+  <components>
+    <component>
+      <role>org.sonatype.mercury.mp3.api.DeltaManager</role>
+      <role-hint>maven</role-hint>
+      <implementation>org.sonatype.mercury.mp3.delta.maven.MavenDeltaManager</implementation>
+      <isolated-realm>false</isolated-realm>
+      <requirements>
+        <requirement>
+          <role>org.apache.maven.mercury.plexus.PlexusMercury</role>
+          <role-hint>default</role-hint>
+          <field-name>_mercury</field-name>
+        </requirement>
+      </requirements>
+    </component>
+    
+    <component>
+      <role>org.apache.maven.mercury.plexus.PlexusMercury</role>
+      <role-hint>default</role-hint>
+      <implementation>org.apache.maven.mercury.plexus.DefaultPlexusMercury</implementation>
+      <isolated-realm>false</isolated-realm>
+      <requirements>
+        <requirement>
+          <role>org.apache.maven.mercury.builder.api.DependencyProcessor</role>
+          <role-hint>maven</role-hint>
+          <field-name>dependencyProcessor</field-name>
+        </requirement>
+        <requirement>
+          <role>org.codehaus.plexus.PlexusContainer</role>
+          <role-hint>default</role-hint>
+          <field-name>plexus</field-name>
+        </requirement>
+      </requirements>
+    </component>
+    
+    <component>
+      <role>org.apache.maven.mercury.builder.api.DependencyProcessor</role>
+      <role-hint>maven</role-hint>
+      <implementation>org.apache.maven.mercury.MavenDependencyProcessor</implementation>
+      <isolated-realm>false</isolated-realm>
+    </component>        
+  </components>
+</component-set>
