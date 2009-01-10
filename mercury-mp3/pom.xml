@@ -36,6 +36,7 @@ under the License.
   <modules>
     <module>mercury-mp3-delta</module>
     <module>mercury-mp3-api</module>
+    <module>mercury-mp3-cli</module>
   </modules>
 
   <properties>

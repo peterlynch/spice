@@ -20,7 +20,6 @@ import junit.framework.TestCase;
 
 import org.apache.maven.mercury.spi.http.server.HttpTestServer;
 import org.apache.maven.mercury.util.FileUtil;
-import org.codehaus.plexus.PlexusTestCase;
 
 /**
  * @author Oleg Gusakov

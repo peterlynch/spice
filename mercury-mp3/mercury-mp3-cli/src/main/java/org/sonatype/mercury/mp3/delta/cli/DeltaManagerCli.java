@@ -179,7 +179,7 @@ extends AbstractCli
         dm.applyConfiguration( cd, repos, monitor );
     }
 
-    private List<Repository> getDefaultRepositories( String local, String... remote )
+    private List<Repository> getDefaultRepositories( Monitor monitor, String local, String... remote )
     throws Exception
     {
         DependencyProcessor dp = new MavenDependencyProcessor();
@@ -187,6 +187,8 @@ extends AbstractCli
         
         LocalRepositoryM2 lr = new LocalRepositoryM2( "local", new File(local), dp );
         repos.add( lr );
+        
+        Util.say( LANG.getMessage( "local.repo", local ), monitor );
         
         int count = 0;
         
@@ -198,16 +200,19 @@ extends AbstractCli
                 RemoteRepositoryM2 rr = new RemoteRepositoryM2( server, dp );
                 
                 repos.add( rr );
+                
+                Util.say( LANG.getMessage( "remote.repo", r ), monitor );
             }
         
         return repos;
     }
 
+    @SuppressWarnings("unchecked")
     private List<Repository> getRepositories( File settingsFile, Monitor monitor )
     throws Exception
     {
         if( settingsFile == null || ! settingsFile.exists() )
-            return getDefaultRepositories( DEFAULT_LOCAL_REPO, DEFAULT_CENTRAL );
+            return getDefaultRepositories( monitor, DEFAULT_LOCAL_REPO, DEFAULT_CENTRAL );
         
         Settings settings = new SettingsXpp3Reader().read( new FileInputStream(settingsFile) );
         
@@ -256,7 +261,7 @@ extends AbstractCli
         
         String local = Util.nvlS( settings.getLocalRepository(), DEFAULT_LOCAL_REPO );
         
-        List<Repository> repos = getDefaultRepositories( local, repoUrls.toArray( new String[ repoUrls.size() ] ) );
+        List<Repository> repos = getDefaultRepositories( monitor, local, repoUrls.toArray( new String[ repoUrls.size() ] ) );
 
         return repos;
     }
