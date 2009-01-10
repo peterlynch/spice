@@ -101,6 +101,14 @@ under the License.
                   </excludes>
                 </filter>
               </filters>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <manifestEntries>
+                    <Main-Class>org.sonatype.mercury.mp3.delta.cli.DeltaManagerCli</Main-Class>
+                    <Build-Number>${project.version}</Build-Number>
+                  </manifestEntries>
+                </transformer>
+              </transformers>
             </configuration>
           </execution>
         </executions>

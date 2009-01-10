@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <nodeConfig>
-  <configurationRoot>./target/config</configurationRoot>
   <containers>
     <container>
       <id>apache-maven-3.0-alpha-1</id>

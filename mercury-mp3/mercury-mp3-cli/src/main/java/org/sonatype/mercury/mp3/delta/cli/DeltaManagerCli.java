@@ -168,6 +168,8 @@ extends AbstractCli
         if( cd == null )
             throw new Exception( LANG.getMessage( "cd.is.null" ) );
         
+        cd.setConfigurationRoot( mavenHome.getParent() );
+        
         String containerId = mavenHome.getName();
         
         ContainerConfig cc = CdUtil.findContainer( cd, "maven", containerId );
