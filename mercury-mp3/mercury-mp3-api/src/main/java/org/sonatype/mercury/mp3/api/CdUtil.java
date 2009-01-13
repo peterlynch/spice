@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.maven.mercury.artifact.ArtifactBasicMetadata;
+import org.apache.maven.mercury.artifact.ArtifactMetadata;
 import org.apache.maven.mercury.util.Util;
 import org.codehaus.plexus.lang.DefaultLanguage;
 import org.codehaus.plexus.lang.Language;
@@ -31,9 +32,12 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.sonatype.mercury.mp3.api.cd.ConfigProperty;
 import org.sonatype.mercury.mp3.api.cd.ContainerConfig;
 import org.sonatype.mercury.mp3.api.cd.DependencyConfig;
+import org.sonatype.mercury.mp3.api.cd.LockDownList;
 import org.sonatype.mercury.mp3.api.cd.NodeConfig;
 import org.sonatype.mercury.mp3.api.cd.io.xpp3.ConfigurationDescriptorXpp3Reader;
 import org.sonatype.mercury.mp3.api.cd.io.xpp3.ConfigurationDescriptorXpp3Writer;
+import org.sonatype.mercury.mp3.api.cd.io.xpp3.LockDownListXpp3Reader;
+import org.sonatype.mercury.mp3.api.cd.io.xpp3.LockDownListXpp3Writer;
 
 /**
  * various cd manipulation routines
@@ -74,13 +78,12 @@ public class CdUtil
         List<ArtifactBasicMetadata> res = new ArrayList<ArtifactBasicMetadata>( deps.size() );
 
         for ( DependencyConfig dc : deps )
-        {
             res.add( new ArtifactBasicMetadata( dc.getName() ) );
-        }
 
         return res;
     }
 
+    @SuppressWarnings("unchecked")
     public static ContainerConfig findContainer( NodeConfig nc, String type, String cid )
         throws DeltaManagerException
     {
@@ -146,6 +149,65 @@ public class CdUtil
                 difference.add( bmd );
 
         return difference;
+    }
+    // ----------------------------------------------------------------------------------------------------
+    /**
+     * @param deps
+     * @param ldlFile
+     * @throws IOException 
+     */
+    public static void write( List<? extends ArtifactBasicMetadata> deps, File ldlFile )
+    throws IOException
+    {
+        LockDownList ldl = new LockDownList();
+        
+        if( !Util.isEmpty( deps ) )
+            for( ArtifactBasicMetadata bmd : deps )
+            {
+                DependencyConfig dc = new DependencyConfig();
+                
+                dc.setName( bmd.getGAV() );
+                
+                ldl.addDependency( dc );
+            }
+            
+        LockDownListXpp3Writer wr = new LockDownListXpp3Writer();
+        
+        ldlFile.getParentFile().mkdirs();
+
+        FileWriter fw = new FileWriter( ldlFile );
+        
+        wr.write( fw, ldl );
+        
+        fw.flush();
+        
+        fw.close();
+    }
+    // ----------------------------------------------------------------------------------------------------
+    @SuppressWarnings("unchecked")
+    public static List<ArtifactMetadata> readLdl( File ldlFile )
+    throws FileNotFoundException, IOException, XmlPullParserException
+    {
+        if( ldlFile == null || !ldlFile.exists() )
+            throw new FileNotFoundException( ldlFile == null ? "null" : ldlFile.getAbsolutePath() );
+        
+        LockDownListXpp3Reader rd = new LockDownListXpp3Reader();
+        
+        LockDownList ldl = rd.read( new FileInputStream(ldlFile) );
+        
+        List< DependencyConfig > dcList = ldl.getDependencies();
+        
+        List< ArtifactBasicMetadata> bmdList = toDepList( dcList );
+        
+        if( Util.isEmpty( bmdList ))
+            return null;
+        
+        List< ArtifactMetadata> mdList = new ArrayList<ArtifactMetadata>( dcList.size() );
+        
+        for( ArtifactBasicMetadata bmd : bmdList)
+            mdList.add( new ArtifactMetadata(bmd) );
+        
+        return mdList;
     }
     // ----------------------------------------------------------------------------------------------------
     // ----------------------------------------------------------------------------------------------------

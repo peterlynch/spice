@@ -60,12 +60,14 @@ extends AbstractCli
 {
     private static final Language LANG = new DefaultLanguage( DeltaManagerCli.class );
     
-    private static final String DEFAULT_SETTINGS = System.getProperty( "user.home" )+"/.m2/settings.xml";
+    private static final String USER_HOME = System.getProperty( "user.home" );
+    
+    private static final String DEFAULT_SETTINGS = USER_HOME+"/.m2/settings.xml";
     
     private static final String SYSTEM_PROPERTY_DEFAULT_LOCAL_REPO = "maven.repo.local";
     private static final String DEFAULT_LOCAL_REPO = System.getProperty(   
                                                    SYSTEM_PROPERTY_DEFAULT_LOCAL_REPO
-                                                 , System.getProperty( "user.home" )+"/.m2/repository"
+                                                 , USER_HOME+"/.m2/repository"
                                                                        );
     
     private static final String SYSTEM_PROPERTY_DEFAULT_CENTRAL = "maven.repo.central";

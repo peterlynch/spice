@@ -113,6 +113,7 @@ under the License.
       <version>1.0.0</version>
       <description>generic property - name/value pair</description>
       <fields>
+      
         <field>
           <name>name</name>
           <type>String</type>
@@ -157,6 +158,20 @@ under the License.
           <name>id</name>
           <version>1.0.0</version>
           <description>id to reference this container by</description>
+          <type>String</type>
+        </field>
+
+        <field>
+          <name>timeStamp</name>
+          <version>1.0.0</version>
+          <description>reference to the timestamp of the persisted configuration data</description>
+          <type>String</type>
+        </field>
+
+        <field>
+          <name>timeZone</name>
+          <version>1.0.0</version>
+          <description>timestamp's time zone</description>
           <type>String</type>
         </field>
 

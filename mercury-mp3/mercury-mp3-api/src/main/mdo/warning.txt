@@ -1,0 +1,8 @@
+2009-01-12 Oleg:
+
+Please note that both cd.mdo and ldl.mdo define the same classes: DepencencyConfig and ConfigProperty. I 
+did not find an easy way for modello to share classes between files and consciously allow generation to override 
+the classes. Whatever is defined in ldl.mdo take precedence.
+
+In real world - I would define those classes elsewhere and re-use, but ...
+

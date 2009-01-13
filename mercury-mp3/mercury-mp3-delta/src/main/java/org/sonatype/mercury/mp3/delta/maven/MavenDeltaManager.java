@@ -31,6 +31,7 @@ import org.apache.maven.mercury.repository.api.Repository;
 import org.apache.maven.mercury.repository.api.RepositoryException;
 import org.apache.maven.mercury.util.FileUtil;
 import org.apache.maven.mercury.util.Monitor;
+import org.apache.maven.mercury.util.TimeUtil;
 import org.apache.maven.mercury.util.Util;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
@@ -60,6 +61,7 @@ implements DeltaManager
     @Requirement
     PlexusMercury _mercury;
 
+    @SuppressWarnings("unchecked")
     public Collection<ContainerConfig> applyConfiguration( NodeConfig configuration
                                                            , List<Repository> repos
                                                            , Monitor monitor
@@ -106,6 +108,7 @@ implements DeltaManager
         return configuredContainers;
     }
 
+    @SuppressWarnings("unchecked")
     private ContainerConfig adjust( ContainerConfig cc
                                     , List<Repository> repos
                                     , NodeConfig configuration
@@ -119,9 +122,15 @@ implements DeltaManager
 
         mavenRoot.mkdirs();
         
+        String timeStamp = TimeUtil.getUTCTimestamp();
+
         File mavenHome = Util.isEmpty( mavenHomeDir) ? new File( mavenRoot, cc.getId() ) : new File( mavenHomeDir );
 
-        File cdFile = new File( mavenRoot, cc.getId() + "/cd/" + cc.getId() + ".cd" );
+        File cdFolder = new File( mavenRoot, cc.getId() + "/.cd/" );
+        
+        File cdFile = new File( cdFolder, cc.getId() + ".cd" );
+
+        File ldlFile = new File( cdFolder, cc.getId() + "-" + timeStamp + ".ldl" );
         
         say( LANG.getMessage( "processing.container", cc.getId(), mavenRoot.getAbsolutePath() ) , monitor );
 
@@ -172,6 +181,27 @@ implements DeltaManager
             {
                 throw new DeltaManagerException( e );
             }
+            
+            // now write the ldl
+            List<DependencyConfig> depList = cc.getDependencies();
+            
+            if( ! Util.isEmpty( depList ))
+            {
+                List<ArtifactBasicMetadata> bmdList = CdUtil.toDepList( depList );
+                
+                List<ArtifactMetadata> deps;
+                try
+                {
+                    deps = _mercury.resolve( repos, ArtifactScopeEnum.runtime, new ArtifactQueryList( bmdList ),
+                                      null, null );
+                    CdUtil.write( deps, ldlFile );
+                }
+                catch ( Exception e )
+                {
+                    throw new DeltaManagerException(e);
+                }
+                
+            }
         }
         else  // delta management
         {
@@ -194,43 +224,56 @@ implements DeltaManager
             }
 
             ContainerConfig oldCc = CdUtil.findContainer( oldConfig, TYPE, cc.getId() );
-
+            
             List<ArtifactBasicMetadata> oldDependencies = CdUtil.toDepList( oldCc.getDependencies() );
+            
+            String oldTimeStamp = oldCc.getTimeStamp();
 
-            if ( Util.isEmpty( oldDependencies ) )
+            if ( Util.isEmpty( oldDependencies ) && Util.isEmpty( oldTimeStamp ) )
                 throw new DeltaManagerException( LANG.getMessage( "no.old.deps", cc.getId() ) );
 
-            List<ArtifactBasicMetadata> diff =
-                (List<ArtifactBasicMetadata>) CdUtil.minus( dependencies, oldDependencies );
+            List<ArtifactBasicMetadata> diff = null;
 
-            if ( !Util.isEmpty( diff ) && !Util.isEmpty( CdUtil.minus( oldDependencies, dependencies ) ) )
+            try
             {
-                try
+                List<ArtifactMetadata> newRes =
+                    _mercury.resolve( repos, ArtifactScopeEnum.runtime, new ArtifactQueryList( dependencies ), null, null );
+                
+                CdUtil.write( newRes, ldlFile );
+                
+                List<ArtifactMetadata> oldRes = null;
+                
+                if( Util.isEmpty( oldTimeStamp ) )
                 {
-                    List<ArtifactMetadata> newRes =
-                        _mercury.resolve( repos, ArtifactScopeEnum.runtime, new ArtifactQueryList( dependencies ),
-                                          null, null );
-                    List<ArtifactMetadata> oldRes =
-                        _mercury.resolve( repos, ArtifactScopeEnum.runtime, new ArtifactQueryList( oldDependencies ),
-                                          null, null );
-
-                    diff = (List<ArtifactBasicMetadata>) CdUtil.minus( oldRes, newRes );
-
-                    if ( !Util.isEmpty( diff ) )
-                        remove( mavenHome, diff, monitor );
-
-                    diff = (List<ArtifactBasicMetadata>) CdUtil.minus( newRes, oldRes );
-
-                    if ( !Util.isEmpty( diff ) )
-                    {
-                        List<Artifact> artifacts = _mercury.read( repos, diff );
-                        install( mavenHome, artifacts, monitor );
-                    }
+                    oldRes = _mercury.resolve( repos, ArtifactScopeEnum.runtime, new ArtifactQueryList( oldDependencies ), null, null );
+                    
+                    Util.say( LANG.getMessage( "delta.no.timestamp", cc.getId() ), monitor );
                 }
-                catch ( Exception e )
+                else
                 {
-                    throw new DeltaManagerException( e );
+                    File oldLdlFile = new File( cdFolder, cc.getId() + "-" + oldTimeStamp + ".ldl" );
+                    
+                    oldRes = CdUtil.readLdl( oldLdlFile );
+                    
+                    Util.say( LANG.getMessage( "delta.timestamp", cc.getId(), oldTimeStamp, oldLdlFile.getAbsolutePath() ), monitor );
                 }
+
+                diff = (List<ArtifactBasicMetadata>) CdUtil.minus( oldRes, newRes );
+
+                if ( !Util.isEmpty( diff ) )
+                    remove( mavenHome, diff, monitor );
+
+                diff = (List<ArtifactBasicMetadata>) CdUtil.minus( newRes, oldRes );
+
+                if ( !Util.isEmpty( diff ) )
+                {
+                    List<Artifact> artifacts = _mercury.read( repos, diff );
+                    install( mavenHome, artifacts, monitor );
+                }
+            }
+            catch ( Exception e )
+            {
+                throw new DeltaManagerException( e );
             }
         }
 
@@ -238,8 +281,18 @@ implements DeltaManager
         {
             cdFile.getParentFile().mkdirs();
             
+            cc.setTimeStamp( timeStamp );
+            
+            cc.setTimeZone( "UTC" );
+            
             CdUtil.write( configuration, cdFile );
             
+            // write a timestamped version of it
+            
+            cdFile = new File( cdFolder, cc.getId()+"-"+timeStamp+".cd" );
+            
+            CdUtil.write( configuration, cdFile );
+
             say( LANG.getMessage( "write.descriptor", cc.getId(), cdFile.getAbsolutePath() ) , monitor );
         }
         catch ( Exception e )

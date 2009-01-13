@@ -27,6 +27,7 @@ import org.apache.maven.mercury.spi.http.server.HttpTestServer;
 import org.apache.maven.mercury.transport.api.Server;
 import org.apache.maven.mercury.util.DefaultMonitor;
 import org.apache.maven.mercury.util.FileUtil;
+import org.apache.maven.mercury.util.TimeUtil;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.PlexusTestCase;
 import org.sonatype.mercury.mp3.api.DeltaManager;
@@ -115,7 +116,7 @@ public class MavenDeltaManagerTest
         }
     }
     
-    private NodeConfig install( String dep )
+    private NodeConfig install( String dep, String ts )
     throws Exception
     {
         DependencyConfig distroConf = new DependencyConfig();
@@ -129,6 +130,11 @@ public class MavenDeltaManagerTest
         cc.setType( MavenDeltaManager.TYPE );
         cc.setDistribution( distroConf );
         cc.addDependency( depConf );
+        if( ts != null )
+        {
+            cc.setTimeStamp( ts );
+            cc.setTimeZone( "UTC" );
+        }
 
         NodeConfig config = new NodeConfig();
         config.setConfigurationRoot( _configDir.getCanonicalPath() );
@@ -149,22 +155,41 @@ public class MavenDeltaManagerTest
 
         assertFalse( mavenLib.exists() );
         
-        install( "org.apache.maven:maven-distribution:3.0-alpha-1" );
+        install( "org.apache.maven:maven-distribution:3.0-alpha-1", null );
 
         assertTrue( mavenLib.exists() );
+        
+        // need to wait for install timestamp to sttle in 
+        Thread.sleep( 1000L );
     }
 
     public void testInstallDelta()
     throws Exception
     {
-
         File mavenLib = new File( _configDir, "apache-maven-3.0-alpha-1/lib" );
         assertTrue( mavenLib.exists() );
         
-        install( "org.apache.maven:maven-distribution:3.0-alpha-2");
+        install( "org.apache.maven:maven-distribution:3.0-alpha-2", null );
 
         assertTrue( mavenLib.exists() );
+    }
+
+    public void testInstallDeltaTimestamp()
+    throws Exception
+    {
+        String ts = TimeUtil.getUTCTimestamp();
+        // copy alpha3 into repo
+        FileUtil.copy( new File( "./target/test-classes/repo2"), new File("./target/test-classes/repo"), false );
+        FileUtil.copy( new File( "./target/test-classes/apache-maven-3.0-alpha-1.ldl")
+                     , new File("./target/config/apache-maven-3.0-alpha-1/.cd/apache-maven-3.0-alpha-1-"+ts+".ldl"), false );
         
+        File mavenLib = new File( _configDir, "apache-maven-3.0-alpha-1/lib/maven-core-3.0-alpha-3.jar" );
+
+        assertFalse( mavenLib.exists() );
+        
+        install( "org.apache.maven:maven-distribution:3.0-alpha-3", ts );
+
+        assertTrue( mavenLib.exists() );
     }
 
 }
