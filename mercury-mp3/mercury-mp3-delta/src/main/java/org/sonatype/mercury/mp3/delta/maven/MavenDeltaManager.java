@@ -243,7 +243,9 @@ implements DeltaManager
                 
                 List<ArtifactMetadata> oldRes = null;
                 
-                if( Util.isEmpty( oldTimeStamp ) )
+                File oldLdlFile = new File( cdFolder, cc.getId() + "-" + oldTimeStamp + ".ldl" );
+                
+                if( Util.isEmpty( oldTimeStamp ) || Util.isEmpty( oldLdlFile ) )
                 {
                     oldRes = _mercury.resolve( repos, ArtifactScopeEnum.runtime, new ArtifactQueryList( oldDependencies ), null, null );
                     
@@ -251,8 +253,6 @@ implements DeltaManager
                 }
                 else
                 {
-                    File oldLdlFile = new File( cdFolder, cc.getId() + "-" + oldTimeStamp + ".ldl" );
-                    
                     oldRes = CdUtil.readLdl( oldLdlFile );
                     
                     Util.say( LANG.getMessage( "delta.timestamp", cc.getId(), oldTimeStamp, oldLdlFile.getAbsolutePath() ), monitor );

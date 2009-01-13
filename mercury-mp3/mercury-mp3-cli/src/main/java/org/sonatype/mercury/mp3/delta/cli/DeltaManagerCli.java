@@ -74,6 +74,8 @@ extends AbstractCli
     private static final String DEFAULT_CENTRAL = System.getProperty( SYSTEM_PROPERTY_DEFAULT_CENTRAL
                                                                      , "http://repo1.maven.org/maven2" );
     
+    private static final String SYSTEM_PROPERTY_MONITOR = "mercury.monitor";
+    
     private static final char MAVEN_HOME = 'm';
 
     private static final char CD_URL = 'u';
@@ -149,8 +151,15 @@ extends AbstractCli
             }
             
             settingsFile = new File( settings );
-                
-            Monitor monitor = new DefaultMonitor();
+            
+            Monitor monitor;
+            
+            String monitorClass = System.getProperty( SYSTEM_PROPERTY_MONITOR );
+            
+            if( monitorClass == null )
+                monitor = new DefaultMonitor();
+            else
+                monitor = (Monitor) Class.forName( monitorClass ).newInstance();
 
             List<Repository> repos = getRepositories( settingsFile, monitor );
             

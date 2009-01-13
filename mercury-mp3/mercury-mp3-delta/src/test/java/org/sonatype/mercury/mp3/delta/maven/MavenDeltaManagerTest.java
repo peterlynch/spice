@@ -169,6 +169,14 @@ public class MavenDeltaManagerTest
         File mavenLib = new File( _configDir, "apache-maven-3.0-alpha-1/lib" );
         assertTrue( mavenLib.exists() );
         
+        // delete timestamped files
+        File cd = new File( _configDir, "apache-maven-3.0-alpha-1/.cd" );
+        
+        File [] flist = cd.listFiles();
+        for( File f : flist )
+            if( f.getName().endsWith( ".ldl" ) )
+                f.delete();
+        
         install( "org.apache.maven:maven-distribution:3.0-alpha-2", null );
 
         assertTrue( mavenLib.exists() );
@@ -178,8 +186,7 @@ public class MavenDeltaManagerTest
     throws Exception
     {
         String ts = TimeUtil.getUTCTimestamp();
-        // copy alpha3 into repo
-        FileUtil.copy( new File( "./target/test-classes/repo2"), new File("./target/test-classes/repo"), false );
+
         FileUtil.copy( new File( "./target/test-classes/apache-maven-3.0-alpha-1.ldl")
                      , new File("./target/config/apache-maven-3.0-alpha-1/.cd/apache-maven-3.0-alpha-1-"+ts+".ldl"), false );
         
