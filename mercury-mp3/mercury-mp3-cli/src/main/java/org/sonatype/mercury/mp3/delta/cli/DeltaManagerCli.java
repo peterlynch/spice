@@ -21,6 +21,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JLabel;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
@@ -167,8 +170,31 @@ extends AbstractCli
         }
         else
         {
-            displayHelp();
+            DataManagerGui gui = new DataManagerGui();
+            
+            gui._cli = this;
+            
+            gui._mavenHomeLabel.setText( "blah blah" );
+            gui._mavenHomeField.setText( gui._mavenHomeLabel.getText() );
+            
+            DefaultComboBoxModel vModel = new DefaultComboBoxModel();
+            vModel.addElement( "v1" );
+            vModel.addElement( "v2" );
+            vModel.addElement( "v3" );
+            gui._versionList.setModel( vModel );
+
+            
+            gui.pack();
+            gui.setVisible( true );
         }
+    }
+    
+    protected void update( DataManagerGui gui )
+    {
+System.out.println(gui._mavenHomeLabel.getText() );
+System.out.println(gui._versionList.getSelectedIndex()+" : "+gui._versionList.getSelectedItem() );
+        gui.dispose();
+        System.exit( 0 );
     }
     
     private void applyConfiguration( File mavenHome, InputStream cdStream, PlexusContainer plexus, List<Repository> repos, Monitor monitor )
