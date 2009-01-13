@@ -14,8 +14,14 @@
 package org.sonatype.mercury.mp3.delta.maven;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.maven.mercury.MavenDependencyProcessor;
@@ -27,6 +33,7 @@ import org.apache.maven.mercury.spi.http.server.HttpTestServer;
 import org.apache.maven.mercury.transport.api.Server;
 import org.apache.maven.mercury.util.DefaultMonitor;
 import org.apache.maven.mercury.util.FileUtil;
+import org.apache.maven.mercury.util.Monitor;
 import org.apache.maven.mercury.util.TimeUtil;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.PlexusTestCase;
@@ -70,7 +77,7 @@ public class MavenDeltaManagerTest
         throws Exception
     {
         super.setUp();
-
+        
         _remoteRepoFile = new File( _remoteRepoDir );
         _jetty = new HttpTestServer( _remoteRepoFile, _remoteRepoUrlSufix );
         _jetty.start();
@@ -140,7 +147,7 @@ public class MavenDeltaManagerTest
         config.setConfigurationRoot( _configDir.getCanonicalPath() );
         config.addContainer( cc );
 
-        _mavenManager.applyConfiguration( config, _repos, new DefaultMonitor() );
+        _mavenManager.applyConfiguration( config, _repos, new TestMonitor() );
         
         return config;
     }
@@ -177,9 +184,26 @@ public class MavenDeltaManagerTest
             if( f.getName().endsWith( ".ldl" ) )
                 f.delete();
         
+        File newArtifact = new File( _configDir, "apache-maven-3.0-alpha-1/lib/maven-core-3.0-alpha-2.jar" );
+
+        assertFalse( newArtifact.exists() );
+        
+        assertFalse( verificationOk );
+        
+        setVerify( ", using it to read previous dependencies from" );
+        
         install( "org.apache.maven:maven-distribution:3.0-alpha-2", null );
 
         assertTrue( mavenLib.exists() );
+
+        assertTrue( newArtifact.exists() );
+        
+        assertFalse( verificationOk );
+        
+        setVerify( null );
+        
+        // need to wait for install timestamp to sttle in 
+        Thread.sleep( 1000L );
     }
 
     public void testInstallDeltaTimestamp()
@@ -190,13 +214,91 @@ public class MavenDeltaManagerTest
         FileUtil.copy( new File( "./target/test-classes/apache-maven-3.0-alpha-1.ldl")
                      , new File("./target/config/apache-maven-3.0-alpha-1/.cd/apache-maven-3.0-alpha-1-"+ts+".ldl"), false );
         
-        File mavenLib = new File( _configDir, "apache-maven-3.0-alpha-1/lib/maven-core-3.0-alpha-3.jar" );
+        File newArtifact = new File( _configDir, "apache-maven-3.0-alpha-1/lib/maven-core-3.0-alpha-3.jar" );
 
-        assertFalse( mavenLib.exists() );
+        assertFalse( newArtifact.exists() );
+        
+        assertFalse( verificationOk );
+        
+        setVerify( ", using it to read previous dependencies from" );
         
         install( "org.apache.maven:maven-distribution:3.0-alpha-3", ts );
 
-        assertTrue( mavenLib.exists() );
+        assertTrue( newArtifact.exists() );
+        
+        assertTrue( verificationOk );
+    }
+    
+    String verification;
+    boolean verificationOk = false;
+    
+    private void callback( String msg )
+    {
+        if( verification != null && !verificationOk )
+            verificationOk = msg.indexOf( verification ) >= 0;
+    }
+    
+    private void setVerify( String v )
+    {
+        this.verification = v;
+        verificationOk = false;
+    }
+
+//===================================================================================================================
+
+    class TestMonitor
+    implements Monitor
+    {
+        Writer _writer;
+        boolean _timestamp = true;
+        private final SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        
+    
+        public TestMonitor( boolean timestamp )
+        {
+            this( System.out );
+            this._timestamp = timestamp;
+        }
+    
+        public TestMonitor()
+        {
+            this( System.out );
+        }
+    
+        public TestMonitor( OutputStream os )
+        {
+            _writer = new OutputStreamWriter( os );
+        }
+    
+        public TestMonitor( Writer writer )
+        {
+            _writer = writer;
+        }
+    
+        public void message( String msg )
+        {
+            callback( msg );
+            
+            try
+            {
+                if ( _writer != null )
+                {
+                    if( _timestamp )
+                    {
+                        _writer.write( fmt.format( new Date() ) );
+                        _writer.write( ": " );
+                    }
+                    _writer.write( msg );
+                    _writer.write( "\n" );
+                    _writer.flush();
+                }
+            }
+            catch ( IOException e )
+            {
+                e.printStackTrace();
+            }
+        }
+    
     }
 
 }

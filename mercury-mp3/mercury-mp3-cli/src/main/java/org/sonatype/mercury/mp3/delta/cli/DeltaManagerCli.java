@@ -64,17 +64,17 @@ extends AbstractCli
     
     private static final String DEFAULT_SETTINGS = USER_HOME+"/.m2/settings.xml";
     
-    private static final String SYSTEM_PROPERTY_DEFAULT_LOCAL_REPO = "maven.repo.local";
+    public static final String SYSTEM_PROPERTY_DEFAULT_LOCAL_REPO = "maven.repo.local";
     private static final String DEFAULT_LOCAL_REPO = System.getProperty(   
                                                    SYSTEM_PROPERTY_DEFAULT_LOCAL_REPO
                                                  , USER_HOME+"/.m2/repository"
                                                                        );
     
-    private static final String SYSTEM_PROPERTY_DEFAULT_CENTRAL = "maven.repo.central";
+    public static final String SYSTEM_PROPERTY_DEFAULT_CENTRAL = "maven.repo.central";
     private static final String DEFAULT_CENTRAL = System.getProperty( SYSTEM_PROPERTY_DEFAULT_CENTRAL
                                                                      , "http://repo1.maven.org/maven2" );
     
-    private static final String SYSTEM_PROPERTY_MONITOR = "mercury.monitor";
+    public static final String SYSTEM_PROPERTY_MONITOR = "mercury.monitor";
     
     private static final char MAVEN_HOME = 'm';
 

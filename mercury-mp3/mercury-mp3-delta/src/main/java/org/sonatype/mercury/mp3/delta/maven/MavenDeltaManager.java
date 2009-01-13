@@ -132,7 +132,7 @@ implements DeltaManager
 
         File ldlFile = new File( cdFolder, cc.getId() + "-" + timeStamp + ".ldl" );
         
-        say( LANG.getMessage( "processing.container", cc.getId(), mavenRoot.getAbsolutePath() ) , monitor );
+        Util.say( LANG.getMessage( "processing.container", cc.getId(), mavenRoot.getAbsolutePath() ) , monitor );
 
         if ( !cdFile.exists() ) // new installation
         {
@@ -175,7 +175,7 @@ implements DeltaManager
             {
                 FileUtil.unZip( new FileInputStream( zip ), mavenRoot );
                 
-                say( LANG.getMessage( "new.install", cc.getId(), mavenHome.getAbsolutePath(), zip.getAbsolutePath() ) , monitor );
+                Util.say( LANG.getMessage( "new.install", cc.getId(), mavenHome.getAbsolutePath(), zip.getAbsolutePath() ) , monitor );
             }
             catch ( Exception e )
             {
@@ -205,7 +205,7 @@ implements DeltaManager
         }
         else  // delta management
         {
-            say( LANG.getMessage( "adjusting.install", cc.getId(), mavenHome.getAbsolutePath() ) , monitor );
+            Util.say( LANG.getMessage( "adjusting.install", cc.getId(), mavenHome.getAbsolutePath() ) , monitor );
 
             List<ArtifactBasicMetadata> dependencies = CdUtil.toDepList( cc.getDependencies() );
 
@@ -293,7 +293,7 @@ implements DeltaManager
             
             CdUtil.write( configuration, cdFile );
 
-            say( LANG.getMessage( "write.descriptor", cc.getId(), cdFile.getAbsolutePath() ) , monitor );
+            Util.say( LANG.getMessage( "write.descriptor", cc.getId(), cdFile.getAbsolutePath() ) , monitor );
         }
         catch ( Exception e )
         {
@@ -301,12 +301,6 @@ implements DeltaManager
         }
 
         return cc;
-    }
-
-    private static void say( String msg, Monitor monitor )
-    {
-        if ( monitor != null )
-            monitor.message( msg );
     }
 
     /**
@@ -324,7 +318,7 @@ implements DeltaManager
             File binary = a.getFile();
 
             FileUtil.copy( binary, lib, false );
-            say( LANG.getMessage( "install.file", binary.getCanonicalFile().toString() ), monitor );
+            Util.say( LANG.getMessage( "install.file", binary.getCanonicalFile().toString() ), monitor );
         }
     }
 
@@ -343,7 +337,7 @@ implements DeltaManager
             File binary = new File( lib, bmd.getFileName() );
 
             FileUtil.delete( binary );
-            say( LANG.getMessage( "delete.file", binary.getCanonicalFile().toString() ), monitor );
+            Util.say( LANG.getMessage( "delete.file", binary.getCanonicalFile().toString() ), monitor );
         }
     }
 
