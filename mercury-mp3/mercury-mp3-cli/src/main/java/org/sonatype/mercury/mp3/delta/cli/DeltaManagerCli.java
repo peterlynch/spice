@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JLabel;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
@@ -85,8 +84,18 @@ extends AbstractCli
 
     private static final char SETTINGS = 's';
     
-    private Options _options = new Options();
+    private static final char NO_GUI = 'n';
     
+    private Options _options = new Options();
+
+    String _settings = DEFAULT_SETTINGS;
+    
+    String _mavenHome;
+    
+    String _cdUrl;
+    
+    Monitor _monitor;
+
    public static void main( String[] args )
     throws Exception
     {
@@ -102,12 +111,11 @@ extends AbstractCli
 
         formatter.printHelp( "mp3 options", "\noptions:", _options, "\n" );
     }
-    
+
     @Override
     @SuppressWarnings( "static-access" )
     public Options buildCliOptions( Options someOptions )
     {
-        
         _options.addOption( 
                           OptionBuilder.withLongOpt( "maven.home" ).hasArg()
                           .withDescription( LANG.getMessage( "cli.maven.home" ) ).create( MAVEN_HOME ) 
@@ -117,56 +125,68 @@ extends AbstractCli
                           .withDescription( LANG.getMessage( "cli.cd.url" ) ).create( CD_URL ) 
                        );
         _options.addOption( 
-                          OptionBuilder.withLongOpt( "settings" ).hasArg()
-                          .withDescription( LANG.getMessage( "cli.settings", DEFAULT_SETTINGS ) ).create( SETTINGS ) 
-                       );
+                           OptionBuilder.withLongOpt( "settings" ).hasArg()
+                           .withDescription( LANG.getMessage( "cli.settings", DEFAULT_SETTINGS ) ).create( SETTINGS ) 
+                        );
+        _options.addOption( 
+                           OptionBuilder.withLongOpt( "no.gui" )
+                           .withDescription( LANG.getMessage( "cli.no.gui" ) ).create( NO_GUI ) 
+                        );
 
        return _options;
+    }
+    
+    private void initDefaults( CommandLine cli )
+    throws Exception
+    {
+        _mavenHome = cli.getOptionValue( MAVEN_HOME );
+        
+        if( cli.hasOption( SETTINGS ) )
+        {
+            _settings = cli.getOptionValue( SETTINGS );
+        }
+        
+        _cdUrl = cli.getOptionValue( CD_URL );
+
+        String monitorClass = System.getProperty( SYSTEM_PROPERTY_MONITOR );
+        
+        if( monitorClass == null )
+            _monitor = new DefaultMonitor();
+        else
+            _monitor = (Monitor) Class.forName( monitorClass ).newInstance();
     }
 
     @Override
     public void invokePlexusComponent( CommandLine cli, PlexusContainer plexus )
     throws Exception
     {
-        File mavenHome;
-        
         InputStream cdStream;
 
-        if ( cli.hasOption( MAVEN_HOME ) && cli.hasOption( CD_URL ) )
+        if( cli.hasOption( NO_GUI ) )
         {
-            mavenHome = new File( cli.getOptionValue( MAVEN_HOME ) );
-            
-//            if( !mavenHome.exists() )
-//                throw new Exception( LANG.getMessage( "maven.home.does.not.exist", cli.getOptionValue( MAVEN_HOME ) ) );
-            
-            cdStream = FileUtil.toStream( cli.getOptionValue( CD_URL ) );
-            
-            if( cdStream == null )
-                throw new Exception( LANG.getMessage( "cd.stream.is.null", cli.getOptionValue( CD_URL ) ) );
-            
-            String settings = DEFAULT_SETTINGS;
-            
-            File settingsFile = null;
-            
-            if( cli.hasOption( SETTINGS ) )
+            if ( cli.hasOption( MAVEN_HOME ) && cli.hasOption( CD_URL ) )
             {
-                settings = cli.getOptionValue( SETTINGS );
+                initDefaults( cli );
+                
+                cdStream = FileUtil.toStream( _cdUrl );
+                
+                if( cdStream == null )
+                    throw new Exception( LANG.getMessage( "cd.stream.is.null", cli.getOptionValue( CD_URL ) ) );
+                
+                File settingsFile = null;
+                
+                settingsFile = new File( _settings );
+                
+                File mavenHomeFile = new File( _mavenHome );
+                
+                List<Repository> repos = getRepositories( settingsFile, _monitor );
+                
+                applyConfiguration( mavenHomeFile, cdStream, plexus, repos, _monitor );
             }
-            
-            settingsFile = new File( settings );
-            
-            Monitor monitor;
-            
-            String monitorClass = System.getProperty( SYSTEM_PROPERTY_MONITOR );
-            
-            if( monitorClass == null )
-                monitor = new DefaultMonitor();
             else
-                monitor = (Monitor) Class.forName( monitorClass ).newInstance();
-
-            List<Repository> repos = getRepositories( settingsFile, monitor );
-            
-            applyConfiguration( mavenHome, cdStream, plexus, repos, monitor );
+            {
+                displayHelp();
+            }
         }
         else
         {
@@ -174,7 +194,9 @@ extends AbstractCli
             
             gui._cli = this;
             
-            gui._mavenHomeLabel.setText( "blah blah" );
+            initDefaults( cli );
+
+            gui._mavenHomeLabel.setText( _mavenHome );
             gui._mavenHomeField.setText( gui._mavenHomeLabel.getText() );
             
             DefaultComboBoxModel vModel = new DefaultComboBoxModel();

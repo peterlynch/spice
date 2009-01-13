@@ -25,15 +25,11 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.TileObserver;
-import java.beans.PropertyChangeListener;
 
-import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
@@ -59,15 +55,19 @@ extends JFrame
     
     DataManagerGui _gui = this;
     
-    
     JTabbedPane _tabsPane = new JTabbedPane();
     JPanel      _updateTab = new JPanel();
     JPanel      _dirTab = new JPanel();
+    JPanel      _repoTab = new JPanel();
     
-    JPanel [] _tabs = new JPanel [] { _updateTab, _dirTab };
+    JPanel [] _tabs = new JPanel [] { _updateTab, _repoTab, _dirTab };
     
     JTextField _mavenHomeField = new JTextField();
     JLabel _mavenHomeLabel = new JLabel();
+    
+    JTextField _localRepoField = new JTextField();
+    
+    JComboBox _remoteRepoList = new JComboBox();
     
     JComboBox _versionList = new JComboBox();
     
@@ -98,10 +98,10 @@ extends JFrame
         
         setupDirsTab();
         
+        setupRepoTab();
+        
         add( "Center", _tabsPane );
-        
-        
-        
+
         setDefaultCloseOperation( EXIT_ON_CLOSE );
         
         setPreferredSize( new Dimension(450, 300) );
@@ -186,7 +186,60 @@ extends JFrame
 
     private void setupDirsTab()
     {
-        _dirTab.add( _mavenHomeField );
+        GridBagLayout gridBagLM = new GridBagLayout();
+        GridBagConstraints c = new GridBagConstraints();
+        
+        _dirTab.setLayout( gridBagLM );
+
+        c.gridx = 0;
+        c.gridy = 0;
+        c.weightx = 0.5;
+        c.anchor = GridBagConstraints.EAST;
+        _dirTab.add( new JLabel( LANG.getMessage( "gui.label.maven.home" ) ), c );
+        
+        c.gridx = 1;
+        c.gridy = 0;
+        c.weightx = 0.5;
+        c.gridwidth = 2;
+        c.anchor = GridBagConstraints.WEST;
+        _dirTab.add( _mavenHomeField, c );
+    }
+
+    private void setupRepoTab()
+    {
+        GridBagLayout gridBagLM = new GridBagLayout();
+        GridBagConstraints c = new GridBagConstraints();
+        
+        _repoTab.setLayout( gridBagLM );
+
+        c.gridx = 0;
+        c.gridy = 0;
+        c.weightx = 0.5;
+        c.anchor = GridBagConstraints.EAST;
+        _repoTab.add( new JLabel( LANG.getMessage( "gui.label.repo.local" ) ), c );
+        
+        c.gridx = 1;
+        c.gridy = 0;
+        c.weightx = 0.5;
+        c.gridwidth = 2;
+        c.anchor = GridBagConstraints.WEST;
+        _repoTab.add( _localRepoField, c );
+
+        c.gridx = 0;
+        c.gridy = 1;
+        c.weightx = 0;
+        c.weighty = 1;
+        c.gridwidth = 1;
+        c.anchor = GridBagConstraints.EAST;
+        _repoTab.add( new JLabel( LANG.getMessage( "gui.label.repo.remote" ) ), c );
+        
+        c.gridx = 1;
+        c.gridy = 1;
+        c.weightx = 0.5;
+        c.weighty = 1;
+        c.gridwidth = 2;
+        c.anchor = GridBagConstraints.WEST;
+        _repoTab.add( _remoteRepoList, c );
     }
 
 }
