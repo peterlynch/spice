@@ -126,9 +126,9 @@ implements DeltaManager
 
         File mavenHome = Util.isEmpty( mavenHomeDir) ? new File( mavenRoot, cc.getId() ) : new File( mavenHomeDir );
 
-        File cdFolder = new File( mavenRoot, cc.getId() + "/.cd/" );
+        File cdFolder = new File( mavenRoot, cc.getId() + "/"+DeltaManager.CD_DIR+"/" );
         
-        File cdFile = new File( cdFolder, cc.getId() + ".cd" );
+        File cdFile = new File( cdFolder, cc.getId() + "." +DeltaManager.CD_EXT );
 
         File ldlFile = new File( cdFolder, cc.getId() + "-" + timeStamp + ".ldl" );
         
@@ -289,7 +289,7 @@ implements DeltaManager
             
             // write a timestamped version of it
             
-            cdFile = new File( cdFolder, cc.getId()+"-"+timeStamp+".cd" );
+            cdFile = new File( cdFolder, cc.getId()+"-"+timeStamp+"." + DeltaManager.CD_EXT );
             
             CdUtil.write( configuration, cdFile );
 

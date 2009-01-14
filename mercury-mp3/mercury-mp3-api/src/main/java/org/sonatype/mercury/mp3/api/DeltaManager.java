@@ -29,6 +29,10 @@ public interface DeltaManager
 {
     public static final String ROLE = DeltaManager.class.getName();
 
+    public static final String CD_EXT = "cd";
+
+    public static final String CD_DIR = ".cd";
+
     /**
      * container type
      * 

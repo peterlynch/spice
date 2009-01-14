@@ -15,6 +15,7 @@
 package org.sonatype.mercury.mp3.delta.cli;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URL;
@@ -28,7 +29,10 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.maven.mercury.MavenDependencyProcessor;
+import org.apache.maven.mercury.artifact.ArtifactMetadata;
+import org.apache.maven.mercury.artifact.ArtifactScopeEnum;
 import org.apache.maven.mercury.builder.api.DependencyProcessor;
+import org.apache.maven.mercury.plexus.PlexusMercury;
 import org.apache.maven.mercury.repository.api.Repository;
 import org.apache.maven.mercury.repository.local.m2.LocalRepositoryM2;
 import org.apache.maven.mercury.repository.remote.m2.RemoteRepositoryM2;
@@ -94,7 +98,11 @@ extends AbstractCli
     
     String _cdUrl;
     
+    List<Repository> _repos;
+    
     Monitor _monitor;
+    
+    PlexusMercury _mercury;
 
    public static void main( String[] args )
     throws Exception
@@ -154,6 +162,12 @@ extends AbstractCli
             _monitor = new DefaultMonitor();
         else
             _monitor = (Monitor) Class.forName( monitorClass ).newInstance();
+        
+        File settingsFile = null;
+        
+        settingsFile = new File( _settings );
+
+        _repos = getRepositories( settingsFile, _monitor );
     }
 
     @Override
@@ -161,6 +175,8 @@ extends AbstractCli
     throws Exception
     {
         InputStream cdStream;
+        
+        _mercury = plexus.lookup( PlexusMercury.class );
 
         if( cli.hasOption( NO_GUI ) )
         {
@@ -172,16 +188,10 @@ extends AbstractCli
                 
                 if( cdStream == null )
                     throw new Exception( LANG.getMessage( "cd.stream.is.null", cli.getOptionValue( CD_URL ) ) );
-                
-                File settingsFile = null;
-                
-                settingsFile = new File( _settings );
-                
+
                 File mavenHomeFile = new File( _mavenHome );
                 
-                List<Repository> repos = getRepositories( settingsFile, _monitor );
-                
-                applyConfiguration( mavenHomeFile, cdStream, plexus, repos, _monitor );
+                applyConfiguration( mavenHomeFile, cdStream, plexus, _repos, _monitor );
             }
             else
             {
@@ -199,12 +209,45 @@ extends AbstractCli
             gui._mavenHomeLabel.setText( _mavenHome );
             gui._mavenHomeField.setText( gui._mavenHomeLabel.getText() );
             
-            DefaultComboBoxModel vModel = new DefaultComboBoxModel();
-            vModel.addElement( "v1" );
-            vModel.addElement( "v2" );
-            vModel.addElement( "v3" );
-            gui._versionList.setModel( vModel );
-
+            _mercury.resolve( _repos, ArtifactScopeEnum.compile, new ArtifactMetadata("org.apache.maven:maven-cd:[3.0,)") );
+            
+            gui._cdModel.addElement( "v1" );
+            gui._cdModel.addElement( "v2" );
+            gui._cdModel.addElement( "v3" );
+            gui._cdList.setSelectedIndex( 1 );
+            
+            File cdDir = new File( _mavenHome, DeltaManager.CD_DIR );
+            if( cdDir.exists() )
+            {
+                File [] files = cdDir.listFiles( 
+                                          new FileFilter()
+                                          {
+                                            public boolean accept( File pathname )
+                                            {
+                                                String name = pathname.getName();
+                                                
+                                                if( name.matches( ".*-[0-9]{14}\\."+DeltaManager.CD_EXT ) )
+                                                    return true;
+                                                
+                                                return false;
+                                            }
+                                           }
+                                              );
+                if( !Util.isEmpty( files ) )
+                    for( File f : files )
+                        gui._tsModel.addElement( f.getName() );
+            }
+            
+            DefaultComboBoxModel rModel = new DefaultComboBoxModel();
+            
+            for( Repository r : _repos )
+            {
+                if( r.isLocal() )
+                    gui._localRepoField.setText( r.getServer().getURL().toString() );
+                else
+                    rModel.addElement( r.getServer().getURL().toString() );
+            }
+            gui._remoteRepoList.setModel( rModel );
             
             gui.pack();
             gui.setVisible( true );
@@ -213,8 +256,8 @@ extends AbstractCli
     
     protected void update( DataManagerGui gui )
     {
-System.out.println(gui._mavenHomeLabel.getText() );
-System.out.println(gui._versionList.getSelectedIndex()+" : "+gui._versionList.getSelectedItem() );
+//System.out.println(gui._mavenHomeLabel.getText() );
+//System.out.println(gui._cdList.getSelectedIndex()+" : "+gui._cdList.getSelectedItem() );
         gui.dispose();
         System.exit( 0 );
     }
