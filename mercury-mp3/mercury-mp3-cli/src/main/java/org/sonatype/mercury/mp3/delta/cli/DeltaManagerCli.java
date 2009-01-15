@@ -20,7 +20,9 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.TreeSet;
 
 import javax.swing.DefaultComboBoxModel;
 
@@ -29,8 +31,8 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.maven.mercury.MavenDependencyProcessor;
+import org.apache.maven.mercury.artifact.ArtifactBasicMetadata;
 import org.apache.maven.mercury.artifact.ArtifactMetadata;
-import org.apache.maven.mercury.artifact.ArtifactScopeEnum;
 import org.apache.maven.mercury.builder.api.DependencyProcessor;
 import org.apache.maven.mercury.plexus.PlexusMercury;
 import org.apache.maven.mercury.repository.api.Repository;
@@ -209,12 +211,25 @@ extends AbstractCli
             gui._mavenHomeLabel.setText( _mavenHome );
             gui._mavenHomeField.setText( gui._mavenHomeLabel.getText() );
             
-            _mercury.resolve( _repos, ArtifactScopeEnum.compile, new ArtifactMetadata("org.apache.maven:maven-cd:[3.0,)") );
+            List<ArtifactBasicMetadata> versions = _mercury.readVersions( _repos, new ArtifactMetadata("org.apache.maven:maven-cd:[3.0,)") );
             
-            gui._cdModel.addElement( "v1" );
-            gui._cdModel.addElement( "v2" );
-            gui._cdModel.addElement( "v3" );
-            gui._cdList.setSelectedIndex( 1 );
+            boolean versionsNotFound = true;
+            
+            if( !Util.isEmpty( versions ) )
+            {
+                TreeSet<ArtifactBasicMetadata> sortedVersions = new TreeSet<ArtifactBasicMetadata>();
+                sortedVersions.addAll( versions );
+                versions.clear();
+                versions.addAll( sortedVersions );
+                Collections.reverse( versions );
+                
+                for( ArtifactBasicMetadata bmd : versions )
+                    gui._cdModel.addElement( bmd.getVersion() );
+
+                gui._cdList.setSelectedIndex( 1 );
+                
+                versionsNotFound = false;
+            }
             
             File cdDir = new File( _mavenHome, DeltaManager.CD_DIR );
             if( cdDir.exists() )
@@ -234,8 +249,25 @@ extends AbstractCli
                                            }
                                               );
                 if( !Util.isEmpty( files ) )
+                {
+                    int count = files.length;
+                    
+                    TreeSet<String> sortedFiles = new TreeSet<String>();
                     for( File f : files )
-                        gui._tsModel.addElement( f.getName() );
+                        sortedFiles.add( f.getName() );
+                    
+                    while( count-- > 0 )
+                    {
+                        String v = sortedFiles.last();
+                        
+                        gui._tsModel.addElement( v );
+                        
+                        sortedFiles.remove( v );
+                    }
+                    
+                    if( versionsNotFound )
+                        gui._tsList.setSelectedIndex( 1 );
+                }
             }
             
             DefaultComboBoxModel rModel = new DefaultComboBoxModel();
