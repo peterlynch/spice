@@ -90,7 +90,7 @@ extends AbstractCli
 
     private static final char SETTINGS = 's';
     
-    private static final char NO_GUI = 'n';
+    private static final char SHOW_GUI = 'g';
     
     private Options _options = new Options();
 
@@ -139,8 +139,8 @@ extends AbstractCli
                            .withDescription( LANG.getMessage( "cli.settings", DEFAULT_SETTINGS ) ).create( SETTINGS ) 
                         );
         _options.addOption( 
-                           OptionBuilder.withLongOpt( "no.gui" )
-                           .withDescription( LANG.getMessage( "cli.no.gui" ) ).create( NO_GUI ) 
+                           OptionBuilder.withLongOpt( "show.gui" )
+                           .withDescription( LANG.getMessage( "cli.show.gui" ) ).create( SHOW_GUI ) 
                         );
 
        return _options;
@@ -164,7 +164,6 @@ extends AbstractCli
         
         if( _mavenHome == null )
             throw new Exception( LANG.getMessage( "cli.no.maven.home", curF.getAbsolutePath(), MAVEN_HOME+"" ) );
-            
         
         if( cli.hasOption( SETTINGS ) )
         {
@@ -195,7 +194,7 @@ extends AbstractCli
         
         _mercury = plexus.lookup( PlexusMercury.class );
 
-        if( cli.hasOption( NO_GUI ) )
+        if( !cli.hasOption( SHOW_GUI ) )
         {
             if ( cli.hasOption( MAVEN_HOME ) && cli.hasOption( CD_URL ) )
             {

@@ -98,7 +98,6 @@ extends TestCase
                                   "-m", "./target/config/apache-maven-3.0-alpha-1"
                                 , "-u", "./target/test-classes/maven-3.0-alpha-1.cd" 
                                 , "-s", "./target/test-classes/settings.xml" 
-                                , "-n" 
                                             }
                             );
 
@@ -119,7 +118,6 @@ extends TestCase
                                   "-m", "./target/config/apache-maven-3.0-alpha-1"
                                 , "-u", "./target/test-classes/maven-3.0-alpha-2.cd" 
                                 , "-s", "./target/test-classes/settings.xml" 
-                                , "-n" 
                                             }
                             );
 
