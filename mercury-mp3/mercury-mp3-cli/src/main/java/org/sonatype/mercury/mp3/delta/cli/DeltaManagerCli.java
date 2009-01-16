@@ -149,7 +149,22 @@ extends AbstractCli
     private void initDefaults( CommandLine cli )
     throws Exception
     {
-        _mavenHome = cli.getOptionValue( MAVEN_HOME );
+        File curF = new File(".");
+        File mvn = new File( curF, "bin/mvn"+(File.pathSeparatorChar == ';'?".bat":"") );
+        
+        if( cli.hasOption( MAVEN_HOME ))
+        {
+            _mavenHome = cli.getOptionValue( MAVEN_HOME );
+        }
+        else
+        {
+            if( mvn.exists() )
+                _mavenHome = curF.getCanonicalPath();
+        }
+        
+        if( _mavenHome == null )
+            throw new Exception( LANG.getMessage( "cli.no.maven.home", curF.getAbsolutePath(), MAVEN_HOME+"" ) );
+            
         
         if( cli.hasOption( SETTINGS ) )
         {
