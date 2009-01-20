@@ -51,6 +51,13 @@ public interface ModelDataSource
     ModelContainer join( ModelContainer a, ModelContainer b )
         throws DataSourceException;
 
+    ModelContainer replaceWithMultipleRoots(ModelContainer a, ModelContainer b)
+        throws DataSourceException;
+
+    ModelContainer replace(ModelContainer a, ModelContainer b)
+        throws DataSourceException;
+
+
     /**
      * Deletes properties of the specified model container from the data source.
      *
@@ -81,7 +88,7 @@ public interface ModelDataSource
      *
      * @param modelProperties the model properties that back the data source
      */
-    void init( List<ModelProperty> modelProperties, Collection<? extends ModelContainerFactory> modelContainerFactories );
+   // void init( List<ModelProperty> modelProperties, Collection<? extends ModelContainerInfo> modelContainerInfos );
 
     /**
      * Return history of all joins and deletes

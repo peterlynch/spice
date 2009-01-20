@@ -1,17 +1,4 @@
-/**
- * Copyright (c) 2008 Sonatype, Inc. All rights reserved.
- *
- * This program is licensed to you under the Apache License Version 2.0,
- * and you may not use this file except in compliance with the Apache License Version 2.0.
- * You may obtain a copy of the Apache License Version 2.0 at http://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the Apache License Version 2.0 is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
- */
 package org.apache.maven.shared.model;
-
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -1008,108 +995,108 @@ public class ProjectUri
 
             public static class Repositories
             {
-                public static String xUri = "http://apache.org/maven/project/profiles#collection/profile/repositories";
+                public static String xUri = "http://apache.org/maven/project/profiles#collection/profile/repositories#collection";
 
                 public static class Repository
                 {
                     public static String xUri =
-                        "http://apache.org/maven/project/profiles#collection/profile/repositories/repository";
+                        "http://apache.org/maven/project/profiles#collection/profile/repositories#collection/repository";
 
                     public static class Releases
                     {
                         public static String xUri =
-                            "http://apache.org/maven/project/profiles#collection/profile/repositories/repository/releases";
+                            "http://apache.org/maven/project/profiles#collection/profile/repositories#collection/repository/releases";
 
                         public static String enabled =
-                            "http://apache.org/maven/project/profiles#collection/profile/repositories/repository/releases/enabled";
+                            "http://apache.org/maven/project/profiles#collection/profile/repositories#collection/repository/releases/enabled";
 
                         public static String updatePolicy =
-                            "http://apache.org/maven/project/profiles#collection/profile/repositories/repository/releases/updatePolicy";
+                            "http://apache.org/maven/project/profiles#collection/profile/repositories#collection/repository/releases/updatePolicy";
 
                         public static String checksumPolicy =
-                            "http://apache.org/maven/project/profiles#collection/profile/repositories/repository/releases/checksumPolicy";
+                            "http://apache.org/maven/project/profiles#collection/profile/repositories#collection/repository/releases/checksumPolicy";
                     }
 
                     public static class Snapshots
                     {
                         public static String xUri =
-                            "http://apache.org/maven/project/profiles#collection/profile/repositories/repository/snapshots";
+                            "http://apache.org/maven/project/profiles#collection/profile/repositories#collection/repository/snapshots";
 
                         public static String enabled =
-                            "http://apache.org/maven/project/profiles#collection/profile/repositories/repository/snapshots/enabled";
+                            "http://apache.org/maven/project/profiles#collection/profile/repositories#collection/repository/snapshots/enabled";
 
                         public static String updatePolicy =
-                            "http://apache.org/maven/project/profiles#collection/profile/repositories/repository/snapshots/updatePolicy";
+                            "http://apache.org/maven/project/profiles#collection/profile/repositories#collection/repository/snapshots/updatePolicy";
 
                         public static String checksumPolicy =
-                            "http://apache.org/maven/project/profiles#collection/profile/repositories/repository/snapshots/checksumPolicy";
+                            "http://apache.org/maven/project/profiles#collection/profile/repositories#collection/repository/snapshots/checksumPolicy";
                     }
 
                     public static String id =
-                        "http://apache.org/maven/project/profiles#collection/profile/repositories/repository/id";
+                        "http://apache.org/maven/project/profiles#collection/profile/repositories#collection/repository/id";
 
                     public static String name =
-                        "http://apache.org/maven/project/profiles#collection/profile/repositories/repository/name";
+                        "http://apache.org/maven/project/profiles#collection/profile/repositories#collection/repository/name";
 
                     public static String url =
-                        "http://apache.org/maven/project/profiles#collection/profile/repositories/repository/url";
+                        "http://apache.org/maven/project/profiles#collection/profile/repositories#collection/repository/url";
 
                     public static String layout =
-                        "http://apache.org/maven/project/profiles#collection/profile/repositories/repository/layout";
+                        "http://apache.org/maven/project/profiles#collection/profile/repositories#collection/repository/layout";
                 }
             }
 
             public static class PluginRepositories
             {
                 public static String xUri =
-                    "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories";
+                    "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories#collection";
 
                 public static class PluginRepository
                 {
                     public static String xUri =
-                        "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories/pluginRepository";
+                        "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories#collection/pluginRepository";
 
                     public static class Releases
                     {
                         public static String xUri =
-                            "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories/pluginRepository/releases";
+                            "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories#collection/pluginRepository/releases";
 
                         public static String enabled =
-                            "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories/pluginRepository/releases/enabled";
+                            "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories#collection/pluginRepository/releases/enabled";
 
                         public static String updatePolicy =
-                            "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories/pluginRepository/releases/updatePolicy";
+                            "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories#collection/pluginRepository/releases/updatePolicy";
 
                         public static String checksumPolicy =
-                            "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories/pluginRepository/releases/checksumPolicy";
+                            "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories#collection/pluginRepository/releases/checksumPolicy";
                     }
 
                     public static class Snapshots
                     {
                         public static String xUri =
-                            "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories/pluginRepository/snapshots";
+                            "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories#collection/pluginRepository/snapshots";
 
                         public static String enabled =
-                            "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories/pluginRepository/snapshots/enabled";
+                            "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories#collection/pluginRepository/snapshots/enabled";
 
                         public static String updatePolicy =
-                            "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories/pluginRepository/snapshots/updatePolicy";
+                            "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories#collection/pluginRepository/snapshots/updatePolicy";
 
                         public static String checksumPolicy =
-                            "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories/pluginRepository/snapshots/checksumPolicy";
+                            "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories#collection/pluginRepository/snapshots/checksumPolicy";
                     }
 
                     public static String id =
-                        "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories/pluginRepository/id";
+                        "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories#collection/pluginRepository/id";
 
                     public static String name =
-                        "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories/pluginRepository/name";
+                        "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories#collection/pluginRepository/name";
 
                     public static String url =
-                        "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories/pluginRepository/url";
+                        "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories#collection/pluginRepository/url";
 
                     public static String layout =
-                        "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories/pluginRepository/layout";
+                        "http://apache.org/maven/project/profiles#collection/profile/pluginRepositories#collection/pluginRepository/layout";
                 }
             }
 
@@ -1726,4 +1713,3 @@ public class ProjectUri
     public static String properties = "http://apache.org/maven/project/properties";
 
 }
-

@@ -74,9 +74,7 @@ public class DefaultModelDataSourceTest
          init.addAll(mp);
          init.addAll(pluginProperties);
          
-        DefaultModelDataSource datasource = new DefaultModelDataSource();
-        datasource.init( init, factories );
-
+        DefaultModelDataSource datasource = new DefaultModelDataSource(init, factories);
         List<ModelContainer> containers = datasource.queryFor(ProjectUri.Build.PluginManagement.Plugins.Plugin.Executions.Execution.xUri);
         assertTrue(containsUri(ProjectUri.Build.PluginManagement.Plugins.Plugin.Executions.Execution.Goals.xURI, containers));
      }
@@ -124,8 +122,7 @@ public class DefaultModelDataSourceTest
                                                              dup9, dup10, dup11, dup11a, dup12 );
         DummyModelContainerFactory factory = new DummyModelContainerFactory();
 
-        DefaultModelDataSource datasource = new DefaultModelDataSource();
-        datasource.init( modelProperties, factories );
+        DefaultModelDataSource datasource = new DefaultModelDataSource(modelProperties, factories );
 
         List<ModelProperty> mps = datasource.mergeModelContainers(
             factory.create( new ArrayList<ModelProperty>( modelProperties.subList( 3, 9 ) ) ),
@@ -168,8 +165,7 @@ public class DefaultModelDataSourceTest
                                                              dup9, dup10, dup11 );
         DummyModelContainerFactory factory = new DummyModelContainerFactory();
 
-        DefaultModelDataSource datasource = new DefaultModelDataSource();
-        datasource.init( modelProperties, factories );
+        DefaultModelDataSource datasource = new DefaultModelDataSource(modelProperties, factories);
 
         List<ModelProperty> mps = datasource.mergeModelContainers(
             factory.create( new ArrayList<ModelProperty>( modelProperties.subList( 4, 8 ) ) ),
@@ -223,8 +219,7 @@ public class DefaultModelDataSourceTest
 
         DummyModelContainerFactory factory = new DummyModelContainerFactory();
 
-        DefaultModelDataSource datasource = new DefaultModelDataSource();
-        datasource.init( modelProperties, factories );
+        DefaultModelDataSource datasource = new DefaultModelDataSource(modelProperties, factories );
 
         List<ModelProperty> mps = datasource.mergeModelContainers(
             factory.create( new ArrayList<ModelProperty>( modelProperties.subList( 4, 13 ) ) ),
@@ -261,8 +256,7 @@ public class DefaultModelDataSourceTest
 
         DummyModelContainerFactory factory = new DummyModelContainerFactory();
 
-        DefaultModelDataSource datasource = new DefaultModelDataSource();
-        datasource.init( modelProperties, factories );
+        DefaultModelDataSource datasource = new DefaultModelDataSource(modelProperties, factories );
 
         List<ModelProperty> mps = datasource.mergeModelContainers(
             factory.create( new ArrayList<ModelProperty>( modelProperties.subList( 4, 8 ) ) ),
@@ -303,8 +297,8 @@ public class DefaultModelDataSourceTest
 
         DummyModelContainerFactory factory = new DummyModelContainerFactory();
 
-        ModelDataSource datasource = new DefaultModelDataSource();
-        datasource.init( modelProperties, factories );
+        ModelDataSource datasource = new DefaultModelDataSource(modelProperties, factories);
+
         ModelContainer joinedModelContainer = datasource.join(
             factory.create( new ArrayList<ModelProperty>( modelProperties.subList( 4, 8 ) ) ),
             factory.create( new ArrayList<ModelProperty>( modelProperties.subList( 8, 12 ) ) ) );
@@ -328,8 +322,7 @@ public class DefaultModelDataSourceTest
         modelProperties.add( new ModelProperty( "container-marker", null ) );
         modelProperties.add( new ModelProperty( "container-marker/b", null ) );
 
-        ModelDataSource datasource = new DefaultModelDataSource();
-        datasource.init( modelProperties, factories );
+        ModelDataSource datasource = new DefaultModelDataSource( modelProperties, factories );
 
         List<ModelContainer> containers = datasource.queryFor( "container-marker" );
         assertEquals( "Number of containers: ", 2, containers.size() );
@@ -344,8 +337,7 @@ public class DefaultModelDataSourceTest
         List<ModelProperty> modelProperties = new ArrayList<ModelProperty>();
         modelProperties.add( new ModelProperty( "container-marker", null ) );
 
-        ModelDataSource datasource = new DefaultModelDataSource();
-        datasource.init( modelProperties, factories );
+        ModelDataSource datasource = new DefaultModelDataSource( modelProperties, factories );
 
         List<ModelContainer> containers = datasource.queryFor( "container-marker" );
         assertEquals( "Number of containers: ", 1, containers.size() );
@@ -360,8 +352,7 @@ public class DefaultModelDataSourceTest
         modelProperties.add( new ModelProperty( "container-marker", null ) );
         modelProperties.add( new ModelProperty( "container-marker", null ) );
         modelProperties.add( new ModelProperty( "acontainer-marker-1", null ) );
-        ModelDataSource datasource = new DefaultModelDataSource();
-        datasource.init( modelProperties, factories );
+        ModelDataSource datasource = new DefaultModelDataSource( modelProperties, factories );
 
         List<ModelContainer> containers = datasource.queryFor( "container-marker" );
         assertEquals( "Number of containers: ", 2, containers.size() );
@@ -375,8 +366,7 @@ public class DefaultModelDataSourceTest
         List<ModelProperty> modelProperties = new ArrayList<ModelProperty>();
         modelProperties.add( new ModelProperty( "a", null ) );
 
-        ModelDataSource datasource = new DefaultModelDataSource();
-        datasource.init( modelProperties, factories );
+        ModelDataSource datasource = new DefaultModelDataSource( modelProperties, factories );
 
         datasource.queryFor( "bogus" );
     }
@@ -390,8 +380,7 @@ public class DefaultModelDataSourceTest
 
         DummyModelContainerFactory factory = new DummyModelContainerFactory();
 
-        ModelDataSource datasource = new DefaultModelDataSource();
-        datasource.init( modelProperties, factories );
+        ModelDataSource datasource = new DefaultModelDataSource( modelProperties, factories );
 
         ModelContainer modelContainerA = factory.create( new ArrayList<ModelProperty>( modelProperties ) );
         ModelContainer modelContainer =
@@ -428,8 +417,7 @@ public class DefaultModelDataSourceTest
         modelProperties.add( new ModelProperty( "a", null ) );
         modelProperties.add( new ModelProperty( "b", null ) );
 
-        ModelDataSource datasource = new DefaultModelDataSource();
-        datasource.init( modelProperties, factories );
+        ModelDataSource datasource = new DefaultModelDataSource( modelProperties, factories );
 
         modelProperties.remove( 0 );
 
@@ -443,8 +431,7 @@ public class DefaultModelDataSourceTest
         modelProperties.add( new ModelProperty( "a", null ) );
         modelProperties.add( new ModelProperty( "b", null ) );
 
-        ModelDataSource datasource = new DefaultModelDataSource();
-        datasource.init( modelProperties, factories );
+        ModelDataSource datasource = new DefaultModelDataSource( modelProperties, factories );
 
         datasource.getModelProperties().remove( 0 );
 
@@ -463,8 +450,8 @@ public class DefaultModelDataSourceTest
 
         DummyModelContainerFactory factory = new DummyModelContainerFactory();
 
-        ModelDataSource datasource = new DefaultModelDataSource();
-        datasource.init( modelProperties, factories );
+        ModelDataSource datasource = new DefaultModelDataSource( modelProperties, factories );
+
         ModelContainer joinedModelContainer = datasource.join(
             factory.create( new ArrayList<ModelProperty>( modelProperties.subList( 0, 1 ) ) ),
             factory.create( new ArrayList<ModelProperty>( modelProperties.subList( 1, 3 ) ) ) );
@@ -483,8 +470,8 @@ public class DefaultModelDataSourceTest
         List<ModelProperty> modelProperties = Arrays.asList( mpA, mpB, mpC );
         DummyModelContainerFactory factory = new DummyModelContainerFactory();
 
-        ModelDataSource datasource = new DefaultModelDataSource();
-        datasource.init( modelProperties, factories );
+        ModelDataSource datasource = new DefaultModelDataSource( modelProperties, factories );
+
         datasource.delete( factory.create( new ArrayList<ModelProperty>( modelProperties.subList( 0, 1 ) ) ) );
 
         assertEquals( 2, datasource.getModelProperties().size() );
@@ -498,8 +485,7 @@ public class DefaultModelDataSourceTest
         List<ModelProperty> modelProperties = new ArrayList<ModelProperty>();
         modelProperties.add( new ModelProperty( "a", null ) );
 
-        ModelDataSource datasource = new DefaultModelDataSource();
-        datasource.init( modelProperties, factories );
+        ModelDataSource datasource = new DefaultModelDataSource( modelProperties, factories );
         datasource.delete( null );
     }
 

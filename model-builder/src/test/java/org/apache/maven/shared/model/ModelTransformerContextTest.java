@@ -40,8 +40,6 @@ import java.util.List;
 
 public class ModelTransformerContextTest
 {
-
-
     @Test
     public void sortWithDuplicateProperty1()
     {
@@ -78,7 +76,7 @@ public class ModelTransformerContextTest
         List<ModelProperty> modelProperties = Arrays.asList( dup0, dup1, dup2, dup3, dup4, dup5, dup6, dup7, dup10,
                                                              dup11, dup12, dup13, dup14, dup15, dup16, dup17 );
 
-        ModelTransformerContext ctx = new ModelTransformerContext( new ArrayList<ModelContainerFactory>() );
+        ModelTransformerContext ctx = new ModelTransformerContext( );
         List<ModelProperty> sortedProperties = ctx.sort( modelProperties, "http://apache.org/maven" );
         for ( ModelProperty mp : sortedProperties )
         {
@@ -95,7 +93,7 @@ public class ModelTransformerContextTest
         ModelProperty dup1 = new ModelProperty( "http://apache.org/maven/project/version", "1.2" );
         List<ModelProperty> modelProperties = Arrays.asList( dup0, dup1 );
 
-        ModelTransformerContext ctx = new ModelTransformerContext( new ArrayList<ModelContainerFactory>() );
+        ModelTransformerContext ctx = new ModelTransformerContext( );
         List<ModelProperty> sortedProperties = ctx.sort( modelProperties, "http://apache.org/maven" );
         assertTrue( sortedProperties.contains( dup0 ) );
         assertFalse( sortedProperties.contains( dup1 ) );
@@ -108,7 +106,7 @@ public class ModelTransformerContextTest
         ModelProperty dup1 = new ModelProperty( "http://apache.org/maven/project/test#collection/version", "1.2" );
         List<ModelProperty> modelProperties = Arrays.asList( dup0, dup1 );
 
-        ModelTransformerContext ctx = new ModelTransformerContext( new ArrayList<ModelContainerFactory>() );
+        ModelTransformerContext ctx = new ModelTransformerContext( );
         List<ModelProperty> sortedProperties = ctx.sort( modelProperties, "http://apache.org/maven" );
         assertTrue( sortedProperties.contains( dup0 ) );
         assertTrue( sortedProperties.contains( dup1 ) );
@@ -123,7 +121,7 @@ public class ModelTransformerContextTest
         ModelProperty d = new ModelProperty( "http://apache.org/maven/project/test#collection/version", "1.2" );
         List<ModelProperty> modelProperties = Arrays.asList( a, b, c, d );
 
-        ModelTransformerContext ctx = new ModelTransformerContext( new ArrayList<ModelContainerFactory>() );
+        ModelTransformerContext ctx = new ModelTransformerContext( );
         List<ModelProperty> sortedProperties = ctx.sort( modelProperties, "http://apache.org/maven" );
         assertEquals( a, sortedProperties.get( 0 ) );
         assertEquals( b, sortedProperties.get( 1 ) );
@@ -142,7 +140,7 @@ public class ModelTransformerContextTest
         ModelProperty f = new ModelProperty( "http://apache.org/maven/project/test#collection/version", "1.2" );
         List<ModelProperty> modelProperties = Arrays.asList( a, b, c, d, e, f );
 
-        ModelTransformerContext ctx = new ModelTransformerContext( new ArrayList<ModelContainerFactory>() );
+        ModelTransformerContext ctx = new ModelTransformerContext( );
         List<ModelProperty> sortedProperties = ctx.sort( modelProperties, "http://apache.org/maven" );
         assertEquals( a, sortedProperties.get( 0 ) );
         assertEquals( b, sortedProperties.get( 1 ) );
@@ -172,7 +170,7 @@ public class ModelTransformerContextTest
             new ModelProperty( "http://apache.org/maven/project/test#collection/version/test2#collection/d", "d" );
         List<ModelProperty> modelProperties = Arrays.asList( a, b, c, d, e, f, g, h, i, j );
 
-        ModelTransformerContext ctx = new ModelTransformerContext( new ArrayList<ModelContainerFactory>() );
+        ModelTransformerContext ctx = new ModelTransformerContext(  );
         List<ModelProperty> sortedProperties = ctx.sort( modelProperties, "http://apache.org/maven" );
 
         assertEquals( a, sortedProperties.get( 0 ) );
@@ -192,14 +190,14 @@ public class ModelTransformerContextTest
     @Test(expected = IllegalArgumentException.class)
     public void sortWithNullProperties()
     {
-        ModelTransformerContext ctx = new ModelTransformerContext( new ArrayList<ModelContainerFactory>() );
+        ModelTransformerContext ctx = new ModelTransformerContext(  );
         ctx.sort( null, "http://apache.org/maven" );
     }
 
     @Test
     public void sortWithEmptyProperties()
     {
-        ModelTransformerContext ctx = new ModelTransformerContext( new ArrayList<ModelContainerFactory>() );
+        ModelTransformerContext ctx = new ModelTransformerContext( );
         assertEquals( 0, ctx.sort( new ArrayList<ModelProperty>(), "http://apache.org/maven" ).size() );
     }
 }

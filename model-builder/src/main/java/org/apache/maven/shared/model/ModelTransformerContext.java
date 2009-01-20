@@ -45,7 +45,7 @@ public final class ModelTransformerContext
     /**
      * Factories to use for construction of model containers
      */
-    private final Collection<? extends ModelContainerFactory> factories;
+    private Collection<? extends ModelContainerInfo> infos;
 
     /**
      * List of system and environmental properties to use during interpolation
@@ -70,20 +70,24 @@ public final class ModelTransformerContext
         }
     }
 
+
+    protected ModelTransformerContext()
+    {
+         this(null);
+    }
+
     /**
      * Default constructor
      *
-     * @param factories model container factories. Value may be null.
      */
-    public ModelTransformerContext( Collection<? extends ModelContainerFactory> factories )
+    public ModelTransformerContext( Collection<? extends ModelContainerInfo> infos )
     {
-        if ( factories == null )
-        {
-            this.factories = Collections.emptyList();
+        if(infos == null) {
+            this.infos = Collections.EMPTY_LIST;
         }
         else
         {
-            this.factories = factories;
+            this.infos = infos;
         }
     }
 
@@ -258,11 +262,121 @@ public final class ModelTransformerContext
             sort( transformedProperties, baseUriForModel );
 
         modelProperties = determineLeafNodes(modelProperties);
-        ModelDataSource modelDataSource = new DefaultModelDataSource();
-        modelDataSource.init( modelProperties, factories );
 
-        for ( ModelContainerFactory factory : factories )
+        Collection<ModelContainerFactory> factories = new ArrayList<ModelContainerFactory>();
+        for(ModelContainerInfo info : infos)
         {
+            factories.addAll(info.getAllModelContainerFactories());
+        }
+
+        ModelDataSource modelDataSource = new DefaultModelDataSource( modelProperties, factories );
+
+        for(ModelContainerInfo info : infos)
+        {
+            processContainers( modelDataSource, null, info );
+        }
+
+        List<ModelProperty> mps = modelDataSource.getModelProperties();
+
+        mps = sort( mps, baseUriForModel );
+
+        fromModelTransformer.interpolateModelProperties( mps, interpolatorProperties, domainModels.get(0));
+
+        try
+        {
+            DomainModel domainModel = toModelTransformer.transformToDomainModel( mps, eventListeners );
+            domainModel.setEventHistory(modelDataSource.getEventHistory());
+            return domainModel;
+        }
+        catch ( IOException e )
+        {
+            System.out.println( modelDataSource.getEventHistory() );
+            e.printStackTrace();
+            throw new IOException( e.getMessage() );
+        }
+    }
+
+    private void processChildContainers( ModelDataSource modelDataSource, ModelDataSource childModelDataSource, ModelContainerInfo info )
+        throws IOException {
+            ModelContainerFactory factory = info.getModelContainerFactory();
+            for ( String uri : factory.getUris() )
+            {
+                List<ModelContainer> modelContainers;
+                try
+                {
+                    modelContainers = childModelDataSource.queryFor( uri );
+                }
+                catch ( IllegalArgumentException e )
+                {
+                    System.out.println( modelDataSource.getEventHistory() );
+                    throw new IllegalArgumentException( e );
+                }
+                List<ModelContainer> removedModelContainers = new ArrayList<ModelContainer>();
+                Collections.reverse( modelContainers );
+                for ( int i = 0; i < modelContainers.size(); i++ )
+                {
+                    ModelContainer mcA = modelContainers.get( i );
+                    if ( removedModelContainers.contains( mcA ) )
+                    {
+                        continue;
+                    }
+                    for ( ModelContainer mcB : modelContainers.subList( i + 1, modelContainers.size() ) )
+                    {
+                        ModelContainerAction action = mcA.containerAction( mcB );
+
+                        if ( ModelContainerAction.DELETE.equals( action ) )
+                        {
+                            modelDataSource.delete( mcB );
+                            removedModelContainers.add( mcB );
+                        }
+                        else if ( ModelContainerAction.JOIN.equals( action ) )
+                        {
+                            try
+                            {   
+                                /*
+                                if(childModelDataSource != null)
+                                {
+                                    mcA = modelDataSource.replace(mcA, mcA.createNewInstance(childModelDataSource.getModelProperties()));
+                                }
+                                else {
+                                    ;
+                                }
+                                */
+                                mcA = modelDataSource.join( mcA, mcB );
+                                removedModelContainers.add( mcB );
+
+                                if(info.getChildren() != null)
+                                {
+                                    for(ModelContainerInfo child : info.getChildren())
+                                    {
+                                        ModelDataSource childDataSource =
+                                                new DefaultModelDataSource(mcA.getProperties(), child.getAllModelContainerFactories());
+                                        processChildContainers( modelDataSource, childDataSource, child );
+                                        if(child.getModelContainerRule() != null)
+                                        {
+                                            mcA = modelDataSource.replace(mcA,
+                                                    mcA.createNewInstance(child.getModelContainerRule()
+                                                            .execute(childDataSource.getModelProperties())));
+                                        }
+                                    }
+                                }
+                            }
+                            catch ( DataSourceException e )
+                            {
+                                System.out.println( modelDataSource.getEventHistory() );
+                                e.printStackTrace();
+                                throw new IOException( "Failed to join model containers: URI = " + uri +
+                                    ", Factory = " + factory.getClass().getName() );
+                            }
+                        }
+                    }
+                }
+            }
+    }
+
+    private void processContainers( ModelDataSource modelDataSource, ModelDataSource childModelDataSource, ModelContainerInfo info )
+        throws IOException {
+            ModelContainerFactory factory = info.getModelContainerFactory();
             for ( String uri : factory.getUris() )
             {
                 List<ModelContainer> modelContainers;
@@ -296,9 +410,28 @@ public final class ModelTransformerContext
                         else if ( ModelContainerAction.JOIN.equals( action ) )
                         {
                             try
-                            {
+                            {   /*
+                                if(childModelDataSource != null)
+                                {
+                                    mcA = modelDataSource.replace(mcA, mcA.createNewInstance(childModelDataSource.getModelProperties()));
+                                }
+                                else {
+                                    ;
+                                }
+                                */
                                 mcA = modelDataSource.join( mcA, mcB );
                                 removedModelContainers.add( mcB );
+
+                                if(info.getChildren() != null)
+                                {
+                                    for(ModelContainerInfo child : info.getChildren())
+                                    {
+                                        ModelDataSource childDataSource =
+                                                new DefaultModelDataSource(mcA.getProperties(), child.getAllModelContainerFactories());
+                                        processChildContainers( modelDataSource, childDataSource, child );
+                                        //mcA = modelDataSource.replace(mcA, mcA.createNewInstance(childDataSource.getModelProperties()));
+                                    }
+                                }
                             }
                             catch ( DataSourceException e )
                             {
@@ -311,26 +444,6 @@ public final class ModelTransformerContext
                     }
                 }
             }
-        }
-
-
-        List<ModelProperty> mps = modelDataSource.getModelProperties();
-        mps = sort( mps, baseUriForModel );
-
-        fromModelTransformer.interpolateModelProperties( mps, interpolatorProperties, domainModels.get(0));
-
-        try
-        {
-            DomainModel domainModel = toModelTransformer.transformToDomainModel( mps, eventListeners );
-            domainModel.setEventHistory(modelDataSource.getEventHistory());
-            return domainModel;
-        }
-        catch ( IOException e )
-        {
-            System.out.println( modelDataSource.getEventHistory() );
-            e.printStackTrace();
-            throw new IOException( e.getMessage() );
-        }
     }
 
     /**
@@ -380,6 +493,7 @@ public final class ModelTransformerContext
      */
     public static List<ModelProperty> sort( List<ModelProperty> properties, String baseUri )
     {
+
         if ( properties == null )
         {
             throw new IllegalArgumentException( "properties" );
@@ -399,10 +513,11 @@ public final class ModelTransformerContext
                 processedProperties.add( p );
                 position.add( 0, uri );
             }
-            else if ( !position.contains( uri ) || parentUri.contains( "#collection" ) || parentUri.contains( "#set" ) )
+            else if ( !position.contains( uri ) || parentUri.contains( "#collection" ) || parentUri.contains( "#set" )  )
             {
                 int pst = (parentUri.endsWith("#property"))
                         ? (position.indexOf( parentUri.replaceAll("#property", "") ) + 1) : (position.indexOf( parentUri ) + 1);
+
                 if(pst == 0 && !uri.equals(properties.get(0).getUri()) )
                 {
                     for(ModelProperty mp : properties)
@@ -412,6 +527,7 @@ public final class ModelTransformerContext
                     throw new IllegalArgumentException("Could not locate parent: Parent URI = " + parentUri
                             + ": Child - " + p.toString());
                 }
+
                 processedProperties.add( pst, p );
                 position.add( pst, uri );
             }

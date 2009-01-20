@@ -31,11 +31,7 @@ package org.apache.maven.shared.model.impl;
  * under the License.
  */
 
-import org.apache.maven.shared.model.DataSourceException;
-import org.apache.maven.shared.model.ModelContainer;
-import org.apache.maven.shared.model.ModelContainerFactory;
-import org.apache.maven.shared.model.ModelDataSource;
-import org.apache.maven.shared.model.ModelProperty;
+import org.apache.maven.shared.model.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -74,10 +70,81 @@ public final class DefaultModelDataSource
     private Map<String, ModelContainerFactory> modelContainerFactoryMap;
 
     /**
-     * Default constructor
+     * @see ModelDataSource(java.util.List, java.util.Collection)
      */
-    public DefaultModelDataSource()
+    public DefaultModelDataSource( List<ModelProperty> modelProperties, Collection<? extends ModelContainerFactory> modelContainerFactories )
     {
+        if ( modelProperties == null )
+        {
+            throw new IllegalArgumentException( "modelProperties: null" );
+        }
+        if ( modelContainerFactories == null )
+        {
+            throw new IllegalArgumentException( "modeContainerFactories: null" );
+        }
+        this.modelProperties = new LinkedList<ModelProperty>( modelProperties );
+        this.modelContainerFactoryMap = new HashMap<String, ModelContainerFactory>();
+        this.dataEvents = new ArrayList<DataEvent>();
+        this.originalModelProperties = new ArrayList<ModelProperty>( modelProperties );
+
+        for ( ModelContainerFactory factory : modelContainerFactories )
+        {
+            Collection<String> uris = factory.getUris();
+            if ( uris == null )
+            {
+                throw new IllegalArgumentException( "factory.uris: null" );
+            }
+
+            for ( String uri : uris )
+            {
+                modelContainerFactoryMap.put( uri, factory );
+            }
+        }
+    }
+
+    public ModelContainer replaceWithMultipleRoots(ModelContainer a, ModelContainer b)
+    {
+        int position = modelProperties.indexOf(a.getProperties().get(0));
+        this.delete(a);
+
+       // modelProperties.addAll(position, x);
+        return b;
+    }
+
+    public ModelContainer replace(ModelContainer a, ModelContainer b)
+    {
+        int position = modelProperties.indexOf(a.getProperties().get(0));
+        this.delete(a);
+        if(hasRoot(b.getProperties()))
+        {
+            modelProperties.addAll(position, b.getProperties());
+        }
+        else {
+            List<String> contained = new ArrayList<String>();
+            List<ModelProperty> x = new ArrayList<ModelProperty>();
+            for(ModelProperty mp : b.getProperties()) {
+                if(!contained.contains(mp.getResolvedValue())) {
+                    contained.add(mp.getResolvedValue());
+                    x.add(mp);
+                }
+            }
+            modelProperties.addAll(position, x);
+        }
+        return b;
+    }    
+
+    private static boolean hasRoot(List<ModelProperty> modelProperties) {
+        String baseUri = null;
+        List<String> uris = new ArrayList<String>();
+        for (ModelProperty mp : modelProperties)
+        {
+            uris.add(mp.getUri());
+            if (baseUri == null || mp.getUri().length() < baseUri.length())
+            {
+                baseUri = mp.getUri();
+            }
+        }
+        return uris.indexOf(baseUri) == uris.lastIndexOf(baseUri);
     }
 
     /**
@@ -149,7 +216,9 @@ public final class DefaultModelDataSource
             startIndex = 0;
         }
         joinedProperties = sort(joinedProperties, findBaseUriFrom(joinedProperties));
-
+      //  if(startIndex > joinedProperties.size()) {
+       //     startIndex = joinedProperties.size();
+       // }
         modelProperties.addAll( startIndex, joinedProperties );
         /*
         List<ModelProperty> deletedProperties = new ArrayList<ModelProperty>();
@@ -285,39 +354,6 @@ public final class DefaultModelDataSource
         }
 
         return modelContainers;
-    }
-
-    /**
-     * @see ModelDataSource#init(java.util.List, java.util.Collection)
-     */
-    public void init( List<ModelProperty> modelProperties, Collection<? extends ModelContainerFactory> modelContainerFactories )
-    {
-        if ( modelProperties == null )
-        {
-            throw new IllegalArgumentException( "modelProperties: null" );
-        }
-        if ( modelContainerFactories == null )
-        {
-            throw new IllegalArgumentException( "modeContainerFactories: null" );
-        }
-        this.modelProperties = new LinkedList<ModelProperty>( modelProperties );
-        this.modelContainerFactoryMap = new HashMap<String, ModelContainerFactory>();
-        this.dataEvents = new ArrayList<DataEvent>();
-        this.originalModelProperties = new ArrayList<ModelProperty>( modelProperties );
-
-        for ( ModelContainerFactory factory : modelContainerFactories )
-        {
-            Collection<String> uris = factory.getUris();
-            if ( uris == null )
-            {
-                throw new IllegalArgumentException( "factory.uris: null" );
-            }
-
-            for ( String uri : uris )
-            {
-                modelContainerFactoryMap.put( uri, factory );
-            }
-        }
     }
 
     /**
