@@ -65,6 +65,7 @@ public class DefaultPlexusPluginManager
         for ( Iterator<File> i = request.getLocalRepositories().iterator(); i.hasNext(); )
         {
             File repository = i.next();
+                        
             if ( !repository.exists() )
             {
                 repository.mkdirs();
@@ -78,7 +79,7 @@ public class DefaultPlexusPluginManager
         for ( Iterator<String> i = request.getRemoteRepositories().iterator(); i.hasNext(); )
         {
             String remoteRepository = i.next();
-
+            
             URL url;
 
             try
@@ -87,7 +88,7 @@ public class DefaultPlexusPluginManager
             }
             catch ( MalformedURLException e )
             {
-                throw new PluginResolutionException( "Bad URL" );
+                throw new PluginResolutionException( "Bad URL", e );
             }
 
             //!! Why do repositories need IDs. We probably want to avoid this.
