@@ -40,7 +40,7 @@ under the License.
   </modules>
 
   <properties>
-    <mercury.version>1.0.0-alpha-3-SNAPSHOT</mercury.version>
+    <mercury.version>1.0.0-alpha-4-SNAPSHOT</mercury.version>
     <maven.version>3.0-alpha-1</maven.version>
     <mercury.mp3.version>${project.version}</mercury.mp3.version>
 
@@ -69,7 +69,6 @@ under the License.
     <distMgmtSiteUrl>scp://people.apache.org/home/ogusakov/public_html/sites/mercury-mp3</distMgmtSiteUrl>
 
   </properties>
-
 
   <scm>
     <connection>scm:svn:http://svn.apache.org/repos/asf/maven/mercury/trunk/mercury-mp3/</connection>
