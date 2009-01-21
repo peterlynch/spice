@@ -7,13 +7,13 @@
   </parent>
   <groupId>org.sonatype.plexus</groupId>
   <artifactId>plexus-plugin-manager</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>0.0.1-SNAPSHOT</version>
   <name>project</name>
   <url>http://maven.apache.org</url>
   <properties>
-    <plexusVersion>1.0-beta-3.0.1</plexusVersion>
+    <plexusVersion>1.0-beta-3.0.4</plexusVersion>
     <mercuryVersion>1.0.0-alpha-2</mercuryVersion>
-    <mavenVersion>3.0-SNAPSHOT</mavenVersion>
+    <mavenVersion>3.0-alpha-1</mavenVersion>
   </properties>
   <dependencies>
     <dependency>
