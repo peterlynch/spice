@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.sonatype.spice</groupId>
@@ -8,7 +9,7 @@
   <groupId>org.sonatype.plexus</groupId>
   <artifactId>plexus-plugin-manager</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>project</name>
+  <name>Plexus Plugin Manager</name>
   <url>http://maven.apache.org</url>
   <properties>
     <plexusVersion>1.0-beta-3.0.4</plexusVersion>
@@ -20,7 +21,7 @@
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-container-default</artifactId>
       <version>${plexusVersion}</version>
-    </dependency>        
+    </dependency>
     <dependency>
       <groupId>org.apache.maven.mercury</groupId>
       <artifactId>mercury-plexus</artifactId>
@@ -40,7 +41,7 @@
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-classworlds</artifactId>
       <version>1.3</version>
-    </dependency>    
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -68,7 +69,7 @@
               <goal>generate-metadata</goal>
             </goals>
           </execution>
-        </executions> 
+        </executions>
       </plugin>
     </plugins>
   </build>

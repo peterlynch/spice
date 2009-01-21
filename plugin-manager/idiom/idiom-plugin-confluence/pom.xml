@@ -5,7 +5,7 @@
     <groupId>org.sonatype.idiom</groupId>
     <artifactId>idiom</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-  </parent>  
+  </parent>
   <artifactId>idiom-plugin-confluence</artifactId>
   <name>Idiom :: Confluence Plugin</name>
   <dependencies>
