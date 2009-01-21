@@ -57,70 +57,70 @@ public class PlexusUserManagerTest
         Assert.assertTrue( userMap.containsKey( "jcodar" ) );
     }
 
-//    public void testExternalRolesForUserInListSourceAll()
-//        throws Exception
-//    {
-//        PlexusUserManager userManager = this.getUserManager();
-//
-//        Set<PlexusUser> users = userManager.listUsers( PlexusUserManager.SOURCE_ALL );
-//        // put users in map for easy search
-//        Map<String, PlexusUser> userMap = this.getMapFromSet( users );
-//        Assert.assertTrue( userMap.containsKey( "jcoder" ) );
-//        PlexusUser jcoder = userMap.get( "jcoder" );
-//
-//        this.checkJCodersRoles( jcoder );
-//    }
-//
-//    public void testExternalRolesForUserInListSingleSource()
-//        throws Exception
-//    {
-//        PlexusUserManager userManager = this.getUserManager();
-//
-//        Set<PlexusUser> users = userManager.listUsers( "MockUserLocatorA" );
-//        // put users in map for easy search
-//        Map<String, PlexusUser> userMap = this.getMapFromSet( users );
-//        Assert.assertTrue( userMap.containsKey( "jcoder" ) );
-//        PlexusUser jcoder = userMap.get( "jcoder" );
-//
-//        this.checkJCodersRoles( jcoder );
-//    }
-//
-//    public void testExternalRolesForUser()
-//        throws Exception
-//    {
-//        PlexusUserManager userManager = this.getUserManager();
-//        PlexusUser jcoder = userManager.getUser( "jcoder" );
-//
-//        this.checkJCodersRoles( jcoder );
-//    }
-//
-//    public void testExternalRolesForUserSearchSingleSource()
-//        throws Exception
-//    {
-//        PlexusUserManager userManager = this.getUserManager();
-//
-//        Set<PlexusUser> users = userManager.searchUserById( "MockUserLocatorA", "jcoder" );
-//        // put users in map for easy search
-//        Map<String, PlexusUser> userMap = this.getMapFromSet( users );
-//        Assert.assertTrue( userMap.containsKey( "jcoder" ) );
-//        PlexusUser jcoder = userMap.get( "jcoder" );
-//
-//        this.checkJCodersRoles( jcoder );
-//    }
-//
-//    public void testExternalRolesForUserSearchSourceAll()
-//        throws Exception
-//    {
-//        PlexusUserManager userManager = this.getUserManager();
-//
-//        Set<PlexusUser> users = userManager.searchUserById( PlexusUserManager.SOURCE_ALL, "jcoder" );
-//        // put users in map for easy search
-//        Map<String, PlexusUser> userMap = this.getMapFromSet( users );
-//        Assert.assertTrue( userMap.containsKey( "jcoder" ) );
-//        PlexusUser jcoder = userMap.get( "jcoder" );
-//
-//        this.checkJCodersRoles( jcoder );
-//    }
+    // public void testExternalRolesForUserInListSourceAll()
+    // throws Exception
+    // {
+    // PlexusUserManager userManager = this.getUserManager();
+    //
+    // Set<PlexusUser> users = userManager.listUsers( PlexusUserManager.SOURCE_ALL );
+    // // put users in map for easy search
+    // Map<String, PlexusUser> userMap = this.getMapFromSet( users );
+    // Assert.assertTrue( userMap.containsKey( "jcoder" ) );
+    // PlexusUser jcoder = userMap.get( "jcoder" );
+    //
+    // this.checkJCodersRoles( jcoder );
+    // }
+    //
+    // public void testExternalRolesForUserInListSingleSource()
+    // throws Exception
+    // {
+    // PlexusUserManager userManager = this.getUserManager();
+    //
+    // Set<PlexusUser> users = userManager.listUsers( "MockUserLocatorA" );
+    // // put users in map for easy search
+    // Map<String, PlexusUser> userMap = this.getMapFromSet( users );
+    // Assert.assertTrue( userMap.containsKey( "jcoder" ) );
+    // PlexusUser jcoder = userMap.get( "jcoder" );
+    //
+    // this.checkJCodersRoles( jcoder );
+    // }
+    //
+    // public void testExternalRolesForUser()
+    // throws Exception
+    // {
+    // PlexusUserManager userManager = this.getUserManager();
+    // PlexusUser jcoder = userManager.getUser( "jcoder" );
+    //
+    // this.checkJCodersRoles( jcoder );
+    // }
+    //
+    // public void testExternalRolesForUserSearchSingleSource()
+    // throws Exception
+    // {
+    // PlexusUserManager userManager = this.getUserManager();
+    //
+    // Set<PlexusUser> users = userManager.searchUserById( "MockUserLocatorA", "jcoder" );
+    // // put users in map for easy search
+    // Map<String, PlexusUser> userMap = this.getMapFromSet( users );
+    // Assert.assertTrue( userMap.containsKey( "jcoder" ) );
+    // PlexusUser jcoder = userMap.get( "jcoder" );
+    //
+    // this.checkJCodersRoles( jcoder );
+    // }
+    //
+    // public void testExternalRolesForUserSearchSourceAll()
+    // throws Exception
+    // {
+    // PlexusUserManager userManager = this.getUserManager();
+    //
+    // Set<PlexusUser> users = userManager.searchUserById( PlexusUserManager.SOURCE_ALL, "jcoder" );
+    // // put users in map for easy search
+    // Map<String, PlexusUser> userMap = this.getMapFromSet( users );
+    // Assert.assertTrue( userMap.containsKey( "jcoder" ) );
+    // PlexusUser jcoder = userMap.get( "jcoder" );
+    //
+    // this.checkJCodersRoles( jcoder );
+    // }
 
     private void checkJCodersRoles( PlexusUser jcoder )
     {
@@ -139,26 +139,34 @@ public class PlexusUserManagerTest
         Assert.assertEquals( "RoleIds: " + roleIds, 5, jcoder.getRoles().size() );
     }
 
-    public void testSearch()
+    public void testSearchWithCriteria()
         throws Exception
     {
+
+        PlexusUserSearchCriteria criteria = new PlexusUserSearchCriteria();
+        
         PlexusUserManager userManager = this.getUserManager();
-        Set<PlexusUser> users = userManager.searchUserById( "pperalez", PlexusUserManager.SOURCE_ALL );
+        criteria.setUserId( "pperalez" );
+        Set<PlexusUser> users = userManager.searchUsers( criteria, PlexusUserManager.SOURCE_ALL );
         Assert.assertEquals( 1, users.size() );
         Assert.assertEquals( "pperalez", users.iterator().next().getUserId() );
 
-        users = userManager.searchUserById( "ppera", PlexusUserManager.SOURCE_ALL );
+        criteria.setUserId( "ppera" );
+        users = userManager.searchUsers( criteria, PlexusUserManager.SOURCE_ALL );
         Assert.assertEquals( 1, users.size() );
         Assert.assertEquals( "pperalez", users.iterator().next().getUserId() );
 
-        users = userManager.searchUserById("ppera",  "MockUserLocatorB" );
+        criteria.setUserId( "ppera" );
+        users = userManager.searchUsers( criteria, "MockUserLocatorB" );
         Assert.assertEquals( 0, users.size() );
 
-        users = userManager.searchUserById( "ksim", "MockUserLocatorB" );
+        criteria.setUserId( "ksim" );
+        users = userManager.searchUsers( criteria, "MockUserLocatorB" );
         Assert.assertEquals( 1, users.size() );
         Assert.assertEquals( "ksimmons", users.iterator().next().getUserId() );
 
-        users = userManager.searchUserById( "jcod", PlexusUserManager.SOURCE_ALL );
+        criteria.setUserId( "jcod" );
+        users = userManager.searchUsers( criteria, PlexusUserManager.SOURCE_ALL );
         Assert.assertEquals( 2, users.size() );
 
         // put users in map for easy search

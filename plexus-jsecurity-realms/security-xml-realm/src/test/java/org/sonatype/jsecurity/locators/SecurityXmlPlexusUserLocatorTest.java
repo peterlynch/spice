@@ -25,6 +25,7 @@ import org.codehaus.plexus.context.Context;
 import org.sonatype.jsecurity.locators.users.PlexusRole;
 import org.sonatype.jsecurity.locators.users.PlexusUser;
 import org.sonatype.jsecurity.locators.users.PlexusUserLocator;
+import org.sonatype.jsecurity.locators.users.PlexusUserSearchCriteria;
 
 public class SecurityXmlPlexusUserLocatorTest
     extends PlexusTestCase
@@ -87,14 +88,13 @@ public class SecurityXmlPlexusUserLocatorTest
     {
         PlexusUserLocator userLocator = this.getLocator();
 
-        Set<PlexusUser> users = userLocator.searchUserById( "test" );
+        Set<PlexusUser> users = userLocator.searchUsers( new PlexusUserSearchCriteria( "test" ) );
         Map<String, PlexusUser> userMap = this.toUserMap( users );
 
         Assert.assertTrue( userMap.containsKey( "test-user" ) );
 
         Assert.assertEquals( 1, users.size() );
     }
-
 
     private Map<String, PlexusRole> toRoleMap( Set<PlexusRole> roles )
     {

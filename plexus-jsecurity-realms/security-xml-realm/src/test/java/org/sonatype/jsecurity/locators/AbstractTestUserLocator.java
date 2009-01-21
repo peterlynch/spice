@@ -10,14 +10,17 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
-package org.sonatype.jsecurity.locators.users;
+package org.sonatype.jsecurity.locators;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class AbstractTestUserLocator implements PlexusUserLocator
-{
+import org.sonatype.jsecurity.locators.users.PlexusRole;
+import org.sonatype.jsecurity.locators.users.PlexusUser;
+import org.sonatype.jsecurity.locators.users.PlexusUserSearchCriteria;
 
+public abstract class AbstractTestUserLocator extends AbstractPlexusUserLocator
+{
 
     public PlexusUser getUser( String userId )
     {
@@ -51,16 +54,9 @@ public abstract class AbstractTestUserLocator implements PlexusUserLocator
 
     public Set<PlexusUser> searchUsers( PlexusUserSearchCriteria criteria )
     {
-        Set<PlexusUser> result = new HashSet<PlexusUser>();
-        for ( PlexusUser plexusUser : this.listUsers() )
-        {
-            if( plexusUser.getUserId().toLowerCase().startsWith( criteria.getUserId().toLowerCase() ) )
-            {
-                result.add( plexusUser );
-            }
-        }
-        return result;
+        return this.filterListInMemeory( this.listUsers(), criteria );
     }
+    
     
     protected PlexusRole createFakeRole(String roleId )
     {

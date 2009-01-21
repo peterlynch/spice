@@ -27,12 +27,12 @@ public interface PlexusUserManager
      * @return
      */
     Set<PlexusUser> listUsers( String source );
-    
+
     /**
-     * Searches for PlexusUser objects by userId.
+     * Searches for PlexusUser objects by criteria.
      * @return
      */
-    Set<PlexusUser> searchUserById( String userId, String source );
+    Set<PlexusUser> searchUsers( PlexusUserSearchCriteria criteria, String source );
     
     /**
      * Retrieve all userids defined by the PlexusUserLocator components (if managing full object

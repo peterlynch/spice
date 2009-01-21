@@ -12,20 +12,23 @@
  */
 package org.sonatype.jsecurity.locators.users;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.codehaus.plexus.util.CollectionUtils;
+import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.jsecurity.locators.SecurityXmlPlexusUserLocator;
 import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUserRoleMapping;
 import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
 import org.sonatype.jsecurity.realms.tools.NoSuchRoleException;
 import org.sonatype.jsecurity.realms.tools.NoSuchRoleMappingException;
+import org.sonatype.jsecurity.realms.tools.dao.SecurityUserRoleMapping;
 
-@Component( role=PlexusUserManager.class, hint="additinalRoles")
+@Component( role = PlexusUserManager.class, hint = "additinalRoles" )
 public class AdditinalRolePlexusUserManager
     extends DefaultPlexusUserManager
 {
@@ -46,31 +49,102 @@ public class AdditinalRolePlexusUserManager
     }
 
     @Override
-    public Set<PlexusUser> listUsers( String source )
+    public PlexusUser getUser( String userId, String source )
     {
-        Set<PlexusUser> users = super.listUsers( source );
-        for ( PlexusUser user : users )
+        PlexusUser user = super.getUser( userId );
+
+        if ( user != null )
         {
             this.populateAdditionalRoles( user );
         }
+
+        return user;
+    }
+
+    @Override
+    public Set<PlexusUser> listUsers( String source )
+    {
+        Set<PlexusUser> users = super.listUsers( source );
+        // add the roles mapped in the security.xml
+        this.populateAdditionalRoles( users );
+
         return users;
     }
 
     @Override
-    public Set<PlexusUser> searchUserById( String source, String userId )
+    public Set<PlexusUser> searchUsers( PlexusUserSearchCriteria criteria, String source )
     {
-        Set<PlexusUser> users = super.searchUserById( source, userId );
+        Set<PlexusUser> users = super.searchUsers( criteria, source );
+
+        // add the roles mapped in the security.xml
+        this.populateAdditionalRoles( users );
+
+        // if the source is not ALL, we need to search users mapped in the secuirty.xml
+        // we could just search the ConfiguredUsersPlexusUserLocator, but that could could
+        // make for unneeded queries to external Realms, so we are going to filter on the SecurityUserRoleMapping.
+        // NOTE: these users will already have the additionalRoles populated.
+        users.addAll( this.searchMappedUsers( criteria, source ) );
+
+        return users;
+    }
+
+    private Set<PlexusUser> searchMappedUsers( PlexusUserSearchCriteria criteria, String source )
+    {
+        Set<PlexusUser> mappedUsers = new HashSet<PlexusUser>();
+
+        List<SecurityUserRoleMapping> userRoleMappings = this.configManager.listUserRoleMappings();
+        for ( SecurityUserRoleMapping userRoleMapping : userRoleMappings )
+        {
+            if ( this.userMatchesCriteria( userRoleMapping, criteria, source ) )
+            {
+                mappedUsers.add( this.getUser( userRoleMapping.getUserId(), userRoleMapping.getSource() ) );
+            }
+        }
+        return mappedUsers;
+    }
+
+    private boolean userMatchesCriteria( SecurityUserRoleMapping roleMapping, PlexusUserSearchCriteria criteria,
+        String source )
+    {
+        // yeah i know its multiple returns, but its really easy to debug this way (and thats more important)
+
+        if ( !roleMapping.getSource().equals( source ) )
+        {
+            return false;
+        }
+
+        if ( StringUtils.isNotEmpty( criteria.getUserId() )
+            && !criteria.getUserId().toLowerCase().startsWith( roleMapping.getUserId().toLowerCase() ) )
+        {
+            return false;
+        }
+
+        if ( criteria.getOneOfRoleIds() != null && !criteria.getOneOfRoleIds().isEmpty() )
+        {
+            // check the intersection of the roles
+            if ( CollectionUtils.intersection( criteria.getOneOfRoleIds(), roleMapping.getRoles() ).isEmpty() )
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void populateAdditionalRoles( Set<PlexusUser> users )
+    {
         for ( PlexusUser user : users )
         {
             this.populateAdditionalRoles( user );
         }
-        return users;
     }
 
+    @SuppressWarnings( "unchecked" )
     private void populateAdditionalRoles( PlexusUser user )
     {
         try
         {
+            // this throws a NoSuchRoleMappingException (it is ok)
             CUserRoleMapping roleMapping = configManager.readUserRoleMapping( user.getUserId(), user.getSource() );
 
             for ( String roleId : (List<String>) roleMapping.getRoles() )
@@ -109,5 +183,4 @@ public class AdditinalRolePlexusUserManager
             return null;
         }
     }
-
 }

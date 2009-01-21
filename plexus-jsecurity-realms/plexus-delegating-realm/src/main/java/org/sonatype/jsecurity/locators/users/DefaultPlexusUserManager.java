@@ -26,6 +26,7 @@ public class DefaultPlexusUserManager
 
     @Requirement( role = PlexusUserLocator.class )
     private List<PlexusUserLocator> userlocators;
+    
 
     public Set<PlexusUser> listUsers( String source )
     {
@@ -34,7 +35,7 @@ public class DefaultPlexusUserManager
         // FIXME add something that would make the primary user win over the other realms?
 
         for ( PlexusUserLocator locator : userlocators )
-        {
+        {   
             if ( SOURCE_ALL.equals( source ) || locator.getSource().equals( source ) )
             {
                 users.addAll( locator.listUsers() );
@@ -43,22 +44,22 @@ public class DefaultPlexusUserManager
 
         return users;
     }
-
-    public Set<PlexusUser> searchUserById( String userId, String source )
+    
+    public Set<PlexusUser> searchUsers( PlexusUserSearchCriteria criteria, String source )
     {
         Set<PlexusUser> users = new TreeSet<PlexusUser>();
-
+        
         for ( PlexusUserLocator locator : userlocators )
         {
             if ( SOURCE_ALL.equals( source ) || locator.getSource().equals( source ) )
             {
-                users.addAll( locator.searchUserById( userId ) );
+                users.addAll( locator.searchUsers( criteria ) );
             }
         }
-
+        
         return users;
     }
-
+    
     public Set<String> listUserIds( String source )
     {
         Set<String> userIds = new TreeSet<String>();

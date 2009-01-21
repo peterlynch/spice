@@ -12,7 +12,6 @@
  */
 package org.sonatype.jsecurity.locators;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -22,12 +21,13 @@ import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.jsecurity.locators.users.PlexusUser;
 import org.sonatype.jsecurity.locators.users.PlexusUserLocator;
 import org.sonatype.jsecurity.locators.users.PlexusUserManager;
+import org.sonatype.jsecurity.locators.users.PlexusUserSearchCriteria;
 import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
 import org.sonatype.jsecurity.realms.tools.dao.SecurityUserRoleMapping;
 
 @Component( role = PlexusUserLocator.class, hint = "allConfigured", description = "All Configured Users" )
 public class ConfiguredUsersPlexusUserLocator
-    implements PlexusUserLocator
+    extends AbstractPlexusUserLocator
 {
 
     @Requirement( hint = "additinalRoles" )
@@ -36,9 +36,11 @@ public class ConfiguredUsersPlexusUserLocator
     @Requirement( role = ConfigurationManager.class, hint = "resourceMerging" )
     private ConfigurationManager configuration;
 
+    public static final String SOURCE = "allConfigured";
+    
     public String getSource()
     {
-        return "allConfigured";
+        return SOURCE;
     }
 
     public Set<PlexusUser> listUsers()
@@ -86,11 +88,10 @@ public class ConfiguredUsersPlexusUserLocator
         // this resource will only list the users
         return null;
     }
-
-    public Set<PlexusUser> searchUserById( String userId )
+    
+    public Set<PlexusUser> searchUsers( PlexusUserSearchCriteria criteria )
     {
-        // this resource will only list the users
-        return new HashSet<PlexusUser>();
+        return this.filterListInMemeory( this.listUsers(), criteria );
     }
 
     public boolean isPrimary()

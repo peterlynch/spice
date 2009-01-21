@@ -22,6 +22,7 @@ import org.codehaus.plexus.logging.Logger;
 import org.sonatype.jsecurity.locators.users.PlexusRole;
 import org.sonatype.jsecurity.locators.users.PlexusUser;
 import org.sonatype.jsecurity.locators.users.PlexusUserLocator;
+import org.sonatype.jsecurity.locators.users.PlexusUserSearchCriteria;
 import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUser;
 import org.sonatype.jsecurity.model.CUserRoleMapping;
@@ -30,9 +31,9 @@ import org.sonatype.jsecurity.realms.tools.NoSuchRoleException;
 import org.sonatype.jsecurity.realms.tools.NoSuchRoleMappingException;
 import org.sonatype.jsecurity.realms.tools.NoSuchUserException;
 
-@Component( role = PlexusUserLocator.class, description="Default" )
+@Component( role = PlexusUserLocator.class, description = "Default" )
 public class SecurityXmlPlexusUserLocator
-    implements PlexusUserLocator
+    extends AbstractPlexusUserLocator
 {
     public static final String SOURCE = "default";
 
@@ -79,13 +80,13 @@ public class SecurityXmlPlexusUserLocator
         }
     }
 
-    public Set<PlexusUser> searchUserById( String userId )
+    public Set<PlexusUser> searchUsers( PlexusUserSearchCriteria criteria )
     {
         Set<PlexusUser> users = new HashSet<PlexusUser>();
 
         for ( CUser user : configuration.listUsers() )
         {
-            if ( user.getId().toLowerCase().startsWith( userId ) )
+            if ( user.getId().toLowerCase().startsWith( criteria.getUserId() ) )
             {
                 users.add( this.toPlexusUser( user ) );
             }
@@ -133,7 +134,7 @@ public class SecurityXmlPlexusUserLocator
         }
         catch ( NoSuchRoleMappingException e )
         {
-            this.logger.debug( "No user role mapping found for user: "+ user.getId() );
+            this.logger.debug( "No user role mapping found for user: " + user.getId() );
 
         }
 
@@ -169,5 +170,4 @@ public class SecurityXmlPlexusUserLocator
     {
         return SOURCE;
     }
-
 }

@@ -24,12 +24,12 @@ public interface PlexusUserLocator
      * @return
      */
     Set<PlexusUser> listUsers();
-    
+
     /**
-     * Searches for PlexusUser objects by userId.
+     * Searches for PlexusUser objects by a criteria.
      * @return
      */
-    Set<PlexusUser> searchUserById( String userId );
+    Set<PlexusUser> searchUsers( PlexusUserSearchCriteria criteria);
     
     /**
      * Retrieve all userids (if managing full object
@@ -43,14 +43,7 @@ public interface PlexusUserLocator
      * @param userId
      * @return
      */
-    PlexusUser getUser( String userId );
-    
-//    /**
-//     * Returns a Set of roles for a user that is not managed by this Realm.
-//     * @param userId
-//     * @return
-//     */
-//    Set<PlexusRole> getUsersAdditinalRoles( String userId );
+    PlexusUser getUser( String userId );   
     
     /**
      * With multiple locators allowed, only one can be defined as primary.
