@@ -18,6 +18,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,15 +30,19 @@ import org.apache.maven.mercury.util.Util;
 import org.codehaus.plexus.lang.DefaultLanguage;
 import org.codehaus.plexus.lang.Language;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.sonatype.mercury.mp3.api.cd.AvailableVersions;
 import org.sonatype.mercury.mp3.api.cd.ConfigProperty;
 import org.sonatype.mercury.mp3.api.cd.ContainerConfig;
 import org.sonatype.mercury.mp3.api.cd.DependencyConfig;
 import org.sonatype.mercury.mp3.api.cd.LockDownList;
 import org.sonatype.mercury.mp3.api.cd.NodeConfig;
+import org.sonatype.mercury.mp3.api.cd.Scope;
+import org.sonatype.mercury.mp3.api.cd.Version;
 import org.sonatype.mercury.mp3.api.cd.io.xpp3.ConfigurationDescriptorXpp3Reader;
 import org.sonatype.mercury.mp3.api.cd.io.xpp3.ConfigurationDescriptorXpp3Writer;
 import org.sonatype.mercury.mp3.api.cd.io.xpp3.LockDownListXpp3Reader;
 import org.sonatype.mercury.mp3.api.cd.io.xpp3.LockDownListXpp3Writer;
+import org.sonatype.mercury.mp3.api.cd.io.xpp3.VersionListXpp3Reader;
 
 /**
  * various cd manipulation routines
@@ -48,6 +53,8 @@ import org.sonatype.mercury.mp3.api.cd.io.xpp3.LockDownListXpp3Writer;
 public class CdUtil
 {
     private static final Language LANG = new DefaultLanguage( CdUtil.class );
+    
+    public static String DEFAULT_SCOPE_NAME = "default";
 
     public static Map<String, String> propsToMap( List<ConfigProperty> props )
     {
@@ -209,6 +216,43 @@ public class CdUtil
         
         return mdList;
     }
-    // ----------------------------------------------------------------------------------------------------
-    // ----------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------
+    @SuppressWarnings("unchecked")
+    public static List<ArtifactBasicMetadata> getVersions( File versFile, String scope )
+    throws IOException, XmlPullParserException
+    {
+        VersionListXpp3Reader reader = new VersionListXpp3Reader();
+        InputStream is = new FileInputStream(versFile);
+        AvailableVersions versions = reader.read( is );
+        is.close();
+        
+        if( versions ==null )
+            throw new IOException( LANG.getMessage( "no.versions" ) );
+        
+        if( Util.isEmpty( versions.getScopes() ) )
+            throw new IOException( LANG.getMessage( "no.scopes" ) );
+        
+        List<Scope> sl = versions.getScopes(); 
+        
+        for( Scope s : sl )
+            if( scope.equals( s.getName() ) )
+            {
+                List<Version> vl = s.getVersions();
+                
+                if( Util.isEmpty( vl ) )
+                    throw new IOException( LANG.getMessage( "no.scoped.versions", scope) );
+                
+                List<ArtifactBasicMetadata> res = new ArrayList<ArtifactBasicMetadata>( vl.size() );
+                
+                for( Version v : vl )
+                    res.add( new ArtifactBasicMetadata( v.getName() ) );
+                
+                return res;
+            }
+        
+        return null;
+                
+    }
+    //----------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------
 }

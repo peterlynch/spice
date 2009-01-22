@@ -1,0 +1,96 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+<model>
+  <id>cd</id>
+  
+  <name>VersionList</name>
+  <description>Existing versions</description>
+  
+  <defaults>
+    <default>
+      <key>package</key>
+      <value>org.sonatype.mercury.mp3.api.cd</value>
+    </default>
+  </defaults>
+  
+  <classes>
+
+    <class rootElement="true">
+      <name>AvailableVersions</name>
+      <version>1.0.0</version>
+      <fields>
+
+        <field>
+          <name>scopes</name>
+          <version>1.0.0</version>
+          <description>group of available versions</description>
+          <association>
+            <type>Scope</type>
+            <multiplicity>*</multiplicity>
+          </association>
+        </field>
+
+      </fields>
+   </class>
+
+    <class>
+      <name>Scope</name>
+      <version>1.0.0</version>
+      <fields>
+
+        <field>
+          <name>name</name>
+          <version>1.0.0</version>
+          <description>scope name, default one is originally named default</description>
+          <type>String</type>
+        </field>
+        
+        <field>
+          <name>versions</name>
+          <version>1.0.0</version>
+          <description>group of available versions</description>
+          <association>
+            <type>Version</type>
+            <multiplicity>*</multiplicity>
+          </association>
+        </field>
+
+      </fields>
+   </class>
+
+    <class>
+      <name>Version</name>
+      <version>1.0.0</version>
+      <description>version element</description>
+
+      <fields>
+
+        <field>
+          <name>name</name>
+          <version>1.0.0</version>
+          <description>extended GAV of this version, in the format supported by ArtifactBasicMetadata</description>
+          <type>String</type>
+        </field>
+
+      </fields>
+    </class>
+
+  </classes>
+</model>

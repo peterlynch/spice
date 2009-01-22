@@ -3,15 +3,14 @@
   <containers>
     <container>
       <id>apache-maven</id>
-      <timeStamp>20090113021307</timeStamp>
-      <timeZone>UTC</timeZone>
+      <version>apache-maven-3.0-alpha-2</version>
       <type>maven</type>
       <distribution>
         <name>org.apache.maven:maven-distribution:3.0-alpha-2:bin:zip</name>
       </distribution>
       <dependencies>
         <dependency>
-          <name>org.apache.maven:maven-distribution:3.0-alpha-2</name>
+          <name>org.apache.maven:maven-core:3.0-alpha-2</name>
         </dependency>
       </dependencies>
     </container>

@@ -46,7 +46,7 @@ extends TestCase
 
     @Override
     public void setUp()
-        throws Exception
+    throws Exception
     {
         super.setUp();
 
@@ -123,6 +123,29 @@ extends TestCase
 
         assertFalse( mavenCore1.exists() );
         assertTrue(  mavenCore2.exists() );
+    }
+    
+    public void testInstallSnapshotDelta()
+    throws Exception
+    {
+        File mavenCore1   = new File( _configDir, "apache-maven-3.0-alpha-1/lib/maven-core-3.0-alpha-1.jar" );
+        File mavenCore1ts = new File( _configDir, "apache-maven-3.0-alpha-1/lib/maven-core-3.0-alpha-1-20080920.015600-7.jar" );
+        File mavenCore2   = new File( _configDir, "apache-maven-3.0-alpha-1/lib/maven-core-3.0-alpha-2.jar" );
+
+        assertFalse( mavenCore1.exists() );
+        assertFalse( mavenCore1ts.exists() );
+        assertTrue( mavenCore2.exists() );
+        
+        DeltaManagerCli.main( new String [] { 
+                                  "-m", "./target/config/apache-maven-3.0-alpha-1"
+                                , "-u", "http://localhost:"+_port+"/maven2/org/apache/maven/maven-cd/3.0-alpha-1-SNAPSHOT/maven-cd-3.0-alpha-1-20080920.015600-7.cd" 
+                                , "-s", "./target/test-classes/settings.xml" 
+                                            }
+                            );
+
+        assertFalse( mavenCore1.exists() );
+        assertTrue( mavenCore1ts.exists() );
+        assertFalse(  mavenCore2.exists() );
     }
 
 }

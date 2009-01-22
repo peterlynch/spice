@@ -116,13 +116,20 @@ implements DeltaManager
                                   )
         throws DeltaManagerException
     {
+        
+        if( Util.isEmpty( cc.getId() ))
+            throw new DeltaManagerException( LANG.getMessage( "cc.no.id" ) );
+        
         String mavenHomeDir = cc.getConfigurationRoot();
         
         File mavenRoot = _configurationRoot;
 
         mavenRoot.mkdirs();
         
-        String timeStamp = TimeUtil.getUTCTimestamp();
+        String newVersion = cc.getVersion();
+        
+        if( Util.isEmpty( newVersion ))
+            throw new DeltaManagerException( LANG.getMessage( "cc.no.version", cc.getId() ) );
 
         File mavenHome = Util.isEmpty( mavenHomeDir) ? new File( mavenRoot, cc.getId() ) : new File( mavenHomeDir );
 
@@ -130,7 +137,7 @@ implements DeltaManager
         
         File cdFile = new File( cdFolder, cc.getId() + "." +DeltaManager.CD_EXT );
 
-        File ldlFile = new File( cdFolder, cc.getId() + "-" + timeStamp + ".ldl" );
+        File ldlFile = new File( cdFolder, cc.getId() + "-" + newVersion + "."+DeltaManager.LDL_EXT );
         
         Util.say( LANG.getMessage( "processing.container", cc.getId(), mavenRoot.getAbsolutePath() ) , monitor );
 
@@ -227,12 +234,10 @@ implements DeltaManager
             
             List<ArtifactBasicMetadata> oldDependencies = CdUtil.toDepList( oldCc.getDependencies() );
             
-            String oldTimeStamp = oldCc.getTimeStamp();
+            String oldVersion = oldCc.getVersion();
 
-            if ( Util.isEmpty( oldDependencies ) && Util.isEmpty( oldTimeStamp ) )
+            if ( Util.isEmpty( oldDependencies ) && Util.isEmpty( oldVersion ) )
                 throw new DeltaManagerException( LANG.getMessage( "no.old.deps", cc.getId() ) );
-
-            List<ArtifactBasicMetadata> diff = null;
 
             try
             {
@@ -243,33 +248,45 @@ implements DeltaManager
                 
                 List<ArtifactMetadata> oldRes = null;
                 
-                File oldLdlFile = new File( cdFolder, cc.getId() + "-" + oldTimeStamp + ".ldl" );
+                File oldLdlFile = new File( cdFolder, cc.getId() + "-" + oldVersion + ".ldl" );
                 
-                if( Util.isEmpty( oldTimeStamp ) || Util.isEmpty( oldLdlFile ) )
+                if( Util.isEmpty( oldVersion ) || Util.isEmpty( oldLdlFile ) )
                 {
                     oldRes = _mercury.resolve( repos, ArtifactScopeEnum.runtime, new ArtifactQueryList( oldDependencies ), null, null );
                     
-                    Util.say( LANG.getMessage( "delta.no.timestamp", cc.getId() ), monitor );
+                    Util.say( LANG.getMessage( "delta.no.version", cc.getId() ), monitor );
                 }
                 else
                 {
                     oldRes = CdUtil.readLdl( oldLdlFile );
                     
-                    Util.say( LANG.getMessage( "delta.timestamp", cc.getId(), oldTimeStamp, oldLdlFile.getAbsolutePath() ), monitor );
+                    Util.say( LANG.getMessage( "delta.version", cc.getId(), oldVersion, oldLdlFile.getAbsolutePath() ), monitor );
                 }
 
-                diff = (List<ArtifactBasicMetadata>) CdUtil.minus( oldRes, newRes );
+                List<ArtifactBasicMetadata> deleteDiff = (List<ArtifactBasicMetadata>) CdUtil.minus( oldRes, newRes );
 
-                if ( !Util.isEmpty( diff ) )
-                    remove( mavenHome, diff, monitor );
+                List<ArtifactBasicMetadata> installDiff = (List<ArtifactBasicMetadata>) CdUtil.minus( newRes, oldRes );
 
-                diff = (List<ArtifactBasicMetadata>) CdUtil.minus( newRes, oldRes );
+                List<Artifact> artifacts = null;
 
-                if ( !Util.isEmpty( diff ) )
+                if ( !Util.isEmpty( installDiff ) )
                 {
-                    List<Artifact> artifacts = _mercury.read( repos, diff );
-                    install( mavenHome, artifacts, monitor );
+                    artifacts = _mercury.read( repos, installDiff );
+                    
+                    if( Util.isEmpty( artifacts ) )
+                        throw new DeltaManagerException( LANG.getMessage( "cannot.read.new.diff", installDiff.toString() ) );
+                    
+                    for( Artifact a : artifacts )
+                        if( Util.isEmpty( a.getFile() ) )
+                            throw new DeltaManagerException( LANG.getMessage( "artifact.no.file", a.toString() ) );
                 }
+
+                if ( !Util.isEmpty( deleteDiff ) )
+                    remove( mavenHome, deleteDiff, monitor );
+
+
+                if ( !Util.isEmpty( artifacts ) )
+                    install( mavenHome, artifacts, monitor );
             }
             catch ( Exception e )
             {
@@ -281,15 +298,11 @@ implements DeltaManager
         {
             cdFile.getParentFile().mkdirs();
             
-            cc.setTimeStamp( timeStamp );
-            
-            cc.setTimeZone( "UTC" );
-            
             CdUtil.write( configuration, cdFile );
             
-            // write a timestamped version of it
+            // write version of it
             
-            cdFile = new File( cdFolder, cc.getId()+"-"+timeStamp+"." + DeltaManager.CD_EXT );
+            cdFile = new File( cdFolder, cc.getId()+"-"+newVersion+"." + DeltaManager.CD_EXT );
             
             CdUtil.write( configuration, cdFile );
 

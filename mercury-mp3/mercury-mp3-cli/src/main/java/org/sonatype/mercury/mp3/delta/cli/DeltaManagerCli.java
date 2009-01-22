@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -30,11 +31,16 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
+import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.mercury.MavenDependencyProcessor;
+import org.apache.maven.mercury.artifact.Artifact;
 import org.apache.maven.mercury.artifact.ArtifactBasicMetadata;
 import org.apache.maven.mercury.artifact.ArtifactMetadata;
+import org.apache.maven.mercury.artifact.DefaultArtifact;
+import org.apache.maven.mercury.artifact.version.MetadataVersionComparator;
 import org.apache.maven.mercury.builder.api.DependencyProcessor;
 import org.apache.maven.mercury.plexus.PlexusMercury;
+import org.apache.maven.mercury.repository.api.ArtifactBasicResults;
 import org.apache.maven.mercury.repository.api.Repository;
 import org.apache.maven.mercury.repository.local.m2.LocalRepositoryM2;
 import org.apache.maven.mercury.repository.remote.m2.RemoteRepositoryM2;
@@ -82,6 +88,8 @@ extends AbstractCli
     private static final String DEFAULT_CENTRAL = System.getProperty( SYSTEM_PROPERTY_DEFAULT_CENTRAL
                                                                      , "http://repo1.maven.org/maven2" );
     
+    private static final String VERSIONS_GAV = "org.apache.maven:maven-versions:1.0::ver";
+    
     public static final String SYSTEM_PROPERTY_MONITOR = "mercury.monitor";
     
     private static final char MAVEN_HOME = 'm';
@@ -102,9 +110,17 @@ extends AbstractCli
     
     List<Repository> _repos;
     
+    List<Repository> _remoteRepos;
+    
     Monitor _monitor;
     
     PlexusMercury _mercury;
+    
+    List<Artifact> _remoteVersions;
+    
+    List<Artifact> _localVersions;
+    
+    List<Artifact> _versions;
 
    public static void main( String[] args )
     throws Exception
@@ -156,19 +172,14 @@ extends AbstractCli
         {
             _mavenHome = cli.getOptionValue( MAVEN_HOME );
         }
-        else
-        {
-            if( mvn.exists() )
-                _mavenHome = curF.getCanonicalPath();
-        }
+        else if( mvn.exists() )
+            _mavenHome = curF.getCanonicalPath();
         
         if( _mavenHome == null )
             throw new Exception( LANG.getMessage( "cli.no.maven.home", curF.getAbsolutePath(), MAVEN_HOME+"" ) );
         
         if( cli.hasOption( SETTINGS ) )
-        {
             _settings = cli.getOptionValue( SETTINGS );
-        }
         
         _cdUrl = cli.getOptionValue( CD_URL );
 
@@ -183,7 +194,113 @@ extends AbstractCli
         
         settingsFile = new File( _settings );
 
-        _repos = getRepositories( settingsFile, _monitor );
+        setRepositories( settingsFile, _monitor );
+        
+//        if( Util.isEmpty( _remoteRepos ) )
+//            throw new Exception( LANG.getMessage( "no.remote.repos" ) );
+        if( Util.isEmpty( _cdUrl ) )
+        {
+            _versions = new ArrayList<Artifact>();
+            
+            _remoteVersions = _mercury.read( _remoteRepos, new ArtifactBasicMetadata(VERSIONS_GAV) );
+            
+            if( !Util.isEmpty( _remoteVersions ) )
+                _versions.addAll( _remoteVersions );
+            
+            _localVersions = getLocalVersions();
+            
+            if( !Util.isEmpty( _localVersions ) )
+                _versions.addAll( _localVersions );
+        }
+    }
+    
+    
+    private List<Artifact> getLocalVersions()
+    {
+        ArrayList<Artifact> res = new ArrayList<Artifact>(8);
+        
+        File cdDir = new File( _mavenHome, DeltaManager.CD_DIR );
+        
+        if( !cdDir.exists() )
+            return res;
+          
+        File [] files = cdDir.listFiles( 
+                                    new FileFilter()
+                                    {
+                                      public boolean accept( File pathname )
+                                      {
+                                          String name = pathname.getName();
+                                          
+                                          if( name.matches( ".*-[0-9]{14}\\."+DeltaManager.CD_EXT ) )
+                                              return true;
+                                          
+                                          return false;
+                                      }
+                                     }
+                                        );
+          if( Util.isEmpty( files ) )
+              return res;
+          
+          int count = files.length;
+          
+          TreeSet<String> sortedFiles = new TreeSet<String>();
+          for( File f : files )
+              sortedFiles.add( f.getName() );
+          
+          while( count-- > 0 )
+          {
+              String f = sortedFiles.last();
+              
+              DefaultArtifact da = new DefaultArtifact( new ArtifactBasicMetadata("org.apache.maven:maven-cd:"+f) );
+              
+              da.setFile( new File( cdDir, f ) );
+              
+              res.add( da );
+              
+              sortedFiles.remove( f );
+          }
+          
+          return res;
+    }
+
+    private void selectCd( CommandLine cli, Monitor monitor )
+    throws Exception
+    {
+//        if( cli.hasOption( SHOW_GUI ) )
+//        {
+//            
+//        }
+//        else
+        {
+            if( Util.isEmpty( _versions ) )
+                throw new Exception(LANG.getMessage( "no.versions.to.select", _mavenHome ));
+
+            int len = _versions.size();
+            int reply = 0;
+            String title = "\n"+LANG.getMessage( "sel.title" )+"\n";
+            String prompt = "\n"+LANG.getMessage( "sel.prompt" );
+            
+            do 
+            {
+                int count = 1;
+                
+                System.out.println(title);
+                
+                for( Artifact a : _versions )
+                    System.out.println((count++)+": "+a.getVersion() );
+                
+                System.out.print(prompt);
+                
+                String selection = new jline.ConsoleReader().readLine();
+                
+                reply = Integer.parseInt( selection );
+            }
+            while( reply < 1 || reply > len );
+
+            Artifact a = _versions.get( reply-1 );
+            
+            _cdUrl = a.getFile().getAbsolutePath();
+        }
     }
 
     @Override
@@ -194,111 +311,110 @@ extends AbstractCli
         
         _mercury = plexus.lookup( PlexusMercury.class );
 
-        if( !cli.hasOption( SHOW_GUI ) )
-        {
-            if ( cli.hasOption( MAVEN_HOME ) && cli.hasOption( CD_URL ) )
-            {
-                initDefaults( cli );
-                
-                cdStream = FileUtil.toStream( _cdUrl );
-                
-                if( cdStream == null )
-                    throw new Exception( LANG.getMessage( "cd.stream.is.null", cli.getOptionValue( CD_URL ) ) );
+        initDefaults( cli );
+        
+        if( Util.isEmpty( _cdUrl ) )
+            selectCd( cli, _monitor );
+        
+        if( Util.isEmpty( _cdUrl ) )
+            throw new Exception(LANG.getMessage( "cd.not.selected" ));
+        
+        cdStream = FileUtil.toStream( _cdUrl );
+        
+        if( cdStream == null )
+            throw new Exception( LANG.getMessage( "cd.stream.is.null", cli.getOptionValue( CD_URL ) ) );
 
-                File mavenHomeFile = new File( _mavenHome );
-                
-                applyConfiguration( mavenHomeFile, cdStream, plexus, _repos, _monitor );
-            }
-            else
-            {
-                displayHelp();
-            }
-        }
-        else
-        {
-            DataManagerGui gui = new DataManagerGui();
-            
-            gui._cli = this;
-            
-            initDefaults( cli );
+        File mavenHomeFile = new File( _mavenHome );
+        
+        applyConfiguration( mavenHomeFile, cdStream, plexus, _repos, _monitor );
 
-            gui._mavenHomeLabel.setText( _mavenHome );
-            gui._mavenHomeField.setText( gui._mavenHomeLabel.getText() );
-            
-            List<ArtifactBasicMetadata> versions = _mercury.readVersions( _repos, new ArtifactMetadata("org.apache.maven:maven-cd:[3.0,)") );
-            
-            boolean versionsNotFound = true;
-            
-            if( !Util.isEmpty( versions ) )
-            {
-                TreeSet<ArtifactBasicMetadata> sortedVersions = new TreeSet<ArtifactBasicMetadata>();
-                sortedVersions.addAll( versions );
-                versions.clear();
-                versions.addAll( sortedVersions );
-                Collections.reverse( versions );
-                
-                for( ArtifactBasicMetadata bmd : versions )
-                    gui._cdModel.addElement( bmd.getVersion() );
-
-                gui._cdList.setSelectedIndex( 1 );
-                
-                versionsNotFound = false;
-            }
-            
-            File cdDir = new File( _mavenHome, DeltaManager.CD_DIR );
-            if( cdDir.exists() )
-            {
-                File [] files = cdDir.listFiles( 
-                                          new FileFilter()
-                                          {
-                                            public boolean accept( File pathname )
-                                            {
-                                                String name = pathname.getName();
-                                                
-                                                if( name.matches( ".*-[0-9]{14}\\."+DeltaManager.CD_EXT ) )
-                                                    return true;
-                                                
-                                                return false;
-                                            }
-                                           }
-                                              );
-                if( !Util.isEmpty( files ) )
-                {
-                    int count = files.length;
-                    
-                    TreeSet<String> sortedFiles = new TreeSet<String>();
-                    for( File f : files )
-                        sortedFiles.add( f.getName() );
-                    
-                    while( count-- > 0 )
-                    {
-                        String v = sortedFiles.last();
-                        
-                        gui._tsModel.addElement( v );
-                        
-                        sortedFiles.remove( v );
-                    }
-                    
-                    if( versionsNotFound )
-                        gui._tsList.setSelectedIndex( 1 );
-                }
-            }
-            
-            DefaultComboBoxModel rModel = new DefaultComboBoxModel();
-            
-            for( Repository r : _repos )
-            {
-                if( r.isLocal() )
-                    gui._localRepoField.setText( r.getServer().getURL().toString() );
-                else
-                    rModel.addElement( r.getServer().getURL().toString() );
-            }
-            gui._remoteRepoList.setModel( rModel );
-            
-            gui.pack();
-            gui.setVisible( true );
-        }
     }
+//        else
+//        {
+//            DataManagerGui gui = new DataManagerGui();
+//            
+//            gui._cli = this;
+//            
+//            initDefaults( cli );
+//
+//            gui._mavenHomeLabel.setText( _mavenHome );
+//            gui._mavenHomeField.setText( gui._mavenHomeLabel.getText() );
+//            
+//            List<ArtifactBasicMetadata> versions = _mercury.readVersions( _repos, new ArtifactMetadata("org.apache.maven:maven-cd:(2.99,)::cd") );
+//            
+//            boolean versionsNotFound = true;
+//            
+//            if( !Util.isEmpty( versions ) )
+//            {
+//                TreeSet<ArtifactBasicMetadata> sortedVersions = new TreeSet<ArtifactBasicMetadata>( new MetadataVersionComparator() );
+//
+//                sortedVersions.addAll( versions );
+//                versions.clear();
+//                versions.addAll( sortedVersions );
+//                Collections.reverse( versions );
+//                
+//                for( ArtifactBasicMetadata bmd : versions )
+//                    gui._cdModel.addElement( bmd.getVersion() );
+//
+//                gui._cdList.setSelectedIndex( 1 );
+//                
+//                versionsNotFound = false;
+//            }
+//            
+//            File cdDir = new File( _mavenHome, DeltaManager.CD_DIR );
+//            if( cdDir.exists() )
+//            {
+//                File [] files = cdDir.listFiles( 
+//                                          new FileFilter()
+//                                          {
+//                                            public boolean accept( File pathname )
+//                                            {
+//                                                String name = pathname.getName();
+//                                                
+//                                                if( name.matches( ".*-[0-9]{14}\\."+DeltaManager.CD_EXT ) )
+//                                                    return true;
+//                                                
+//                                                return false;
+//                                            }
+//                                           }
+//                                              );
+//                if( !Util.isEmpty( files ) )
+//                {
+//                    int count = files.length;
+//                    
+//                    TreeSet<String> sortedFiles = new TreeSet<String>();
+//                    for( File f : files )
+//                        sortedFiles.add( f.getName() );
+//                    
+//                    while( count-- > 0 )
+//                    {
+//                        String v = sortedFiles.last();
+//                        
+//                        gui._tsModel.addElement( v );
+//                        
+//                        sortedFiles.remove( v );
+//                    }
+//                    
+//                    if( versionsNotFound )
+//                        gui._tsList.setSelectedIndex( 1 );
+//                }
+//            }
+//            
+//            DefaultComboBoxModel rModel = new DefaultComboBoxModel();
+//            
+//            for( Repository r : _repos )
+//            {
+//                if( r.isLocal() )
+//                    gui._localRepoField.setText( r.getServer().getURL().toString() );
+//                else
+//                    rModel.addElement( r.getServer().getURL().toString() );
+//            }
+//            gui._remoteRepoList.setModel( rModel );
+//            
+//            gui.pack();
+//            gui.setVisible( true );
+//        }
+//    }
     
     protected void update( DataManagerGui gui )
     {
@@ -333,36 +449,45 @@ extends AbstractCli
     throws Exception
     {
         DependencyProcessor dp = new MavenDependencyProcessor();
-        List<Repository> repos = new ArrayList<Repository>(8);
+        _repos = new ArrayList<Repository>(8);
         
         LocalRepositoryM2 lr = new LocalRepositoryM2( "local", new File(local), dp );
-        repos.add( lr );
+        _repos.add( lr );
         
         Util.say( LANG.getMessage( "local.repo", local ), monitor );
         
         int count = 0;
         
         if( remote != null)
+        {
+            _remoteRepos = new ArrayList<Repository>( remote.length );
+            
             for( String r : remote )
             {
                 Server server = new Server( "central"+(count++), new URL(r) );
                 
                 RemoteRepositoryM2 rr = new RemoteRepositoryM2( server, dp );
                 
-                repos.add( rr );
+                _repos.add( rr );
+                
+                _remoteRepos.add( rr );
                 
                 Util.say( LANG.getMessage( "remote.repo", r ), monitor );
             }
+        }
         
-        return repos;
+        return _repos;
     }
 
     @SuppressWarnings("unchecked")
-    private List<Repository> getRepositories( File settingsFile, Monitor monitor )
+    private void setRepositories( File settingsFile, Monitor monitor )
     throws Exception
     {
         if( settingsFile == null || ! settingsFile.exists() )
-            return getDefaultRepositories( monitor, DEFAULT_LOCAL_REPO, DEFAULT_CENTRAL );
+        {
+            getDefaultRepositories( monitor, DEFAULT_LOCAL_REPO, DEFAULT_CENTRAL );
+            return;
+        }
         
         Settings settings = new SettingsXpp3Reader().read( new FileInputStream(settingsFile) );
         
@@ -370,10 +495,7 @@ extends AbstractCli
         List<String> ap = settings.getActiveProfiles();
         
         if( Util.isEmpty( ap ) )
-        {
-            Util.say( LANG.getMessage( "no.repos", settingsFile.getCanonicalPath() ), monitor );
-            return null;
-        }
+            throw new Exception( LANG.getMessage( "no.active.profiles", settingsFile.getCanonicalPath() ) );
         
         for( String apn : ap )
             activeProfiles.add( apn );
@@ -381,10 +503,7 @@ extends AbstractCli
         List<Profile> profiles = settings.getProfiles();
         
         if( Util.isEmpty( profiles ) )
-        {
-            Util.say( LANG.getMessage( "no.repos", settingsFile.getCanonicalPath() ), monitor );
-            return null;
-        }
+            throw new Exception( LANG.getMessage( "no.profiles", settingsFile.getCanonicalPath() ) );
         
         List<String> repoUrls = new ArrayList<String>(8);
         
@@ -404,16 +523,11 @@ extends AbstractCli
         }
         
         if( Util.isEmpty( repoUrls ))
-        {
-            Util.say( LANG.getMessage( "no.repos", settingsFile.getCanonicalPath() ), monitor );
-            return null;
-        }
+            throw new Exception( LANG.getMessage( "no.repos", settingsFile.getCanonicalPath() ) );
         
         String local = Util.nvlS( settings.getLocalRepository(), DEFAULT_LOCAL_REPO );
         
-        List<Repository> repos = getDefaultRepositories( monitor, local, repoUrls.toArray( new String[ repoUrls.size() ] ) );
-
-        return repos;
+        getDefaultRepositories( monitor, local, repoUrls.toArray( new String[ repoUrls.size() ] ) );
     }
     
 }

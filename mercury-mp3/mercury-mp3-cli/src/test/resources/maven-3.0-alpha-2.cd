@@ -4,6 +4,7 @@
     <container>
       <id>apache-maven-3.0-alpha-1</id>
       <type>maven</type>
+      <version>3.0-alpha-2</version>
       <distribution>
         <name>org.apache.maven:maven-distribution:3.0-alpha-1:bin:zip</name>
       </distribution>

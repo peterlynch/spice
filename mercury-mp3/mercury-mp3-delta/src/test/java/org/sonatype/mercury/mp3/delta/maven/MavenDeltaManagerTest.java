@@ -123,7 +123,7 @@ public class MavenDeltaManagerTest
         }
     }
     
-    private NodeConfig install( String dep, String ts )
+    private NodeConfig install( String dep, String ver )
     throws Exception
     {
         DependencyConfig distroConf = new DependencyConfig();
@@ -137,11 +137,8 @@ public class MavenDeltaManagerTest
         cc.setType( MavenDeltaManager.TYPE );
         cc.setDistribution( distroConf );
         cc.addDependency( depConf );
-        if( ts != null )
-        {
-            cc.setTimeStamp( ts );
-            cc.setTimeZone( "UTC" );
-        }
+        if( ver != null )
+            cc.setVersion( ver );
 
         NodeConfig config = new NodeConfig();
         config.setConfigurationRoot( _configDir.getCanonicalPath() );
@@ -162,7 +159,7 @@ public class MavenDeltaManagerTest
 
         assertFalse( mavenLib.exists() );
         
-        install( "org.apache.maven:maven-distribution:3.0-alpha-1", null );
+        install( "org.apache.maven:maven-distribution:3.0-alpha-1", "3.0-alpha-1" );
 
         assertTrue( mavenLib.exists() );
         
@@ -192,7 +189,7 @@ public class MavenDeltaManagerTest
         
         setVerify( ", using it to read previous dependencies from" );
         
-        install( "org.apache.maven:maven-distribution:3.0-alpha-2", null );
+        install( "org.apache.maven:maven-distribution:3.0-alpha-2", "3.0-alpha-2" );
 
         assertTrue( mavenLib.exists() );
 

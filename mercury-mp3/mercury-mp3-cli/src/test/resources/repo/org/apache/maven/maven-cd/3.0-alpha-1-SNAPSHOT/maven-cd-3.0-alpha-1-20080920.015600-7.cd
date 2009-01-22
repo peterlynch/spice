@@ -2,16 +2,15 @@
 <nodeConfig>
   <containers>
     <container>
-      <id>apache-maven</id>
-      <timeStamp>20090113021307</timeStamp>
-      <timeZone>UTC</timeZone>
+      <id>apache-maven-3.0-alpha-1</id>
       <type>maven</type>
+      <version>apache-maven-3.0-alpha-1-20080920.015600-7</version>
       <distribution>
         <name>org.apache.maven:maven-distribution:3.0-alpha-1:bin:zip</name>
       </distribution>
       <dependencies>
         <dependency>
-          <name>org.apache.maven:maven-distribution:3.0-alpha-1-20080920.015600-7</name>
+          <name>org.apache.maven:maven-core:3.0-alpha-1-20080920.015600-7</name>
         </dependency>
       </dependencies>
     </container>

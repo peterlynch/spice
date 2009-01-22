@@ -40,11 +40,11 @@ under the License.
   </modules>
 
   <properties>
-    <mercury.version>1.0.0-alpha-4-SNAPSHOT</mercury.version>
+    <mercury.version>1.0.0-alpha-3</mercury.version>
     <maven.version>3.0-alpha-1</maven.version>
     <mercury.mp3.version>${project.version}</mercury.mp3.version>
 
-    <jetty.version>6.1-SONATYPE-20090119</jetty.version>
+    <jetty.version>6.1.15.pre0</jetty.version>
 
     <plexus.version>1.0-beta-3.0.3</plexus.version>
     
@@ -54,6 +54,7 @@ under the License.
     <plexus.cli.version>1.5</plexus.cli.version>
 
     <junit.version>3.8.2</junit.version>
+    <jline.version>0.9.9</jline.version>
     <java.version>1.5</java.version>
     
     <distMgmtReleasesId>apache.releases</distMgmtReleasesId>
@@ -112,10 +113,10 @@ under the License.
     <dependencies>
 
       <dependency>
-        <groupId>org.apache.ant</groupId>
-        <artifactId>ant</artifactId>
-        <version>${ant.version}</version>
-      </dependency>
+            <groupId>jline</groupId>
+            <artifactId>jline</artifactId>
+            <version>${jline.version}</version>
+        </dependency>
     
       <!-- Mercury deps -->
       <dependency>

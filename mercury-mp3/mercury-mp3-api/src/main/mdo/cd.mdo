@@ -162,16 +162,9 @@ under the License.
         </field>
 
         <field>
-          <name>timeStamp</name>
+          <name>version</name>
           <version>1.0.0</version>
-          <description>reference to the timestamp of the persisted configuration data</description>
-          <type>String</type>
-        </field>
-
-        <field>
-          <name>timeZone</name>
-          <version>1.0.0</version>
-          <description>timestamp's time zone</description>
+          <description>unique version of this container</description>
           <type>String</type>
         </field>
 
