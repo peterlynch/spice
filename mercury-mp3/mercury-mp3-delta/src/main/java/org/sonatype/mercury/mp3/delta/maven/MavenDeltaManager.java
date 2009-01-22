@@ -259,7 +259,7 @@ implements DeltaManager
                 else
                 {
                     oldRes = CdUtil.readLdl( oldLdlFile );
-                    
+
                     Util.say( LANG.getMessage( "delta.version", cc.getId(), oldVersion, oldLdlFile.getAbsolutePath() ), monitor );
                 }
 

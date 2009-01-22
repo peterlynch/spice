@@ -245,7 +245,11 @@ public class CdUtil
                 List<ArtifactBasicMetadata> res = new ArrayList<ArtifactBasicMetadata>( vl.size() );
                 
                 for( Version v : vl )
-                    res.add( new ArtifactBasicMetadata( v.getName() ) );
+                {
+                    ArtifactBasicMetadata bmd = new ArtifactBasicMetadata( v.getName() ); 
+                    bmd.setType( DeltaManager.CD_EXT );
+                    res.add( bmd );
+                }
                 
                 return res;
             }

@@ -205,9 +205,20 @@ extends AbstractCli
             _remoteVersions = _mercury.read( _remoteRepos, new ArtifactBasicMetadata(VERSIONS_GAV) );
             
             if( !Util.isEmpty( _remoteVersions ) )
-                _versions.addAll( _remoteVersions );
+            {
+                Artifact ver = _remoteVersions.get( 0 );
+                if( !Util.isEmpty( ver.getFile() ) )
+                {
+                 List<ArtifactBasicMetadata> verMds = CdUtil.getVersions( ver.getFile(), CdUtil.DEFAULT_SCOPE_NAME );
+                 
+                 _remoteVersions = _mercury.read( _remoteRepos, verMds );
+                 
+                 if( !Util.isEmpty( _remoteVersions ) )
+                     _versions.addAll( _remoteVersions );
+                }
+            }
             
-            _localVersions = getLocalVersions();
+            _localVersions = getLocalVersions( new File(_mavenHome).getName() );
             
             if( !Util.isEmpty( _localVersions ) )
                 _versions.addAll( _localVersions );
@@ -215,7 +226,7 @@ extends AbstractCli
     }
     
     
-    private List<Artifact> getLocalVersions()
+    private List<Artifact> getLocalVersions( final String containerId )
     {
         ArrayList<Artifact> res = new ArrayList<Artifact>(8);
         
@@ -231,7 +242,12 @@ extends AbstractCli
                                       {
                                           String name = pathname.getName();
                                           
-                                          if( name.matches( ".*-[0-9]{14}\\."+DeltaManager.CD_EXT ) )
+                                          
+                                          if( name.equals( containerId + "." + DeltaManager.CD_EXT ) )
+                                              return false;// current version
+                                          
+//                                          if( name.matches( ".*-[0-9]{14}\\."+DeltaManager.CD_EXT ) )
+                                          if( name.endsWith( "."+DeltaManager.CD_EXT ) )
                                               return true;
                                           
                                           return false;

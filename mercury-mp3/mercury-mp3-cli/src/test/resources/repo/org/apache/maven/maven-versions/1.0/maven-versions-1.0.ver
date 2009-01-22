@@ -5,7 +5,13 @@
       <name>default</name>
       <versions>
         <version>
-          <name>org.apache.maven:maven-cd:3.0-alpha-1</name>
+          <name>org.apache.maven:maven-cd:3.0-alpha-1-20081010.014600-9</name>
+        </version>
+        <version>
+          <name>org.apache.maven:maven-cd:3.0-alpha-1-20081217.021600-2</name>
+        </version>
+        <version>
+          <name>org.apache.maven:maven-cd:3.0-alpha-2</name>
         </version>
       </versions>
     </scope>

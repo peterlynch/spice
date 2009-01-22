@@ -2,8 +2,8 @@
 <nodeConfig>
   <containers>
     <container>
-      <id>apache-maven</id>
-      <version>apache-maven-3.0-alpha-1</version>
+      <id>apache-maven-3.0-alpha-1</id>
+      <version>3.0-alpha-1</version>
       <type>maven</type>
       <distribution>
         <name>org.apache.maven:maven-distribution:3.0-alpha-1:bin:zip</name>
