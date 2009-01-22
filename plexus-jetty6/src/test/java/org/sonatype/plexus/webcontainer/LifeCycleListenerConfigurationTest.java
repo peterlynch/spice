@@ -29,6 +29,7 @@ import org.codehaus.plexus.PlexusTestCase;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.interpolation.InterpolationException;
 import org.codehaus.plexus.logging.Logger;
+import org.codehaus.plexus.logging.LoggerManager;
 import org.mortbay.jetty.Server;
 import org.sonatype.plexus.jetty.TestLifeCycleListener;
 
@@ -57,7 +58,9 @@ public class LifeCycleListenerConfigurationTest
     }
 
     public void testDisableTagLibsListenerConfiguration()
-        throws IOException, InterpolationException, ComponentLookupException
+        throws IOException,
+            InterpolationException,
+            ComponentLookupException
     {
         plexusContainer = getContainer( "disabled-tlds" );
 
@@ -69,11 +72,13 @@ public class LifeCycleListenerConfigurationTest
     }
 
     public void testListenerConfiguration()
-        throws IOException, InterpolationException, ComponentLookupException
+        throws IOException,
+            InterpolationException,
+            ComponentLookupException
     {
         // reset it, just in case.
         TestLifeCycleListener.startingCalled = false;
-        
+
         plexusContainer = getContainer( "testListener" );
 
         System.out.println( "Looking up servlet container component." );
@@ -81,15 +86,16 @@ public class LifeCycleListenerConfigurationTest
 
         System.out.println( "Retrieving server instance." );
         server = container.getServer();
-        
+
         assertTrue( TestLifeCycleListener.startingCalled );
-        
+
         // reset it again, just in case.
         TestLifeCycleListener.startingCalled = false;
     }
 
     private PlexusContainer getContainer( String plexusXmlSuffix )
-        throws IOException, InterpolationException
+        throws IOException,
+            InterpolationException
     {
         PlexusContainer container = null;
 
@@ -119,9 +125,8 @@ public class LifeCycleListenerConfigurationTest
         // Configuration
         // ----------------------------------------------------------------------------
 
-        String configName =
-            getClass().getName().replace( '.', '/' ) + ( plexusXmlSuffix == null ? "" : "-" + plexusXmlSuffix )
-                + ".xml";
+        String configName = getClass().getName().replace( '.', '/' )
+            + ( plexusXmlSuffix == null ? "" : "-" + plexusXmlSuffix ) + ".xml";
         URL configUrl = Thread.currentThread().getContextClassLoader().getResource( configName );
         if ( configUrl == null )
         {
@@ -132,9 +137,8 @@ public class LifeCycleListenerConfigurationTest
             System.out.println( "Using configuration from: " + configUrl );
         }
 
-        ContainerConfiguration containerConfiguration =
-            new DefaultContainerConfiguration().setContainerConfigurationURL( configUrl ).setName( "test" ).setContext(
-                                                                                                                        context );
+        ContainerConfiguration containerConfiguration = new DefaultContainerConfiguration()
+            .setContainerConfigurationURL( configUrl ).setName( "test" ).setContext( context );
 
         try
         {
@@ -146,8 +150,20 @@ public class LifeCycleListenerConfigurationTest
             fail( "Failed to create plexus container." );
         }
 
-        container.getLoggerManager().setThreshold( Logger.LEVEL_DEBUG );
-        container.getLoggerManager().setThresholds( Logger.LEVEL_DEBUG );
+        try
+        {
+            // set logging to DEBUG
+            LoggerManager lm = container.lookup( LoggerManager.class );
+
+            lm.setThreshold( Logger.LEVEL_DEBUG );
+
+            lm.setThresholds( Logger.LEVEL_DEBUG );
+        }
+        catch ( ComponentLookupException e )
+        {
+            e.printStackTrace();
+            fail( "Failed to lookup plexus LoggerManager." );
+        }
 
         return container;
     }
