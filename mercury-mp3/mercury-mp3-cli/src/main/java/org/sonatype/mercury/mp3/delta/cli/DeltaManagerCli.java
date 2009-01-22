@@ -100,6 +100,10 @@ extends AbstractCli
     
     private static final char SHOW_GUI = 'g';
     
+    private static final char HELP = 'h';
+    
+    private static final char _TEST = 't';
+    
     private Options _options = new Options();
 
     String _settings = DEFAULT_SETTINGS;
@@ -158,6 +162,14 @@ extends AbstractCli
                            OptionBuilder.withLongOpt( "show.gui" )
                            .withDescription( LANG.getMessage( "cli.show.gui" ) ).create( SHOW_GUI ) 
                         );
+        _options.addOption( 
+                           OptionBuilder.withLongOpt( "help" )
+                           .withDescription( LANG.getMessage( "cli.help" ) ).create( HELP ) 
+                        );
+        _options.addOption( 
+                           OptionBuilder.withLongOpt( "ztest" ).hasArg()
+                           .withDescription( LANG.getMessage( "cli.test" ) ).create( _TEST ) 
+                        );
 
        return _options;
     }
@@ -165,6 +177,7 @@ extends AbstractCli
     private void initDefaults( CommandLine cli )
     throws Exception
     {
+        
         File curF = new File(".");
         File mvn = new File( curF, "bin/mvn"+(File.pathSeparatorChar == ';'?".bat":"") );
         
@@ -307,13 +320,18 @@ extends AbstractCli
                 
                 System.out.print(prompt);
                 
-                String selection = new jline.ConsoleReader().readLine();
+                String selection = cli.hasOption( _TEST ) 
+                                ? cli.getOptionValue( _TEST ) 
+                                : new jline.ConsoleReader().readLine()
+                                ;
                 
                 reply = Integer.parseInt( selection );
             }
             while( reply < 1 || reply > len );
 
             Artifact a = _versions.get( reply-1 );
+            
+            System.out.println("\n"+LANG.getMessage( "you.selected", a.getVersion() )+"\n");
             
             _cdUrl = a.getFile().getAbsolutePath();
         }
@@ -323,6 +341,12 @@ extends AbstractCli
     public void invokePlexusComponent( CommandLine cli, PlexusContainer plexus )
     throws Exception
     {
+        if( cli.hasOption( HELP ))
+        {
+            displayHelp();
+            return;
+        }
+
         InputStream cdStream;
         
         _mercury = plexus.lookup( PlexusMercury.class );

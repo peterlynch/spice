@@ -148,4 +148,30 @@ extends TestCase
         assertFalse(  mavenCore2.exists() );
     }
 
+    
+    public void testReadAvailable()
+    throws Exception
+    {
+        File mavenCore1   = new File( _configDir, "apache-maven-3.0-alpha-1/lib/maven-core-3.0-alpha-1.jar" );
+        File mavenCore1ts = new File( _configDir, "apache-maven-3.0-alpha-1/lib/maven-core-3.0-alpha-1-20080920.015600-7.jar" );
+        File mavenCore2ts = new File( _configDir, "apache-maven-3.0-alpha-1/lib/maven-core-3.0-alpha-1-20081217.021600-2.jar" );
+        File mavenCore2   = new File( _configDir, "apache-maven-3.0-alpha-1/lib/maven-core-3.0-alpha-2.jar" );
+
+        assertFalse( mavenCore1.exists() );
+        assertTrue( mavenCore1ts.exists() );
+        assertFalse( mavenCore2ts.exists() );
+        assertFalse( mavenCore2.exists() );
+        
+        DeltaManagerCli.main( new String [] { 
+                                  "-m", "./target/config/apache-maven-3.0-alpha-1"
+                                , "-t", "1" 
+                                , "-s", "./target/test-classes/settings.xml" 
+                                            }
+                            );
+
+        assertFalse( mavenCore1.exists() );
+        assertFalse( mavenCore1ts.exists() );
+        assertTrue( mavenCore2ts.exists() );
+        assertFalse( mavenCore2.exists() );
+    }
 }
