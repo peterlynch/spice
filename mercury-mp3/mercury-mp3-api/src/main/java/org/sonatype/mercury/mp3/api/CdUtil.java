@@ -20,12 +20,16 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.maven.mercury.artifact.ArtifactBasicMetadata;
 import org.apache.maven.mercury.artifact.ArtifactMetadata;
+import org.apache.maven.mercury.artifact.version.DefaultArtifactVersion;
+import org.apache.maven.mercury.artifact.version.VersionQuery;
 import org.apache.maven.mercury.util.Util;
 import org.codehaus.plexus.lang.DefaultLanguage;
 import org.codehaus.plexus.lang.Language;
@@ -251,11 +255,18 @@ public class CdUtil
                     res.add( bmd );
                 }
                 
+                Collections.sort( res, new Comparator<ArtifactBasicMetadata>()
+                      {
+                         public int compare( ArtifactBasicMetadata o1, ArtifactBasicMetadata o2 )
+                         {
+                             return new DefaultArtifactVersion(o2.getVersion()).compareTo( new DefaultArtifactVersion(o1.getVersion()) );
+                         }
+                      }
+                                );
                 return res;
             }
         
         return null;
-                
     }
     //----------------------------------------------------------------------------------------------------
     //----------------------------------------------------------------------------------------------------

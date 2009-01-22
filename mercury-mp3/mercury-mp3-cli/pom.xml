@@ -98,9 +98,14 @@ under the License.
               <goal>shade</goal>
             </goals>
             <configuration>
+              
               <finalName>${project.artifactId}-${project.version}-all</finalName>
+              
               <keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
-              <createDependencyReducedPom>true</createDependencyReducedPom>
+              <shadedArtifactAttached>true</shadedArtifactAttached>
+              <shadedClassifierName>cli</shadedClassifierName>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+              
               <artifactSet>
                 <excludes>
                   <exclude>ant:ant</exclude>
@@ -108,10 +113,12 @@ under the License.
                   <exclude>org.bouncycastle:bcpg-jdk15</exclude>
                   <exclude>bouncycastle:bcprov-jdk15</exclude>
                   <exclude>bouncycastle:bcpg-jdk15</exclude>
-                  <exclude>org.mortbay.jetty:jetty-util5</exclude>
+<!--                   
                   <exclude>org.mortbay.jetty:jetty</exclude>
-                  <exclude>org.mortbay.jetty:jetty-sslengine</exclude>
+ -->
+                  <exclude>org.mortbay.jetty:jetty-util5</exclude>
                   <exclude>org.mortbay.jetty:jetty-util</exclude>
+                  <exclude>org.mortbay.jetty:jetty-sslengine</exclude>
                 </excludes>
               </artifactSet>
               <filters>
@@ -123,6 +130,7 @@ under the License.
                 </filter>
               </filters>
               <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ComponentsXmlResourceTransformer" />
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <manifestEntries>
                     <Main-Class>org.sonatype.mercury.mp3.delta.cli.DeltaManagerCli</Main-Class>

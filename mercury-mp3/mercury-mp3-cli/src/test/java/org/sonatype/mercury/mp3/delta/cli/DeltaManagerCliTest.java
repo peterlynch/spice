@@ -164,7 +164,7 @@ extends TestCase
         
         DeltaManagerCli.main( new String [] { 
                                   "-m", "./target/config/apache-maven-3.0-alpha-1"
-                                , "-t", "1" 
+                                , "-t", "2" 
                                 , "-s", "./target/test-classes/settings.xml" 
                                             }
                             );
