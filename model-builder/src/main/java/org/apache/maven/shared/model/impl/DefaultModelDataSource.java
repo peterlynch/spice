@@ -425,12 +425,15 @@ public final class DefaultModelDataSource
             String subUri = p.getUri().substring( baseUri.length(), modelPropertyLength );
 
             //MAVEN_SPECIFIC WORK AROUND
-            if(p.getUri().endsWith("goals#collection")) {
+            if(p.getUri().endsWith("goals#collection") ) {
                     processedProperties.add( findLastIndexOfParent( p, processedProperties ) + 1, p );
                     uris.add( p.getUri() );
             }
-
-            if ( !uris.contains( p.getUri() ) || ( (subUri.contains( "#collection" ) || subUri.contains("#set")) &&
+            else if(p.getUri().contains("execution/configuration#set") ) {  
+                    processedProperties.add( findLastIndexOfParent( p, processedProperties ) + 1, p );
+                    uris.add( p.getUri() );
+            }  
+            else if ( !uris.contains( p.getUri() ) || ( (subUri.contains( "#collection" ) || subUri.contains("#set")) &&
                 (!subUri.endsWith( "#collection" ) && !subUri.endsWith("#set")) && !isParentASet(subUri) && combineChildrenRule(p, combineChildrenUris) )
                )
             {
