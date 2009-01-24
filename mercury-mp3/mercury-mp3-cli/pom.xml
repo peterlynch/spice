@@ -64,11 +64,31 @@ under the License.
         <artifactId>jline</artifactId>
       </dependency>
 
-      <dependency>
-            <groupId>jline</groupId>
-            <artifactId>jline</artifactId>
-            <version>${jline.version}</version>
-      </dependency>
+
+    <dependency>
+      <groupId>org.mortbay.jetty</groupId>
+      <artifactId>jetty-client</artifactId>
+      <classifier>assembly</classifier>
+      <exclusions>
+        <exclusion>
+         <groupId>org.mortbay.jetty</groupId> 
+         <artifactId>jetty</artifactId>
+        </exclusion>
+        <exclusion>
+         <groupId>org.mortbay.jetty</groupId>
+         <artifactId>jetty-sslengine</artifactId>
+        </exclusion>
+        <exclusion>
+         <groupId>org.mortbay.jetty</groupId>
+         <artifactId>jetty-util</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mortbay.jetty</groupId>
+      <artifactId>jetty-util5</artifactId>
+    </dependency>
     
     <!-- Test dependencies -->
     <dependency>
