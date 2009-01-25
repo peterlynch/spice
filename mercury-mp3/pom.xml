@@ -40,8 +40,8 @@ under the License.
   </modules>
 
   <properties>
-    <mercury.version>1.0.0-alpha-3</mercury.version>
-    <maven.version>3.0-alpha-1</maven.version>
+    <mercury.version>1.0.0-alpha-4-SNAPSHOT</mercury.version>
+    <maven.version>3.0-SNAPSHOT</maven.version>
     <mercury.mp3.version>${project.version}</mercury.mp3.version>
 
     <jetty.version>6.1.15.rc2</jetty.version>

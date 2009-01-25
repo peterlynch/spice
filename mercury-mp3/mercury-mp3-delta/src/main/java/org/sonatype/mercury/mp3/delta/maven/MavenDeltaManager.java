@@ -199,8 +199,7 @@ implements DeltaManager
                 List<ArtifactMetadata> deps;
                 try
                 {
-                    deps = _mercury.resolve( repos, ArtifactScopeEnum.runtime, new ArtifactQueryList( bmdList ),
-                                      null, null );
+                    deps = _mercury.resolve( repos, ArtifactScopeEnum.runtime, new ArtifactQueryList( bmdList ), null, null );
                     CdUtil.write( deps, ldlFile );
                 }
                 catch ( Exception e )
