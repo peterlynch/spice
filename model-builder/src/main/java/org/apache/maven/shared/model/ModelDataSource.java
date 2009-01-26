@@ -56,6 +56,11 @@ public interface ModelDataSource
 
     ModelContainer replace(ModelContainer a, ModelContainer b)
         throws DataSourceException;
+    
+    ModelContainer joinWithOriginalOrder ( ModelContainer a, ModelContainer b )
+        throws DataSourceException;
+
+
 
 
     /**

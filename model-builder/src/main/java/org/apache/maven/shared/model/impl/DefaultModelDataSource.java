@@ -146,11 +146,21 @@ public final class DefaultModelDataSource
         }
         return uris.indexOf(baseUri) == uris.lastIndexOf(baseUri);
     }
-
+  public ModelContainer joinWithOriginalOrder( ModelContainer a, ModelContainer b )
+        throws DataSourceException
+  {
+        return join(a, b, true);
+  }
     /**
      * @see ModelDataSource#join(org.apache.maven.shared.model.ModelContainer, org.apache.maven.shared.model.ModelContainer)
      */
     public ModelContainer join( ModelContainer a, ModelContainer b )
+        throws DataSourceException
+    {
+        return join(a, b, false);
+    }
+
+    private ModelContainer join( ModelContainer a, ModelContainer b, boolean sort )
         throws DataSourceException
     {
         if ( a == null || a.getProperties() == null || a.getProperties().size() == 0 )
@@ -216,9 +226,11 @@ public final class DefaultModelDataSource
             startIndex = 0;
         }
         joinedProperties = sort(joinedProperties, findBaseUriFrom(joinedProperties));
-      //  if(startIndex > joinedProperties.size()) {
-       //     startIndex = joinedProperties.size();
-       // }
+        if(sort)
+        {
+            joinedProperties = sort(joinedProperties, findBaseUriFrom(joinedProperties));
+        }
+
         modelProperties.addAll( startIndex, joinedProperties );
         /*
         List<ModelProperty> deletedProperties = new ArrayList<ModelProperty>();
@@ -232,6 +244,7 @@ public final class DefaultModelDataSource
         */
         return a.createNewInstance( joinedProperties );
     }
+    
 
     /**
      * @see ModelDataSource#delete(org.apache.maven.shared.model.ModelContainer)
