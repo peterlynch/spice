@@ -55,6 +55,7 @@ import org.sonatype.mercury.mp3.api.DeltaManager;
 import org.sonatype.mercury.mp3.api.cd.ContainerConfig;
 import org.sonatype.mercury.mp3.api.cd.NodeConfig;
 import org.sonatype.mercury.mp3.api.cd.io.xpp3.ConfigurationDescriptorXpp3Reader;
+import org.sonatype.mercury.mp3.delta.maven.MavenDeltaManager;
 
 /**
  *
@@ -300,8 +301,10 @@ extends AbstractCli
 
             int len = _versions.size();
             int reply = 0;
-            String title = "\n"+LANG.getMessage( "sel.title" )+"\n";
+            String title = "\n"+LANG.getMessage( "sel.title", getCurrentVersion() )+"\n";
             String prompt = "\n"+LANG.getMessage( "sel.prompt" );
+            
+            boolean remoteSection = true;
             
             do 
             {
@@ -310,7 +313,18 @@ extends AbstractCli
                 System.out.println(title);
                 
                 for( Artifact a : _versions )
+                {
+                    String ver = a.getVersion();
+                    
+                    if( remoteSection && ver.endsWith( "."+DeltaManager.CD_EXT  ) )
+                    {
+                        remoteSection = false;
+                        
+                        System.out.println( LANG.getMessage( "sel.files" ) );
+                    }
+                    
                     System.out.println((count++)+": "+a.getVersion() );
+                }
                 
                 System.out.print(prompt);
                 
@@ -477,6 +491,28 @@ extends AbstractCli
         DeltaManager dm = plexus.lookup( DeltaManager.class, "maven" );
         
         dm.applyConfiguration( cd, repos, monitor );
+    }
+    
+    private String getCurrentVersion()
+    throws Exception
+    {
+        File mh = new File( _mavenHome );
+        
+        String containerName = mh.getName();
+        
+        File currentCd = new File( mh, "/"+DeltaManager.CD_DIR + "/" + containerName+"."+DeltaManager.CD_EXT );
+        
+       if( ! currentCd.exists() )
+           return null;
+        
+        NodeConfig cd = new ConfigurationDescriptorXpp3Reader().read( new FileInputStream(currentCd) );
+        
+        ContainerConfig cc = CdUtil.findContainer( cd, MavenDeltaManager.TYPE, containerName );
+        
+        if( cc != null )
+            return cc.getVersion();
+        
+        return null;
     }
 
     private List<Repository> getDefaultRepositories( Monitor monitor, String local, String... remote )
