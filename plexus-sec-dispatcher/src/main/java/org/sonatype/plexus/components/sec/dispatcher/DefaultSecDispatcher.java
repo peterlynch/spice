@@ -41,6 +41,8 @@ implements SecDispatcher
 {
     public static final String SYSTEM_PROPERTY_SEC_LOCATION = "maven.sec.path";
     
+    public static final String SECURITY_SETTINGS = "security-settings.xml";
+    
     public static final String TYPE_ATTR = "type";
 
     public static final char ATTR_START = '[';
@@ -184,7 +186,7 @@ implements SecDispatcher
     throws SecDispatcherException
     {
         String location = System.getProperty( SYSTEM_PROPERTY_SEC_LOCATION
-                                            , System.getProperty( "user.home" ) + "/.m2/sec.xml"
+                                            , System.getProperty( "user.home" ) + "/.m2/"+SECURITY_SETTINGS
                                             );
         Sec sec = SecUtil.read( location, true );
         

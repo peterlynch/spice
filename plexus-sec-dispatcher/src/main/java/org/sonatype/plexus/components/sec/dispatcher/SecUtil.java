@@ -46,7 +46,8 @@ public class SecUtil
         if( location == null )
             throw new SecDispatcherException("location to read from is null");
         
-        InputStream in;
+        InputStream in = null;
+        
         try
         {
             in = toStream( location );
@@ -64,9 +65,14 @@ public class SecUtil
         {
             throw new SecDispatcherException(e);
         }
+        finally
+        {
+            if( in != null )
+                try { in.close(); } catch( Exception e ) {}
+        }
     }
     //---------------------------------------------------------------------------------------------------------------
-    public static InputStream toStream( String resource )
+    private static InputStream toStream( String resource )
     throws MalformedURLException, IOException
     {
       if( resource == null )
