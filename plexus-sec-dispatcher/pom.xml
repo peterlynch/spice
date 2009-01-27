@@ -10,7 +10,7 @@
   <groupId>org.sonatype.plexus</groupId>
   <artifactId>plexus-sec-dispatcher</artifactId>
   <name>Plexus Security Dispatcher Component</name>
-  <version>1.0-alpha-3</version>
+  <version>1.0-alpha-4-SNAPSHOT</version>
 
   <build>
     <plugins>
@@ -91,10 +91,4 @@
  -->
  
   </dependencies>
-
-  <scm>
-    <connection>scm:svn:http://svn.sonatype.org/spice/tags/plexus-sec-dispatcher-1.0-alpha-3</connection>
-    <developerConnection>scm:svn:https://svn.sonatype.org/spice/tags/plexus-sec-dispatcher-1.0-alpha-3</developerConnection>
-    <url>http://svn.sonatype.org/spice/tags/plexus-sec-dispatcher-1.0-alpha-3</url>
-  </scm>
 </project>
