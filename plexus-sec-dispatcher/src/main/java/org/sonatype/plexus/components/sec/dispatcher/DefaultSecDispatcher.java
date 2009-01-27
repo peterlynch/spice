@@ -241,6 +241,7 @@ implements SecDispatcher
         
         DefaultPlexusCipher dc = new DefaultPlexusCipher();
         DefaultSecDispatcher dd = new DefaultSecDispatcher();
+        dd._cipher = dc;
         
         if( showMaster )
             System.out.println( dc.encryptAndDecorate( pass, DefaultSecDispatcher.SYSTEM_PROPERTY_SEC_LOCATION ) );
