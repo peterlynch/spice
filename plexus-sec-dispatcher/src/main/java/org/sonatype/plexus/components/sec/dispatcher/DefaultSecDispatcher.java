@@ -14,10 +14,15 @@
 package org.sonatype.plexus.components.sec.dispatcher;
 
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
+
+import javax.xml.transform.stream.StreamResult;
 
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
@@ -233,10 +238,11 @@ implements SecDispatcher
     throws Exception
     {
         System.out.print("Enter password: ");
-        byte [] buf = new byte[128];
         
-        System.in.read( buf );
-        String pass = new String( buf ); 
+        BufferedReader r = new BufferedReader( new InputStreamReader( System.in ) );
+        
+        String pass = r.readLine();
+        
         System.out.println("\n");
         
         DefaultPlexusCipher dc = new DefaultPlexusCipher();
