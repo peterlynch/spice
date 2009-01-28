@@ -198,9 +198,10 @@ extends AbstractCli
             _settings = cli.getOptionValue( SETTINGS );
     }
     //--------------------------------------------------------------------------------------------------------
-    private void initDefaults( CommandLine cli )
+    private void initMavenHome( CommandLine cli, Monitor monitor )
     throws Exception
     {
+        
         File curF = new File(".");
         File mvn = new File( curF, "bin/mvn"+(File.pathSeparatorChar == ';'?".bat":"") );
         
@@ -214,7 +215,15 @@ extends AbstractCli
         if( _mavenHome == null )
             throw new Exception( LANG.getMessage( "cli.no.maven.home", curF.getAbsolutePath(), MAVEN_HOME+"" ) );
         
+        _monitor.message(  LANG.getMessage( "maven.home", _mavenHome ) );
+    }
+    //--------------------------------------------------------------------------------------------------------
+    private void initDefaults( CommandLine cli )
+    throws Exception
+    {
         initMonitor( cli );
+        
+        initMavenHome( cli, _monitor );
         
         initSettings( cli, _monitor );
         
@@ -229,8 +238,6 @@ extends AbstractCli
 
         setRepositories( settingsFile, _monitor );
         
-//        if( Util.isEmpty( _remoteRepos ) )
-//            throw new Exception( LANG.getMessage( "no.remote.repos" ) );
         if( Util.isEmpty( _cdUrl ) )
         {
             _versions = new ArrayList<Artifact>();
@@ -648,16 +655,38 @@ extends AbstractCli
         
         DependencyUtil du = new DependencyUtil( _mercury );
         
-        List<ArtifactMetadata> deps = du.floatSnapshot( new ArtifactQueryList( "org.apache.maven:maven-core:3.0-20081120.183242-12" )
-                                                        , "maven-.*"
-                                                        , "3.0-SNAPSHOT"
-                                                        , "3.0-20081120.183242-12"
+        String dep = cli.getOptionValue( CLOSURE );
+        
+        List<String> theRest = cli.getArgList();
+        
+        if( Util.isEmpty( theRest ) || theRest.size() < 3 )
+        {
+            _monitor.message( LANG.getMessage( "cli.closure.usage" ) );
+            return;
+        }
+        
+        String re = theRest.get( 0 );
+        
+        String verFrom = theRest.get( 1 );
+        
+        String verTo = theRest.get( 2 );
+        
+        List<ArtifactMetadata> deps = du.floatSnapshot( new ArtifactQueryList( dep )
+                                                        , re
+                                                        , verFrom
+                                                        , verTo
                                                          , ArtifactScopeEnum.runtime, _repos, _monitor
-                                                                 );
+                                                      );
         
         if( ! Util.isEmpty( deps ) )
+        {
+            System.out.println( "<dependencies>" );
+            
             for( ArtifactMetadata md : deps )
-                System.out.println( md.toString() );
+                System.out.println( "<dependency><name>"+md.toString()+"</name></dependency>" );
+            
+            System.out.println( "</dependencies>" );
+        }
         else
             System.out.println( "No dependencies found" );
     }
