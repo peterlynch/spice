@@ -31,6 +31,7 @@ import org.apache.maven.mercury.MavenDependencyProcessor;
 import org.apache.maven.mercury.artifact.Artifact;
 import org.apache.maven.mercury.artifact.ArtifactBasicMetadata;
 import org.apache.maven.mercury.artifact.ArtifactMetadata;
+import org.apache.maven.mercury.artifact.ArtifactQueryList;
 import org.apache.maven.mercury.artifact.ArtifactScopeEnum;
 import org.apache.maven.mercury.artifact.DefaultArtifact;
 import org.apache.maven.mercury.builder.api.DependencyProcessor;
@@ -92,6 +93,8 @@ extends AbstractCli
     private static final char CD_URL = 'u';
 
     private static final char SETTINGS = 's';
+
+    private static final char CLOSURE = 'c';
     
     private static final char SHOW_GUI = 'g';
     
@@ -113,20 +116,20 @@ extends AbstractCli
     
     Monitor _monitor;
     
-    PlexusMercury _mercury;
-    
     List<Artifact> _remoteVersions;
     
     List<Artifact> _localVersions;
     
     List<Artifact> _versions;
-
+    
+    PlexusMercury _mercury;
+    //--------------------------------------------------------------------------------------------------------
    public static void main( String[] args )
     throws Exception
     {
         new DeltaManagerCli().execute( args );
     }
-
+   //--------------------------------------------------------------------------------------------------------
    @Override
     public void displayHelp()
     {
@@ -136,7 +139,7 @@ extends AbstractCli
 
         formatter.printHelp( "mp3 options", "\noptions:", _options, "\n" );
     }
-
+   //--------------------------------------------------------------------------------------------------------
     @Override
     @SuppressWarnings( "static-access" )
     public Options buildCliOptions( Options someOptions )
@@ -154,6 +157,11 @@ extends AbstractCli
                            .withDescription( LANG.getMessage( "cli.settings", DEFAULT_SETTINGS ) ).create( SETTINGS ) 
                         );
         _options.addOption( 
+                           OptionBuilder.withLongOpt( "closure" ).hasArg()
+                           .withDescription( LANG.getMessage( "cli.closure" ) ).create( CLOSURE ) 
+                        );
+
+        _options.addOption( 
                            OptionBuilder.withLongOpt( "show.gui" )
                            .withDescription( LANG.getMessage( "cli.show.gui" ) ).create( SHOW_GUI ) 
                         );
@@ -161,6 +169,9 @@ extends AbstractCli
                            OptionBuilder.withLongOpt( "help" )
                            .withDescription( LANG.getMessage( "cli.help" ) ).create( HELP ) 
                         );
+        
+        
+        
         _options.addOption( 
                            OptionBuilder.withLongOpt( "ztest" ).hasArg()
                            .withDescription( LANG.getMessage( "cli.test" ) ).create( _TEST ) 
@@ -168,11 +179,28 @@ extends AbstractCli
 
        return _options;
     }
-    
+    //--------------------------------------------------------------------------------------------------------
+    private void initMonitor( CommandLine cli )
+    throws Exception
+    {
+        String monitorClass = System.getProperty( SYSTEM_PROPERTY_MONITOR );
+        
+        if( monitorClass == null )
+            _monitor = new DefaultMonitor();
+        else
+            _monitor = (Monitor) Class.forName( monitorClass ).newInstance();
+    }
+    //--------------------------------------------------------------------------------------------------------
+    private void initSettings( CommandLine cli, Monitor monitor )
+    throws Exception
+    {
+        if( cli.hasOption( SETTINGS ) )
+            _settings = cli.getOptionValue( SETTINGS );
+    }
+    //--------------------------------------------------------------------------------------------------------
     private void initDefaults( CommandLine cli )
     throws Exception
     {
-        
         File curF = new File(".");
         File mvn = new File( curF, "bin/mvn"+(File.pathSeparatorChar == ';'?".bat":"") );
         
@@ -186,17 +214,14 @@ extends AbstractCli
         if( _mavenHome == null )
             throw new Exception( LANG.getMessage( "cli.no.maven.home", curF.getAbsolutePath(), MAVEN_HOME+"" ) );
         
+        initMonitor( cli );
+        
+        initSettings( cli, _monitor );
+        
         if( cli.hasOption( SETTINGS ) )
             _settings = cli.getOptionValue( SETTINGS );
         
         _cdUrl = cli.getOptionValue( CD_URL );
-
-        String monitorClass = System.getProperty( SYSTEM_PROPERTY_MONITOR );
-        
-        if( monitorClass == null )
-            _monitor = new DefaultMonitor();
-        else
-            _monitor = (Monitor) Class.forName( monitorClass ).newInstance();
         
         File settingsFile = null;
         
@@ -232,8 +257,7 @@ extends AbstractCli
                 _versions.addAll( _localVersions );
         }
     }
-    
-    
+    //--------------------------------------------------------------------------------------------------------
     private List<Artifact> getLocalVersions( final String containerId )
     {
         ArrayList<Artifact> res = new ArrayList<Artifact>(8);
@@ -286,7 +310,7 @@ extends AbstractCli
           
           return res;
     }
-
+    //--------------------------------------------------------------------------------------------------------
     private void selectCd( CommandLine cli, Monitor monitor )
     throws Exception
     {
@@ -344,7 +368,7 @@ extends AbstractCli
             _cdUrl = a.getFile().getAbsolutePath();
         }
     }
-
+    //--------------------------------------------------------------------------------------------------------
     @Override
     public void invokePlexusComponent( CommandLine cli, PlexusContainer plexus )
     throws Exception
@@ -354,10 +378,16 @@ extends AbstractCli
             displayHelp();
             return;
         }
-
-        InputStream cdStream;
         
         _mercury = plexus.lookup( PlexusMercury.class );
+
+        if( cli.hasOption( CLOSURE ))
+        {
+            closure( cli );
+            return;
+        }
+
+        InputStream cdStream;
 
         initDefaults( cli );
         
@@ -377,6 +407,7 @@ extends AbstractCli
         applyConfiguration( mavenHomeFile, cdStream, plexus, _repos, _monitor );
 
     }
+
 //        else
 //        {
 //            DataManagerGui gui = new DataManagerGui();
@@ -471,7 +502,7 @@ extends AbstractCli
         gui.dispose();
         System.exit( 0 );
     }
-    
+    //--------------------------------------------------------------------------------------------------------
     private void applyConfiguration( File mavenHome, InputStream cdStream, PlexusContainer plexus, List<Repository> repos, Monitor monitor )
     throws Exception
     {
@@ -492,7 +523,7 @@ extends AbstractCli
         
         dm.applyConfiguration( cd, repos, monitor );
     }
-    
+    //--------------------------------------------------------------------------------------------------------
     private String getCurrentVersion()
     throws Exception
     {
@@ -514,7 +545,7 @@ extends AbstractCli
         
         return null;
     }
-
+    //--------------------------------------------------------------------------------------------------------
     private List<Repository> getDefaultRepositories( Monitor monitor, String local, String... remote )
     throws Exception
     {
@@ -548,7 +579,7 @@ extends AbstractCli
         
         return _repos;
     }
-
+    //--------------------------------------------------------------------------------------------------------
     @SuppressWarnings("unchecked")
     private void setRepositories( File settingsFile, Monitor monitor )
     throws Exception
@@ -599,5 +630,37 @@ extends AbstractCli
         
         getDefaultRepositories( monitor, local, repoUrls.toArray( new String[ repoUrls.size() ] ) );
     }
-    
+    //--------------------------------------------------------------------------------------------------------
+    /**
+     * @throws Exception 
+     * 
+     */
+    private void closure( CommandLine cli ) throws Exception
+    {
+        initMonitor( cli );
+        initSettings( cli, _monitor );
+        
+        File settingsFile = null;
+        
+        settingsFile = new File( _settings );
+
+        setRepositories( settingsFile, _monitor );
+        
+        DependencyUtil du = new DependencyUtil( _mercury );
+        
+        List<ArtifactMetadata> deps = du.floatSnapshot( new ArtifactQueryList( "org.apache.maven:maven-core:3.0-20081120.183242-12" )
+                                                        , "maven-.*"
+                                                        , "3.0-SNAPSHOT"
+                                                        , "3.0-20081120.183242-12"
+                                                         , ArtifactScopeEnum.runtime, _repos, _monitor
+                                                                 );
+        
+        if( ! Util.isEmpty( deps ) )
+            for( ArtifactMetadata md : deps )
+                System.out.println( md.toString() );
+        else
+            System.out.println( "No dependencies found" );
+    }
+    //--------------------------------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------------------------------------
 }
