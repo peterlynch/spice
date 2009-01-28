@@ -17,19 +17,16 @@ package org.sonatype.plexus.components.sec.dispatcher;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import javax.xml.transform.stream.StreamResult;
-
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
-import org.sonatype.plexus.components.sec.dispatcher.model.Sec;
 import org.sonatype.plexus.components.cipher.DefaultPlexusCipher;
 import org.sonatype.plexus.components.cipher.PlexusCipher;
 import org.sonatype.plexus.components.cipher.PlexusCipherException;
+import org.sonatype.plexus.components.sec.dispatcher.model.Sec;
 
 /**
  * @plexus.component
