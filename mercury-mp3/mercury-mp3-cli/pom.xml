@@ -120,7 +120,7 @@ under the License.
             <configuration>
               
               <keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
-              <shadedArtifactAttached>true</shadedArtifactAttached>
+              <shadedArtifactAttached>false</shadedArtifactAttached>
               <shadedClassifierName>cli</shadedClassifierName>
               <createDependencyReducedPom>false</createDependencyReducedPom>
               
