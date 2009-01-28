@@ -41,7 +41,7 @@ implements SecDispatcher
 {
     public static final String SYSTEM_PROPERTY_SEC_LOCATION = "maven.sec.path";
     
-    public static final String SECURITY_SETTINGS = "security-settings.xml";
+    public static final String SECURITY_SETTINGS = "settings-security.xml";
     
     public static final String TYPE_ATTR = "type";
 
