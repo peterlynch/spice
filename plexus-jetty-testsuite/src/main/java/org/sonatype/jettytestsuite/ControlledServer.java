@@ -13,6 +13,7 @@
 package org.sonatype.jettytestsuite;
 
 import java.io.File;
+import java.util.List;
 
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
@@ -151,14 +152,18 @@ public class ControlledServer
         }
     }
 
-    public void addServer( String contextName, final int returnCode )
+    public List<String> addServer( String contextName, final int returnCode )
     {
-        context.addServlet( new ServletHolder( new StatusServlet( returnCode ) ), "/" + contextName  + "/*");
+        StatusServlet servlet = new StatusServlet( returnCode );
+        context.addServlet( new ServletHolder( servlet ), "/" + contextName  + "/*");
+        return servlet.getAccessedUrls();
     }
 
-    public void addServer( String contextName, final File content )
+    public List<String> addServer( String contextName, final File content )
     {
-        context.addServlet( new ServletHolder( new FileServerServlet( content ) ), "/" + contextName + "/*" );
+        FileServerServlet servlet = new FileServerServlet( content );
+        context.addServlet( new ServletHolder( servlet ), "/" + contextName + "/*" );
+        return servlet.getAccessedUrls();
     }
 
 }

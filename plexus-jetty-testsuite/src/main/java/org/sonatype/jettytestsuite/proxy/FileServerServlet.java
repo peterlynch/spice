@@ -6,17 +6,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import javax.servlet.GenericServlet;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.plexus.util.IOUtil;
 
 public class FileServerServlet
-    extends GenericServlet
+    extends AbstractMonitorServlet
 {
     private static final long serialVersionUID = -6702619558275132007L;
 
@@ -28,11 +25,9 @@ public class FileServerServlet
     }
 
     @Override
-    public void service( ServletRequest request, ServletResponse response )
+    public void service( HttpServletRequest req, HttpServletResponse res )
         throws ServletException, IOException
     {
-        HttpServletRequest req = (HttpServletRequest) request;
-        HttpServletResponse res = (HttpServletResponse) response;
         String path = req.getPathInfo();
 
         File file = new File( content, path );
@@ -48,9 +43,10 @@ public class FileServerServlet
         }
 
         InputStream input = new FileInputStream( file );
-        OutputStream output = response.getOutputStream();
+        OutputStream output = res.getOutputStream();
         IOUtil.copy( input, output );
         IOUtil.close( input );
         IOUtil.close( output );
     }
+
 }
