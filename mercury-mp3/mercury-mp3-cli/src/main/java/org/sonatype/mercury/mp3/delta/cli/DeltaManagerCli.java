@@ -265,10 +265,10 @@ extends AbstractCli
                 }
             }
             
-            _localVersions = getLocalVersions( new File(_mavenHome).getName() );
-            
-            if( !Util.isEmpty( _localVersions ) )
-                _versions.addAll( _localVersions );
+//            _localVersions = getLocalVersions( new File(_mavenHome).getName() );
+//            
+//            if( !Util.isEmpty( _localVersions ) )
+//                _versions.addAll( _localVersions );
         }
     }
     //--------------------------------------------------------------------------------------------------------
