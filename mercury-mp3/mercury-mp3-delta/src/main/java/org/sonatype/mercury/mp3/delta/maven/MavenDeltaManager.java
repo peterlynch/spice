@@ -55,6 +55,8 @@ implements DeltaManager
     private static final Language LANG = new DefaultLanguage( MavenDeltaManager.class );
 
     public static final String TYPE = "maven";
+    
+    public static final String DEFAULT_CONTAINER_ID = "apache-maven";
 
     File _configurationRoot;
 
@@ -135,13 +137,13 @@ implements DeltaManager
 
         File cdFolder = new File( mavenRoot, cc.getId() + "/"+DeltaManager.CD_DIR+"/" );
         
-        File cdFile = new File( cdFolder, cc.getId() + "." +DeltaManager.CD_EXT );
+        File cdFile = new File( cdFolder, DEFAULT_CONTAINER_ID + "." +DeltaManager.CD_EXT );
 
-        File ldlFile = new File( cdFolder, cc.getId() + "-" + newVersion + "."+DeltaManager.LDL_EXT );
+        File ldlFile = new File( cdFolder, DEFAULT_CONTAINER_ID + "-" + newVersion + "."+DeltaManager.LDL_EXT );
         
         Util.say( LANG.getMessage( "processing.container", cc.getId(), mavenRoot.getAbsolutePath() ) , monitor );
-
-        if ( !cdFile.exists() ) // new installation
+        
+        if ( !cdFolder.exists() ) // new installation
         {
             DependencyConfig distroConf = cc.getDistribution();
 
@@ -229,7 +231,8 @@ implements DeltaManager
                 throw new DeltaManagerException( e );
             }
 
-            ContainerConfig oldCc = CdUtil.findContainer( oldConfig, TYPE, cc.getId() );
+            // TODO oleg 2009-01-28 a hack for maven single container to work container 
+            ContainerConfig oldCc = CdUtil.findContainer( oldConfig, TYPE, null );
             
             List<ArtifactBasicMetadata> oldDependencies = CdUtil.toDepList( oldCc.getDependencies() );
             
@@ -243,11 +246,9 @@ implements DeltaManager
                 List<ArtifactMetadata> newRes =
                     _mercury.resolve( repos, ArtifactScopeEnum.runtime, new ArtifactQueryList( dependencies ), null, null );
                 
-                CdUtil.write( newRes, ldlFile );
-                
                 List<ArtifactMetadata> oldRes = null;
                 
-                File oldLdlFile = new File( cdFolder, cc.getId() + "-" + oldVersion + ".ldl" );
+                File oldLdlFile = new File( cdFolder, DEFAULT_CONTAINER_ID + "-" + oldVersion + ".ldl" );
                 
                 if( Util.isEmpty( oldVersion ) || Util.isEmpty( oldLdlFile ) )
                 {
@@ -259,7 +260,7 @@ implements DeltaManager
                 {
                     oldRes = CdUtil.readLdl( oldLdlFile );
 
-                    Util.say( LANG.getMessage( "delta.version", cc.getId(), oldVersion, oldLdlFile.getAbsolutePath() ), monitor );
+                    Util.say( LANG.getMessage( "read.old.version", oldVersion, oldLdlFile.getAbsolutePath() ), monitor );
                 }
 
                 List<ArtifactBasicMetadata> deleteDiff = (List<ArtifactBasicMetadata>) CdUtil.minus( oldRes, newRes );
@@ -275,6 +276,18 @@ implements DeltaManager
                     if( Util.isEmpty( artifacts ) )
                         throw new DeltaManagerException( LANG.getMessage( "cannot.read.new.diff", installDiff.toString() ) );
                     
+                    if( artifacts.size() != installDiff.size() )
+                    {
+                        List<ArtifactBasicMetadata> notFound = (List<ArtifactBasicMetadata>) CdUtil.binDiff( installDiff, artifacts );
+                        int diffSize = notFound == null ? 0 : notFound.size();
+
+                        throw new DeltaManagerException( 
+           LANG.getMessage( "cannot.read.all.new.diff", ""+artifacts.size(), ""+installDiff.size()
+                                            , ""+diffSize, notFound == null ? "[]" : notFound.toString() 
+                          ) 
+                                                       );
+                    }
+                    
                     for( Artifact a : artifacts )
                         if( Util.isEmpty( a.getFile() ) )
                             throw new DeltaManagerException( LANG.getMessage( "artifact.no.file", a.toString() ) );
@@ -283,9 +296,10 @@ implements DeltaManager
                 if ( !Util.isEmpty( deleteDiff ) )
                     remove( mavenHome, deleteDiff, monitor );
 
-
                 if ( !Util.isEmpty( artifacts ) )
                     install( mavenHome, artifacts, monitor );
+                
+                CdUtil.write( newRes, ldlFile );
             }
             catch ( Exception e )
             {
@@ -301,7 +315,7 @@ implements DeltaManager
             
             // write version of it
             
-            cdFile = new File( cdFolder, cc.getId()+"-"+newVersion+"." + DeltaManager.CD_EXT );
+            cdFile = new File( cdFolder, DEFAULT_CONTAINER_ID+"-"+newVersion+"." + DeltaManager.CD_EXT );
             
             CdUtil.write( configuration, cdFile );
 

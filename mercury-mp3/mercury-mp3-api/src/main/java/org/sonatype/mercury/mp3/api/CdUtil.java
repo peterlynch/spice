@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.maven.mercury.artifact.Artifact;
 import org.apache.maven.mercury.artifact.ArtifactBasicMetadata;
 import org.apache.maven.mercury.artifact.ArtifactMetadata;
 import org.apache.maven.mercury.artifact.version.DefaultArtifactVersion;
@@ -104,16 +105,13 @@ public class CdUtil
         if ( Util.isEmpty( type ) )
             throw new IllegalArgumentException( LANG.getMessage( "container.type.is.null" ) );
 
-        if ( Util.isEmpty( cid ) )
-            throw new IllegalArgumentException( LANG.getMessage( "container.id.is.null" ) );
-
         if ( Util.isEmpty( nc.getContainers() ) )
             throw new DeltaManagerException( LANG.getMessage( "nc.containers.is.empty" ) );
 
         List<ContainerConfig> containers = nc.getContainers();
 
         for ( ContainerConfig cc : containers )
-            if ( cid.equals( cc.getId() ) && type.equals( cc.getType() ) )
+            if ( type.equals( cc.getType() ) && (cid == null || cid.equals( cc.getId() ))  )
                 return cc;
 
         throw new DeltaManagerException( LANG.getMessage( "container.not.found", type, cid, nc.getId() ) );
@@ -267,6 +265,50 @@ public class CdUtil
             }
         
         return null;
+    }
+    //----------------------------------------------------------------------------------------------------
+    public static final List<? extends ArtifactBasicMetadata> binDiff( List<? extends ArtifactBasicMetadata> in, List<Artifact> out )
+    {
+        if( Util.isEmpty( in ) )
+            return null;
+        
+        if( Util.isEmpty( out ) )
+            return in;
+        
+        List<ArtifactBasicMetadata> res = new ArrayList<ArtifactBasicMetadata>( in.size() );
+        
+        for( ArtifactBasicMetadata bmd : in )
+        {
+            boolean notExists = true;
+            String gid = bmd.getGroupId();
+            String aid = bmd.getArtifactId();
+            String ver = bmd.getVersion();
+            String cls = bmd.getClassifier() == null ? "---" : bmd.getClassifier();
+            String typ = bmd.getType() == null ? "jar" : bmd.getType();
+            
+            for( Artifact a : out )
+                if( a.getGroupId().equals( gid )
+                    && a.getArtifactId().equals( aid )
+                    && a.getVersion().equals( ver )
+                    && a.getVersion().equals( ver )
+                 )
+                {
+                    String acls = a.getClassifier() == null ? "---" : a.getClassifier();
+                    String atyp = a.getType() == null ? "jar" : a.getType();
+                    
+                    if( acls.equals( cls ) && atyp.equals( typ ) )
+                    {
+                        notExists = false;
+                        break;
+                    }
+                }
+
+            if( notExists )
+                res.add( bmd );
+        }
+        
+        return res;
+            
     }
     //----------------------------------------------------------------------------------------------------
     //----------------------------------------------------------------------------------------------------

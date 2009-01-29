@@ -217,7 +217,7 @@ public class MavenDeltaManagerTest
         
         assertFalse( verificationOk );
         
-        setVerify( ", using it to read previous dependencies from" );
+        setVerify( "Current version .* dependencies read from .*" );
         
         install( "org.apache.maven:maven-distribution:3.0-alpha-3", ts );
 
@@ -232,7 +232,7 @@ public class MavenDeltaManagerTest
     private void callback( String msg )
     {
         if( verification != null && !verificationOk )
-            verificationOk = msg.indexOf( verification ) >= 0;
+            verificationOk = msg.matches( verification );
     }
     
     private void setVerify( String v )

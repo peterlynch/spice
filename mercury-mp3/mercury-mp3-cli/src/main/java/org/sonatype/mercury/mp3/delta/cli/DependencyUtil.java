@@ -19,8 +19,11 @@ under the License.
 
 package org.sonatype.mercury.mp3.delta.cli;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.maven.mercury.artifact.Artifact;
+import org.apache.maven.mercury.artifact.ArtifactBasicMetadata;
 import org.apache.maven.mercury.artifact.ArtifactMetadata;
 import org.apache.maven.mercury.artifact.ArtifactQueryList;
 import org.apache.maven.mercury.artifact.ArtifactScopeEnum;
@@ -84,4 +87,6 @@ public class DependencyUtil
         
         return res;
     }
+    //----------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------
 }

@@ -98,6 +98,8 @@ extends AbstractCli
     
     private static final char SHOW_GUI = 'g';
     
+    private static final char NO_TEST_BINARIES = 'n';
+    
     private static final char HELP = 'h';
     
     private static final char _TEST = 't';
@@ -159,6 +161,11 @@ extends AbstractCli
         _options.addOption( 
                            OptionBuilder.withLongOpt( "closure" ).hasArg()
                            .withDescription( LANG.getMessage( "cli.closure" ) ).create( CLOSURE ) 
+                        );
+
+        _options.addOption( 
+                           OptionBuilder.withLongOpt( "no.test.binaries" )
+                           .withDescription( LANG.getMessage( "cli.no.test.binaries" ) ).create( NO_TEST_BINARIES ) 
                         );
 
         _options.addOption( 
@@ -282,7 +289,7 @@ extends AbstractCli
                                           String name = pathname.getName();
                                           
                                           
-                                          if( name.equals( containerId + "." + DeltaManager.CD_EXT ) )
+                                          if( name.equals( MavenDeltaManager.DEFAULT_CONTAINER_ID + "." + DeltaManager.CD_EXT ) )
                                               return false;// current version
                                           
 //                                          if( name.matches( ".*-[0-9]{14}\\."+DeltaManager.CD_EXT ) )
@@ -522,9 +529,11 @@ extends AbstractCli
         
         String containerId = mavenHome.getName();
         
-        ContainerConfig cc = CdUtil.findContainer( cd, "maven", containerId );
+        ContainerConfig cc = CdUtil.findContainer( cd, "maven", null );
         
         cc.setConfigurationRoot( mavenHome.getCanonicalPath() );
+        
+        cc.setId( containerId );
         
         DeltaManager dm = plexus.lookup( DeltaManager.class, "maven" );
         
@@ -536,7 +545,7 @@ extends AbstractCli
     {
         File mh = new File( _mavenHome );
         
-        String containerName = mh.getName();
+        String containerName = MavenDeltaManager.DEFAULT_CONTAINER_ID; // mh.getName();
         
         File currentCd = new File( mh, "/"+DeltaManager.CD_DIR + "/" + containerName+"."+DeltaManager.CD_EXT );
         
@@ -545,7 +554,7 @@ extends AbstractCli
         
         NodeConfig cd = new ConfigurationDescriptorXpp3Reader().read( new FileInputStream(currentCd) );
         
-        ContainerConfig cc = CdUtil.findContainer( cd, MavenDeltaManager.TYPE, containerName );
+        ContainerConfig cc = CdUtil.findContainer( cd, MavenDeltaManager.TYPE, null );
         
         if( cc != null )
             return cc.getVersion();
@@ -644,6 +653,8 @@ extends AbstractCli
      */
     private void closure( CommandLine cli ) throws Exception
     {
+        boolean testBinaries = !cli.hasOption( NO_TEST_BINARIES );
+        
         initMonitor( cli );
         initSettings( cli, _monitor );
         
@@ -678,8 +689,31 @@ extends AbstractCli
                                                          , ArtifactScopeEnum.runtime, _repos, _monitor
                                                       );
         
+        List<Artifact> binaries = null;
+        
+        if( testBinaries )
+            _mercury.read( _repos, deps );
+        
         if( ! Util.isEmpty( deps ) )
         {
+            if( testBinaries && Util.isEmpty( binaries ) )
+            {
+                _monitor.message( LANG.getMessage( "no.binaries.for", deps.toString() ) );
+                return;
+            }
+                
+            if( testBinaries && binaries.size() != deps.size() )
+            {
+                List<ArtifactBasicMetadata> diff = (List<ArtifactBasicMetadata>) CdUtil.binDiff( deps, binaries);
+                int diffSize = diff == null ? 0 : diff.size();
+                
+                _monitor.message( LANG.getMessage( "no.all.binaries.for", ""+binaries.size(), ""+deps.size()
+                                                   , ""+diffSize, diff == null ? "[]" : diff.toString()
+                                                 ) 
+                                );
+                return;
+            }
+                
             System.out.println( "<dependencies>" );
             
             for( ArtifactMetadata md : deps )
