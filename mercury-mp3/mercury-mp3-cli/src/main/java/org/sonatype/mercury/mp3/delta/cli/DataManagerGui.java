@@ -56,23 +56,24 @@ extends JFrame
     JPanel      _dirTab = new JPanel();
     JPanel      _repoTab = new JPanel();
     
-    JPanel [] _tabs = new JPanel [] { _updateTab, _repoTab, _dirTab };
+    JPanel [] _tabs = new JPanel [] { _updateTab }; //, _repoTab, _dirTab };
     
     JTextField _mavenHomeField = new JTextField();
     JLabel _mavenHomeLabel = new JLabel();
     
+    JLabel _currentVersion      = new JLabel();
+    
     JTextField _localRepoField = new JTextField();
     
     JComboBox _remoteRepoList = new JComboBox();
-    
-    JComboBox _tsList = new JComboBox();
-    DefaultComboBoxModel _tsModel;
     
     JComboBox _cdList = new JComboBox();
     DefaultComboBoxModel _cdModel;
     
     JButton _updateButton = new JButton( LANG.getMessage( "gui.update.button.title" ));
     JButton _cancelButton = new JButton( LANG.getMessage( "gui.cancel.button.title" ));
+    
+    String _lock;
     
     public DataManagerGui()
     {
@@ -104,8 +105,7 @@ extends JFrame
 
         setDefaultCloseOperation( EXIT_ON_CLOSE );
         
-        setPreferredSize( new Dimension(600, 300) );
-//        setSize( 450, 300 );
+        setPreferredSize( new Dimension(600, 250) );
         setBackground( bg );
         
     }
@@ -127,12 +127,26 @@ extends JFrame
         c.gridy = 0;
         c.weightx = 0.5;
         c.weighty = 1;
-        c.gridwidth = 2;
+        c.gridwidth = 1;
         c.anchor = GridBagConstraints.WEST;
         _updateTab.add( _mavenHomeLabel, c );
 
         c.gridx = 0;
         c.gridy = 1;
+        c.weightx = 0.5;
+        c.anchor = GridBagConstraints.EAST;
+        _updateTab.add( new JLabel( LANG.getMessage( "gui.label.current.version" ) ), c );
+        
+        c.gridx = 1;
+        c.gridy = 1;
+        c.weightx = 0.5;
+        c.weighty = 1;
+        c.gridwidth = 1;
+        c.anchor = GridBagConstraints.WEST;
+        _updateTab.add( _currentVersion, c );
+
+        c.gridx = 0;
+        c.gridy = 2;
         c.weightx = 0;
         c.weighty = 1;
         c.gridwidth = 1;
@@ -140,7 +154,7 @@ extends JFrame
         _updateTab.add( new JLabel( LANG.getMessage( "gui.label.versions" ) ), c );
         
         c.gridx = 1;
-        c.gridy = 1;
+        c.gridy = 2;
         c.weightx = 0.5;
         c.weighty = 1;
         c.gridwidth = 2;
@@ -148,56 +162,39 @@ extends JFrame
         _updateTab.add( _cdList, c );
         
         _cdModel = new DefaultComboBoxModel();
-        _cdModel.addElement( "" );
         _cdList.setModel( _cdModel );
         _cdList.addActionListener(
                                   new ActionListener()
                                   {
                                     public void actionPerformed( ActionEvent e )
                                     {
-                                        if( _cdList.getSelectedIndex() > 0 )
-                                            _tsList.setSelectedIndex(0);
+                                        String sel = (String) _cdList.getSelectedItem();
+                                        
+                                        if( sel != null && sel.charAt( 0 ) == '-')
+                                        {
+                                            int max = _cdModel.getSize();
+                                            
+                                            int curr = _cdList.getSelectedIndex();
+                                            
+                                            if( curr == max - 1 )
+                                                --curr;
+                                            else
+                                                ++curr;
+
+                                            if( curr >= 0 )
+                                                _cdList.setSelectedIndex(curr);
+                                        }
                                     }
                                   } 
                                 );
 
-        c.gridx = 0;
-        c.gridy = 2;
-        c.weightx = 0;
-        c.weighty = 1;
-        c.gridwidth = 1;
-        c.anchor = GridBagConstraints.EAST;
-        _updateTab.add( new JLabel( LANG.getMessage( "gui.label.tss" ) ), c );
-        
-        c.gridx = 1;
-        c.gridy = 2;
-        c.weightx = 0.5;
-        c.weighty = 1;
-        c.gridwidth = 2;
-        c.anchor = GridBagConstraints.WEST;
-        _updateTab.add( _tsList, c );
-
-        _tsModel = new DefaultComboBoxModel();
-        _tsModel.addElement( "" );
-        _tsList.setModel( _tsModel );
-        _tsList.addActionListener(
-                                  new ActionListener()
-                                  {
-                                    public void actionPerformed( ActionEvent e )
-                                    {
-                                        if( _tsList.getSelectedIndex() > 0 )
-                                            _cdList.setSelectedIndex(0);
-                                    }
-                                  } 
-                                );
-        
         c.gridx = 0;
         c.gridy = 3;
         c.weightx = 0.5;
         c.weighty = 1;
         c.gridwidth = 1;
         c.anchor = GridBagConstraints.CENTER;
-        _updateTab.add( _updateButton, c );
+        _updateTab.add( _cancelButton, c );
 
         c.gridx = 1;
         c.gridy = 3;
@@ -205,14 +202,14 @@ extends JFrame
         c.weighty = 0;
         c.gridwidth = 1;
         c.anchor = GridBagConstraints.CENTER;
-        _updateTab.add( _cancelButton, c );
+        _updateTab.add( _updateButton, c );
         
         _updateButton.addActionListener( 
                          new ActionListener()
                          {
                             public void actionPerformed( ActionEvent e )
                             {
-                                _cli.update( _gui );
+                                _cli.resumeYourself();
                             }
                           }
                          );

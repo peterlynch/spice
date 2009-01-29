@@ -324,30 +324,71 @@ extends AbstractCli
           
           return res;
     }
+    
+    synchronized protected void resumeYourself()
+    {
+        notify();
+    }
+    
     //--------------------------------------------------------------------------------------------------------
-    private void selectCd( CommandLine cli, Monitor monitor )
+    synchronized private void selectCd( CommandLine cli, Monitor monitor )
     throws Exception
     {
-//        if( cli.hasOption( SHOW_GUI ) )
-//        {
-//            
-//        }
-//        else
+        boolean remoteSection = true;
+
+        int count = 1;
+        
+        String currentVer = getCurrentVersion();
+        
+        if( cli.hasOption( SHOW_GUI ) )
+        {
+            DataManagerGui gui = new DataManagerGui();
+            gui._cli = this;
+            gui._mavenHomeLabel.setText( _mavenHome );
+            gui._mavenHomeField.setText( _mavenHome );
+            
+            gui._currentVersion.setText( currentVer );
+            
+            for( Artifact a : _versions )
+            {
+                String ver = a.getVersion();
+                
+                if( remoteSection && ver.endsWith( "."+DeltaManager.CD_EXT  ) )
+                {
+                    remoteSection = false;
+                    
+                    gui._cdModel.addElement( LANG.getMessage( "sel.files" ) );
+                }
+                
+                gui._cdModel.addElement( (count++)+": "+a.getVersion() );
+            }
+          
+          gui.pack();
+          gui.setVisible( true );
+          
+            wait();
+          
+          int sel = gui._cdList.getSelectedIndex();
+          gui.dispose();
+            
+          Artifact a = _versions.get( sel );
+          
+          System.out.println("\n"+LANG.getMessage( "you.selected", a.getVersion() )+"\n");
+          
+          _cdUrl = a.getFile().getAbsolutePath();
+        }
+        else
         {
             if( Util.isEmpty( _versions ) )
                 throw new Exception(LANG.getMessage( "no.versions.to.select", _mavenHome ));
 
             int len = _versions.size();
             int reply = 0;
-            String title = "\n"+LANG.getMessage( "sel.title", getCurrentVersion() )+"\n";
+            String title = "\n"+LANG.getMessage( "sel.title", currentVer )+"\n";
             String prompt = "\n"+LANG.getMessage( "sel.prompt" );
-            
-            boolean remoteSection = true;
             
             do 
             {
-                int count = 1;
-                
                 System.out.println(title);
                 
                 for( Artifact a : _versions )
@@ -549,8 +590,10 @@ extends AbstractCli
         
         File currentCd = new File( mh, "/"+DeltaManager.CD_DIR + "/" + containerName+"."+DeltaManager.CD_EXT );
         
+        String noVersion = LANG.getMessage( "no.current.version" );
+        
        if( ! currentCd.exists() )
-           return null;
+           return noVersion;
         
         NodeConfig cd = new ConfigurationDescriptorXpp3Reader().read( new FileInputStream(currentCd) );
         
@@ -559,7 +602,7 @@ extends AbstractCli
         if( cc != null )
             return cc.getVersion();
         
-        return null;
+        return noVersion;
     }
     //--------------------------------------------------------------------------------------------------------
     private List<Repository> getDefaultRepositories( Monitor monitor, String local, String... remote )
@@ -701,7 +744,7 @@ extends AbstractCli
                 _monitor.message( LANG.getMessage( "no.binaries.for", deps.toString() ) );
                 return;
             }
-                
+
             if( testBinaries && binaries.size() != deps.size() )
             {
                 List<ArtifactBasicMetadata> diff = (List<ArtifactBasicMetadata>) CdUtil.binDiff( deps, binaries);
@@ -713,7 +756,7 @@ extends AbstractCli
                                 );
                 return;
             }
-                
+
             System.out.println( "<dependencies>" );
             
             for( ArtifactMetadata md : deps )
