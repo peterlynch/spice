@@ -96,6 +96,10 @@ extends AbstractCli
 
     private static final char CLOSURE = 'c';
     
+    private static final char SHOW_LOCAL_SAVEPOINTS = 'l';
+    
+    private static final char SHOW_DETAILS = 'd';
+    
     private static final char SHOW_GUI = 'g';
     
     private static final char NO_TEST_BINARIES = 'n';
@@ -106,25 +110,27 @@ extends AbstractCli
     
     private Options _options = new Options();
 
-    String _settings = DEFAULT_SETTINGS;
+    private String _settings = DEFAULT_SETTINGS;
     
-    String _mavenHome;
+    private String _mavenHome;
     
-    String _cdUrl;
+    private String _cdUrl;
     
-    List<Repository> _repos;
+    private List<Repository> _repos;
     
-    List<Repository> _remoteRepos;
+    private List<Repository> _remoteRepos;
     
-    Monitor _monitor;
+    private Monitor _monitor;
     
-    List<Artifact> _remoteVersions;
+    private List<Artifact> _remoteVersions;
     
-    List<Artifact> _localVersions;
+    private List<Artifact> _localVersions;
     
-    List<Artifact> _versions;
+    private List<Artifact> _versions;
     
-    PlexusMercury _mercury;
+    private PlexusMercury _mercury;
+    
+    private boolean _showDetails = false;
     //--------------------------------------------------------------------------------------------------------
    public static void main( String[] args )
     throws Exception
@@ -167,7 +173,15 @@ extends AbstractCli
                            OptionBuilder.withLongOpt( "no.test.binaries" )
                            .withDescription( LANG.getMessage( "cli.no.test.binaries" ) ).create( NO_TEST_BINARIES ) 
                         );
-
+        
+        _options.addOption( 
+                           OptionBuilder.withLongOpt( "show.details" )
+                           .withDescription( LANG.getMessage( "cli.show.details" ) ).create( SHOW_DETAILS ) 
+                        );
+        _options.addOption( 
+                           OptionBuilder.withLongOpt( "show.local" )
+                           .withDescription( LANG.getMessage( "cli.show.local.savepoints" ) ).create( SHOW_LOCAL_SAVEPOINTS ) 
+                        );
         _options.addOption( 
                            OptionBuilder.withLongOpt( "show.gui" )
                            .withDescription( LANG.getMessage( "cli.show.gui" ) ).create( SHOW_GUI ) 
@@ -190,10 +204,12 @@ extends AbstractCli
     private void initMonitor( CommandLine cli )
     throws Exception
     {
+        _showDetails = cli.hasOption( SHOW_DETAILS );
+
         String monitorClass = System.getProperty( SYSTEM_PROPERTY_MONITOR );
         
         if( monitorClass == null )
-            _monitor = new DefaultMonitor();
+            _monitor = new DefaultMonitor(false);
         else
             _monitor = (Monitor) Class.forName( monitorClass ).newInstance();
     }
@@ -222,7 +238,8 @@ extends AbstractCli
         if( _mavenHome == null )
             throw new Exception( LANG.getMessage( "cli.no.maven.home", curF.getAbsolutePath(), MAVEN_HOME+"" ) );
         
-        _monitor.message(  LANG.getMessage( "maven.home", _mavenHome ) );
+        if( _showDetails )
+            Util.say( LANG.getMessage( LANG.getMessage( "maven.home", _mavenHome ) ), _monitor );
     }
     //--------------------------------------------------------------------------------------------------------
     private void initDefaults( CommandLine cli )
@@ -265,10 +282,13 @@ extends AbstractCli
                 }
             }
             
-//            _localVersions = getLocalVersions( new File(_mavenHome).getName() );
-//            
-//            if( !Util.isEmpty( _localVersions ) )
-//                _versions.addAll( _localVersions );
+            if( cli.hasOption( SHOW_LOCAL_SAVEPOINTS ) )
+            {
+                _localVersions = getLocalVersions( new File(_mavenHome).getName() );
+                
+                if( !Util.isEmpty( _localVersions ) )
+                    _versions.addAll( _localVersions );
+            }
         }
     }
     //--------------------------------------------------------------------------------------------------------
@@ -459,7 +479,9 @@ extends AbstractCli
 
         File mavenHomeFile = new File( _mavenHome );
         
-        applyConfiguration( mavenHomeFile, cdStream, plexus, _repos, _monitor );
+        applyConfiguration( mavenHomeFile, cdStream, plexus, _repos, _showDetails ? _monitor : null );
+        
+        Util.say( LANG.getMessage( "done" ), _monitor );
 
     }
 
@@ -614,7 +636,8 @@ extends AbstractCli
         LocalRepositoryM2 lr = new LocalRepositoryM2( "local", new File(local), dp );
         _repos.add( lr );
         
-        Util.say( LANG.getMessage( "local.repo", local ), monitor );
+        if( _showDetails )
+            Util.say( LANG.getMessage( "local.repo", local ), monitor );
         
         int count = 0;
         
@@ -632,7 +655,8 @@ extends AbstractCli
                 
                 _remoteRepos.add( rr );
                 
-                Util.say( LANG.getMessage( "remote.repo", r ), monitor );
+                if( _showDetails )
+                    Util.say( LANG.getMessage( "remote.repo", r ), monitor );
             }
         }
         
