@@ -26,6 +26,7 @@ import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.sonatype.jettytestsuite.proxy.FileServerServlet;
 import org.sonatype.jettytestsuite.proxy.StatusServlet;
+import org.sonatype.jettytestsuite.proxy.UnstableFileServerServlet;
 
 /**
  * Provides a proxy server
@@ -162,6 +163,13 @@ public class ControlledServer
     public List<String> addServer( String contextName, final File content )
     {
         FileServerServlet servlet = new FileServerServlet( content );
+        context.addServlet( new ServletHolder( servlet ), "/" + contextName + "/*" );
+        return servlet.getAccessedUrls();
+    }
+
+    public List<String> addServer( String contextName, int numberOfTries, int returnCode, File content )
+    {
+        UnstableFileServerServlet servlet = new UnstableFileServerServlet(numberOfTries, returnCode,  content );
         context.addServlet( new ServletHolder( servlet ), "/" + contextName + "/*" );
         return servlet.getAccessedUrls();
     }
