@@ -129,6 +129,7 @@ extends JFrame
         c.weighty = 1;
         c.gridwidth = 1;
         c.anchor = GridBagConstraints.WEST;
+        _mavenHomeLabel.setForeground( Color.BLUE );
         _updateTab.add( _mavenHomeLabel, c );
 
         c.gridx = 0;
@@ -143,6 +144,7 @@ extends JFrame
         c.weighty = 1;
         c.gridwidth = 1;
         c.anchor = GridBagConstraints.WEST;
+        _currentVersion.setForeground( Color.RED );
         _updateTab.add( _currentVersion, c );
 
         c.gridx = 0;

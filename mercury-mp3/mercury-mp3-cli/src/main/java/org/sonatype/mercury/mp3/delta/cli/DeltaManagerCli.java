@@ -454,134 +454,50 @@ extends AbstractCli
     public void invokePlexusComponent( CommandLine cli, PlexusContainer plexus )
     throws Exception
     {
-        if( cli.hasOption( HELP ))
+        try
         {
-            displayHelp();
-            return;
-        }
-        
-        _mercury = plexus.lookup( PlexusMercury.class );
+            if( cli.hasOption( HELP ))
+            {
+                displayHelp();
+                return;
+            }
+            
+            _mercury = plexus.lookup( PlexusMercury.class );
 
-        if( cli.hasOption( CLOSURE ))
+            if( cli.hasOption( CLOSURE ))
+            {
+                closure( cli );
+                return;
+            }
+
+            initDefaults( cli );
+            
+            if( Util.isEmpty( _cdUrl ) )
+                selectCd( cli, _monitor );
+            
+            if( Util.isEmpty( _cdUrl ) )
+                throw new Exception(LANG.getMessage( "cd.not.selected" ));
+            
+            InputStream cdStream = FileUtil.toStream( _cdUrl );
+            
+            if( cdStream == null )
+                throw new Exception( LANG.getMessage( "cd.stream.is.null", cli.getOptionValue( CD_URL ) ) );
+
+            File mavenHomeFile = new File( _mavenHome );
+            
+            applyConfiguration( mavenHomeFile, cdStream, plexus, _repos, _showDetails ? _monitor : null );
+            
+            Util.say( LANG.getMessage( "done" ), _monitor );
+        }
+        catch ( Exception e )
         {
-            closure( cli );
-            return;
+            Util.say( LANG.getMessage( "error", e.getMessage() ), _monitor );
         }
-
-        InputStream cdStream;
-
-        initDefaults( cli );
-        
-        if( Util.isEmpty( _cdUrl ) )
-            selectCd( cli, _monitor );
-        
-        if( Util.isEmpty( _cdUrl ) )
-            throw new Exception(LANG.getMessage( "cd.not.selected" ));
-        
-        cdStream = FileUtil.toStream( _cdUrl );
-        
-        if( cdStream == null )
-            throw new Exception( LANG.getMessage( "cd.stream.is.null", cli.getOptionValue( CD_URL ) ) );
-
-        File mavenHomeFile = new File( _mavenHome );
-        
-        applyConfiguration( mavenHomeFile, cdStream, plexus, _repos, _showDetails ? _monitor : null );
-        
-        Util.say( LANG.getMessage( "done" ), _monitor );
 
     }
-
-//        else
-//        {
-//            DataManagerGui gui = new DataManagerGui();
-//            
-//            gui._cli = this;
-//            
-//            initDefaults( cli );
-//
-//            gui._mavenHomeLabel.setText( _mavenHome );
-//            gui._mavenHomeField.setText( gui._mavenHomeLabel.getText() );
-//            
-//            List<ArtifactBasicMetadata> versions = _mercury.readVersions( _repos, new ArtifactMetadata("org.apache.maven:maven-cd:(2.99,)::cd") );
-//            
-//            boolean versionsNotFound = true;
-//            
-//            if( !Util.isEmpty( versions ) )
-//            {
-//                TreeSet<ArtifactBasicMetadata> sortedVersions = new TreeSet<ArtifactBasicMetadata>( new MetadataVersionComparator() );
-//
-//                sortedVersions.addAll( versions );
-//                versions.clear();
-//                versions.addAll( sortedVersions );
-//                Collections.reverse( versions );
-//                
-//                for( ArtifactBasicMetadata bmd : versions )
-//                    gui._cdModel.addElement( bmd.getVersion() );
-//
-//                gui._cdList.setSelectedIndex( 1 );
-//                
-//                versionsNotFound = false;
-//            }
-//            
-//            File cdDir = new File( _mavenHome, DeltaManager.CD_DIR );
-//            if( cdDir.exists() )
-//            {
-//                File [] files = cdDir.listFiles( 
-//                                          new FileFilter()
-//                                          {
-//                                            public boolean accept( File pathname )
-//                                            {
-//                                                String name = pathname.getName();
-//                                                
-//                                                if( name.matches( ".*-[0-9]{14}\\."+DeltaManager.CD_EXT ) )
-//                                                    return true;
-//                                                
-//                                                return false;
-//                                            }
-//                                           }
-//                                              );
-//                if( !Util.isEmpty( files ) )
-//                {
-//                    int count = files.length;
-//                    
-//                    TreeSet<String> sortedFiles = new TreeSet<String>();
-//                    for( File f : files )
-//                        sortedFiles.add( f.getName() );
-//                    
-//                    while( count-- > 0 )
-//                    {
-//                        String v = sortedFiles.last();
-//                        
-//                        gui._tsModel.addElement( v );
-//                        
-//                        sortedFiles.remove( v );
-//                    }
-//                    
-//                    if( versionsNotFound )
-//                        gui._tsList.setSelectedIndex( 1 );
-//                }
-//            }
-//            
-//            DefaultComboBoxModel rModel = new DefaultComboBoxModel();
-//            
-//            for( Repository r : _repos )
-//            {
-//                if( r.isLocal() )
-//                    gui._localRepoField.setText( r.getServer().getURL().toString() );
-//                else
-//                    rModel.addElement( r.getServer().getURL().toString() );
-//            }
-//            gui._remoteRepoList.setModel( rModel );
-//            
-//            gui.pack();
-//            gui.setVisible( true );
-//        }
-//    }
     
     protected void update( DataManagerGui gui )
     {
-//System.out.println(gui._mavenHomeLabel.getText() );
-//System.out.println(gui._cdList.getSelectedIndex()+" : "+gui._cdList.getSelectedItem() );
         gui.dispose();
         System.exit( 0 );
     }
