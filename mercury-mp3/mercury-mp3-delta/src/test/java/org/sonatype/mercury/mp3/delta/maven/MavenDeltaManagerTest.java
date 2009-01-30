@@ -174,7 +174,7 @@ public class MavenDeltaManagerTest
         assertTrue( mavenLib.exists() );
         
         // delete timestamped files
-        File cd = new File( _configDir, "apache-maven-3.0-alpha-1/.cd" );
+        File cd = new File( _configDir, "apache-maven-3.0-alpha-1/bin/.cd" );
         
         File [] flist = cd.listFiles();
         for( File f : flist )
@@ -209,7 +209,7 @@ public class MavenDeltaManagerTest
         String ts = TimeUtil.getUTCTimestamp();
 
         FileUtil.copy( new File( "./target/test-classes/apache-maven-3.0-alpha-1.ldl")
-                     , new File("./target/config/apache-maven-3.0-alpha-1/.cd/apache-maven-3.0-alpha-1-"+ts+".ldl"), false );
+                     , new File("./target/config/apache-maven-3.0-alpha-1/bin/.cd/apache-maven-3.0-alpha-1-"+ts+".ldl"), false );
         
         File newArtifact = new File( _configDir, "apache-maven-3.0-alpha-1/lib/maven-core-3.0-alpha-3.jar" );
 

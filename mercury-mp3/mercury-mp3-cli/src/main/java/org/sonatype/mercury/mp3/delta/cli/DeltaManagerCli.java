@@ -239,7 +239,7 @@ extends AbstractCli
             throw new Exception( LANG.getMessage( "cli.no.maven.home", curF.getAbsolutePath(), MAVEN_HOME+"" ) );
         
         if( _showDetails )
-            Util.say( LANG.getMessage( LANG.getMessage( "maven.home", _mavenHome ) ), _monitor );
+            Util.say( LANG.getMessage( "maven.home", _mavenHome ), _monitor );
     }
     //--------------------------------------------------------------------------------------------------------
     private void initDefaults( CommandLine cli )

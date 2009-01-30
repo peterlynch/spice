@@ -33,7 +33,7 @@ public interface DeltaManager
 
     public static final String LDL_EXT = "ldl";
 
-    public static final String CD_DIR = ".cd";
+    public static final String CD_DIR = "bin/.cd";
 
     /**
      * container type
