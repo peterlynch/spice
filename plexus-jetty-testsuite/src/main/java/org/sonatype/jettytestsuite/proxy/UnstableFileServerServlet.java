@@ -30,6 +30,7 @@ public class UnstableFileServerServlet
     {
         if ( numberOfTries > 0 )
         {
+            numberOfTries--;
             res.sendError( returnCode );
             return;
         }
