@@ -42,6 +42,8 @@ public class FileServerServlet
             return;
         }
 
+        addUri( req );
+
         InputStream input = new FileInputStream( file );
         OutputStream output = res.getOutputStream();
         IOUtil.copy( input, output );

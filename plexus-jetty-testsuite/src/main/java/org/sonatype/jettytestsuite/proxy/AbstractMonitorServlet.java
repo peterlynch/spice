@@ -39,13 +39,21 @@ public abstract class AbstractMonitorServlet
         HttpServletResponse res = (HttpServletResponse) response;
 
         String uri = ( (Request) req ).getUri().toString();
-
         if ( !uri.endsWith( ".sha1" ) && !uri.endsWith( ".md5" ) )
         {
             accessedUrls.add( uri );
         }
 
         service( req, res );
+    }
+
+    protected void addUri( HttpServletRequest req )
+    {
+        String uri = ( (Request) req ).getUri().toString();
+        if ( !accessedUrls.contains( uri ) )
+        {
+            accessedUrls.add( uri );
+        }
     }
 
     public abstract void service( HttpServletRequest req, HttpServletResponse res )
