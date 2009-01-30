@@ -104,6 +104,8 @@ extends AbstractCli
     
     private static final char NO_TEST_BINARIES = 'n';
     
+    private static final char VERSION_REPO = 'r';
+    
     private static final char HELP = 'h';
     
     private static final char _TEST = 't';
@@ -167,6 +169,10 @@ extends AbstractCli
         _options.addOption( 
                            OptionBuilder.withLongOpt( "closure" ).hasArg()
                            .withDescription( LANG.getMessage( "cli.closure" ) ).create( CLOSURE ) 
+                        );
+        _options.addOption( 
+                           OptionBuilder.withLongOpt( "ver.repo" ).hasArg()
+                           .withDescription( LANG.getMessage( "cli.ver.repo" ) ).create( VERSION_REPO ) 
                         );
 
         _options.addOption( 
@@ -260,7 +266,7 @@ extends AbstractCli
         
         settingsFile = new File( _settings );
 
-        setRepositories( settingsFile, _monitor );
+        setRepositories( cli, settingsFile, _monitor );
         
         if( Util.isEmpty( _cdUrl ) )
         {
@@ -627,7 +633,7 @@ extends AbstractCli
         return noVersion;
     }
     //--------------------------------------------------------------------------------------------------------
-    private List<Repository> getDefaultRepositories( Monitor monitor, String local, String... remote )
+    private List<Repository> getDefaultRepositories( CommandLine cli, Monitor monitor, String local, String... remote )
     throws Exception
     {
         DependencyProcessor dp = new MavenDependencyProcessor();
@@ -641,10 +647,10 @@ extends AbstractCli
         
         int count = 0;
         
+        _remoteRepos = new ArrayList<Repository>( remote.length );
+        
         if( remote != null)
         {
-            _remoteRepos = new ArrayList<Repository>( remote.length );
-            
             for( String r : remote )
             {
                 Server server = new Server( "central"+(count++), new URL(r) );
@@ -664,12 +670,18 @@ extends AbstractCli
     }
     //--------------------------------------------------------------------------------------------------------
     @SuppressWarnings("unchecked")
-    private void setRepositories( File settingsFile, Monitor monitor )
+    private void setRepositories( CommandLine cli, File settingsFile, Monitor monitor )
     throws Exception
     {
+        
+        String versionsRepo = cli.hasOption( VERSION_REPO ) ? cli.getOptionValue( VERSION_REPO ) : null;
+        
         if( settingsFile == null || ! settingsFile.exists() )
         {
-            getDefaultRepositories( monitor, DEFAULT_LOCAL_REPO, DEFAULT_CENTRAL );
+            if( versionsRepo == null )
+                getDefaultRepositories( cli, monitor, DEFAULT_LOCAL_REPO, DEFAULT_CENTRAL );
+            else
+                getDefaultRepositories( cli, monitor, DEFAULT_LOCAL_REPO, versionsRepo, DEFAULT_CENTRAL );
             return;
         }
         
@@ -691,6 +703,9 @@ extends AbstractCli
         
         List<String> repoUrls = new ArrayList<String>(8);
         
+        if( versionsRepo != null)
+            repoUrls.add( versionsRepo );
+        
         for( Profile p : profiles )
         {
             List<org.apache.maven.settings.Repository> repositories = p.getRepositories();
@@ -702,7 +717,8 @@ extends AbstractCli
                 String layout = r.getLayout();
                 
                 if( layout == null || "default".equals( layout ) )
-                    repoUrls.add( r.getUrl() );
+                    if( ! repoUrls.contains( r.getUrl() ) )
+                        repoUrls.add( r.getUrl() );
             }
         }
         
@@ -711,7 +727,7 @@ extends AbstractCli
         
         String local = Util.nvlS( settings.getLocalRepository(), DEFAULT_LOCAL_REPO );
         
-        getDefaultRepositories( monitor, local, repoUrls.toArray( new String[ repoUrls.size() ] ) );
+        getDefaultRepositories( cli, monitor, local, repoUrls.toArray( new String[ repoUrls.size() ] ) );
     }
     //--------------------------------------------------------------------------------------------------------
     /**
@@ -729,7 +745,7 @@ extends AbstractCli
         
         settingsFile = new File( _settings );
 
-        setRepositories( settingsFile, _monitor );
+        setRepositories( cli, settingsFile, _monitor );
         
         DependencyUtil du = new DependencyUtil( _mercury );
         
