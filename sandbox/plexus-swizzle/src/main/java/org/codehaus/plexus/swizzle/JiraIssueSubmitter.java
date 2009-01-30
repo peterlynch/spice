@@ -67,7 +67,7 @@ public class JiraIssueSubmitter
         initialize();
     }
     
-    public void submitIssue( IssueSubmissionRequest request )
+    public IssueSubmissionResult submitIssue( IssueSubmissionRequest request )
         throws IssueSubmissionException
     {
         Project project = jira.getProject( request.getProjectId() );
@@ -103,6 +103,8 @@ public class JiraIssueSubmitter
         {
             attachProblemReport( addedIssue.getId(), request.getProblemReportBundle() );
         }
+        
+        return new IssueSubmissionResult( addedIssue.getLink() );
     }
 
     private void validateIssueSubmissionRequest( IssueSubmissionRequest request )
