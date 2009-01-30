@@ -51,6 +51,7 @@ public class JiraReporterTest
         r.setReporter( "sonatype_problem_reporting" );
         r.setProblemReportBundle( new File( getBasedir(), "src/test/bundle.zip" ) );
         
-        is.submitIssue( r );
+        IssueSubmissionResult result = is.submitIssue( r );
+        assertNotNull( result.getIssueUrl() );
     }
 }
