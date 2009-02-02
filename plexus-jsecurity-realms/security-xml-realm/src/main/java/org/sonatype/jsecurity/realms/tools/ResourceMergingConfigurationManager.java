@@ -336,13 +336,14 @@ public class ResourceMergingConfigurationManager
         {        
             for ( StaticSecurityResource resource : staticResources )
             {
-                Configuration existing = resource.getConfiguration();
+                Configuration config = resource.getConfiguration();
                 
-                if ( existing != null )
+                if ( config != null )
                 {
-                    appendConfig( existing );
+                    appendConfig( config );
                 }
-                else
+                
+                if ( resource.getResourcePath() != null )
                 {
                     Reader fr = null;
                     InputStream is = null;
