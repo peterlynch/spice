@@ -26,7 +26,7 @@ import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.sonatype.plexus.components.cipher.DefaultPlexusCipher;
 import org.sonatype.plexus.components.cipher.PlexusCipher;
 import org.sonatype.plexus.components.cipher.PlexusCipherException;
-import org.sonatype.plexus.components.sec.dispatcher.model.Sec;
+import org.sonatype.plexus.components.sec.dispatcher.model.SettingsSecurity;
 
 /**
  * @plexus.component
@@ -77,7 +77,7 @@ implements SecDispatcher
             
             String res = null;
 
-            Sec sec = getSec();
+            SettingsSecurity sec = getSec();
             
             if( attr == null || attr.get( "type" ) == null )
             {
@@ -179,13 +179,13 @@ implements SecDispatcher
         return _cipher.isEncryptedString( str );
     }
     //----------------------------------------------------------------------------
-    private Sec getSec()
+    private SettingsSecurity getSec()
     throws SecDispatcherException
     {
         String location = System.getProperty( SYSTEM_PROPERTY_SEC_LOCATION
                                             , System.getProperty( "user.home" ) + "/.m2/"+SECURITY_SETTINGS
                                             );
-        Sec sec = SecUtil.read( location, true );
+        SettingsSecurity sec = SecUtil.read( location, true );
         
         if( sec == null )
             throw new SecDispatcherException( "cannot retrieve master password. Please check that "+location+" exists and has data" );
@@ -193,7 +193,7 @@ implements SecDispatcher
         return sec;
     }
     //----------------------------------------------------------------------------
-    private String getMaster( Sec sec )
+    private String getMaster( SettingsSecurity sec )
     throws SecDispatcherException
     {
         String master = sec.getMaster();
@@ -252,7 +252,7 @@ implements SecDispatcher
             System.out.println( dc.encryptAndDecorate( pass, DefaultSecDispatcher.SYSTEM_PROPERTY_SEC_LOCATION ) );
         else
         {
-            Sec sec = dd.getSec();
+            SettingsSecurity sec = dd.getSec();
             System.out.println( dc.encryptAndDecorate( pass, dd.getMaster(sec) ) );
         }
     }

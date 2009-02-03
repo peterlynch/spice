@@ -26,7 +26,7 @@ import java.util.Map;
 
 import org.sonatype.plexus.components.sec.dispatcher.model.Config;
 import org.sonatype.plexus.components.sec.dispatcher.model.ConfigProperty;
-import org.sonatype.plexus.components.sec.dispatcher.model.Sec;
+import org.sonatype.plexus.components.sec.dispatcher.model.SettingsSecurity;
 import org.sonatype.plexus.components.sec.dispatcher.model.io.xpp3.SecurityConfigurationXpp3Reader;
 
 /**
@@ -40,7 +40,7 @@ public class SecUtil
 {
     public static final String [] URL_PROTOCOLS = new String [] {"http://","https://","file://","dav://","davs://","webdav://","webdavs://","dav+http://","dav+https://"};
 
-    public static Sec read( String location, boolean cycle )
+    public static SettingsSecurity read( String location, boolean cycle )
     throws SecDispatcherException
     {
         if( location == null )
@@ -52,7 +52,7 @@ public class SecUtil
         {
             in = toStream( location );
         
-            Sec sec = new SecurityConfigurationXpp3Reader().read( in );
+            SettingsSecurity sec = new SecurityConfigurationXpp3Reader().read( in );
             
             in.close();
             
@@ -91,7 +91,7 @@ public class SecUtil
       return new FileInputStream( new File(resource) );
     }
     //---------------------------------------------------------------------------------------------------------------
-    public static Map getConfig( Sec sec, String name )
+    public static Map getConfig( SettingsSecurity sec, String name )
     {
         if( name == null )
             return null;

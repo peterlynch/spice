@@ -14,7 +14,7 @@
 -->
 
 <model>
-  <id>sec</id>
+  <id>settings-security</id>
   
   <name>SecurityConfiguration</name>
   <description>SecurityConfiguration</description>
@@ -29,7 +29,7 @@
   <classes>
 
     <class rootElement="true">
-      <name>Sec</name>
+      <name>SettingsSecurity</name>
       <version>1.0.0</version>
       <fields>
 

@@ -23,7 +23,7 @@ import junit.framework.TestCase;
 import org.sonatype.plexus.components.cipher.DefaultPlexusCipher;
 import org.sonatype.plexus.components.sec.dispatcher.model.Config;
 import org.sonatype.plexus.components.sec.dispatcher.model.ConfigProperty;
-import org.sonatype.plexus.components.sec.dispatcher.model.Sec;
+import org.sonatype.plexus.components.sec.dispatcher.model.SettingsSecurity;
 import org.sonatype.plexus.components.sec.dispatcher.model.io.xpp3.SecurityConfigurationXpp3Writer;
 
 /**
@@ -57,7 +57,7 @@ extends TestCase
 //System.out.println(_clear+" -> "+c.encrypt64( _clear, "testtest" ));
 
         
-        Sec sec = new Sec();
+        SettingsSecurity sec = new SettingsSecurity();
         
         sec.setRelocation( "./target/sec1.xml" );
         new SecurityConfigurationXpp3Writer().write( new FileWriter("./target/sec.xml"), sec );
@@ -81,7 +81,7 @@ extends TestCase
     public void testRead()
     throws Exception
     {
-        Sec sec = SecUtil.read( "./target/sec.xml", true );
+        SettingsSecurity sec = SecUtil.read( "./target/sec.xml", true );
 
         assertNotNull( sec );
 
