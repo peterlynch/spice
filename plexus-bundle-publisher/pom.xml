@@ -10,7 +10,7 @@
   <groupId>org.sonatype.plexus</groupId>
   <artifactId>plexus-bundle-publisher</artifactId>
   <name>Plexus Bundle Publisher Component</name>
-  <version>1.0</version>
+  <version>1.1-SNAPSHOT</version>
 
   <build>
     <plugins>
@@ -63,10 +63,4 @@
 
 
   </dependencies>
-
-  <scm>
-    <connection>scm:svn:http://svn.sonatype.org/spice/tags/plexus-bundle-publisher-1.0</connection>
-    <developerConnection>scm:svn:https://svn.sonatype.org/spice/tags/plexus-bundle-publisher-1.0</developerConnection>
-    <url>http://svn.sonatype.org/spice/tags/plexus-bundle-publisher-1.0</url>
-  </scm>
 </project>
