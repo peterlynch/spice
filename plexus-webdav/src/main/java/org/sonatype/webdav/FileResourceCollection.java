@@ -12,6 +12,8 @@
  */
 package org.sonatype.webdav;
 
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
 import org.codehaus.plexus.util.IOUtil;
 
 import java.io.File;
@@ -29,13 +31,20 @@ import java.util.Vector;
  */
 public class FileResourceCollection
     extends AbstractResourceCollection
+    implements Initializable
 {
     private File dir;
-
-    public FileResourceCollection()
+    
+    /**
+     * @plexus.configuration default-value="target/webdav"
+     */
+    private String rootPath = "target/webdav";
+    
+    public void initialize()
+        throws InitializationException
     {
-        this( new File( "target/webdav" ).getAbsoluteFile(), "/" );
-
+        this.dir = new File( rootPath );
+        
         /* initialise the datastore on first creation */
         if ( !dir.exists() )
         {
@@ -43,10 +52,13 @@ public class FileResourceCollection
         }
     }
 
+    public FileResourceCollection()
+    {
+    }
+
     public FileResourceCollection( File root, String id )
     {
         super( id );
-
         this.dir = root;
     }
 

@@ -185,7 +185,7 @@ public class WebdavServlet
         }
         catch ( Exception e )
         {
-            log( "WebdavServlet.init: error reading secret from " + value );
+            log( "WebdavServlet.init: error reading resource collection hint from " + value );
             resourceCollectionHint = "file";
         }
 
