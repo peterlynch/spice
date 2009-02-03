@@ -18,7 +18,6 @@
     <modules>
         <module>plexus-delegating-realm</module>
         <module>security-xml-realm</module>
-        <module>method-realm</module>
     </modules>
     <properties>
         <plexus-maven-plugin.version>1.3.8</plexus-maven-plugin.version>

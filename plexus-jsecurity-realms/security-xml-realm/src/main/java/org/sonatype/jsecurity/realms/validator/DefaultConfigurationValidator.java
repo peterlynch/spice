@@ -24,11 +24,11 @@ import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.jsecurity.locators.SecurityXmlPlexusUserLocator;
 import org.sonatype.jsecurity.model.CPrivilege;
-import org.sonatype.jsecurity.model.CProperty;
 import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUser;
 import org.sonatype.jsecurity.model.CUserRoleMapping;
 import org.sonatype.jsecurity.model.Configuration;
+import org.sonatype.jsecurity.realms.privileges.PrivilegeDescriptor;
 
 @Component( role = ConfigurationValidator.class )
 public class DefaultConfigurationValidator
@@ -37,6 +37,9 @@ public class DefaultConfigurationValidator
 {
     @Requirement
     private ConfigurationIdGenerator idGenerator;
+    
+    @Requirement(role=PrivilegeDescriptor.class)
+    private List<PrivilegeDescriptor> privilegeDescriptors;
 
     public ValidationResponse validateModel( ValidationRequest request )
     {
@@ -144,166 +147,16 @@ public class DefaultConfigurationValidator
         {
             response.setContext( ctx );
         }
-
-        ValidationContext context = response.getContext();
-
-        List<String> existingIds = context.getExistingPrivilegeIds();
-
-        if ( existingIds == null )
+        
+        for ( PrivilegeDescriptor descriptor : privilegeDescriptors )
         {
-            context.addExistingPrivilegeIds();
-
-            existingIds = context.getExistingPrivilegeIds();
-        }
-
-        if ( !update
-            && ( StringUtils.isEmpty( privilege.getId() ) || "0".equals( privilege.getId() ) || ( existingIds
-                .contains( privilege.getId() ) ) ) )
-        {
-            String newId = idGenerator.generateId();
-
-            ValidationMessage message = new ValidationMessage( "id", "Fixed wrong privilege ID from '"
-                + privilege.getId() + "' to '" + newId + "'" );
-            response.addValidationWarning( message );
-
-            privilege.setId( newId );
-
-            response.setModified( true );
-        }
-
-        if ( StringUtils.isEmpty( privilege.getType() ) )
-        {
-            ValidationMessage message = new ValidationMessage(
-                "type",
-                "Cannot have an empty type",
-                "Privilege cannot have an invalid type" );
-
-            response.addValidationError( message );
-        }
-        else
-        {
-            // HACK ALERT
-            // This validation is exclusive to MethodRealm, should really be done elsewhere
-            if ( privilege.getType().equals( "method" ) || privilege.getType().equals( "target" ) )
+            ValidationResponse resp = descriptor.validatePrivilege( privilege, ctx, update );
+            
+            if ( resp != null )
             {
-                // validate method
-                // method is of form ('*' | 'read' | 'create' | 'update' | 'delete' [, method]* )
-                // so, 'read' method is correct, but so is also 'create,update,delete'
-                // '*' means ALL POSSIBLE value for this "field"
-                String method = null;
-                String permission = null;
-                String repositoryId = null;
-                String repositoryTargetId = null;
-                String repositoryGroupId = null;
-
-                for ( CProperty property : (List<CProperty>) privilege.getProperties() )
-                {
-                    if ( property.getKey().equals( "method" ) )
-                    {
-                        method = property.getValue();
-                    }
-                    else if ( property.getKey().equals( "permission" ) )
-                    {
-                        permission = property.getValue();
-                    }
-                    else if ( property.getKey().equals( "repositoryId" ) )
-                    {
-                        repositoryId = property.getValue();
-                    }
-                    else if ( property.getKey().equals( "repositoryTargetId" ) )
-                    {
-                        repositoryTargetId = property.getValue();
-                    }
-                    else if ( property.getKey().equals( "repositoryGroupId" ) )
-                    {
-                        repositoryGroupId = property.getValue();
-                    }
-                }
-
-                if ( privilege.getType().equals( "method" ) )
-                {
-                    if ( StringUtils.isEmpty( permission ) )
-                    {
-                        response.addValidationError( "Permission cannot be empty on a privilege!" );
-                    }
-                }
-                else if ( privilege.getType().equals( "target" ) )
-                {
-                    if ( StringUtils.isEmpty( repositoryTargetId ) )
-                    {
-                        ValidationMessage message = new ValidationMessage( "repositoryTargetId", "Privilege ID '"
-                            + privilege.getId() + "' requires a repositoryTargetId.", "Repository Target is required." );
-                        response.addValidationError( message );
-                    }
-
-                    if ( !StringUtils.isEmpty( repositoryId ) && !StringUtils.isEmpty( repositoryGroupId ) )
-                    {
-                        ValidationMessage message = new ValidationMessage(
-                            "repositoryId",
-                            "Privilege ID '"
-                                + privilege.getId()
-                                + "' cannot be assigned to both a group and repository."
-                                + "  Either assign a group, a repository or neither (which assigns to ALL repositories).",
-                            "Cannot select both a Repository and Repository Group." );
-                        response.addValidationError( message );
-                    }
-                }
-
-                if ( StringUtils.isEmpty( method ) )
-                {
-                    response.addValidationError( "Method cannot be empty on a privilege!" );
-                }
-                else
-                {
-                    String[] methods = null;
-
-                    if ( method.contains( "," ) )
-                    {
-                        // it is a list of methods
-                        methods = method.split( "," );
-                    }
-                    else
-                    {
-                        // it is a single method
-                        methods = new String[] { method };
-                    }
-
-                    boolean valid = true;
-
-                    for ( String singlemethod : methods )
-                    {
-                        if ( !"create".equals( singlemethod ) && !"delete".equals( singlemethod )
-                            && !"read".equals( singlemethod ) && !"update".equals( singlemethod )
-                            && !"*".equals( singlemethod ) )
-                        {
-                            valid = false;
-
-                            break;
-                        }
-                    }
-
-                    if ( !valid )
-                    {
-                        ValidationMessage message = new ValidationMessage(
-                            "method",
-                            "Privilege ID '" + privilege.getId()
-                                + "' Method is wrong! (Allowed methods are: create, delete, read and update)",
-                            "Invalid method selected." );
-                        response.addValidationError( message );
-                    }
-
-                }
+                response.append( resp );
             }
         }
-
-        if ( StringUtils.isEmpty( privilege.getName() ) )
-        {
-            ValidationMessage message = new ValidationMessage( "name", "Privilege ID '" + privilege.getId()
-                + "' requires a name.", "Name is required." );
-            response.addValidationError( message );
-        }
-
-        existingIds.add( privilege.getId() );
 
         return response;
     }

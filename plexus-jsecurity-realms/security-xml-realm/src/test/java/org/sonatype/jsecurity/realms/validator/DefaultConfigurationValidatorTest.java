@@ -90,9 +90,9 @@ public class DefaultConfigurationValidatorTest
         
         assertTrue( response.isModified() );
     
-        assertEquals( 3, response.getValidationWarnings().size() );
+        assertEquals( 2, response.getValidationWarnings().size() );
         
-        assertEquals( 4, response.getValidationErrors().size() );
+        assertEquals( 2, response.getValidationErrors().size() );
     }
     
     public void testRoles()

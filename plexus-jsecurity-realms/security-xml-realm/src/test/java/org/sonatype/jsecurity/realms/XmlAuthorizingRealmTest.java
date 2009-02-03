@@ -22,6 +22,9 @@ import org.jsecurity.authz.Permission;
 import org.jsecurity.authz.permission.WildcardPermission;
 import org.jsecurity.realm.Realm;
 import org.jsecurity.subject.SimplePrincipalCollection;
+import org.sonatype.jsecurity.realms.privileges.application.ApplicationPrivilegeDescriptor;
+import org.sonatype.jsecurity.realms.privileges.application.ApplicationPrivilegeMethodPropertyDescriptor;
+import org.sonatype.jsecurity.realms.privileges.application.ApplicationPrivilegePermissionPropertyDescriptor;
 import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
 import org.sonatype.jsecurity.realms.tools.DefaultConfigurationManager;
 import org.sonatype.jsecurity.realms.tools.InvalidConfigurationException;
@@ -30,7 +33,7 @@ import org.sonatype.jsecurity.realms.tools.dao.SecurityProperty;
 import org.sonatype.jsecurity.realms.tools.dao.SecurityRole;
 import org.sonatype.jsecurity.realms.tools.dao.SecurityUser;
 
-public class MethodRealmTest
+public class XmlAuthorizingRealmTest
     extends PlexusTestCase
 {
     public static final String PLEXUS_SECURITY_XML_FILE = "security-xml-file";
@@ -39,7 +42,7 @@ public class MethodRealmTest
     
     private File configFile = new File( SECURITY_CONFIG_FILE_PATH );
     
-    private XmlMethodAuthorizingRealm realm;
+    private XmlAuthorizingRealm realm;
     
     private DefaultConfigurationManager configurationManager;
     
@@ -57,7 +60,7 @@ public class MethodRealmTest
     {
         super.setUp();
         
-        realm = ( XmlMethodAuthorizingRealm ) lookup( Realm.class, "XmlMethodAuthorizingRealm" );
+        realm = ( XmlAuthorizingRealm ) lookup( Realm.class, "XmlAuthorizingRealm" );
         
         configurationManager = ( DefaultConfigurationManager ) lookup( ConfigurationManager.class );
         
@@ -98,17 +101,17 @@ public class MethodRealmTest
     private void buildTestAuthorizationConfig() throws InvalidConfigurationException
     {
         SecurityProperty permissionProp = new SecurityProperty();
-        permissionProp.setKey( "permission" );
+        permissionProp.setKey( ApplicationPrivilegePermissionPropertyDescriptor.ID );
         permissionProp.setValue( "app:config" );
         
         SecurityProperty methodProp = new SecurityProperty();
-        methodProp.setKey( "method" );
+        methodProp.setKey( ApplicationPrivilegeMethodPropertyDescriptor.ID );
         methodProp.setValue( "read" );
         
         SecurityPrivilege priv = new SecurityPrivilege();
         priv.setId( "priv" );
         priv.setName( "somepriv" );
-        priv.setType( "method" );
+        priv.setType( ApplicationPrivilegeDescriptor.TYPE );
         priv.setDescription( "somedescription" );
         priv.addProperty( permissionProp );
         priv.addProperty( methodProp );

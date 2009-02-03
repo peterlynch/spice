@@ -1,22 +1,12 @@
-/**
- * Copyright (c) 2008 Sonatype, Inc. All rights reserved.
- *
- * This program is licensed to you under the Apache License Version 2.0,
- * and you may not use this file except in compliance with the Apache License Version 2.0.
- * You may obtain a copy of the Apache License Version 2.0 at http://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the Apache License Version 2.0 is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
- */
 package org.sonatype.jsecurity.realms;
 
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.jsecurity.authc.AuthenticationException;
 import org.jsecurity.authc.AuthenticationInfo;
@@ -26,6 +16,7 @@ import org.jsecurity.authz.AuthorizationException;
 import org.jsecurity.authz.AuthorizationInfo;
 import org.jsecurity.authz.Permission;
 import org.jsecurity.authz.SimpleAuthorizationInfo;
+import org.jsecurity.authz.permission.WildcardPermission;
 import org.jsecurity.cache.HashtableCache;
 import org.jsecurity.realm.AuthorizingRealm;
 import org.jsecurity.realm.Realm;
@@ -33,11 +24,15 @@ import org.jsecurity.subject.PrincipalCollection;
 import org.sonatype.jsecurity.locators.users.PlexusRole;
 import org.sonatype.jsecurity.locators.users.PlexusUser;
 import org.sonatype.jsecurity.locators.users.PlexusUserManager;
+import org.sonatype.jsecurity.model.CPrivilege;
 import org.sonatype.jsecurity.model.CRole;
+import org.sonatype.jsecurity.realms.privileges.PrivilegeDescriptor;
 import org.sonatype.jsecurity.realms.tools.ConfigurationManager;
+import org.sonatype.jsecurity.realms.tools.NoSuchPrivilegeException;
 import org.sonatype.jsecurity.realms.tools.NoSuchRoleException;
 
-public abstract class AbstractXmlAuthorizingRealm
+@Component( role = Realm.class, hint = "XmlAuthorizingRealm" )
+public class XmlAuthorizingRealm
     extends AuthorizingRealm
     implements Realm
 {
@@ -46,8 +41,11 @@ public abstract class AbstractXmlAuthorizingRealm
     
     @Requirement(role=PlexusUserManager.class, hint="additinalRoles")
     private PlexusUserManager userManager;
+    
+    @Requirement(role=PrivilegeDescriptor.class)
+    private List<PrivilegeDescriptor> privilegeDescriptors;
 
-    public AbstractXmlAuthorizingRealm()
+    public XmlAuthorizingRealm()
     {
         setCredentialsMatcher( new Sha1CredentialsMatcher() );
         setAuthorizationCache( new HashtableCache( null ) );
@@ -56,7 +54,7 @@ public abstract class AbstractXmlAuthorizingRealm
     @Override
     public String getName()
     {
-        return AbstractXmlAuthorizingRealm.class.getName();
+        return XmlAuthorizingRealm.class.getName();
     }
 
     @Override
@@ -137,7 +135,29 @@ public abstract class AbstractXmlAuthorizingRealm
         return info;
     }
 
-    protected abstract Set<Permission> getPermissions( String privilegeId );
+    protected Set<Permission> getPermissions( String privilegeId )
+    {
+        try
+        {
+            CPrivilege privilege = getConfigurationManager().readPrivilege( privilegeId );
+            
+            for ( PrivilegeDescriptor descriptor : privilegeDescriptors )
+            {
+                String permission = descriptor.buildPermission( privilege );
+                
+                if ( permission != null )
+                {
+                    return Collections.singleton( (Permission) new WildcardPermission( permission ) );
+                }
+            }
+            
+            return Collections.emptySet();
+        }
+        catch ( NoSuchPrivilegeException e )
+        {
+            return Collections.emptySet();
+        }
+    }
 
     protected ConfigurationManager getConfigurationManager()
     {

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- This config will cause 4 validation error -->
-<!-- This config will cause 3 validation warnings -->
+<!-- This config will cause 2 validation error -->
+<!-- This config will cause 2 validation warnings -->
 
 <security>
     <version>1.0.0</version>    
     <privileges>
-      <!-- no id -->
-      <!-- no name -->
-      <!-- no type -->
+      <!-- no id (Warning)-->
+      <!-- no name (Error)-->
+      <!-- no type (Error)-->
       <privilege>
       </privilege>
         
@@ -31,55 +31,32 @@
       <privilege>
         <id>5</id>
         <name>priv</name>
-        <type>target</type>
+        <type>method</type>
         <properties>
           <property>
             <key>method</key>
             <value>read</value>
           </property>
           <property>
-            <key>repositoryTargetId</key>
-            <value>45</value>
+            <key>permission</key>
+            <value>/some/path/</value>
           </property>
         </properties>
       </privilege>
       
-      <!-- duplicate id -->
-      <!-- invalid repository target id -->
-      <!-- invalid repository AND group assignment -->
+      <!-- duplicate id (Warning)-->
       <privilege>
         <id>5</id>
         <name>priv</name>
-        <type>target</type>
+        <type>method</type>
         <properties>
           <property>
             <key>method</key>
             <value>create</value>
           </property>
           <property>
-            <key>repositoryId</key>
-            <value>5</value>
-          </property>
-          <property>
-            <key>repositoryGroupId</key>
-            <value>4</value>
-          </property>
-        </properties>
-      </privilege>
-      
-      <!-- duplicate id across privilege types -->
-      <privilege>
-        <id>25</id>
-        <name>priv</name>
-        <type>target</type>
-        <properties>
-          <property>
-            <key>method</key>
-            <value>create</value>
-          </property>
-          <property>
-            <key>repositoryTargetId</key>
-            <value>45</value>
+            <key>permission</key>
+            <value>/some/path/</value>
           </property>
         </properties>
       </privilege>

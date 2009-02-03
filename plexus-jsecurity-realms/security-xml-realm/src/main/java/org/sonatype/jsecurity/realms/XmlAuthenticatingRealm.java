@@ -94,7 +94,7 @@ public class XmlAuthenticatingRealm
         return null;
     }
 
-    protected ConfigurationManager getConfigurationManager()
+    public ConfigurationManager getConfigurationManager()
     {
         return configuration;
     }

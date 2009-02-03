@@ -195,7 +195,7 @@ public class WebPlexusSecurity
             }
         }
 
-        throw new AuthenticationException( "User: '"+ token.getPrincipal() + " could be authenticated." );
+        throw new AuthenticationException( "User: '"+ token.getPrincipal() + "' could not be authenticated." );
     }
 
     public boolean supports( AuthenticationToken token )
