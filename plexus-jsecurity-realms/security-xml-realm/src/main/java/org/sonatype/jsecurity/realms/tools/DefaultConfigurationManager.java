@@ -41,6 +41,7 @@ import org.sonatype.jsecurity.model.CUserRoleMapping;
 import org.sonatype.jsecurity.model.Configuration;
 import org.sonatype.jsecurity.model.io.xpp3.SecurityConfigurationXpp3Reader;
 import org.sonatype.jsecurity.model.io.xpp3.SecurityConfigurationXpp3Writer;
+import org.sonatype.jsecurity.realms.privileges.PrivilegeDescriptor;
 import org.sonatype.jsecurity.realms.tools.dao.SecurityPrivilege;
 import org.sonatype.jsecurity.realms.tools.dao.SecurityRole;
 import org.sonatype.jsecurity.realms.tools.dao.SecurityUser;
@@ -60,6 +61,9 @@ public class DefaultConfigurationManager
 
     @Requirement
     private ConfigurationValidator validator;
+    
+    @Requirement( role = PrivilegeDescriptor.class )
+    private List<PrivilegeDescriptor> privilegeDescriptors;
 
     /**
      * This will hold the current configuration in memory, to reload, will need to set this to null
@@ -781,5 +785,10 @@ public class DefaultConfigurationManager
         }
 
         return context;
+    }
+    
+    public List<PrivilegeDescriptor> listPrivilegeDescriptors()
+    {
+        return Collections.unmodifiableList( privilegeDescriptors );
     }
 }

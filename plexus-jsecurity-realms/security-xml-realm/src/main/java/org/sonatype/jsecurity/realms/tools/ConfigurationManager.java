@@ -12,17 +12,14 @@
  */
 package org.sonatype.jsecurity.realms.tools;
 
-import java.util.Collections;
 import java.util.List;
 
-import org.sonatype.jsecurity.model.CUserRoleMapping;
+import org.sonatype.jsecurity.realms.privileges.PrivilegeDescriptor;
 import org.sonatype.jsecurity.realms.tools.dao.SecurityPrivilege;
 import org.sonatype.jsecurity.realms.tools.dao.SecurityRole;
 import org.sonatype.jsecurity.realms.tools.dao.SecurityUser;
 import org.sonatype.jsecurity.realms.tools.dao.SecurityUserRoleMapping;
 import org.sonatype.jsecurity.realms.validator.ValidationContext;
-import org.sonatype.jsecurity.realms.validator.ValidationMessage;
-import org.sonatype.jsecurity.realms.validator.ValidationResponse;
 
 public interface ConfigurationManager
 {
@@ -46,6 +43,12 @@ public interface ConfigurationManager
      * @return
      */
     List<SecurityPrivilege> listPrivileges();
+    
+    /**
+     * Retrieve all descriptors of available privileges
+     * @return
+     */
+    List<PrivilegeDescriptor> listPrivilegeDescriptors();
     
     /**
      * Create a new user.

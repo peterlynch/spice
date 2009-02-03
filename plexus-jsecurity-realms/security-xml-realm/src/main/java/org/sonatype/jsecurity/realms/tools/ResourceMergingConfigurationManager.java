@@ -29,6 +29,7 @@ import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUser;
 import org.sonatype.jsecurity.model.Configuration;
 import org.sonatype.jsecurity.model.io.xpp3.SecurityConfigurationXpp3Reader;
+import org.sonatype.jsecurity.realms.privileges.PrivilegeDescriptor;
 import org.sonatype.jsecurity.realms.tools.dao.SecurityPrivilege;
 import org.sonatype.jsecurity.realms.tools.dao.SecurityRole;
 import org.sonatype.jsecurity.realms.tools.dao.SecurityUser;
@@ -507,5 +508,10 @@ public class ResourceMergingConfigurationManager
         
         // The static config can't be updated, so delegate to xml file
         manager.updateUser( user, context );
+    }
+    
+    public List<PrivilegeDescriptor> listPrivilegeDescriptors()
+    {
+        return manager.listPrivilegeDescriptors();
     }
 }
