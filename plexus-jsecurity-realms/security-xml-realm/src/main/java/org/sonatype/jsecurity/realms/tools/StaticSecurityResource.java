@@ -19,4 +19,6 @@ public interface StaticSecurityResource
     String getResourcePath();
     
     Configuration getConfiguration();
+    
+    boolean isDirty();
 }

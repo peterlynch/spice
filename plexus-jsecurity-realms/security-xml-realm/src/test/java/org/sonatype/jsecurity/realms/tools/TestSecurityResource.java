@@ -15,6 +15,7 @@ package org.sonatype.jsecurity.realms.tools;
 import org.sonatype.jsecurity.model.Configuration;
 
 public class TestSecurityResource
+    extends AbstractStaticSecurityResource
     implements StaticSecurityResource
 {
     public String getResourcePath()

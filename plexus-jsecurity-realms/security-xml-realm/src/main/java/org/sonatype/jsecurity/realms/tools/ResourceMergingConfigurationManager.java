@@ -57,8 +57,10 @@ public class ResourceMergingConfigurationManager
     
     public void clearCache()
     {
-        // TODO Auto-generated method stub
         manager.clearCache();
+        lock.lock();
+        configuration = null;
+        lock.unlock();
     }
     
     public void createPrivilege( SecurityPrivilege privilege )
@@ -436,6 +438,15 @@ public class ResourceMergingConfigurationManager
     
     private Configuration getConfiguration()
     {
+        for ( StaticSecurityResource resource : staticResources )
+        {
+            if ( resource.isDirty() )
+            {
+                configuration = null;
+                break;
+            }
+        }
+        
         if ( configuration != null )
         {
             return configuration;
