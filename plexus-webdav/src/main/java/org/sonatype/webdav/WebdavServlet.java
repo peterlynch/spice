@@ -88,6 +88,14 @@ public class WebdavServlet
 
     protected String authorizationHint;
 
+    
+    protected String getConfigParameter( String name )
+    {
+        Object o = getServletContext().getAttribute( name );
+        
+        return o == null ? null : o.toString();
+            
+    }
     /**
      * Initialize this servlet.
      */
@@ -108,7 +116,7 @@ public class WebdavServlet
         String value = null;
         try
         {
-            value = getServletConfig().getInitParameter( "debug" );
+            value = getConfigParameter( "debug" );
             if ( value != null )
             {
                 debug = Integer.parseInt( value );
@@ -121,7 +129,7 @@ public class WebdavServlet
 
         try
         {
-            value = getServletConfig().getInitParameter( "listings" );
+            value = getConfigParameter( "listings" );
             if ( value != null )
             {
                 listings = ( new Boolean( value ) ).booleanValue();
@@ -134,7 +142,7 @@ public class WebdavServlet
 
         try
         {
-            value = getServletConfig().getInitParameter( "readonly" );
+            value = getConfigParameter( "readonly" );
             if ( value != null )
             {
                 readOnly = ( new Boolean( value ) ).booleanValue();
@@ -147,7 +155,7 @@ public class WebdavServlet
 
         try
         {
-            value = getServletConfig().getInitParameter( "fileEncoding" );
+            value = getConfigParameter( "fileEncoding" );
             if ( value != null )
             {
                 fileEncoding = value;
@@ -160,7 +168,7 @@ public class WebdavServlet
 
         try
         {
-            value = getServletConfig().getInitParameter( "secret" );
+            value = getConfigParameter( "secret" );
             if ( value != null )
             {
                 secret = value;
@@ -173,7 +181,7 @@ public class WebdavServlet
 
         try
         {
-            value = getServletConfig().getInitParameter( "resourceCollectionHint" );
+            value = getConfigParameter( "resourceCollectionHint" );
             if ( value != null )
             {
                 resourceCollectionHint = value;
@@ -191,7 +199,7 @@ public class WebdavServlet
 
         try
         {
-            value = getServletConfig().getInitParameter( "authenticationHint" );
+            value = getConfigParameter( "authenticationHint" );
             if ( value != null )
             {
                 authenticationHint = value;
@@ -209,7 +217,7 @@ public class WebdavServlet
 
         try
         {
-            value = getServletConfig().getInitParameter( "authorizationHint" );
+            value = getConfigParameter( "authorizationHint" );
             if ( value != null )
             {
                 authorizationHint = value;
