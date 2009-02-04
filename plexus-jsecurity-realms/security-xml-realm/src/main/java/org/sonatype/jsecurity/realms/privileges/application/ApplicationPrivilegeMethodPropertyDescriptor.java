@@ -23,4 +23,9 @@ public class ApplicationPrivilegeMethodPropertyDescriptor
     {
         return "Method";
     }
+    
+    public String getType()
+    {
+        return "string";
+    }
 }

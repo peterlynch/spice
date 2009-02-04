@@ -5,4 +5,5 @@ public interface PrivilegePropertyDescriptor
     String getId();
     String getHelpText();
     String getName();
+    String getType();
 }

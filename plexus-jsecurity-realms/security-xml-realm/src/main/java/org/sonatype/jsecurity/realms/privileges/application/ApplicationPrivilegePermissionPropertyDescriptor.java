@@ -23,5 +23,10 @@ public class ApplicationPrivilegePermissionPropertyDescriptor
     {
         return "Permission";
     }
+    
+    public String getType()
+    {
+        return "string";
+    }
 
 }
