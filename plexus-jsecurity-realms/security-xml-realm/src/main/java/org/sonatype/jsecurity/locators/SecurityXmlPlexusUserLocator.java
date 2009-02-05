@@ -82,16 +82,7 @@ public class SecurityXmlPlexusUserLocator
 
     public Set<PlexusUser> searchUsers( PlexusUserSearchCriteria criteria )
     {
-        Set<PlexusUser> users = new HashSet<PlexusUser>();
-
-        for ( CUser user : configuration.listUsers() )
-        {
-            if ( user.getId().toLowerCase().startsWith( criteria.getUserId() ) )
-            {
-                users.add( this.toPlexusUser( user ) );
-            }
-        }
-        return users;
+        return this.filterListInMemeory( this.listUsers(), criteria );
     }
 
     public boolean isPrimary()
