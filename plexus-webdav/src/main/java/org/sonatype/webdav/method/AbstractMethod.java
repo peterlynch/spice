@@ -1024,7 +1024,7 @@ public abstract class AbstractMethod
         IOException exception = null;
 
         InputStream istream = new BufferedInputStream( is, input );
-
+        
         // Copy the input stream to the output stream
         exception = copyRange( istream, ostream );
 

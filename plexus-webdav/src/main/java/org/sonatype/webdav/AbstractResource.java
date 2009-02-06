@@ -32,24 +32,33 @@ public abstract class AbstractResource
     public static void copy( final InputStream input, final OutputStream output, final int bufferSize )
         throws IOException
     {
-        if ( input == null )
+        try
         {
-            return;
+            if ( input == null )
+            {
+                return;
+            }
+    
+            final byte[] buffer = new byte[bufferSize];
+    
+            int n;
+    
+            while ( -1 != ( n = input.read( buffer ) ) )
+            {
+                output.write( buffer, 0, n );
+            }
+    
+            output.flush();
+
         }
-
-        final byte[] buffer = new byte[bufferSize];
-
-        int n;
-
-        while ( -1 != ( n = input.read( buffer ) ) )
+        finally
         {
-            output.write( buffer, 0, n );
+            if( input != null )
+                try { input.close(); } catch(Exception e ) {}
+
+            if( output != null )
+                try { output.close(); } catch(Exception e ) {}
         }
-
-        output.flush();
-
-        input.close();
-        output.close();
     }
 
     public String getETag( boolean b )
