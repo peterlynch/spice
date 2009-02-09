@@ -31,7 +31,7 @@ public interface BuildContext {
   boolean hasDelta(List relpaths);
 
   /**
-   * Indicates that the file content has been modified during the build.
+   * Indicates that the file or folder content has been modified during the build.
    * 
    * @see #newFileOutputStream(File)
    */
@@ -42,6 +42,10 @@ public interface BuildContext {
    *  
    * Files changed using OutputStream returned by this method do not need to be
    * explicitly refreshed using {@link #refresh(File)}.
+   *
+   * As an optional optimisation, OutputStreams created by incremental build 
+   * context will attempt to avoid writing to the file if file content 
+   * has not changed.
    */
   OutputStream newFileOutputStream(File file) throws IOException;
 
@@ -59,11 +63,55 @@ public interface BuildContext {
 
   /**
    * Returned Scanner scans files and folders under <code>basedir</code>.
-   * If <code>ignoreDelta</code> is <code>false</code>, the scanner will only
-   * "see" files and folders with content changes since last build. If 
-   * <code>ignoreDelta</code> is <code>true</code>, the scanner will "see" all
-   * files and folders. Returns empty Scanner if <code>basedir</code>
-   * is not under this build context basedir.
+   * 
+   * If this is an incremental build context and  <code>ignoreDelta</code> 
+   * is <code>false</code>, the scanner will only "see" files and folders with 
+   * content changes since last build. 
+   * 
+   * If <code>ignoreDelta</code> is <code>true</code>, the scanner will "see" all
+   * files and folders. 
+   * 
+   * Returns empty Scanner if <code>basedir</code> is not under this build context basedir.
    */
   Scanner newScanner(File basedir, boolean ignoreDelta);
+
+  /**
+   * Returns <code>true</code> if this build context is incremental. 
+   * 
+   * Scanners created by {@link #newScanner(File)} of an incremental build context
+   * will ignore files and folders that were not changed since last build. 
+   * Additionally, {@link #newDeleteScanner(File)} will scan files and directories
+   * deleted since last build.
+   */
+  boolean isIncremental();
+
+  /**
+   * Associate specified <code>key</code> with specified <code>value</code>
+   * in the build context.
+   * 
+   * Primary (and the only) purpose of this method is to allow preservation of 
+   * state needed for proper incremental behaviour between consecutive executions 
+   * of the same mojo needed to. 
+   * 
+   * For example, maven-plugin-plugin:descriptor mojo
+   * can store collection of extracted MojoDescritpor during first invocation. Then
+   * on each consecutive execution maven-plugin-plugin:descriptor will only need
+   * to extract MojoDescriptors for changed files.
+   *
+   * @see #getValue(String)
+   */
+  public void setValue(String key, Object value);
+
+  /**
+   * Returns value associated with <code>key</code> during previous mojo execution.
+   * 
+   * This method always returns <code>null</code> for non-incremental builds
+   * (i.e., {@link #isIncremental()} returns <code>false</code>) and mojos are 
+   * expected to fall back to full, non-incremental behaviour.
+   * 
+   * @see #setValue(String, Object)
+   * @see #isIncremental()
+   */
+  public Object getValue(String key);
+
 }

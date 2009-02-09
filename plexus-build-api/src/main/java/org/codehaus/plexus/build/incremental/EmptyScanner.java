@@ -1,6 +1,8 @@
 
 package org.codehaus.plexus.build.incremental;
 
+import java.io.File;
+
 import org.codehaus.plexus.util.Scanner;
 
 /**
@@ -8,9 +10,13 @@ import org.codehaus.plexus.util.Scanner;
  */
 public class EmptyScanner implements Scanner {
   
-  public static final Scanner INSTANCE = new EmptyScanner();
-  
   private static final String[] EMPTY_STRING_ARRAY = new String[0];
+  
+  private final File basedir;
+  
+  public EmptyScanner(File basedir) {
+    this.basedir = basedir;
+  }
 
   public void addDefaultExcludes() {
   }
@@ -30,6 +36,10 @@ public class EmptyScanner implements Scanner {
   }
 
   public void setIncludes(String[] includes) {
+  }
+
+  public File getBasedir() {
+    return basedir;
   }
 
 }

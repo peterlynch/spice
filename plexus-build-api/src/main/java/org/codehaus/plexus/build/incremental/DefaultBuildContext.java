@@ -11,23 +11,25 @@ import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.Scanner;
 
 /**
- * Filesystem based build context implementation which behaves as if all files
+ * Filesystem based non-incremental build context implementation which behaves as if all files
  * were just created. More specifically, 
  * 
  * hasDelta returns <code>true</code> for all paths
  * newScanner returns Scanner that scanns all files under provided basedir
  * newDeletedScanner always returns empty scanner.
+ * isIncremental returns <code>false</code<
+ * getValue always returns <code>null</code>
  * 
  * @plexus.component role="org.codehaus.plexus.build.incremental.BuildContext"
  *                   role-hint="default"
  */
 public class DefaultBuildContext implements BuildContext {
 
-  public boolean hasDelta(String relPath) {
+  public boolean hasDelta(String relpath) {
     return true;
   }
 
-  public boolean hasDelta(List relPaths) {
+  public boolean hasDelta(List relpaths) {
     return true;
   }
 
@@ -46,11 +48,21 @@ public class DefaultBuildContext implements BuildContext {
   }
 
   public Scanner newDeleteScanner(File basedir) {
-    return EmptyScanner.INSTANCE;
+    return new EmptyScanner(basedir);
   }
 
   public Scanner newScanner(File basedir, boolean ignoreDelta) {
     return newScanner(basedir);
   }
 
+  public boolean isIncremental() {
+    return false;
+  }
+
+  public Object getValue(String key) {
+    return null;
+  }
+
+  public void setValue(String key, Object value) {
+  }
 }
