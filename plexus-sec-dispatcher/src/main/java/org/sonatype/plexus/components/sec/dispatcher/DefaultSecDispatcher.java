@@ -38,8 +38,6 @@ implements SecDispatcher
 {
     public static final String SYSTEM_PROPERTY_SEC_LOCATION = "maven.sec.path";
     
-    public static final String SECURITY_SETTINGS = "settings-security.xml";
-    
     public static final String TYPE_ATTR = "type";
 
     public static final char ATTR_START = '[';
@@ -52,6 +50,12 @@ implements SecDispatcher
      * @plexus.requirement
      */
     protected PlexusCipher _cipher;
+
+    /**
+     * 
+     * @plexus.configuration default-value="~/.settings-security.xml"
+     */
+    protected String _configurationFile;
 
     // ---------------------------------------------------------------
     public String decrypt( String str, Map attributes, Map config, PlexusContainer plexus )
@@ -183,9 +187,12 @@ implements SecDispatcher
     throws SecDispatcherException
     {
         String location = System.getProperty( SYSTEM_PROPERTY_SEC_LOCATION
-                                            , System.getProperty( "user.home" ) + "/.m2/"+SECURITY_SETTINGS
+                                              , _configurationFile
+//                                              , "~/.m2/settings-security.xml"
                                             );
-        SettingsSecurity sec = SecUtil.read( location, true );
+        String realLocation = location.replaceAll( "~", System.getProperty( "user.home" ) );
+        
+        SettingsSecurity sec = SecUtil.read( realLocation, true );
         
         if( sec == null )
             throw new SecDispatcherException( "cannot retrieve master password. Please check that "+location+" exists and has data" );
@@ -209,6 +216,16 @@ implements SecDispatcher
         {
             throw new SecDispatcherException(e);
         }
+    }
+    //---------------------------------------------------------------
+    public String getConfigurationFile()
+    {
+        return _configurationFile;
+    }
+
+    public void setConfigurationFile( String file )
+    {
+        _configurationFile = file;
     }
     //----------------------------------------------------------------------------
     // ***************************************************************
