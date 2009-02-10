@@ -26,13 +26,13 @@ public class PlexusPluginManagerTest
     public void testPluginManager()
         throws Exception
     {
-        /*
         PlexusPluginManager pm = (PlexusPluginManager) lookup( PlexusPluginManager.class );
         
         assertNotNull( pm );
 
         File localRepository = new File( getBasedir(), "target/local-repo" );
 
+        /*
         PluginResolutionRequest request = new PluginResolutionRequest()
             .addLocalRepository( localRepository ).addRemoteRepository( "http://repo1.maven.org/maven2" )
             .setArtifactMetadata( "org.apache.maven.plugins:maven-clean-plugin:2.2" );

@@ -22,7 +22,6 @@ import java.util.List;
 import org.apache.maven.mercury.artifact.Artifact;
 import org.apache.maven.mercury.artifact.ArtifactMetadata;
 import org.apache.maven.mercury.artifact.ArtifactScopeEnum;
-import org.apache.maven.mercury.builder.api.DependencyProcessor;
 import org.apache.maven.mercury.plexus.PlexusMercury;
 import org.apache.maven.mercury.repository.api.Repository;
 import org.apache.maven.mercury.repository.api.RepositoryException;
@@ -52,12 +51,9 @@ public class DefaultPlexusPluginManager
     @Requirement
     private PlexusContainer container;
 
-    @Requirement(hint = "maven")
-    private DependencyProcessor dependencyProcessor;
-
     public PluginResolutionResult resolve( PluginResolutionRequest request )
         throws PluginResolutionException
-    {
+    {                      
         PluginResolutionResult result = new PluginResolutionResult();
 
         List<Repository> repositories = new ArrayList<Repository>();
@@ -72,7 +68,17 @@ public class DefaultPlexusPluginManager
             }
             // Oleg 200.12.04: all IDs need to be unique as they are used by the cache to identify metadata
             // it's not that critical for local repo, but better safe'n sorry
-            LocalRepositoryM2 localRepository = new LocalRepositoryM2( "local-"+repository.getName(), repository, dependencyProcessor );
+            LocalRepositoryM2 localRepository = null;
+            
+            try
+            {
+                localRepository = mercury.constructLocalRepositoryM2( "local-"+repository.getName(), repository, null, null, null, null );
+            }
+            catch ( RepositoryException e ) // This exception is not very helpful.
+            {
+                // Should not happen.                
+            }
+            
             repositories.add( localRepository );
         }
 
@@ -96,7 +102,7 @@ public class DefaultPlexusPluginManager
             Server repository = new Server( "id", url );
 
             // We really don't want to hardcode the repository type
-            repositories.add( new RemoteRepositoryM2( repository, dependencyProcessor ) );
+            repositories.add( new RemoteRepositoryM2( repository, null ) );
         }
 
         try

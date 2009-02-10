@@ -7,7 +7,7 @@
   <version>0.0.1-SNAPSHOT</version>
   <name>Idiom :: Kingpin</name>
   <properties>
-    <plexusVersion>1.0-beta-3.0.4</plexusVersion>
+    <plexusVersion>1.0-beta-3.0.5</plexusVersion>
   </properties>
   <dependencies>
     <dependency>

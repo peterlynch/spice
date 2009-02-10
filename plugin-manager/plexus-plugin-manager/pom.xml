@@ -12,11 +12,16 @@
   <name>Plexus Plugin Manager</name>
   <url>http://maven.apache.org</url>
   <properties>
-    <plexusVersion>1.0-beta-3.0.4</plexusVersion>
-    <mercuryVersion>1.0.0-alpha-2</mercuryVersion>
-    <mavenVersion>3.0-alpha-1</mavenVersion>
+    <plexusVersion>1.0-beta-3.0.5</plexusVersion>
+    <mercuryVersion>1.0-alpha-5-SNAPSHOT</mercuryVersion>
+    <mavenVersion>3.0-alpha-2</mavenVersion>
   </properties>
   <dependencies>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-mercury</artifactId>
+      <version>${mavenVersion}</version>
+    </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-container-default</artifactId>
