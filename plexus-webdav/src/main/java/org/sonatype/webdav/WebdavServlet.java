@@ -12,6 +12,7 @@
  */
 package org.sonatype.webdav;
 
+import java.io.File;
 import java.io.IOException;
 
 import javax.servlet.ServletContext;
@@ -69,6 +70,8 @@ public class WebdavServlet
     protected ResourceCollection resourceCollection;
 
     protected String resourceCollectionHint = null;
+
+    protected String resourceCollectionBase = null;
 
     /**
      * File encoding to be used when reading static files. If none is specified the platform default is used.
@@ -199,6 +202,19 @@ public class WebdavServlet
 
         try
         {
+            value = getConfigParameter( "resourceCollectionBase" );
+            if ( value != null )
+            {
+                resourceCollectionBase = value;
+            }
+        }
+        catch ( Exception e )
+        {
+            log( "WebdavServlet.init: error reading resource collection base from " + value );
+        }
+
+        try
+        {
             value = getConfigParameter( "authenticationHint" );
             if ( value != null )
             {
@@ -237,9 +253,14 @@ public class WebdavServlet
         {
             authn = (Authentication) container.lookup( Authentication.class, authenticationHint );
             authz = (Authorization) container.lookup( Authorization.class, authorizationHint );
-            resourceCollection = (ResourceCollection) container.lookup(
-                ResourceCollection.class,
-                resourceCollectionHint );
+            
+            
+            if( resourceCollectionBase != null )
+                resourceCollection = new FileResourceCollection( new File(resourceCollectionBase), "/" );
+            else
+                resourceCollection = (ResourceCollection) container.lookup(
+                    ResourceCollection.class,
+                    resourceCollectionHint );
         }
         catch ( ComponentLookupException e )
         {
