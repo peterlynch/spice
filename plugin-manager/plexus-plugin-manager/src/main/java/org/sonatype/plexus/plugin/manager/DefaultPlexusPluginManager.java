@@ -43,10 +43,10 @@ public class DefaultPlexusPluginManager
     implements PlexusPluginManager
 {
     @Requirement
-    private PlexusMercury mercury;
+    private Logger logger;
 
     @Requirement
-    private Logger logger;
+    private PlexusMercury mercury;
 
     @Requirement
     private PlexusContainer container;
@@ -66,8 +66,7 @@ public class DefaultPlexusPluginManager
             {
                 repository.mkdirs();
             }
-            // Oleg 200.12.04: all IDs need to be unique as they are used by the cache to identify metadata
-            // it's not that critical for local repo, but better safe'n sorry
+            
             LocalRepositoryM2 localRepository = null;
             
             try
@@ -97,8 +96,6 @@ public class DefaultPlexusPluginManager
                 throw new PluginResolutionException( "Bad URL", e );
             }
 
-            //!! Why do repositories need IDs. We probably want to avoid this.
-            // Oleg 200.12.04: all IDs need to be unique as they are used by the cache to identify metadata
             Server repository = new Server( "id", url );
 
             // We really don't want to hardcode the repository type
@@ -132,8 +129,7 @@ public class DefaultPlexusPluginManager
 
     public ClassRealm createClassRealm( String id )
     {
-        ClassRealm realm = container.createChildRealm( id );
-        return realm;
+        return container.createChildRealm( id );
     }
 
     public ClassRealm createClassRealm( List<Artifact> artifacts )
@@ -162,9 +158,7 @@ public class DefaultPlexusPluginManager
     {
         try
         {
-            List<ComponentDescriptor<?>> components = container.discoverComponents( realm );
-
-            return components;
+            return container.discoverComponents( realm );
         }
         catch ( PlexusConfigurationException e )
         {
@@ -178,8 +172,7 @@ public class DefaultPlexusPluginManager
 
     public ComponentDescriptor<?> getComponentDescriptor( String role, String hint )
     {
-        ComponentDescriptor<?> cd = container.getComponentDescriptor( role, hint );       
-        return cd;
+        return container.getComponentDescriptor( role, hint );       
     }
 
     public Object findPlugin( Class pluginClass, String hint )
@@ -188,8 +181,10 @@ public class DefaultPlexusPluginManager
         return container.lookup( pluginClass, hint );
     }
 
-    public void processPlugins( File pluginsDirectory )
-    {                        
+    public List<ComponentDescriptor<?>> processPlugins( File pluginsDirectory )
+    {       
+        List<ComponentDescriptor<?>> componentDescriptors = new ArrayList<ComponentDescriptor<?>>();
+            
         File[] plugins = pluginsDirectory.listFiles();
         
         for ( int i = 0; i < plugins.length; i++ )
@@ -212,7 +207,9 @@ public class DefaultPlexusPluginManager
                 // Won't happen
             }
 
-            discoverComponents( realm );            
-        }        
+            componentDescriptors.addAll( discoverComponents( realm ) );            
+        }     
+        
+        return componentDescriptors;
     }
 }

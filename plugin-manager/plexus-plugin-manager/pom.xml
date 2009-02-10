@@ -13,7 +13,7 @@
   <url>http://maven.apache.org</url>
   <properties>
     <plexusVersion>1.0-beta-3.0.5</plexusVersion>
-    <mercuryVersion>1.0-alpha-5-SNAPSHOT</mercuryVersion>
+    <mercuryVersion>1.0.0-alpha-4</mercuryVersion>
     <mavenVersion>3.0-alpha-2</mavenVersion>
   </properties>
   <dependencies>

@@ -14,7 +14,6 @@ package org.sonatype.idiom;
 
 import java.io.File;
 
-import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Configuration;
 import org.codehaus.plexus.component.annotations.Requirement;
@@ -29,9 +28,6 @@ public class DefaultIdiom
 {
     @Requirement
     private PlexusPluginManager pm;
-
-    @Requirement
-    private PlexusContainer container;
 
     @Configuration(value = "/Users/jvanzyl/js/spice/trunk/plugin-manager/idiom-core/src/test/plugins")
     private File pluginsDirectory;

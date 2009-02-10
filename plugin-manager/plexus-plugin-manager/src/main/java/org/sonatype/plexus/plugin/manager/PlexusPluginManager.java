@@ -50,7 +50,7 @@ public interface PlexusPluginManager
     Object findPlugin( Class pluginClass, String hint )
         throws ComponentLookupException;
 
-    void processPlugins( File pluginsDirectory );
+    List<ComponentDescriptor<?>> processPlugins( File pluginsDirectory );
     
     // registering component listeners
 }
