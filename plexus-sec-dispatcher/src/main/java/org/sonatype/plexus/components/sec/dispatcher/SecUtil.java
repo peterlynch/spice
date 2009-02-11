@@ -38,7 +38,7 @@ import org.sonatype.plexus.components.sec.dispatcher.model.io.xpp3.SecurityConfi
  */
 public class SecUtil
 {
-    public static final String [] URL_PROTOCOLS = new String [] {"http","https","dav","davs","webdav","webdavs","dav+http","dav+https"};
+    public static final String [] URL_PROTOCOLS = new String [] {"http","https","dav","file","davs","webdav","webdavs","dav+http","dav+https"};
 
     public static SettingsSecurity read( String location, boolean cycle )
     throws SecDispatcherException
@@ -83,15 +83,16 @@ public class SecUtil
       if( ind > 1 )
       {
           String protocol = resource.substring( 0, ind );
+          resource = resource.substring( ind+3 );
 
           for( int i=0; i<URL_PROTOCOLS.length; i++ )
           {
               String p = URL_PROTOCOLS[i];
               
-              if( protocol.equalsIgnoreCase( p ) )
-                return new URL(resource).openStream();
+              if( protocol.regionMatches( true, 0, p, 0, p.length() ) )
+                return new URL( p+"://"+resource).openStream();
           }
-          
+
           // try without unknown protocol
           resource = resource.substring( ind+3 );
       }
