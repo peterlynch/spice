@@ -38,6 +38,9 @@ import org.sonatype.plexus.components.sec.dispatcher.model.io.xpp3.SecurityConfi
  */
 public class SecUtil
 {
+    
+    public static final String PROTOCOL_DELIM = "://";
+    public static final int    PROTOCOL_DELIM_LEN = PROTOCOL_DELIM.length();
     public static final String [] URL_PROTOCOLS = new String [] {"http","https","dav","file","davs","webdav","webdavs","dav+http","dav+https"};
 
     public static SettingsSecurity read( String location, boolean cycle )
@@ -78,23 +81,20 @@ public class SecUtil
       if( resource == null )
         return null;
       
-      int ind = resource.indexOf( "://" );
+      int ind = resource.indexOf( PROTOCOL_DELIM );
       
       if( ind > 1 )
       {
           String protocol = resource.substring( 0, ind );
-          resource = resource.substring( ind+3 );
+          resource = resource.substring( ind + PROTOCOL_DELIM_LEN );
 
           for( int i=0; i<URL_PROTOCOLS.length; i++ )
           {
               String p = URL_PROTOCOLS[i];
               
               if( protocol.regionMatches( true, 0, p, 0, p.length() ) )
-                return new URL( p+"://"+resource).openStream();
+                return new URL( p+PROTOCOL_DELIM+resource).openStream();
           }
-
-          // try without unknown protocol
-          resource = resource.substring( ind+3 );
       }
 
       return new FileInputStream( new File(resource) );
