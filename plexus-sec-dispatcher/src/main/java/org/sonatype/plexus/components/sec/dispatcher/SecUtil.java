@@ -51,7 +51,7 @@ public class SecUtil
         try
         {
             in = toStream( location );
-        
+            
             SettingsSecurity sec = new SecurityConfigurationXpp3Reader().read( in );
             
             in.close();
@@ -91,6 +91,8 @@ public class SecUtil
               if( protocol.equalsIgnoreCase( p ) )
                 return new URL(resource).openStream();
           }
+          
+          resource = resource.substring( ind+3 );
       }
 
       return new FileInputStream( new File(resource) );
