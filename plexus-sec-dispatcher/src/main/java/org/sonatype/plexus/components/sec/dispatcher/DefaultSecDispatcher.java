@@ -188,14 +188,16 @@ implements SecDispatcher
     {
         String location = System.getProperty( SYSTEM_PROPERTY_SEC_LOCATION
                                               , _configurationFile
-//                                              , "~/.m2/settings-security.xml"
                                             );
-        String realLocation = location.replaceAll( "~", System.getProperty( "user.home" ) );
+        String realLocation = location.charAt( 0 ) == '~' 
+            ? System.getProperty( "user.home" ) + location.substring( 1 )
+            : location
+            ;
         
         SettingsSecurity sec = SecUtil.read( realLocation, true );
         
         if( sec == null )
-            throw new SecDispatcherException( "cannot retrieve master password. Please check that "+location+" exists and has data" );
+            throw new SecDispatcherException( "cannot retrieve master password. Please check that "+realLocation+" exists and has data" );
         
         return sec;
     }

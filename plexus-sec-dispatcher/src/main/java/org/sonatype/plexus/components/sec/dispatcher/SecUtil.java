@@ -78,14 +78,19 @@ public class SecUtil
       if( resource == null )
         return null;
       
-      String lowerRes = resource.toLowerCase();
+      int ind = resource.indexOf( "://" );
       
-      for( int i=0; i<URL_PROTOCOLS.length; i++ )
+      if( ind > 1 )
       {
-          String p = URL_PROTOCOLS[i];
-          
-          if( lowerRes.startsWith( p ) )
-            return new URL(resource).openStream();
+          String protocol = resource.substring( 0, ind );
+
+          for( int i=0; i<URL_PROTOCOLS.length; i++ )
+          {
+              String p = URL_PROTOCOLS[i];
+              
+              if( protocol.equalsIgnoreCase( p ) )
+                return new URL(resource).openStream();
+          }
       }
 
       return new FileInputStream( new File(resource) );
