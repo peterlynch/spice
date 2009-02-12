@@ -329,14 +329,6 @@ public class DefaultConfigurationValidator
             response.addValidationError( message );
         }
 
-        // No roles or privs
-        if ( role.getRoles().size() == 0 && role.getPrivileges().size() == 0 )
-        {
-            ValidationMessage message = new ValidationMessage( "privileges", "Role ID '" + role.getId()
-                + "' is required to contain at least 1 role or privilege.", "One or more roles/privilegs are required." );
-            response.addValidationError( message );
-        }
-
         if ( context.getExistingPrivilegeIds() != null )
         {
             List<String> privIds = role.getPrivileges();
@@ -454,13 +446,7 @@ public class DefaultConfigurationValidator
         if ( context.getExistingRoleIds() != null && context.getExistingUserRoleMap() != null )
         {
 
-            if ( roles == null || roles.isEmpty() )
-            {
-                ValidationMessage message = new ValidationMessage( "roles", "User ID '" + user.getId()
-                    + "' has no roles assigned.", "User requires one or more roles." );
-                response.addValidationError( message );
-            }
-            else
+            if ( roles != null && roles.size() > 0 )
             {
                 for ( String roleId : roles )
                 {
@@ -509,13 +495,7 @@ public class DefaultConfigurationValidator
         if ( context.getExistingRoleIds() != null && context.getExistingUserRoleMap() != null )
         {
 
-            if ( roles == null || roles.isEmpty() )
-            {
-                ValidationMessage message = new ValidationMessage( "roles", "User Role Mapping for user '"
-                    + userRoleMapping.getUserId() + "' has no roles assigned.", "User requires one or more roles." );
-                response.addValidationError( message );
-            }
-            else
+            if ( roles != null && roles.size() > 0 )
             {
                 for ( String roleId : roles )
                 {

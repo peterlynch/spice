@@ -22,8 +22,7 @@
       </privilege>      
     </privileges>    
     <roles>      
-        <!-- invalid id of 0 -->   
-        <!-- no privs/roles -->
+        <!-- invalid id of 0 -->
         <!-- no session timeout -->
         <role>      
             <id>0</id>

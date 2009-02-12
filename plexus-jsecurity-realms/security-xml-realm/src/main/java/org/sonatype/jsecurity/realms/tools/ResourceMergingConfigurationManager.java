@@ -525,4 +525,14 @@ public class ResourceMergingConfigurationManager
     {
         return manager.listPrivilegeDescriptors();
     }
+    
+    public void cleanRemovedPrivilege( String privilegeId )
+    {
+        manager.cleanRemovedPrivilege( privilegeId );
+    }
+    
+    public void cleanRemovedRole( String roleId )
+    {
+        manager.cleanRemovedRole( roleId );
+    }
 }

@@ -269,4 +269,8 @@ public interface ConfigurationManager
      * @return
      */
     ValidationContext initializeContext();
+    
+    void cleanRemovedRole( String roleId );
+    
+    void cleanRemovedPrivilege( String privilegeId );
 }

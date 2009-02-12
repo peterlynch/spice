@@ -64,6 +64,9 @@ public class DefaultConfigurationManager
     
     @Requirement( role = PrivilegeDescriptor.class )
     private List<PrivilegeDescriptor> privilegeDescriptors;
+    
+    @Requirement( role = SecurityConfigurationCleaner.class )
+    private SecurityConfigurationCleaner configCleaner;
 
     /**
      * This will hold the current configuration in memory, to reload, will need to set this to null
@@ -261,8 +264,14 @@ public class DefaultConfigurationManager
     public void deletePrivilege( String id )
         throws NoSuchPrivilegeException
     {
+        deletePrivilege( id, true );
+    }
+    
+    public void deletePrivilege( String id, boolean clean )
+        throws NoSuchPrivilegeException
+    {
         boolean found = false;
-
+    
         for ( Iterator<CPrivilege> iter = getConfiguration().getPrivileges().iterator(); iter.hasNext(); )
         {
             if ( iter.next().getId().equals( id ) )
@@ -272,15 +281,26 @@ public class DefaultConfigurationManager
                 break;
             }
         }
-
+    
         if ( !found )
         {
             throw new NoSuchPrivilegeException( id );
+        }
+     
+        if ( clean )
+        {
+            cleanRemovedPrivilege( id );
         }
     }
 
     @SuppressWarnings( "unchecked" )
     public void deleteRole( String id )
+        throws NoSuchRoleException
+    {
+        deleteRole( id, true );
+    }
+    
+    protected void deleteRole( String id, boolean clean )
         throws NoSuchRoleException
     {
         boolean found = false;
@@ -298,6 +318,11 @@ public class DefaultConfigurationManager
         if ( !found )
         {
             throw new NoSuchRoleException( id );
+        }
+        
+        if ( clean )
+        {
+            cleanRemovedRole( id );
         }
     }
 
@@ -405,7 +430,7 @@ public class DefaultConfigurationManager
 
         if ( vr.isValid() )
         {
-            deletePrivilege( privilege.getId() );
+            deletePrivilege( privilege.getId(), false );
             getConfiguration().addPrivilege( privilege );
         }
         else
@@ -434,7 +459,7 @@ public class DefaultConfigurationManager
 
         if ( vr.isValid() )
         {
-            deleteRole( role.getId() );
+            deleteRole( role.getId(), false );
             getConfiguration().addRole( role );
         }
         else
@@ -790,5 +815,15 @@ public class DefaultConfigurationManager
     public List<PrivilegeDescriptor> listPrivilegeDescriptors()
     {
         return Collections.unmodifiableList( privilegeDescriptors );
+    }
+    
+    public void cleanRemovedPrivilege( String privilegeId )
+    {
+        configCleaner.privilegeRemoved( getConfiguration(), privilegeId );
+    }
+    
+    public void cleanRemovedRole( String roleId )
+    {
+        configCleaner.roleRemoved( getConfiguration(), roleId );
     }
 }
