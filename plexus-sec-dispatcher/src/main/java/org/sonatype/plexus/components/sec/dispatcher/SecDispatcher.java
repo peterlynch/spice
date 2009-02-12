@@ -34,6 +34,6 @@ public interface SecDispatcher
      * @return
      * @throws SecDispatcherException
      */
-    String decrypt( String str, Map attributes, Map config, PlexusContainer plexus )
+    String decrypt( String str, Map attributes, Map config )
     throws SecDispatcherException;
 }

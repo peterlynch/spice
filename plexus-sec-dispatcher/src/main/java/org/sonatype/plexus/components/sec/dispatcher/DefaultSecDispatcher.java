@@ -52,13 +52,20 @@ implements SecDispatcher
     protected PlexusCipher _cipher;
 
     /**
+     * All available dispatchers
+     * 
+     * @plexus.requirement role="org.sonatype.plexus.components.sec.dispatcher.SecDispatcher"
+     */
+    protected Map _dispatchers;
+
+    /**
      * 
      * @plexus.configuration default-value="~/.settings-security.xml"
      */
     protected String _configurationFile = "~/.settings-security.xml";
 
     // ---------------------------------------------------------------
-    public String decrypt( String str, Map attributes, Map config, PlexusContainer plexus )
+    public String decrypt( String str, Map attributes, Map config )
         throws SecDispatcherException
     {
         if( ! isEncryptedString( str ) )
@@ -93,16 +100,19 @@ implements SecDispatcher
             {
                 String type = (String) attr.get( TYPE_ATTR );
                 
-                if( plexus == null )
-                    throw new SecDispatcherException( "plexus container not supplied - cannot lookup "+type );
+                if( _dispatchers == null )
+                    throw new SecDispatcherException( "plexus container did not supply any required dispatchers - cannot lookup "+type );
                 
                 Map conf = SecUtil.getConfig( sec, type );
                 
-                SecDispatcher dispatcher = (SecDispatcher) plexus.lookup( SecDispatcher.ROLE, type );
+                SecDispatcher dispatcher = (SecDispatcher) _dispatchers.get( type );
+                
+                if( dispatcher == null )
+                    throw new SecDispatcherException( "no dispatcher for hint "+type );
                 
                 String pass = attr == null ? bare : strip( bare );
                 
-                return dispatcher.decrypt( pass, attr, conf, plexus );
+                return dispatcher.decrypt( pass, attr, conf );
             }
             
             return res;

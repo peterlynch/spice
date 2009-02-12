@@ -96,14 +96,13 @@ extends TestCase
         assertEquals( _propVal, conf.get( _propName ) );
     }
 
-
     public void testDecrypt()
     throws Exception
     {
         DefaultSecDispatcher sd = new DefaultSecDispatcher();
         sd._cipher = new DefaultPlexusCipher();
         
-        String pass = sd.decrypt( _encrypted, null, null, null );
+        String pass = sd.decrypt( _encrypted, null, null );
         
         assertNotNull( pass );
         
