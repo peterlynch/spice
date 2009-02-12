@@ -15,24 +15,27 @@ package org.sonatype.plexus.components.sec.dispatcher;
 
 import java.util.Map;
 
-import org.codehaus.plexus.PlexusContainer;
-
 /**
- * This component descrypts a string, passed to it
- * 
+ *
+ *
  * @author Oleg Gusakov
+ * @version $Id$
+ *
  */
-public interface SecDispatcher
+public interface PasswordDecryptor
 {
-    public static String ROLE = SecDispatcher.class.getName();
+    public static String ROLE = PasswordDecryptor.class.getName();
 
     /**
      * decrypt given encrypted string
      * 
-     * @param str
+     * @param str - string to decrypt
+     * @param attributes - string attributes
+     * @param config - configuration from settings-security.xml, if any
      * @return decrypted string
+     * 
      * @throws SecDispatcherException
      */
-    String decrypt( String str )
+    String decrypt( String str, Map attributes, Map config )
     throws SecDispatcherException;
 }

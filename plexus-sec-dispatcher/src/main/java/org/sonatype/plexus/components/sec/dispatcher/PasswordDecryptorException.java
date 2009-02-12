@@ -13,26 +13,51 @@
  
 package org.sonatype.plexus.components.sec.dispatcher;
 
-import java.util.Map;
-
-import org.codehaus.plexus.PlexusContainer;
-
 /**
- * This component descrypts a string, passed to it
- * 
+ *
+ *
  * @author Oleg Gusakov
+ * @version $Id$
+ *
  */
-public interface SecDispatcher
+public class PasswordDecryptorException
+    extends Exception
 {
-    public static String ROLE = SecDispatcher.class.getName();
 
     /**
-     * decrypt given encrypted string
      * 
-     * @param str
-     * @return decrypted string
-     * @throws SecDispatcherException
      */
-    String decrypt( String str )
-    throws SecDispatcherException;
+    public PasswordDecryptorException()
+    {
+        // TODO Auto-generated constructor stub
+    }
+
+    /**
+     * @param message
+     */
+    public PasswordDecryptorException( String message )
+    {
+        super( message );
+        // TODO Auto-generated constructor stub
+    }
+
+    /**
+     * @param cause
+     */
+    public PasswordDecryptorException( Throwable cause )
+    {
+        super( cause );
+        // TODO Auto-generated constructor stub
+    }
+
+    /**
+     * @param message
+     * @param cause
+     */
+    public PasswordDecryptorException( String message, Throwable cause )
+    {
+        super( message, cause );
+        // TODO Auto-generated constructor stub
+    }
+
 }

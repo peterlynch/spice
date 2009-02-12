@@ -36,7 +36,7 @@ public class DefaultSecDispatcher
 extends AbstractLogEnabled
 implements SecDispatcher
 {
-    public static final String SYSTEM_PROPERTY_SEC_LOCATION = "maven.sec.path";
+    public static final String SYSTEM_PROPERTY_SEC_LOCATION = "settings.security";
     
     public static final String TYPE_ATTR = "type";
 
@@ -54,9 +54,9 @@ implements SecDispatcher
     /**
      * All available dispatchers
      * 
-     * @plexus.requirement role="org.sonatype.plexus.components.sec.dispatcher.SecDispatcher"
+     * @plexus.requirement role="org.sonatype.plexus.components.sec.dispatcher.PasswordDecryptor"
      */
-    protected Map _dispatchers;
+    protected Map _decryptors;
 
     /**
      * 
@@ -65,7 +65,7 @@ implements SecDispatcher
     protected String _configurationFile = "~/.settings-security.xml";
 
     // ---------------------------------------------------------------
-    public String decrypt( String str, Map attributes, Map config )
+    public String decrypt( String str )
         throws SecDispatcherException
     {
         if( ! isEncryptedString( str ) )
@@ -100,12 +100,12 @@ implements SecDispatcher
             {
                 String type = (String) attr.get( TYPE_ATTR );
                 
-                if( _dispatchers == null )
+                if( _decryptors == null )
                     throw new SecDispatcherException( "plexus container did not supply any required dispatchers - cannot lookup "+type );
                 
                 Map conf = SecUtil.getConfig( sec, type );
                 
-                SecDispatcher dispatcher = (SecDispatcher) _dispatchers.get( type );
+                PasswordDecryptor dispatcher = (PasswordDecryptor) _decryptors.get( type );
                 
                 if( dispatcher == null )
                     throw new SecDispatcherException( "no dispatcher for hint "+type );

@@ -36,11 +36,11 @@ import org.sonatype.plexus.components.sec.dispatcher.model.io.xpp3.SecurityConfi
 public class SecUtilTest
 extends TestCase
 {
-    String _pw = "{jSMOWnoPFgsHVpMvz5VrIt5kRbzGpI8u+9EF1iFQyJQ=}";
+    String _pw = "{1wQaa6S/o8MH7FnaTNL53XmhT5O0SEGXQi3gC49o6OY=}";
     
     String _clear = "testtest";
     
-    String _encrypted = "{8+qG0C/CnRsH+45rqY50rWb1cMILU4zu9K/sZ8omYzs=}";
+    String _encrypted = "{BteqUEnqHecHM7MZfnj9FwLcYbdInWxou1C929Txa0A=}";
     
     String _confName = "cname";
     
@@ -53,8 +53,8 @@ extends TestCase
     {
         System.setProperty( DefaultSecDispatcher.SYSTEM_PROPERTY_SEC_LOCATION, "./target/sec.xml" );
         
-//PBECipher c = new PBECipher();
-//System.out.println(_clear+" -> "+c.encrypt64( _clear, "testtest" ));
+//DefaultPlexusCipher c = new DefaultPlexusCipher();
+//System.out.println(_clear+" -> "+c.encrypt( _clear, "testtest" ));
 
         
         SettingsSecurity sec = new SettingsSecurity();
@@ -102,7 +102,7 @@ extends TestCase
         DefaultSecDispatcher sd = new DefaultSecDispatcher();
         sd._cipher = new DefaultPlexusCipher();
         
-        String pass = sd.decrypt( _encrypted, null, null );
+        String pass = sd.decrypt( _encrypted );
         
         assertNotNull( pass );
         
