@@ -30,7 +30,9 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 
 public class TestIncrementalBuildContext implements BuildContext {
   
-  private final File basedir; 
+  private final File basedir;
+
+  private final HashSet refresh = new HashSet();
 
   private static final class TestScanner implements Scanner {
     private final File basedir;
@@ -113,6 +115,7 @@ public class TestIncrementalBuildContext implements BuildContext {
   }
 
   public OutputStream newFileOutputStream(File file) throws IOException {
+    refresh(file);
     return new FileOutputStream(file);
   }
 
@@ -131,6 +134,7 @@ public class TestIncrementalBuildContext implements BuildContext {
   }
 
   public void refresh(File file) {
+    refresh.add(file.getAbsoluteFile());
   }
 
   public Object getValue(String key) {
@@ -139,6 +143,10 @@ public class TestIncrementalBuildContext implements BuildContext {
 
   public void setValue(String key, Object value) {
     context.put(key, value);
+  }
+
+  public Set getRefreshFiles() {
+    return refresh;
   }
 
 }
