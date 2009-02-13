@@ -32,7 +32,7 @@ import org.codehaus.plexus.util.Scanner;
  * isIncremental returns <code>false</code<
  * getValue always returns <code>null</code>
  * 
- * @plexus.component role="org.codehaus.plexus.build.incremental.BuildContext"
+ * @plexus.component role="org.sonatype.plexus.build.incremental.BuildContext"
  *                   role-hint="default"
  */
 public class DefaultBuildContext implements BuildContext {
