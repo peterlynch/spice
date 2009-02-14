@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.codehaus.plexus.util.StringUtils;
 import org.jsecurity.authc.AuthenticationException;
 import org.jsecurity.authc.AuthenticationInfo;
 import org.jsecurity.authc.AuthenticationToken;
@@ -94,7 +95,11 @@ public class XmlAuthorizingRealm
         {
             for ( PlexusRole plexusRole : roles )
             {
-                rolesToProcess.add( plexusRole.getRoleId() );
+                if ( plexusRole != null
+                    && StringUtils.isNotEmpty( plexusRole.getRoleId() ) )
+                {
+                    rolesToProcess.add( plexusRole.getRoleId() );
+                }
             }
         }
 
