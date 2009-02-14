@@ -1,9 +1,0 @@
-<daemon>
-  <mainClass>org.codehaus.plexus.classworlds.launcher.Launcher</mainClass>
-  <jvmSettings>
-    <systemProperties>
-      <systemProperty>basedir=../..</systemProperty>
-      <systemProperty>classworlds.conf=../../conf/classworlds.conf</systemProperty>
-    </systemProperties>
-  </jvmSettings>
-</daemon>
