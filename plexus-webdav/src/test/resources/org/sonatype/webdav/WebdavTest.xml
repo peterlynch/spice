@@ -17,7 +17,7 @@
         <servlets>
           <servlet>
             <clazz>org.sonatype.webdav.WebdavServlet</clazz>
-            <resourceBase>/User/jvanzyl/test</resourceBase>
+            <resourceBase>${basedir}/target</resourceBase>
             <contextPath>/webdav</contextPath>
           </servlet>
         </servlets>        
