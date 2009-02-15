@@ -44,9 +44,7 @@ public class FileResourceCollection
         throws InitializationException
     {
         this.dir = new File( rootPath );
-        
-    	System.out.println( "init >>>> " + dir );    	
-    	    	
+            	    	
         /* initialise the datastore on first creation */
         if ( !dir.exists() )
         {
@@ -56,7 +54,6 @@ public class FileResourceCollection
 
     public FileResourceCollection()
     {
-    	System.out.println( "const >>>> " + dir );    	
     }
 
     public FileResourceCollection( File root, String id )
@@ -66,9 +63,7 @@ public class FileResourceCollection
     }
 
     public Enumeration<Object> listResources( MethodExecutionContext context )
-    {
-    	System.out.println( ">>>> " + dir );    	
-    	
+    {    	
         Vector<Object> ret = new Vector<Object>();
 
         File[] list = dir.listFiles();
