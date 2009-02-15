@@ -1,0 +1,62 @@
+<plexus>
+  <components>
+    <component>
+      <role>org.sonatype.plexus.webcontainer.ServletContainer</role>
+      <implementation> org.sonatype.plexus.webcontainer.DefaultServletContainer</implementation>
+      <configuration>
+		<!-- Not used if connectors given -->
+        <defaultHost>localhost</defaultHost>
+        <defaultPort>9000</defaultPort>
+        <connectors>
+          <connector>
+            <clazz>org.mortbay.jetty.nio.SelectChannelConnector</clazz>
+            <host>localhost</host>
+            <port>9000</port>
+          </connector>
+        </connectors>
+        <servlets>
+          <servlet>
+            <clazz>org.sonatype.webdav.WebdavServlet</clazz>
+            <resourceBase>/User/jvanzyl/test</resourceBase>
+            <contextPath>/webdav</contextPath>
+          </servlet>
+        </servlets>        
+      </configuration>
+    </component>
+    
+   <component>                                                                                                                                                                
+      <role>org.sonatype.webdav.security.Authentication</role>                                                                                                                 
+      <role-hint>properties</role-hint>                                                                                                                                        
+      <implementation>org.sonatype.webdav.security.PropertiesAuthentication</implementation>                                                                                   
+      <configuration>                                                                                                                                                          
+        <properties>                                                                                                                                                           
+          <property>                                                                                                                                                           
+            <name>foo</name>                                                                                                                                                   
+            <value>bar</value>                                                                                                                                                 
+          </property>                                                                                                                                                          
+        </properties>                                                                                                                                                          
+      </configuration>                                                                                                                                                         
+    </component>                                                                                                                                                                                                                                                                                                                                              
+    <component>                                                                                                                                                                
+      <role>org.sonatype.webdav.security.Authorization</role>                                                                                                                  
+      <role-hint>properties</role-hint>                                                                                                                                        
+      <implementation>org.sonatype.webdav.security.PropertiesAuthorization</implementation>                                                                                    
+      <configuration>                                                                                                                                                          
+        <properties>                                                                                                                                                           
+          <property>                                                                                                                                                           
+            <name>foo</name>                                                                                                                                                   
+            <value>admin,repository.read,repository.write</value>                                                                                                              
+          </property>                                                                                                                                                          
+        </properties>                                                                                                                                                          
+      </configuration>                                                                                                                                                         
+    </component>                  
+    <component>                                                                                                                                                                
+      <role>org.sonatype.webdav.ResourceCollection</role>                                                                                                                      
+      <role-hint>file</role-hint>                                                                                                                                              
+      <implementation>org.sonatype.webdav.FileResourceCollection</implementation>                                                                                              
+      <configuration>                                                                                                                                                          
+        <root-path>/Users/jvanzyl/test</root-path>                                                                                                                                   
+      </configuration>                                                                                                                                                         
+    </component>          
+  </components>  
+</plexus>
