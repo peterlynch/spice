@@ -64,9 +64,7 @@ public class WebdavServlet
      */
     protected boolean readOnly = false;
 
-    /**
-     * Proxy directory context.
-     */
+    /** Proxy directory context */
     protected ResourceCollection resourceCollection;
     protected String resourceCollectionHint;
     protected String resourceCollectionBase;
@@ -74,9 +72,8 @@ public class WebdavServlet
     /**
      * File encoding to be used when reading static files. If none is specified the platform default is used.
      */
-    protected String fileEncoding = null;
-
-    private String secret = null;
+    protected String fileEncoding;
+    private String secret;
 
     /**
      * Our authentication
@@ -213,7 +210,7 @@ public class WebdavServlet
             }
             else
             {
-                authenticationHint = "properties";
+                authenticationHint = "open";
             }
         }
         catch ( Exception e )
@@ -231,7 +228,7 @@ public class WebdavServlet
             }
             else
             {
-                authorizationHint = "properties";
+                authorizationHint = "open";
             }
         }
         catch ( Exception e )
