@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>appbooter</artifactId>
 		<groupId>org.sonatype.appbooter</groupId>
-		<version>1.6.5-SNAPSHOT</version>
+		<version>1.6.5</version>
 	</parent>
 
 	<artifactId>plexus-forked-app-booter</artifactId>
