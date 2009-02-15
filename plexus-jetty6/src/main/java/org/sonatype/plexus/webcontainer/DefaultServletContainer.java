@@ -146,7 +146,6 @@ public class DefaultServletContainer
                     {
                         org.sonatype.plexus.webcontainer.Connector conn = connectors.get( i );
                         Connector jettyConnector = conn.getConnector( context );
-
                         getLogger().info( "Adding Jetty Connector " + jettyConnector.getClass().getName() + " on port " + jettyConnector.getPort() );
                         getServer().addConnector( jettyConnector );
                     }
@@ -156,9 +155,7 @@ public class DefaultServletContainer
                     Connector jettyConnector = new SelectChannelConnector();
                     jettyConnector.setHost( getDefaultHost() );
                     jettyConnector.setPort( getDefaultPort() );
-
-                    getLogger().info( "Adding default Jetty Connector " + jettyConnector.getClass().getName() + " on port " + getDefaultPort() );
-                    
+                    getLogger().info( "Adding default Jetty Connector " + jettyConnector.getClass().getName() + " on port " + getDefaultPort() );                    
                     getServer().addConnector( jettyConnector );
                 }
 
