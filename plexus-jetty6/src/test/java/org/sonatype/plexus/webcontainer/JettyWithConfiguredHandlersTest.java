@@ -47,7 +47,7 @@ public class JettyWithConfiguredHandlersTest
     public void testJetty()
         throws Exception
     {
-        ServletContainer sc = (ServletContainer) lookup( ServletContainer.ROLE );
+        ServletContainer sc = (ServletContainer) lookup( ServletContainer.class );
     }
 
     protected void customizeContext( Context context )

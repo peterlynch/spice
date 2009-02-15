@@ -1,3 +1,5 @@
+package org.sonatype.plexus.webcontainer;
+
 /**
  * Copyright (c) 2008 Sonatype, Inc. All rights reserved.
  *
@@ -10,7 +12,6 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
-package org.sonatype.plexus.webcontainer;
 
 /*
  * The MIT License
@@ -44,14 +45,9 @@ import org.sonatype.plexus.webcontainer.ServletContainer;
 public class JettyTest
     extends PlexusTestCase
 {
-    protected void customizeContext( Context context )
-    {
-        context.put( "server", new MockRestletServer() );
-    }
-
     public void testJetty()
         throws Exception
     {
-        ServletContainer sc = (ServletContainer) lookup( ServletContainer.ROLE );
+        ServletContainer sc = (ServletContainer) lookup( ServletContainer.class );
     }
 }

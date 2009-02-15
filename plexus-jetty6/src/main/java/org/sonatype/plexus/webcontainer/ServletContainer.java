@@ -38,8 +38,6 @@ package org.sonatype.plexus.webcontainer;
 
 public interface ServletContainer
 {
-    String ROLE = ServletContainer.class.getName();
-
     /*
     void addListener( HttpListener listener )
         throws ServletContainerException, UnknownHostException;

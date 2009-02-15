@@ -37,8 +37,10 @@ import org.mortbay.jetty.handler.ContextHandler;
 import org.mortbay.jetty.handler.ContextHandlerCollection;
 import org.mortbay.jetty.handler.DefaultHandler;
 import org.mortbay.jetty.nio.SelectChannelConnector;
+import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.webapp.WebAppClassLoader;
 import org.mortbay.jetty.webapp.WebAppContext;
+import org.mortbay.log.Log;
 import org.sonatype.plexus.jetty.custom.PlexusContainerHolder;
 import org.sonatype.plexus.util.JettyUtils;
 
@@ -56,9 +58,9 @@ public class DefaultServletContainer
     private Server server;
 
     /** @plexus.configuration default-value="*" */
-    private String defaultHost = "*";
+    private String defaultHost = "localhost";
 
-    /** @plexus.configuration default-value="8080" */
+    /** @plexus.configuration default-value="8085" */
     private int defaultPort = 8081;
     
     /** @plexus.configuration */
@@ -75,6 +77,9 @@ public class DefaultServletContainer
 
     /** @plexus.configuration */
     private List<Webapp> webapps;
+
+    /** @plexus.configuration */
+    private List<Servlet> servlets;
 
     /** @plexus.configuration */
     //private File webapps;
@@ -116,7 +121,7 @@ public class DefaultServletContainer
     public void initialize()
         throws InitializationException
     {
-        // Log.setLog( new PlexusJettyLogger( getLogger() ) );
+        Log.setLog( new PlexusJettyLogger( getLogger() ) );
 
         server = new Server();
 
@@ -179,10 +184,20 @@ public class DefaultServletContainer
                         }
                     }
                 }
-
+                
+                ContextHandlerCollection contextHandlerCollection = new ContextHandlerCollection();
+                
+                if ( ( servlets != null && servlets.size() > 0 ) )
+                {
+                    for ( Servlet servlet : servlets )
+                    {
+                    	ContextHandler servletContext = getServletContext( servlet, contextHandlerCollection );
+                    }                	
+                }
+                
+                
                 if ( ( webapps != null && webapps.size() > 0 ) )
                 {
-                    ContextHandlerCollection contextHandlerCollection = new ContextHandlerCollection();
                     if ( !listeners.isEmpty() )
                     {
                         for ( Listener listener : listeners )
@@ -245,35 +260,12 @@ public class DefaultServletContainer
                                 getServer().addLifeCycle( webAppDeployer );
                             }                        
                         }
-                    }
-                    
-                    contextHandlerCollection.mapContexts();
-                    getServer().addHandler( contextHandlerCollection );                
+                    }                    
                 }
 
-                // handlers
-
-                /*
-                if ( handlers != null && handlers.size() > 0 )
-                {
-                    for ( Handler handlerInfo : handlers )
-                    {
-                        ContextHandler jettyHandler = handlerInfo.getHandler( context );
-                        jettyHandler.setServer( getServer() );
-                        jettyHandlers.add( jettyHandler );
-                        getLogger().info( "Adding Jetty Handler " + jettyHandler.getClass().getName() );
-                    }
-                }
-                else
-                {
-                    DefaultHandler defHandler = new DefaultHandler();
-                    defHandler.setServer( server );
-                    defHandler.setServeIcon( false );
-                    jettyHandlers.add( defHandler );
-                    getLogger().info( "Adding default Jetty Handler " + defHandler.getClass().getName() );
-                }
-                */
-
+                contextHandlerCollection.mapContexts();
+                getServer().addHandler( contextHandlerCollection );                
+                
                 DefaultHandler defHandler = new DefaultHandler();
                 defHandler.setServer( getServer() );
                 defHandler.setServeIcon( false );
@@ -342,8 +334,35 @@ public class DefaultServletContainer
         }
         
         return webAppContext;
+        
+        
     }
 
+    public ContextHandler getServletContext( Servlet servlet, ContextHandlerCollection contextHandlerCollection )
+    	throws Exception    
+    {
+    	org.mortbay.jetty.servlet.Context servletContext = new org.mortbay.jetty.servlet.Context( contextHandlerCollection, servlet.getContextPath(), org.mortbay.jetty.servlet.Context.SESSIONS );
+    	
+        // Put the container for the application into the servlet context
+        PlexusContainer container = (PlexusContainer) context.get( PlexusConstants.PLEXUS_KEY );
+        
+        servletContext.setAttribute( PlexusConstants.PLEXUS_KEY, container );    	
+        servletContext.setResourceBase( servlet.getResourceBase() );
+        //servletContext.setContextPath( servlet.getContextPath() );
+        servletContext.addServlet( new ServletHolder( (javax.servlet.Servlet)servlet.instantiate( context ) ), "/*" );
+        //context.setAttribute( "resourceCollectionHint", fileCollectionHint );                                                                                                  
+        //context.setAttribute( "debug", debugLevel+"" );                                                                                                                        
+                                                                                                                                                                               
+        //Map<String,String> initParams = new HashMap<String, String>(8);                                                                                                      
+        //initParams.put( "resourceCollectionHint", fileCollectionHint );                                                                                                      
+        //initParams.put( "debug", debugLevel+"" );                                                                                                                            
+        //context.setInitParams( initParams  );                           	
+    	
+        return servletContext;
+    }
+    
+    // Lifecycle
+    
     public void start()
         throws StartingException
     {

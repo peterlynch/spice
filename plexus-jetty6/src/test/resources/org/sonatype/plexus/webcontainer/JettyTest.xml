@@ -1,10 +1,6 @@
 <plexus>
   <components>
     <component>
-      <role>org.sonatype.plexus.webcontainer.SomeComponent</role>
-      <implementation> org.sonatype.plexus.webcontainer.ComponentJettyHandler</implementation>
-    </component>
-    <component>
       <role>org.sonatype.plexus.webcontainer.ServletContainer</role>
       <implementation> org.sonatype.plexus.webcontainer.DefaultServletContainer</implementation>
       <configuration>
@@ -21,16 +17,6 @@
             <clazz>org.mortbay.jetty.LocalConnector</clazz>
           </connector>
         </connectors>
-        <!-- 
-        <handlers>
-          <handler>
-            <role>org.sonatype.plexus.jetty.SomeComponent</role>
-          </handler>
-          <handler>
-            <clazz> org.sonatype.plexus.jetty.MockRestletHandler(#server)</clazz>
-          </handler>
-        </handlers>
-        -->
         <webapps>
           <webapp>
             <warPath>${basedir}/src/test/webapps/webapp0</warPath>

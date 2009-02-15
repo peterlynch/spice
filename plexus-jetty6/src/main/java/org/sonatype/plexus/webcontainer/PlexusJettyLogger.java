@@ -82,7 +82,7 @@ public class PlexusJettyLogger
         }
         if ( o2 != null )
         {
-            msg = StringUtils.replaceOnce( msg, "{}", o1.toString() );
+            //msg = StringUtils.replaceOnce( msg, "{}", o1.toString() );
         }
         return msg;
     }
