@@ -13,7 +13,10 @@
 package org.sonatype.webdav;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -48,7 +51,6 @@ import org.sonatype.webdav.security.User;
 public class WebdavServlet
     extends HttpServlet
 {
-
     /**
      * The debugging detail level for this servlet.
      */
@@ -68,10 +70,8 @@ public class WebdavServlet
      * Proxy directory context.
      */
     protected ResourceCollection resourceCollection;
-
-    protected String resourceCollectionHint = null;
-
-    protected String resourceCollectionBase = null;
+    protected String resourceCollectionHint;
+    protected String resourceCollectionBase;
 
     /**
      * File encoding to be used when reading static files. If none is specified the platform default is used.
@@ -84,20 +84,16 @@ public class WebdavServlet
      * Our authentication
      */
     protected Authentication authn;
-
     protected Authorization authz;
-
     protected String authenticationHint;
-
     protected String authorizationHint;
-
+    
+    private PrintWriter log;
     
     protected String getConfigParameter( String name )
     {
-        Object o = getServletContext().getAttribute( name );
-        
-        return o == null ? null : o.toString();
-            
+        Object o = getServletContext().getAttribute( name );        
+        return o == null ? null : o.toString();            
     }
     /**
      * Initialize this servlet.
@@ -105,11 +101,17 @@ public class WebdavServlet
     public void init()
         throws ServletException
     {
-
         super.init();
 
+        try {
+			log = new PrintWriter( new File( "/tmp/log.txt" ) );
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+            throw new ServletException( "can't make log" );
+		}
+		
         PlexusContainer container = getContainer( getServletContext() );
-
+        
         if ( container == null )
         {
             throw new ServletException( "Cannot find PlexusContainer in the webapp context" );
@@ -249,24 +251,30 @@ public class WebdavServlet
             authorizationHint = "properties";
         }
 
+        log.println( "resourceCollectionBase = " + resourceCollectionBase );
+        log.flush();
+
+        log.println( "resourceCollectionBase = " + resourceCollectionHint );
+        log.flush();
+
         try
         {
             authn = (Authentication) container.lookup( Authentication.class, authenticationHint );
             authz = (Authorization) container.lookup( Authorization.class, authorizationHint );
-            
-            
+                            
             if( resourceCollectionBase != null )
+            {
                 resourceCollection = new FileResourceCollection( new File(resourceCollectionBase), "/" );
+            }
             else
-                resourceCollection = (ResourceCollection) container.lookup(
-                    ResourceCollection.class,
-                    resourceCollectionHint );
+            {
+                resourceCollection = (ResourceCollection) container.lookup( ResourceCollection.class, resourceCollectionHint );
+            }
         }
         catch ( ComponentLookupException e )
         {
             throw new ServletException( "Not all components were available", e );
         }
-
     }
 
     /**
@@ -276,8 +284,11 @@ public class WebdavServlet
         throws ServletException,
             IOException
     {
+        log.println( "authn: " + authn);
+        log.flush();
+    	
         User user = authn.authenticate( req, res, req.getSession() );
-
+        
         if ( user == null )
         {
             // our authentication implementation should be logging them in so we can render on the next request
@@ -288,7 +299,8 @@ public class WebdavServlet
 
         if ( debug > 0 )
         {
-            log( "[" + method + "] " + req.getPathInfo() );
+            log.println( "[" + method + "] " + req.getPathInfo() );
+            log.flush();
         }
 
         Method methodExecution = loadMethod( method );

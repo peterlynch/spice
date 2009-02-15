@@ -7,6 +7,7 @@
   <servlet>
     <servlet-name>webdav</servlet-name>
     <servlet-class>org.sonatype.webdav.WebdavServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
     <init-param>
       <param-name>debug</param-name>
       <param-value>9</param-value>
