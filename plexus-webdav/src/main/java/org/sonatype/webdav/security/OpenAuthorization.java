@@ -12,7 +12,6 @@
  */
 package org.sonatype.webdav.security;
 
-// TODO: Auto-generated Javadoc
 /**
  * Class that always authorizes. Used for Nexus, since auth/authz are handled there.
  * 

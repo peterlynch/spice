@@ -4,16 +4,8 @@
       <role>org.sonatype.plexus.webcontainer.ServletContainer</role>
       <implementation> org.sonatype.plexus.webcontainer.DefaultServletContainer</implementation>
       <configuration>
-		<!-- Not used if connectors given -->
         <defaultHost>localhost</defaultHost>
         <defaultPort>9000</defaultPort>
-        <connectors>
-          <connector>
-            <clazz>org.mortbay.jetty.nio.SelectChannelConnector</clazz>
-            <host>localhost</host>
-            <port>9000</port>
-          </connector>
-        </connectors>
         <servlets>
           <servlet>
             <clazz>org.sonatype.webdav.WebdavServlet</clazz>
