@@ -49,22 +49,15 @@ import org.sonatype.webdav.security.User;
 public class WebdavServlet
     extends HttpServlet
 {
-    /**
-     * The debugging detail level for this servlet.
-     */
+    /** The debugging detail level for this servlet. */
     protected int debug = 9;
 
-    /**
-     * Should we generate directory listings?
-     */
+    /** Should we generate directory listings? */
     protected boolean listings = true;
 
-    /**
-     * Read only flag. By default, it's set to true.
-     */
+    /** Read only flag. By default, it's set to true. */
     protected boolean readOnly = false;
 
-    /** Proxy directory context */
     protected ResourceCollection resourceCollection;
     protected String resourceCollectionHint;
     protected String resourceCollectionBase;
@@ -195,6 +188,13 @@ public class WebdavServlet
             {
                 resourceCollectionBase = value;
             }
+            else
+            {
+            	// Default the resource base set by the serlvet configuration. At some point when
+            	// we are serving up for then a file system then we can change this but this is 
+            	// a reasonable default for now.
+                resourceCollectionBase = getServletContext().getRealPath( "" );
+            }
         }
         catch ( Exception e )
         {
@@ -241,10 +241,10 @@ public class WebdavServlet
         {
             authn = (Authentication) container.lookup( Authentication.class, authenticationHint );
             authz = (Authorization) container.lookup( Authorization.class, authorizationHint );
-                            
+                                        
             if( resourceCollectionBase != null )
             {
-                resourceCollection = new FileResourceCollection( new File(resourceCollectionBase), "/" );
+                resourceCollection = new FileResourceCollection( new File( resourceCollectionBase ), "/" );
             }
             else
             {

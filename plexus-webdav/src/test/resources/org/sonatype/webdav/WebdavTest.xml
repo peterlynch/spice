@@ -17,20 +17,11 @@
         <servlets>
           <servlet>
             <clazz>org.sonatype.webdav.WebdavServlet</clazz>
-            <resourceBase>${basedir}/target</resourceBase>
+            <resourceBase>/Users/jvanzyl/test</resourceBase>
             <contextPath>/webdav</contextPath>
           </servlet>
         </servlets>        
       </configuration>
-    </component>
-    
-    <component>                                                                                                                                                                
-      <role>org.sonatype.webdav.ResourceCollection</role>                                                                                                                      
-      <role-hint>file</role-hint>                                                                                                                                              
-      <implementation>org.sonatype.webdav.FileResourceCollection</implementation>                                                                                              
-      <configuration>                                                                                                                                                          
-        <root-path>/Users/jvanzyl/test</root-path>                                                                                                                                   
-      </configuration>                                                                                                                                                         
-    </component>          
+    </component>    
   </components>  
 </plexus>

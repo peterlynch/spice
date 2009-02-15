@@ -33,22 +33,14 @@ public class FileResourceCollection
     extends AbstractResourceCollection
     implements Initializable
 {
-    private File dir;
-    
-    /**
-     * @plexus.configuration default-value="target/webdav"
-     */
-    private String rootPath = "target/webdav";
+    private File resourcePath;
     
     public void initialize()
         throws InitializationException
     {
-        this.dir = new File( rootPath );
-            	    	
-        /* initialise the datastore on first creation */
-        if ( !dir.exists() )
+        if ( !resourcePath.exists() )
         {
-            dir.mkdirs();
+            resourcePath.mkdirs();
         }
     }
 
@@ -56,18 +48,19 @@ public class FileResourceCollection
     {
     }
 
-    public FileResourceCollection( File root, String id )
+    public FileResourceCollection( File resourcePath, String id )
     {
         super( id );
-        this.dir = root;
+        
+        this.resourcePath = resourcePath;
     }
 
     public Enumeration<Object> listResources( MethodExecutionContext context )
     {    	
         Vector<Object> ret = new Vector<Object>();
 
-        File[] list = dir.listFiles();
-
+        File[] list = resourcePath.listFiles();
+        
         if ( list != null )
         {
             for ( int i = 0; i < list.length; i++ )
@@ -92,7 +85,7 @@ public class FileResourceCollection
     {
         File underlying = ( (FileResource) resource ).getFile();
 
-        File newName = new File( dir, resource.getName() );
+        File newName = new File( resourcePath, resource.getName() );
 
         move( underlying, newName );
         ( (FileResource) resource ).setFile( newName );
@@ -108,7 +101,7 @@ public class FileResourceCollection
         File underlying = ( (FileResource) old ).getFile();
         underlying.delete();
 
-        File replace = new File( dir, resource.getName() );
+        File replace = new File( resourcePath, resource.getName() );
 
         move( ( (FileResource) resource ).getFile(), replace );
         ( (FileResource) resource ).setFile( replace );
@@ -116,7 +109,7 @@ public class FileResourceCollection
 
     public ResourceCollection createCollection( MethodExecutionContext context, String path )
     {
-        File dir = new File( this.dir, new File( path ).getName() );
+        File dir = new File( this.resourcePath, new File( path ).getName() );
 
         dir.mkdir();
         FileResourceCollection ret = new FileResourceCollection( dir, path );
@@ -125,7 +118,7 @@ public class FileResourceCollection
 
     public void removeCollection( MethodExecutionContext context, ResourceCollection collection )
     {
-        File file = new File( dir, new File( collection.getPath() ).getName() );
+        File file = new File( resourcePath, new File( collection.getPath() ).getName() );
 
         file.delete(); // TODO remove recursively
     }
@@ -137,12 +130,12 @@ public class FileResourceCollection
 
     public long getLastModified()
     {
-        return dir.lastModified();
+        return resourcePath.lastModified();
     }
 
     public long getCreation()
     {
-        return dir.lastModified(); // FIXME make java better!
+        return resourcePath.lastModified(); // FIXME make java better!
     }
 
     public static void move( File from, File to )
