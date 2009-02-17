@@ -27,12 +27,12 @@
                             <goal>xpp3-writer</goal>
                         </goals>
                         <configuration>
-                            <version>2.0.3</version>
+                            <version>2.0.2</version>
                             <model>src/main/mdo/security.xml</model>
                             <packagedVersions>
                                 <packagedVersion>2.0.0</packagedVersion>
                                 <packagedVersion>2.0.1</packagedVersion>
-                                <packagedVersion>2.0.2</packagedVersion>
+                                <!-- <packagedVersion>2.0.2</packagedVersion> -->
                             </packagedVersions>
                         </configuration>
                     </execution>
@@ -41,37 +41,6 @@
                     <packageWithVersion>false</packageWithVersion>
                 </configuration>
             </plugin>
-            			<plugin>
-				<!-- TODO remove when upgrade generator is marged into modello -->
-				<groupId>org.sonatype.plugins</groupId>
-				<artifactId>modello-plugin-upgrade</artifactId>
-				<version>0.0.1-SNAPSHOT</version>
-				<executions>
-					<execution>
-						<id>security-upgrade</id>
-						<goals>
-							<goal>upgrade</goal>
-						</goals>
-						<configuration>
-							<version>2.0.3</version>
-							<packagedVersions>
-								<packagedVersion>2.0.2</packagedVersion>
-							</packagedVersions>
-							<models><model>src/main/mdo/security.xml</model></models>
-						</configuration>
-					</execution>
-				</executions>
-				<configuration>
-					<packageWithVersion>false</packageWithVersion>
-				</configuration>
-				<dependencies>
-					<dependency>
-						<groupId>commons-collections</groupId>
-						<artifactId>commons-collections</artifactId>
-						<version>3.2</version>
-					</dependency>
-				</dependencies>
-			</plugin>
         </plugins>
     </build>
     <dependencies>
