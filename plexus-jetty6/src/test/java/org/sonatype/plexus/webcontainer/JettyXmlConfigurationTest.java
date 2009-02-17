@@ -141,8 +141,7 @@ public class JettyXmlConfigurationTest
         Server server = null;
         try
         {
-            DefaultServletContainer servletContainer =
-                (DefaultServletContainer) container.lookup( ServletContainer.class );
+            DefaultServletContainer servletContainer = (DefaultServletContainer) container.lookup( ServletContainer.class );
 
             server = servletContainer.getServer();
             assertNotNull( server );
@@ -151,7 +150,7 @@ public class JettyXmlConfigurationTest
             assertEquals( 1, connectors.length );
             assertTrue( connectors[0] instanceof SelectChannelConnector );
             assertEquals( "localhost", connectors[0].getHost() );
-            assertEquals( servletContainer.getDefaultPort(), connectors[0].getPort() );
+            assertEquals( servletContainer.getPort(), connectors[0].getPort() );
 
             Handler[] handlers = server.getHandlers();
             if ( handlers == null )

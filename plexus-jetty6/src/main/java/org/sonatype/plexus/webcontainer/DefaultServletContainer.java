@@ -58,10 +58,10 @@ public class DefaultServletContainer
     private Server server;
 
     /** @plexus.configuration default-value="*" */
-    private String defaultHost = "localhost";
+    private String host = "localhost";
 
     /** @plexus.configuration default-value="8085" */
-    private int defaultPort = 8081;
+    private int port = 8081;
     
     /** @plexus.configuration */
     private String jettyXml;
@@ -92,16 +92,6 @@ public class DefaultServletContainer
         return server;
     }
 
-    public String getDefaultHost()
-    {
-        return defaultHost;
-    }
-
-    public int getDefaultPort()
-    {
-        return defaultPort;
-    }
-
     public String getJettyXml()
     {
         return jettyXml;
@@ -115,6 +105,7 @@ public class DefaultServletContainer
     public void contextualize( Context context )
         throws ContextException
     {
+    	
         this.context = context;
     }
 
@@ -123,6 +114,12 @@ public class DefaultServletContainer
     {
         Log.setLog( new PlexusJettyLogger( getLogger() ) );
 
+        // We want to look for the star and turn it into what Jetty understands.
+        if ( host.equals( "*" ) )
+        {
+        	host = "0.0.0.0";
+        }        
+        
         server = new Server();
 
         if ( jettyXml != null && new File( jettyXml ).isFile() )
@@ -152,10 +149,10 @@ public class DefaultServletContainer
                 }
                 else
                 {
-                    Connector jettyConnector = new SelectChannelConnector();
-                    jettyConnector.setHost( getDefaultHost() );
-                    jettyConnector.setPort( getDefaultPort() );
-                    getLogger().info( "Adding default Jetty Connector " + jettyConnector.getClass().getName() + " on port " + getDefaultPort() );                    
+                    Connector jettyConnector = new SelectChannelConnector();                                      
+                    jettyConnector.setHost( host );
+                    jettyConnector.setPort( port );
+                    getLogger().info( "Adding default Jetty Connector " + jettyConnector.getClass().getName() + " on port " + port );                    
                     getServer().addConnector( jettyConnector );
                 }
 
@@ -358,9 +355,19 @@ public class DefaultServletContainer
         return servletContext;
     }
     
+    public String getHost() 
+    {
+		return host;
+	}
+
+	public int getPort() 
+	{
+		return port;
+	}    
+    
     // Lifecycle
     
-    public void start()
+	public void start()
         throws StartingException
     {
         try

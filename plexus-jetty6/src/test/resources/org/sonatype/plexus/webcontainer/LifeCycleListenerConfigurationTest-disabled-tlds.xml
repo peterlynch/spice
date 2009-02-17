@@ -9,9 +9,9 @@
             </implementation>
             <configuration>
 				<!-- Used if no connectors given -->
-                <defaultHost>localhost</defaultHost>
+                <host>localhost</host>
 				<!-- Used if no connectors given -->
-                <defaultPort>${default-jetty-port}</defaultPort>
+                <port>${default-jetty-port}</port>
                 <webapps>
                     <webapp>
                         <warPath>${basedir}/src/test/webapps

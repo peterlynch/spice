@@ -5,8 +5,8 @@
       <implementation> org.sonatype.plexus.webcontainer.DefaultServletContainer</implementation>
       <configuration>
 		<!-- Not used if connectors given -->
-        <defaultHost>localhost</defaultHost>
-        <defaultPort>${test-connector-port}</defaultPort>
+        <host>localhost</host>
+        <port>${test-connector-port}</port>
         <connectors>
           <connector>
             <clazz>org.mortbay.jetty.nio.SelectChannelConnector</clazz>
