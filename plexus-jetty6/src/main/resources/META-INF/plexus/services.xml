@@ -1,0 +1,17 @@
+<!--
+
+When this descriptor is discovered it will be registered with the container and started. The Plexus container
+needs to be enabled for automatic service loading for this to work. But just the presence of the service JAR
+will activate the Jetty component.
+
+-->
+<services>
+  <service>
+    <role>org.sonatype.plexus.webcontainer.ServletContainer</role>
+    <role-hint>jetty</role-hint>
+    <configuration>
+      <host>localhost</host>
+      <port>9000</port>
+    </configuration>    
+  </service>
+</services>
