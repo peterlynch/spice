@@ -70,6 +70,7 @@ import org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StartingException;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StoppingException;
 import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 
 /**
@@ -405,7 +406,6 @@ public class LdapServer
 
     /*
      * (non-Javadoc)
-     * 
      * @see org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable#initialize()
      */
     public void initialize()
@@ -465,7 +465,6 @@ public class LdapServer
 
     /*
      * (non-Javadoc)
-     * 
      * @see org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable#start()
      */
     public void start()
@@ -495,7 +494,16 @@ public class LdapServer
             {
                 if ( partition.getLdifFile() != null )
                 {
-                    this.importLdif( new FileInputStream( partition.getLdifFile() ) );
+                    FileInputStream ldifStream = null;
+                    try
+                    {
+                        ldifStream = new FileInputStream( partition.getLdifFile() );
+                        this.importLdif( ldifStream );
+                    }
+                    finally
+                    {
+                        IOUtil.close( ldifStream );
+                    }
                 }
             }
 
@@ -516,7 +524,7 @@ public class LdapServer
             throw new StartingException( "Error starting embedded ApacheDS server.", e );
         }
     }
-    
+
     public boolean isStarted()
     {
         return directoryService.isStarted();
@@ -524,7 +532,6 @@ public class LdapServer
 
     /*
      * (non-Javadoc)
-     * 
      * @see org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable#stop()
      */
     public void stop()
