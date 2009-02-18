@@ -334,64 +334,67 @@ public class ResourceMergingConfigurationManager
     private Configuration initializeStaticConfiguration()
     {
         lock.lock();
-        
+
         try
-        {        
-            for ( StaticSecurityResource resource : staticResources )
+        {
+            if ( configuration == null )
             {
-                Configuration config = resource.getConfiguration();
-                
-                if ( config != null )
+                for ( StaticSecurityResource resource : staticResources )
                 {
-                    appendConfig( config );
-                }
-                
-                if ( resource.getResourcePath() != null )
-                {
-                    Reader fr = null;
-                    InputStream is = null;
-        
-                    try
+                    Configuration config = resource.getConfiguration();
+
+                    if ( config != null )
                     {
-                        getLogger().debug( "Loading static security config from " + resource.getResourcePath() );
-                        is = getClass().getResourceAsStream( resource.getResourcePath() );
-                        SecurityConfigurationXpp3Reader reader = new SecurityConfigurationXpp3Reader();
-        
-                        fr = new InputStreamReader( is );
-                        
-                        appendConfig( reader.read( fr ) );
+                        appendConfig( config );
                     }
-                    catch ( IOException e )
+
+                    if ( resource.getResourcePath() != null )
                     {
-                        getLogger().error( "IOException while retrieving configuration file", e );
-                    }
-                    catch ( XmlPullParserException e )
-                    {
-                        getLogger().error( "Invalid XML Configuration", e );
-                    }
-                    finally
-                    {
-                        if ( fr != null )
+                        Reader fr = null;
+                        InputStream is = null;
+
+                        try
                         {
-                            try
-                            {
-                                fr.close();
-                            }
-                            catch ( IOException e )
-                            {
-                                // just closing if open
-                            }
+                            getLogger().debug( "Loading static security config from " + resource.getResourcePath() );
+                            is = getClass().getResourceAsStream( resource.getResourcePath() );
+                            SecurityConfigurationXpp3Reader reader = new SecurityConfigurationXpp3Reader();
+
+                            fr = new InputStreamReader( is );
+
+                            appendConfig( reader.read( fr ) );
                         }
-                        
-                        if ( is != null )
+                        catch ( IOException e )
                         {
-                            try
+                            getLogger().error( "IOException while retrieving configuration file", e );
+                        }
+                        catch ( XmlPullParserException e )
+                        {
+                            getLogger().error( "Invalid XML Configuration", e );
+                        }
+                        finally
+                        {
+                            if ( fr != null )
                             {
-                                is.close();
+                                try
+                                {
+                                    fr.close();
+                                }
+                                catch ( IOException e )
+                                {
+                                    // just closing if open
+                                }
                             }
-                            catch ( IOException e )
+
+                            if ( is != null )
                             {
-                                // just closing if open
+                                try
+                                {
+                                    is.close();
+                                }
+                                catch ( IOException e )
+                                {
+                                    // just closing if open
+                                }
                             }
                         }
                     }
@@ -404,7 +407,7 @@ public class ResourceMergingConfigurationManager
             {
                 configuration = new Configuration();
             }
-            
+
             lock.unlock();
         }
         
