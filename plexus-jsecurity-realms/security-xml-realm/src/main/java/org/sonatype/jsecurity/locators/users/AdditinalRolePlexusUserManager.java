@@ -51,7 +51,7 @@ public class AdditinalRolePlexusUserManager
     @Override
     public PlexusUser getUser( String userId, String source )
     {
-        PlexusUser user = super.getUser( userId );
+        PlexusUser user = super.getUser( userId, source );
 
         if ( user != null )
         {
