@@ -15,7 +15,6 @@
 package org.sonatype.plexus.component.bundlepublisher;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +37,9 @@ import org.apache.maven.model.License;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Organization;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
+import org.codehaus.plexus.archiver.ArchiverException;
+import org.codehaus.plexus.archiver.zip.ZipArchiver;
+import org.codehaus.plexus.archiver.zip.ZipUnArchiver;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.IOUtil;
@@ -47,7 +49,7 @@ import org.sonatype.plexus.component.bundlepublisher.model.BundleDescriptor;
 
 /**
  * @plexus.component
-*/
+ */
 public class DefaultBundlePublisher
     extends AbstractLogEnabled
     implements BundlePublisher
@@ -71,6 +73,16 @@ public class DefaultBundlePublisher
      * @plexus.requirement
      */
     private ArtifactInstaller installer;
+
+    /**
+     * @plexus.requirement role="org.codehaus.plexus.archiver.UnArchiver" role-hint="zip"
+     */
+    private ZipUnArchiver zipUnArchiver;
+
+    /**
+     * @plexus.requirement role="org.codehaus.plexus.archiver.Archiver" role-hint="zip"
+     */
+    private ZipArchiver zipArchiver;
 
     private final List<File> temporaryFiles = new ArrayList<File>();
 
@@ -143,13 +155,20 @@ public class DefaultBundlePublisher
             zip = new ZipFile( sourceFile );
             validate( descriptor, zip );
 
-            File file;
+            File bundleDir = createTempFile( sourceFile.getName(), "bundle" );
+            bundleDir.mkdirs();
+
+            zipUnArchiver.setSourceFile( sourceFile );
+            zipUnArchiver.setDestDirectory( bundleDir );
+            zipUnArchiver.extract();
+
             for ( BundleArtifact artifact : descriptor.getArtifacts() )
             {
                 getLogger().debug( "Importing artifact " + artifact.getArtifactId() );
 
                 Artifact mavenArtifact = createMavenArtifact( descriptor, artifact );
 
+                File file;
                 if ( "pom".equals( mavenArtifact.getType() ) )
                 {
                     Model pom = createMavenModel( descriptor, artifact );
@@ -158,7 +177,7 @@ public class DefaultBundlePublisher
                 else
                 {
                     String location = artifact.getLocation();
-                    file = getArtifactFile( zip, location, mavenArtifact );
+                    file = getArtifactFile( bundleDir, location, mavenArtifact );
 
                     if ( artifact.getClassifier() == null )
                     {
@@ -176,7 +195,11 @@ public class DefaultBundlePublisher
         }
         catch ( IOException e )
         {
-            throw new PublishingException( "Unable to open souce file", e );
+            throw new PublishingException( e.getMessage(), e );
+        }
+        catch ( ArchiverException e )
+        {
+            throw new PublishingException( e.getMessage(), e );
         }
         finally
         {
@@ -216,28 +239,26 @@ public class DefaultBundlePublisher
         }
     }
 
-    private File getArtifactFile( ZipFile zip, String location, Artifact mavenArtifact )
-        throws IOException
+    private File getArtifactFile( File bundleDir, String location, Artifact mavenArtifact )
+        throws IOException, ArchiverException
     {
-        ZipEntry entry = zip.getEntry( location );
-        InputStream input = null;
-        FileOutputStream output = null;
-        try
+
+        File artifactFile = new File( bundleDir, location );
+        if ( artifactFile.isDirectory() )
         {
-            File file = createTempFile( FileUtils.removeExtension( location ), FileUtils.getExtension( location ) );
-            file.createNewFile();
+            File zipFile = createTempFile( mavenArtifact.getArtifactId(), mavenArtifact.getType() );
+            zipFile.createNewFile();
 
-            input = zip.getInputStream( entry );
-            output = new FileOutputStream( file );
-            IOUtil.copy( input, output );
-            output.flush();
+            zipArchiver.reset();
+            zipArchiver.addDirectory( artifactFile );
+            zipArchiver.setDestFile( zipFile );
+            zipArchiver.createArchive();
 
-            return file;
+            return zipFile;
         }
-        finally
+        else
         {
-            IOUtil.close( input );
-            IOUtil.close( output );
+            return artifactFile;
         }
     }
 
@@ -371,6 +392,15 @@ public class DefaultBundlePublisher
                     throw new PublishingException( "Artifact for '" + artifactId + "' not found on sourceFile: "
                         + artifact.getLocation() );
                 }
+
+                if ( entry.isDirectory() )
+                {
+                    if ( !"zip".equals( artifact.getType() ) )
+                    {
+                        throw new PublishingException( "Invalid location for '" + artifactId
+                            + "' directory are only allowed to zip packaging artifacts." );
+                    }
+                }
             }
 
             List<ArtifactDependency> dependencies = artifact.getDependencies();
@@ -408,7 +438,7 @@ public class DefaultBundlePublisher
 
     private File createTempFile( String prefix, String suffix )
     {
-        File tempFile = new File( TEMP_DIR, prefix + "-" + Long.toHexString( RANDOM.nextInt( 4 ) ) + "-" + suffix );
+        File tempFile = new File( TEMP_DIR, prefix + "-" + Long.toHexString( RANDOM.nextInt( 16 ) ) + "-" + suffix );
         tempFile.getParentFile().mkdirs();
 
         temporaryFiles.add( tempFile );
