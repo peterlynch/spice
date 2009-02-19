@@ -169,14 +169,16 @@ public class ResourceMergingConfigurationManager
         context.addExistingRoleIds();
         context.addExistingPrivilegeIds();
         
-        for ( CUser user : listUsers() )
+        List<CUser> users = new ArrayList<CUser>( listUsers() );        
+        for ( CUser user : users )
         {
             context.getExistingUserIds().add( user.getId() );
             
             context.getExistingEmailMap().put( user.getId(), user.getEmail() );
         }
 
-        for ( CRole role : listRoles() )
+        List<CRole> roles = new ArrayList<CRole>( listRoles() );
+        for ( CRole role : roles )
         {
             context.getExistingRoleIds().add( role.getId() );
 
@@ -189,7 +191,8 @@ public class ResourceMergingConfigurationManager
             context.getExistingRoleNameMap().put( role.getId(), role.getName() );
         }
 
-        for ( CPrivilege priv : listPrivileges() )
+        List<CPrivilege> privs = new ArrayList<CPrivilege>( listPrivileges() );
+        for ( CPrivilege priv : privs )
         {
             context.getExistingPrivilegeIds().add( priv.getId() );
         }
