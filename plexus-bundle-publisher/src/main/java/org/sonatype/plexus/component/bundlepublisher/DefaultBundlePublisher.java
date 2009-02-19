@@ -37,10 +37,17 @@ import org.apache.maven.model.License;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Organization;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
+import org.codehaus.plexus.PlexusConstants;
+import org.codehaus.plexus.PlexusContainer;
+import org.codehaus.plexus.archiver.Archiver;
 import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.zip.ZipArchiver;
 import org.codehaus.plexus.archiver.zip.ZipUnArchiver;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.codehaus.plexus.context.Context;
+import org.codehaus.plexus.context.ContextException;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.IOUtil;
 import org.sonatype.plexus.component.bundlepublisher.model.ArtifactDependency;
@@ -52,7 +59,7 @@ import org.sonatype.plexus.component.bundlepublisher.model.BundleDescriptor;
  */
 public class DefaultBundlePublisher
     extends AbstractLogEnabled
-    implements BundlePublisher
+    implements BundlePublisher, Contextualizable
 {
 
     private static final File TEMP_DIR = new File( System.getProperty( "java.io.tmpdir" ) );
@@ -79,12 +86,9 @@ public class DefaultBundlePublisher
      */
     private ZipUnArchiver zipUnArchiver;
 
-    /**
-     * @plexus.requirement role="org.codehaus.plexus.archiver.Archiver" role-hint="zip"
-     */
-    private ZipArchiver zipArchiver;
-
     private final List<File> temporaryFiles = new ArrayList<File>();
+
+    private PlexusContainer plexus;
 
     public void deploy( File sourceFile, InputStream bundleDescriptor, ArtifactRepository deploymentRepository,
                         ArtifactRepository localRepository )
@@ -192,6 +196,16 @@ public class DefaultBundlePublisher
 
                 artifacts.add( mavenArtifact );
             }
+
+            String groupId = descriptor.getDefaults().getGroupId();
+            String artifactId = "bundle";
+            String version = descriptor.getDefaults().getVersion();
+            String type = "zip";
+
+            Artifact mavenArtifact =
+                artifactFactory.createArtifactWithClassifier( groupId, artifactId, version, type, null );
+            mavenArtifact.setFile( sourceFile );
+            artifacts.add( mavenArtifact );
         }
         catch ( IOException e )
         {
@@ -240,7 +254,7 @@ public class DefaultBundlePublisher
     }
 
     private File getArtifactFile( File bundleDir, String location, Artifact mavenArtifact )
-        throws IOException, ArchiverException
+        throws IOException, ArchiverException, PublishingException
     {
 
         File artifactFile = new File( bundleDir, location );
@@ -249,8 +263,23 @@ public class DefaultBundlePublisher
             File zipFile = createTempFile( mavenArtifact.getArtifactId(), mavenArtifact.getType() );
             zipFile.createNewFile();
 
+            ZipArchiver zipArchiver;
+            try
+            {
+                zipArchiver = (ZipArchiver) plexus.lookup( Archiver.ROLE, "zip" );
+            }
+            catch ( ComponentLookupException e )
+            {
+                throw new PublishingException( "Unable to lookup for ZipArchiver", e );
+            }
             zipArchiver.reset();
-            zipArchiver.addDirectory( artifactFile );
+            for ( File file : artifactFile.listFiles() )
+            {
+                if ( file.isFile() )
+                {
+                    zipArchiver.addFile( file, file.getName() );
+                }
+            }
             zipArchiver.setDestFile( zipFile );
             zipArchiver.createArchive();
 
@@ -329,7 +358,8 @@ public class DefaultBundlePublisher
 
         for ( ArtifactDependency dependency : artifact.getDependencies() )
         {
-            String depGroupId = dependency.getGroupId() != null ? dependency.getGroupId() : groupId;
+            String depGroupId =
+                dependency.getGroupId() != null ? dependency.getGroupId() : descriptor.getDefaults().getGroupId();
             String depVersion = dependency.getVersion() != null ? dependency.getVersion() : version;
             String depType = dependency.getType() != null ? dependency.getType() : "jar";
 
@@ -438,11 +468,17 @@ public class DefaultBundlePublisher
 
     private File createTempFile( String prefix, String suffix )
     {
-        File tempFile = new File( TEMP_DIR, prefix + "-" + Long.toHexString( RANDOM.nextInt( 16 ) ) + "-" + suffix );
+        File tempFile = new File( TEMP_DIR, prefix + "-" + Long.toHexString( RANDOM.nextInt() ) + "-" + suffix );
         tempFile.getParentFile().mkdirs();
 
         temporaryFiles.add( tempFile );
         return tempFile;
+    }
+
+    public void contextualize( Context context )
+        throws ContextException
+    {
+        plexus = (PlexusContainer) context.get( PlexusConstants.PLEXUS_KEY );
     }
 
 }
