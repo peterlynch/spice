@@ -12,8 +12,15 @@
  */
 package org.sonatype.micromailer;
 
+import javax.mail.internet.MimeMessage;
+
 import org.codehaus.plexus.PlexusTestCase;
 import org.sonatype.micromailer.imp.DefaultMailType;
+import org.sonatype.micromailer.imp.HtmlMailType;
+
+import com.icegreen.greenmail.util.GreenMail;
+import com.icegreen.greenmail.util.GreenMailUtil;
+import com.icegreen.greenmail.util.ServerSetup;
 
 public class EMailerTest
     extends PlexusTestCase
@@ -34,9 +41,9 @@ public class EMailerTest
         MailRequest request = new MailRequest( "testId", DefaultMailType.DEFAULT_TYPE_ID );
 
         MailRequestStatus status = eMailer.sendMail( request );
-        
+
         int count = 0;
-        
+
         while ( !status.isSent() && count < 10 )
         {
             Thread.sleep( 100 );
@@ -50,52 +57,62 @@ public class EMailerTest
         assertEquals( MailCompositionMessagingException.class, status.getErrorCause().getClass() );
     }
 
-    /**
-     * Turned off since it needs localhost SMTP server
-     */
-    public void OFFEDtestWithLocalhost()
+    public void testRealOnLocalhost()
         throws Exception
     {
+        final String host = "localhost";
+        final int port = 42358;
+        final String username = "smtp-username";
+        final String password = "smtp-password";
+        final String systemMailAddress = "system@nexus.org";
+
+        // mail server config
+        ServerSetup smtp = new ServerSetup( port, null, ServerSetup.PROTOCOL_SMTP );
+        GreenMail server = new GreenMail( smtp );
+        server.setUser( systemMailAddress, username, password );
+        server.start();
+
+        // mailer config
         EmailerConfiguration config = new EmailerConfiguration();
-
-        config.setMailHost( "is-micro.myip.hu" );
-
-        config.setTls( true );
-        
-        config.setUsername( "XXX" );
-
-        config.setPassword( "XXX" );
-
+        config.setMailHost( host );
+        config.setMailPort( port );
+        config.setUsername( username );
+        config.setPassword( password );
+        config.setSsl( false );
+        config.setTls( false );
         config.setDebug( true );
 
         eMailer.configure( config );
 
-        MailRequest request = new MailRequest( "testId", DefaultMailType.DEFAULT_TYPE_ID );
+        // prepare a mail request
+        MailRequest request = new MailRequest( "Mail-Test", HtmlMailType.HTML_TYPE_ID );
+        request.setFrom( new Address( systemMailAddress, "Nexus Manager" ) );
+        request.getToAddresses().add( new Address( "user1@nexus.org" ) );
+        request.getToAddresses().add( new Address( "user2@nexus.org" ) );
+        request.getToAddresses().add( new Address( "user3@nexus.org" ) );
+        request.getToAddresses().add( new Address( "user4@nexus.org" ) );
+        request.getBodyContext().put( DefaultMailType.SUBJECT_KEY, "Nexus: Mail Test Begin." );
+        StringBuilder body = new StringBuilder();
+        body.append( "The following artifacts have been staged to the test Repository:<br><br>" );
+        body
+            .append( "<i>(Set the Base URL parameter in Nexus Server Administration to retrieve links to these artifacts in future emails)</i><br><br>" );
+        body.append( "<a href='http://www.sonatype.com'>Sonatype</a><br>" );
+        request.getBodyContext().put( DefaultMailType.BODY_KEY, body.toString() );
 
-        request.setFrom( new Address( "test@sonatype.com" ) );
+        // send the mail
+        eMailer.sendMail( request );
 
-        request.getToAddresses().add( new Address( "t.cservenak@gmail.com", "TCs" ) );
-
-        request.getBodyContext().put( DefaultMailType.SUBJECT_KEY, "Test Subject" );
-
-        request.getBodyContext().put( DefaultMailType.BODY_KEY, "Some mail body" );
-
-        MailRequestStatus status = eMailer.sendMail( request );
-        
-        int count = 0;
-        
-        while ( !status.isSent() && count < 10 )
+        // validate
+        long timeout = 1000;
+        if ( !server.waitForIncomingEmail( timeout, 1 ) )
         {
-            Thread.sleep( 100 );
-            count++;
+            fail( "Could not receive any email in a timeout of " + timeout );
         }
+        MimeMessage msgs[] = server.getReceivedMessages();
+        assertEquals( 4, msgs.length );
+        String receivedBody = GreenMailUtil.getBody( msgs[0] );
+        assertTrue( receivedBody.contains( "Sonatype" ) );
 
-        if ( status.getErrorCause() != null )
-        {
-            status.getErrorCause().printStackTrace();
-        }
-        
-        assertTrue( status.isSent() );
     }
 
 }
