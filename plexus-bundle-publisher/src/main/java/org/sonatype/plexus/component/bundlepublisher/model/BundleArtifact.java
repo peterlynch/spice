@@ -28,6 +28,10 @@ public class BundleArtifact
 
     private List<ArtifactDependency> dependencies;
 
+    private List<String> includes;
+
+    private List<String> excludes;
+
     public BundleArtifact( Xpp3Dom dom )
     {
         this.dom = dom;
@@ -82,6 +86,48 @@ public class BundleArtifact
             }
         }
         return this.dependencies;
+    }
+
+    public String[] getIncludes()
+    {
+        if ( this.includes == null )
+        {
+            Xpp3Dom dom = this.dom.getChild( "includes" );
+            if ( dom == null )
+            {
+                return null;
+            }
+            else
+            {
+                this.includes = new ArrayList<String>();
+                for ( Xpp3Dom depDom : dom.getChildren( "include" ) )
+                {
+                    this.includes.add( depDom.getValue() );
+                }
+            }
+        }
+        return this.includes.toArray( new String[this.includes.size()] );
+    }
+
+    public String[] getExcludes()
+    {
+        if ( this.excludes == null )
+        {
+            Xpp3Dom dom = this.dom.getChild( "excludes" );
+            if ( dom == null )
+            {
+                return null;
+            }
+            else
+            {
+                this.excludes = new ArrayList<String>();
+                for ( Xpp3Dom depDom : dom.getChildren( "exclude" ) )
+                {
+                    this.excludes.add( depDom.getValue() );
+                }
+            }
+        }
+        return this.excludes.toArray( new String[this.excludes.size()] );
     }
 
 }

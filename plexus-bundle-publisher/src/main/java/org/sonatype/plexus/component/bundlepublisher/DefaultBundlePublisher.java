@@ -181,7 +181,7 @@ public class DefaultBundlePublisher
                 else
                 {
                     String location = artifact.getLocation();
-                    file = getArtifactFile( bundleDir, location, mavenArtifact );
+                    file = getArtifactFile( bundleDir, artifact );
 
                     if ( artifact.getClassifier() == null )
                     {
@@ -253,14 +253,14 @@ public class DefaultBundlePublisher
         }
     }
 
-    private File getArtifactFile( File bundleDir, String location, Artifact mavenArtifact )
+    private File getArtifactFile( File bundleDir, BundleArtifact artifact )
         throws IOException, ArchiverException, PublishingException
     {
 
-        File artifactFile = new File( bundleDir, location );
+        File artifactFile = new File( bundleDir, artifact.getLocation() );
         if ( artifactFile.isDirectory() )
         {
-            File zipFile = createTempFile( mavenArtifact.getArtifactId(), mavenArtifact.getType() );
+            File zipFile = createTempFile( artifact.getArtifactId(), artifact.getType() );
             zipFile.createNewFile();
 
             ZipArchiver zipArchiver;
@@ -272,14 +272,9 @@ public class DefaultBundlePublisher
             {
                 throw new PublishingException( "Unable to lookup for ZipArchiver", e );
             }
+
             zipArchiver.reset();
-            for ( File file : artifactFile.listFiles() )
-            {
-                if ( file.isFile() )
-                {
-                    zipArchiver.addFile( file, file.getName() );
-                }
-            }
+            zipArchiver.addDirectory( artifactFile, artifact.getIncludes(), artifact.getExcludes() );
             zipArchiver.setDestFile( zipFile );
             zipArchiver.createArchive();
 
