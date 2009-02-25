@@ -1,0 +1,26 @@
+<plexus>
+  <load-on-start>
+    <component>    
+      <role>org.sonatype.plexus.webcontainer.ServletContainer</role>                                                    
+    </component>
+  </load-on-start>
+  
+  <components>
+    <component>
+      <role>org.sonatype.plexus.webcontainer.ServletContainer</role>
+      <implementation> org.sonatype.plexus.webcontainer.DefaultServletContainer</implementation>
+      <configuration>
+        <host>*</host>
+        <port>9000</port>
+        <servlets>
+          <servlet>
+            <clazz>org.sonatype.webdav.WebdavServlet</clazz>
+            <resourceBase>./target/remote-repo</resourceBase>
+            <contextPath>/repo</contextPath>
+          </servlet>
+        </servlets>                
+      </configuration>
+    </component>     
+     
+  </components>  
+</plexus>

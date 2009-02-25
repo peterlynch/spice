@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * Copyright (c) 2008 Sonatype, Inc. All rights reserved.
+ *
+ * This program is licensed to you under the Apache License Version 2.0,
+ * and you may not use this file except in compliance with the Apache License Version 2.0.
+ * You may obtain a copy of the Apache License Version 2.0 at http://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the Apache License Version 2.0 is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.sonatype.spice</groupId>
+    <artifactId>spice-parent</artifactId>
+    <version>11-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>mercury-gav</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+  <name>CLI interface to mercury provisioning</name>
+  <description>CLI interface to mercury provisioning</description>
+
+  <properties>
+    <mercury.version>1.0-alpha-6-SNAPSHOT</mercury.version>
+    <mercury.configurator.version>1.0-SNAPSHOT</mercury.configurator.version>
+    <maven.version>3.0-SNAPSHOT</maven.version>
+    <mercury.mp3.version>${project.version}</mercury.mp3.version>
+    
+    <plexus.webdav.version>1.0-SNAPSHOT</plexus.webdav.version>
+
+    <jetty.version>6.1.15.rc2</jetty.version>
+
+    <plexus.version>1.0-beta-3.0.6</plexus.version>
+    
+    <classworlds.version>1.3</classworlds.version>
+    <plexus.utils.version>1.5.5</plexus.utils.version>
+    <plexus.lang.version>1.1</plexus.lang.version>
+    <plexus.cli.version>1.5</plexus.cli.version>
+
+    <junit.version>3.8.2</junit.version>
+    <jline.version>0.9.9</jline.version>
+    <java.version>1.5</java.version>    
+  </properties>
+
+  <issueManagement>
+    <system>jira</system>
+    <url>http://jira.codehaus.org/browse/MERCURY</url>
+  </issueManagement>
+
+  <ciManagement>
+    <system>hudson</system>
+    <url>http://grid.sonatype.org/ci/view/Mercury/job/mercury</url>
+  </ciManagement>
+
+
+  <dependencies>
+
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-cli</artifactId>
+        <version>${plexus.cli.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.maven.mercury</groupId>
+        <artifactId>mercury-plexus</artifactId>
+        <version>${mercury.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.sonatype.spice</groupId>
+        <artifactId>plexus-mercury-configurator</artifactId>
+        <version>${mercury.configurator.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.maven.mercury</groupId>
+        <artifactId>mercury-repo-remote-m2</artifactId>
+        <version>${mercury.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-core</artifactId>
+        <version>${maven.version}</version>
+      </dependency>
+    
+    <!-- Test dependencies -->
+    <dependency>
+      <groupId>org.apache.maven.mercury</groupId>
+      <artifactId>mercury-transport-http</artifactId>
+        <version>${mercury.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+
+      <dependency>
+        <groupId>org.sonatype.plexus</groupId>                                                                                
+        <artifactId>plexus-jetty6</artifactId>                                                                                
+        <version>1.6-SNAPSHOT</version>
+        <scope>test</scope>
+      </dependency>
+      
+    <dependency>
+      <groupId>org.sonatype.spice</groupId>
+      <artifactId>plexus-webdav</artifactId>
+      <version>${plexus.webdav.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+
+
+  <build>
+    <defaultGoal>install</defaultGoal>
+    <resources>
+      <resource>
+        <directory>src/main/java</directory>
+        <filtering>false</filtering>
+        <includes>
+            <include>**/Messages.properties</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>false</filtering>
+      </resource>
+    </resources>
+
+    <testResources>
+      <testResource>
+        <directory>src/test/java</directory>
+        <filtering>false</filtering>
+        <includes>
+            <include>**/Messages.properties</include>
+        </includes>
+      </testResource>
+      <testResource>
+        <directory>src/test/resources</directory>
+        <filtering>false</filtering>
+      </testResource>
+    </testResources>
+
+    <plugins>
+
+        <plugin>
+          <groupId>org.codehaus.plexus</groupId>
+          <artifactId>plexus-component-metadata</artifactId>
+          <version>${plexus.version}</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>generate-metadata</goal>
+                <goal>generate-test-metadata</goal>                                                                             
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>package-tests</id>
+            <phase>process-test-classes</phase>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+            <configuration>
+               <finalName>mercury-gav-test</finalName>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              
+              <keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
+              <shadedArtifactAttached>false</shadedArtifactAttached>
+              <shadedClassifierName>cli</shadedClassifierName>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+              
+              <artifactSet>
+                <excludes>
+                  <exclude>ant:ant</exclude>
+                  <exclude>org.bouncycastle:bcprov-jdk15</exclude>
+                  <exclude>org.bouncycastle:bcpg-jdk15</exclude>
+                  <exclude>bouncycastle:bcprov-jdk15</exclude>
+                  <exclude>bouncycastle:bcpg-jdk15</exclude>
+                  <exclude>org.mortbay.jetty:jetty</exclude>
+                  <exclude>org.mortbay.jetty:jetty-util5</exclude>
+                  <exclude>org.mortbay.jetty:jetty-util</exclude>
+                  <exclude>org.mortbay.jetty:jetty-sslengine</exclude>
+                </excludes>
+              </artifactSet>
+              <filters>
+                <filter>
+                  <excludes>
+                    <exclude>/META-INF/BCKEY.DSA</exclude>
+                    <exclude>/META-INF/BCKEY.SF</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ComponentsXmlResourceTransformer" />
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <manifestEntries>
+                    <Main-Class> org.sonatype.mercury.gav.MercuryGavCli</Main-Class>
+                    <Build-Number>${project.version}</Build-Number>
+                  </manifestEntries>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+    </plugins>
+  </build>
+
+</project>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<settings>
+
+  <localRepository>./target/local-repo</localRepository>
+
+<profiles>
+        <profile>
+            <id>test</id>
+            <repositories>
+
+                <repository>
+                    <id>test.central</id>
+                    <url>http://localhost:9000/repo</url>
+                    <snapshots><enabled>true</enabled></snapshots>
+                    <releases><enabled>true</enabled></releases>
+                </repository>
+                
+            </repositories>
+        </profile>
+  
+</profiles>
+  
+  <activeProfiles>
+    <activeProfile>test</activeProfile>
+  </activeProfiles>
+
+  <pluginGroups>
+    <pluginGroup>org.sid.maven.plugins</pluginGroup>
+    <pluginGroup>org.mortbay.jetty</pluginGroup>
+    <pluginGroup>org.codehaus.mojo</pluginGroup>
+    <pluginGroup>org.sonatype.maven.plugins</pluginGroup>
+  </pluginGroups>
+
+</settings>

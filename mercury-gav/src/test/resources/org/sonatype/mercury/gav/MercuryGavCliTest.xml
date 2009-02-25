@@ -1,0 +1,32 @@
+<plexus>
+  <components>
+
+    <component>
+      <role>org.apache.maven.mercury.builder.api.DependencyProcessor</role>
+      <role-hint>maven</role-hint>
+      <implementation>org.apache.maven.mercury.MavenDependencyProcessor</implementation>
+      <isolated-realm>false</isolated-realm>
+    </component>
+
+    <component>
+      <role>org.apache.maven.mercury.builder.api.DependencyProcessor</role>
+      <role-hint>default</role-hint>
+      <implementation>org.apache.maven.mercury.MavenDependencyProcessor</implementation>
+      <isolated-realm>false</isolated-realm>
+    </component>
+
+    <component>
+      <role>org.apache.maven.mercury.plexus.PlexusMercury</role>
+      <role-hint>default</role-hint>
+      <implementation>org.apache.maven.mercury.plexus.DefaultPlexusMercury</implementation>
+      <isolated-realm>false</isolated-realm>
+      <requirements>
+        <requirement>
+          <role>org.apache.maven.mercury.builder.api.DependencyProcessor</role>
+          <field-name>_dependencyProcessors</field-name>
+        </requirement>
+      </requirements>
+    </component>
+        
+  </components>
+</plexus>
