@@ -70,11 +70,10 @@ public abstract class AbstractLdapTestEnvironment
      */
     public void tearDown()
         throws Exception
-    {
-        super.tearDown();
-        
+    {   
         ldapServer.stop();
         ldapServer = null;
-        
+     
+        super.tearDown();
     }
 }

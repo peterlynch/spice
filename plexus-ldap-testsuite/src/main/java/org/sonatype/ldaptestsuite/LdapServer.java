@@ -537,22 +537,25 @@ public class LdapServer
     public void stop()
         throws StoppingException
     {
+        
         try
         {
             ldapService.stop();
+        }
+        catch ( Exception e )
+        {
+            throw new StoppingException( "Error stopping embedded ApacheDS server.", e );
+        }
+        finally
+        {
             try
             {
+                sysRoot = null;
                 directoryService.shutdown();
             }
             catch ( Exception e )
             {
             }
-
-            sysRoot = null;
-        }
-        catch ( Exception e )
-        {
-            throw new StoppingException( "Error stopping embedded ApacheDS server.", e );
         }
     }
 
