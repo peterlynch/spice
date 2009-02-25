@@ -68,7 +68,7 @@ import org.sonatype.mercury.mp3.delta.maven.MavenDeltaManager;
 public class DeltaManagerCli
 extends AbstractCli
 {
-    private static final Language LANG = new DefaultLanguage( DeltaManagerCli.class );
+    private static  final Language LANG = new DefaultLanguage( DeltaManagerCli.class );
     
     private static final String USER_HOME = System.getProperty( "user.home" );
     
@@ -97,7 +97,7 @@ extends AbstractCli
     private static final char CLOSURE = 'c';
     
     private static final char SHOW_LOCAL_SAVEPOINTS = 'l';
-    
+     
     private static final char SHOW_DETAILS = 'd';
     
     private static final char SHOW_GUI = 'g';

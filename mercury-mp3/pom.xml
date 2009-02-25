@@ -40,13 +40,13 @@ under the License.
   </modules>
 
   <properties>
-    <mercury.version>1.0-alpha-5</mercury.version>
-    <maven.version>3.0-alpha-2</maven.version>
+    <mercury.version>1.0-alpha-6-SNAPSHOT</mercury.version>
+    <maven.version>3.0-SNAPSHOT</maven.version>
     <mercury.mp3.version>${project.version}</mercury.mp3.version>
 
     <jetty.version>6.1.15.rc2</jetty.version>
 
-    <plexus.version>1.0-beta-3.0.3</plexus.version>
+    <plexus.version>1.0-beta-3.0.6</plexus.version>
     
     <classworlds.version>1.3</classworlds.version>
     <plexus.utils.version>1.5.5</plexus.utils.version>
