@@ -3,7 +3,7 @@
 	<parent>
 	    <groupId>org.sonatype.spice</groupId>
 	    <artifactId>spice-parent</artifactId>
-	    <version>11</version>
+	    <version>9</version>
 	</parent>
 
 	<groupId>org.sonatype.plexus</groupId>
@@ -12,9 +12,9 @@
 	<name>Plexus LDAP Testsuite</name>
 	
 	<scm>
-      <connection>scm:svn:http://svn.sonatype.org/spice/trunk/plexus-ldap-testsuite</connection>
-      <url>http://svn.sonatype.org/spice/trunk/plexus-ldap-testsuite</url>
-      <developerConnection>scm:svn:https://svn.sonatype.org/spice/trunk/plexus-ldap-testsuite</developerConnection>
+      <connection>scm:svn:http://svn.sonatype.org/spice/tags/plexus-ldap-testsuite-1.1</connection>
+      <url>http://svn.sonatype.org/spice/tags/plexus-ldap-testsuite-1.1</url>
+      <developerConnection>scm:svn:https://svn.sonatype.org/spice/tags/plexus-ldap-testsuite-1.1</developerConnection>
     </scm>
 	
 	<dependencies>
