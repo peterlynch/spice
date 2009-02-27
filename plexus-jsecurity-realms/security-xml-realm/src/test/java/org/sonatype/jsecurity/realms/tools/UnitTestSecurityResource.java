@@ -14,7 +14,7 @@ package org.sonatype.jsecurity.realms.tools;
 
 import org.sonatype.jsecurity.model.Configuration;
 
-public class TestSecurityResource
+public class UnitTestSecurityResource
     extends AbstractStaticSecurityResource
     implements StaticSecurityResource
 {
