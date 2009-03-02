@@ -245,7 +245,6 @@ public final class ModelMarshaller
 
         StringBuffer sb = new StringBuffer();
         List<String> lastUriTags = new ArrayList<String>();
-        int n = 1;
         for ( ModelProperty mp : modelProperties )
         {
             String uri = mp.getUri();
@@ -262,14 +261,14 @@ public final class ModelMarshaller
                     "Passed in model property that does not match baseUri: Property URI = " + uri + ", Base URI = " +
                         baseUri );
             }
+
             List<String> tagNames = getTagNamesFromUri( basePosition, uri );
-            if ( lastUriTags.size() > tagNames.size() )
+
+            for ( int i = lastUriTags.size() - 1; i >= 0 && i >= tagNames.size() - 1; i-- )
             {
-                for ( int i = lastUriTags.size() - 1; i >= tagNames.size(); i-- )
-                {
-                    sb.append( toEndTag( lastUriTags.get( i - 1 ) ) );
-                }
+                sb.append( toEndTag( lastUriTags.get( i ) ) );
             }
+
             String tag = tagNames.get( tagNames.size() - 1 );
 
             List<ModelProperty> attributes = new ArrayList<ModelProperty>();
@@ -294,39 +293,20 @@ public final class ModelMarshaller
             }
 
             sb.append( toStartTag( tag, attributes ) );
+
             if ( mp.getResolvedValue() != null )
             {
                 sb.append( mp.getResolvedValue() );
-                sb.append( toEndTag( tag ) );
-                n = 2;
             }
-            else if(!attributes.isEmpty())
-            {
-                int pi = modelProperties.indexOf( mp ) + attributes.size() + 1;
-                if ( pi <= modelProperties.size() - 1 )
-                {
-                    ModelProperty peekProperty = modelProperties.get( pi );
-                    if ( !peekProperty.getUri().startsWith(mp.getUri()) )
-                    {
-                        if( mp.getResolvedValue() != null )
-                        {
-                            sb.append( mp.getResolvedValue() );
-                        }
-                        sb.append( toEndTag( tag ) );
-                        n = 2;
-                    }
-                }
-            }
-            else
-            {
-                n = 1;
-            }
+
             lastUriTags = tagNames;
         }
-        for ( int i = lastUriTags.size() - n; i >= 1; i-- )
+
+        for ( int i = lastUriTags.size() - 1; i >= 1; i-- )
         {
             sb.append( toEndTag( lastUriTags.get( i ) ) );
         }
+
         return sb.toString();
     }
 

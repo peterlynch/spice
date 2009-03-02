@@ -38,9 +38,12 @@ import org.xml.sax.SAXException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -83,6 +86,47 @@ public class ModelMarshallerTest
 
         String xml = ModelMarshaller.unmarshalModelPropertiesToXml( modelProperties, "http://apache.org/maven" );
         assertWellFormedXml( xml );
+    }
+
+    @Test
+    public void unmarshalWithNullPropertiesOnSameLevel()
+        throws IOException
+    {
+        List<ModelProperty> modelProperties =
+            Arrays.asList( new ModelProperty( "http://apache.org/maven/project", null ),
+                           new ModelProperty( "http://apache.org/maven/project/name", null ),
+                           new ModelProperty( "http://apache.org/maven/project/description", null ) );
+        String xml = ModelMarshaller.unmarshalModelPropertiesToXml( modelProperties, "http://apache.org/maven" );
+        assertWellFormedXml( xml );
+    }
+
+    @Test
+    public void unmarshalWithCollection()
+        throws IOException
+    {
+        String src = "<project><goals>" + "<goal>b</goal><goal>a</goal><goal>c</goal>" + "</goals></project>";
+        List<ModelProperty> modelProperties =
+            ModelMarshaller.marshallXmlToModelProperties(
+                                                          toStream( src ),
+                                                          "http://apache.org/maven",
+                                                          Collections.singleton( "http://apache.org/maven/goals#collection" ) );
+
+        String xml = ModelMarshaller.unmarshalModelPropertiesToXml( modelProperties, "http://apache.org/maven" );
+        assertWellFormedXml( xml );
+    }
+
+    @Test
+    public void unmarshalWithAttributes()
+        throws IOException
+    {
+        String src = "<project groupId='gid' artifactId='aid'><item attrib='value'/></project>";
+        List<ModelProperty> modelProperties =
+            ModelMarshaller.marshallXmlToModelProperties( toStream( src ), "http://apache.org/maven", null );
+
+        String xml = ModelMarshaller.unmarshalModelPropertiesToXml( modelProperties, "http://apache.org/maven" );
+        assertWellFormedXml( xml );
+        assertTrue( xml.matches( "(?s).*<item\\s+attrib=\\s*\"value\".*" ) );
+        assertTrue( xml.matches( "(?s).*<project\\s+groupId=\\s*\"gid\"\\s+artifactId=\\s*\"aid\".*" ) );
     }
 
     @Test
@@ -174,6 +218,18 @@ public class ModelMarshallerTest
         catch ( ParserConfigurationException e )
         {
             fail( e.toString() );
+        }
+    }
+
+    private InputStream toStream( String xml )
+    {
+        try
+        {
+            return new ByteArrayInputStream( xml.getBytes( "UTF-8" ) );
+        }
+        catch ( UnsupportedEncodingException e )
+        {
+            throw new Error( "Broken JVM", e );
         }
     }
 
