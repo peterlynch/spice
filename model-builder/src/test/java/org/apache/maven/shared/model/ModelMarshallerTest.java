@@ -31,14 +31,21 @@ package org.apache.maven.shared.model;
  * under the License.
  */
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import org.junit.Test;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 public class ModelMarshallerTest
 {
@@ -51,7 +58,7 @@ public class ModelMarshallerTest
             new ModelProperty( "http://apache.org/maven/project", null ),
             new ModelProperty( "http://apache.org/maven/project/dependencies#collection", null ) );
         String xml = ModelMarshaller.unmarshalModelPropertiesToXml( modelProperties, "http://apache.org/maven" );
-       // System.out.println( "COMPLETE:" + xml ); //TODO: Verify proper xml
+        assertWellFormedXml( xml );
     }
 
     @Test
@@ -62,7 +69,7 @@ public class ModelMarshallerTest
             new ModelProperty( "http://apache.org/maven/project", null ),
             new ModelProperty( "http://apache.org/maven/project/modelVersion", "4.0.0" ) );
         String xml = ModelMarshaller.unmarshalModelPropertiesToXml( modelProperties, "http://apache.org/maven" );
-       // System.out.println( "COMPLETE:" + xml ); //TODO: Verify proper xml
+        assertWellFormedXml( xml );
     }
 
     @Test
@@ -70,12 +77,12 @@ public class ModelMarshallerTest
         throws IOException
     {
         List<ModelProperty> modelProperties = ModelMarshaller.marshallXmlToModelProperties( new ByteArrayInputStream(
-            "<project><S></S><version>1.2</version><developers><developer><organization></organization></developer></developers><modelVersion>4</modelVersion></project>".getBytes() ),
+            "<project><S></S><version>1.2</version><developers><developer><organization></organization></developer></developers><modelVersion>4</modelVersion></project>".getBytes( "UTF-8" ) ),
                                                                                             "http://apache.org/maven",
                                                                                             null );
 
         String xml = ModelMarshaller.unmarshalModelPropertiesToXml( modelProperties, "http://apache.org/maven" );
-       // System.out.println( "COMPLETE:" + xml ); //TODO: Verify proper xml
+        assertWellFormedXml( xml );
     }
 
     @Test
@@ -83,7 +90,7 @@ public class ModelMarshallerTest
         throws IOException
     {
         List<ModelProperty> modelProperties = ModelMarshaller.marshallXmlToModelProperties(
-            new ByteArrayInputStream( "<project><version>1.1</version></project>".getBytes() ),
+            new ByteArrayInputStream( "<project><version>1.1</version></project>".getBytes( "UTF-8" ) ),
             "http://apache.org/maven", null );
 
         assertEquals( 2, modelProperties.size() );
@@ -148,4 +155,26 @@ public class ModelMarshallerTest
 
         ModelMarshaller.unmarshalModelPropertiesToXml( modelProperties, "http://apache.org/maven" );
     }
+
+    private void assertWellFormedXml( String xml )
+    {
+        try
+        {
+            DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            builder.parse( new InputSource( new StringReader( xml ) ) );
+        }
+        catch ( SAXException e )
+        {
+            fail( e + "\n" + xml );
+        }
+        catch ( IOException e )
+        {
+            fail( e.toString() );
+        }
+        catch ( ParserConfigurationException e )
+        {
+            fail( e.toString() );
+        }
+    }
+
 }
