@@ -150,9 +150,6 @@ public class FileResourceCollection
         OutputStream out = null;
         try
         {
-//            if( File.pathSeparatorChar == ';' )
-//                Thread.sleep( 1000L ); // wait for resource to get free under windows
-//            
             in = new FileInputStream( from );
             out = new FileOutputStream( to );
 
