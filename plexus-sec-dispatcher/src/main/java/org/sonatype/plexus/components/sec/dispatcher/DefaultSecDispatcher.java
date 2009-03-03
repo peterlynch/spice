@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.sonatype.plexus.components.cipher.DefaultPlexusCipher;
 import org.sonatype.plexus.components.cipher.PlexusCipher;
@@ -247,25 +246,61 @@ implements SecDispatcher
      */
 
     //---------------------------------------------------------------
+    private static boolean propertyExists( String [] values, String [] av )
+    {
+        if( values != null )
+        {
+            for( int i=0; i< values.length; i++ )
+            {
+                String p = System.getProperty( values[i] );
+                
+                if( p != null )
+                    return true;
+            }
+        
+            if( av != null )
+                for( int i=0; i< values.length; i++ )
+                    for( int j=0; j< av.length; j++ )
+                    {
+                        if( ("--"+values[i]).equals( av[j] ) )
+                            return true;
+                    }
+        }
+        
+        return false;
+    }
+    
+    private static final void usage()
+    {
+        System.out.println("usage: java -jar ...jar [-m|-p]\n-m: encrypt master password\n-p: encrypt password");
+    }
+    //---------------------------------------------------------------
     public static void main( String[] args )
     throws Exception
     {
         if( args == null || args.length < 1 )
         {
-            System.out.println("usage: Sec [-m|-p]\n-m: encrypt master password\n-p: encrypt password");
+            usage();
             return;
         }
         
-        if( "-m".equals( args[0] ) ) 
+        if( "-m".equals( args[0] ) || propertyExists( SYSTEM_PROPERTY_MASTER_PASSWORD, args ) ) 
             show( true );
-        else
+        else if( "-p".equals( args[0] ) || propertyExists( SYSTEM_PROPERTY_SERVER_PASSWORD, args ) )
             show( false );
+        else
+            usage();
     }
     //---------------------------------------------------------------
     private static void show( boolean showMaster )
     throws Exception
     {
-        System.out.print("Enter password: ");
+        if( showMaster )
+            System.out.print("\nsettings master password\n");
+        else
+            System.out.print("\nsettings server password\n");
+        
+        System.out.print("enter password: ");
         
         BufferedReader r = new BufferedReader( new InputStreamReader( System.in ) );
         

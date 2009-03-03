@@ -13,9 +13,6 @@
  
 package org.sonatype.plexus.components.sec.dispatcher;
 
-import java.util.Map;
-
-import org.codehaus.plexus.PlexusContainer;
 
 /**
  * This component descrypts a string, passed to it
@@ -25,6 +22,10 @@ import org.codehaus.plexus.PlexusContainer;
 public interface SecDispatcher
 {
     public static String ROLE = SecDispatcher.class.getName();
+    
+    public static final String [] SYSTEM_PROPERTY_MASTER_PASSWORD = new String [] {"settings.master.password","settings-master-password"};
+    
+    public static final String [] SYSTEM_PROPERTY_SERVER_PASSWORD = new String [] {"settings.server.password","settings-server-password"};
 
     /**
      * decrypt given encrypted string
