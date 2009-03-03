@@ -130,6 +130,17 @@ public class ModelMarshallerTest
     }
 
     @Test
+    public void unmarshalWithContentContainingMarkupCharacters()
+        throws IOException
+    {
+        List<ModelProperty> modelProperties =
+            Arrays.asList( new ModelProperty( "http://apache.org/maven/project", null ),
+                           new ModelProperty( "http://apache.org/maven/project/name", "<&" ) );
+        String xml = ModelMarshaller.unmarshalModelPropertiesToXml( modelProperties, "http://apache.org/maven" );
+        assertWellFormedXml( xml );
+    }
+
+    @Test
     public void marshal()
         throws IOException
     {

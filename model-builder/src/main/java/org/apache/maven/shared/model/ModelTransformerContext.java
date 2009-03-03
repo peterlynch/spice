@@ -82,8 +82,9 @@ public final class ModelTransformerContext
      */
     public ModelTransformerContext( Collection<? extends ModelContainerInfo> infos )
     {
-        if(infos == null) {
-            this.infos = Collections.EMPTY_LIST;
+        if ( infos == null )
+        {
+            this.infos = Collections.emptyList();
         }
         else
         {

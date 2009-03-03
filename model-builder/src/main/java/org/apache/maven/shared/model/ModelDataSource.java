@@ -31,7 +31,6 @@ package org.apache.maven.shared.model;
  * under the License.
  */
 
-import java.util.Collection;
 import java.util.List;
 
 /**
