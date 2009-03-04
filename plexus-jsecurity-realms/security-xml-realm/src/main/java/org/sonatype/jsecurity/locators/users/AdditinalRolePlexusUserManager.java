@@ -18,6 +18,7 @@ import java.util.Set;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.util.CollectionUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.jsecurity.locators.SecurityXmlPlexusUserLocator;
@@ -34,6 +35,9 @@ public class AdditinalRolePlexusUserManager
 {
     @Requirement( hint = "resourceMerging" )
     private ConfigurationManager configManager;
+    
+    @Requirement
+    private Logger logger;
 
     @Override
     public PlexusUser getUser( String userId )
@@ -149,7 +153,19 @@ public class AdditinalRolePlexusUserManager
 
             for ( String roleId : (List<String>) roleMapping.getRoles() )
             {
-                user.getRoles().add( this.toPlexusRole( roleId ) );
+                try
+                {
+                    if ( configManager.readRole( roleId ) != null ) // this will throw an exception if the role does not
+                                                                    // exist, but we are going to check anyway
+                    {
+                        user.getRoles().add( this.toPlexusRole( roleId ) );
+                    }
+                }
+                catch ( NoSuchRoleException e )
+                {
+                    this.logger.error( "User: '" + user.getUserId() + "' from source: '" + user.getSource()
+                        + "' has role: '" + roleId + "' but the role could not be found." );
+                }
             }
         }
         catch ( NoSuchRoleMappingException e )
