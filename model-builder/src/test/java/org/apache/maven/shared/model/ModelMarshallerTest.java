@@ -122,8 +122,12 @@ public class ModelMarshallerTest
         String src = "<project groupId='gid' artifactId='aid'><item attrib='value'/></project>";
         List<ModelProperty> modelProperties =
             ModelMarshaller.marshallXmlToModelProperties( toStream( src ), "http://apache.org/maven", null );
-
+        for(ModelProperty mp : modelProperties)
+        {
+        	System.out.println(mp);
+        }
         String xml = ModelMarshaller.unmarshalModelPropertiesToXml( modelProperties, "http://apache.org/maven" );
+        System.out.println(xml);
         assertWellFormedXml( xml );
         assertTrue( xml.matches( "(?s).*<item\\s+attrib=\\s*\"value\".*" ) );
         assertTrue( xml.matches( "(?s).*<project\\s+groupId=\\s*\"gid\"\\s+artifactId=\\s*\"aid\".*" ) );
@@ -209,6 +213,27 @@ public class ModelMarshallerTest
             new ModelProperty( "http://bogus.org/maven", "1.1" ) );
 
         ModelMarshaller.unmarshalModelPropertiesToXml( modelProperties, "http://apache.org/maven" );
+    }
+    
+    @Test
+    public void unmarshalWithAttributes2()
+        throws IOException
+    {
+        List<ModelProperty> modelProperties = ModelMarshaller
+				.marshallXmlToModelProperties(
+						new ByteArrayInputStream(
+								"<project><copy todir=\"src\" overwrite=\"true\"><fileset dir=\"target\" /></copy></project>"
+										.getBytes("UTF-8")),
+						"http://apache.org/maven", null);
+		modelProperties = ModelTransformerContext.sort(modelProperties,
+				"http://apache.org/maven");
+		for(ModelProperty mp : modelProperties)
+		{
+			System.out.println(mp);
+		}
+		String xml = ModelMarshaller.unmarshalModelPropertiesToXml(
+				modelProperties, "http://apache.org/maven");
+		assertTrue( xml.contains("copy todir=" ) );		
     }
 
     private void assertWellFormedXml( String xml )

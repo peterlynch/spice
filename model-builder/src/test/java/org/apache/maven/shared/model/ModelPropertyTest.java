@@ -56,4 +56,21 @@ public class ModelPropertyTest
             new ModelProperty( "http://apache.org/maven/project/profiles#collection/profile/id/a/b", "org" );
         assertFalse( mp0.isParentOf( mp1 ) );
     }
+    @Test
+    public void isParentExcludingProperty()
+    {
+        ModelProperty mp0 = new ModelProperty( "http://apache.org/maven/project/copy/fileset#property/dir", "target" );
+        ModelProperty mp1 =
+            new ModelProperty( "http://apache.org/maven/project/copy#property/todir", "src" );
+        assertTrue( mp1.isParentOfExcludingProperties(mp0));
+    } 
+    
+    @Test
+    public void isParentExcludingPropertyParentNoProperty()
+    {
+        ModelProperty mp0 = new ModelProperty( "http://apache.org/maven/project/copy/fileset#property/dir", "target" );
+        ModelProperty mp1 =
+            new ModelProperty( "http://apache.org/maven/project/copy", "src" );
+        assertFalse( mp1.isParentOfExcludingProperties(mp0));
+    }     
 }

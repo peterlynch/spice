@@ -71,6 +71,8 @@ public final class ModelProperty
      * List of unresolved expressions within this model property's value
      */
     private final List<String> unresolvedExpressions;
+    
+    private String uriWithoutProperty;
 
     /**
      * Constructor
@@ -98,7 +100,6 @@ public final class ModelProperty
             }
         }
 
-        String uriWithoutProperty;
         int index =  uri.lastIndexOf( "/" );
         if(index > -1) {
             uriWithoutProperty = uri.substring( 0, uri.lastIndexOf( "/" ) );
@@ -198,6 +199,24 @@ public final class ModelProperty
         }
         return ( modelProperty.getUri().startsWith( uri ) );
     }
+    public boolean isParentOfExcludingProperties( ModelProperty modelProperty )
+    {
+    	if(!uri.contains("#property"))
+    	{
+    		return false;
+    	}
+    	
+        if ( Math.abs( depth - modelProperty.getDepth() ) > 1 )
+        {
+            return false;
+        }
+        if ( uriWithoutProperty.equals( modelProperty.uriWithoutProperty) || uriWithoutProperty.startsWith( modelProperty.uriWithoutProperty) )
+        {
+            return false;
+        }
+        return ( modelProperty.uriWithoutProperty.startsWith( uriWithoutProperty ) );
+    } 
+    
 
     /**
      * Returns this model property as an interpolator property, allowing the interpolation of model elements within
