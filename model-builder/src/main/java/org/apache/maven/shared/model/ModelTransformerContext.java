@@ -280,8 +280,16 @@ public final class ModelTransformerContext
         List<ModelProperty> mps = modelDataSource.getModelProperties();
 
         mps = sort( mps, baseUriForModel );
-
-        fromModelTransformer.interpolateModelProperties( mps, interpolatorProperties, domainModels.get(0));
+        DomainModel specialized = null;
+        for( DomainModel domainModel : domainModels)
+        {
+        	if(domainModel.isMostSpecialized())
+        	{
+        		specialized = domainModel;
+        		break;
+        	}
+        }
+        fromModelTransformer.interpolateModelProperties( mps, interpolatorProperties, specialized );
 
         try
         {

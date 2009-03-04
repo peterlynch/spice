@@ -57,4 +57,8 @@ public interface DomainModel
      * @param history history of joins and deletes used in constructing this domain model
      */
     void setEventHistory( String history );
+    
+    boolean isMostSpecialized();
+    
+    void setMostSpecialized(boolean isMostSpecialized);
 }
