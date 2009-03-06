@@ -1,0 +1,10 @@
+<project>
+	<containers>
+		<containerA>
+			<property>a</property>
+		</containerA>
+		<containerB>
+			<property>b</property>
+		</containerB>		
+	</containers>
+</project>
