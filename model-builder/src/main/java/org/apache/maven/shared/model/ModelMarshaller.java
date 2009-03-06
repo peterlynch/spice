@@ -129,7 +129,7 @@ public final class ModelMarshaller
                             String value = null;
                             if ( depth < depthOfTagValue )
                             {
-                                value = tagValue.toString();
+                                value = tagValue.toString().trim();
                             }
                             modelProperties.add( new ModelProperty( tagName, value ) );
                             if ( !attributes.isEmpty() )
@@ -179,7 +179,7 @@ public final class ModelMarshaller
                     }
                     case XMLStreamConstants.END_DOCUMENT:
                     {
-                        modelProperties.add( new ModelProperty( tagName, tagValue.toString() ) );
+                        modelProperties.add( new ModelProperty( tagName, tagValue.toString().trim() ) );
                         if ( !attributes.isEmpty() )
                         {
                             for ( Map.Entry<String, String> e : attributes.entrySet() )

@@ -158,6 +158,22 @@ public class ModelMarshallerTest
         assertEquals( "1.1", modelProperties.get( 1 ).getResolvedValue() );
     }
 
+    @Test
+    public void marshalValuesSurroundedByInsignificantWhitespace()
+        throws IOException
+    {
+        List<ModelProperty> modelProperties =
+            ModelMarshaller.marshallXmlToModelProperties( toStream( "<project>" + "<version>   1.1   </version>"
+                + "<id>\nX\n</id>" + "</project>" ), "http://apache.org/maven", null );
+
+        assertEquals( 3, modelProperties.size() );
+        assertEquals( "http://apache.org/maven/project", modelProperties.get( 0 ).getUri() );
+        assertEquals( "http://apache.org/maven/project/version", modelProperties.get( 1 ).getUri() );
+        assertEquals( "1.1", modelProperties.get( 1 ).getResolvedValue() );
+        assertEquals( "http://apache.org/maven/project/id", modelProperties.get( 2 ).getUri() );
+        assertEquals( "X", modelProperties.get( 2 ).getResolvedValue() );
+    }
+
     /*
     @Test(expected = IllegalArgumentException.class)
     public void unmarshalWithBadBaseUri() throws IOException, XmlPullParserException {
