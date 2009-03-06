@@ -196,7 +196,7 @@ implements SecDispatcher
     throws SecDispatcherException
     {
         String location = System.getProperty( SYSTEM_PROPERTY_SEC_LOCATION
-                                              , _configurationFile
+                                              , getConfigurationFile()
                                             );
         String realLocation = location.charAt( 0 ) == '~' 
             ? System.getProperty( "user.home" ) + location.substring( 1 )
