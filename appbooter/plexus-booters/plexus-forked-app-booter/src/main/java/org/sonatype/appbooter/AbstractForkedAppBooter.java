@@ -369,6 +369,15 @@ public abstract class AbstractForkedAppBooter
                       configuration.getAbsolutePath() );
         sysProps.put( PlexusContainerHost.ENABLE_CONTROL_SOCKET, "true" );
 
+        // cli wins
+        for ( Map.Entry<Object, Object> e : System.getProperties().entrySet() )
+        {
+            String key = (String) e.getKey();
+            if ( key.startsWith( SYSPROP_PLEXUS ) ) {
+                sysProps.put( key, (String) e.getValue() );
+            }
+        }
+        
         config.setSystemProperties( sysProps );
 
         ClassworldsValidationResult vr = new ClassworldsModelValidator().validate( config );
