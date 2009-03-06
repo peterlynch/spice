@@ -26,4 +26,6 @@ public interface ForkedAppBooter extends Service
     /** The Plexus role identifier. */
     public static String ROLE = ForkedAppBooter.class.getName();
 
+    /** plexus system properties prefix */
+    public static final String SYSPROP_PLEXUS = "plexus.";
 }
