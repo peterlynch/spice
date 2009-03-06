@@ -47,6 +47,8 @@ public final class ModelProperty
      */
     private static final Pattern EXPRESSION_PATTERN = Pattern.compile( "\\$\\{(pom\\.|project\\.|env\\.)?([^}]+)\\}" );
 
+    private String tag;
+    
     /**
      * URI of the resource
      */
@@ -73,14 +75,7 @@ public final class ModelProperty
     private final List<String> unresolvedExpressions;
     
     private String uriWithoutProperty;
-
-    /**
-     * Constructor
-     *
-     * @param uri   URI of the resource. May not be null
-     * @param value Value associated with specified uri. Value may be null if uri does not map to primitive type.
-     */
-    public ModelProperty( String uri, String value )
+    public ModelProperty( String uri, String value, String tag )
     {
         if ( uri == null )
         {
@@ -113,7 +108,23 @@ public final class ModelProperty
             uriWithoutProperty = uri;
         }
 
-        depth = uriWithoutProperty.split( "/" ).length;
+        depth = uriWithoutProperty.split( "/" ).length;   
+        this.tag = tag;
+    }
+    /**
+     * Constructor
+     *
+     * @param uri   URI of the resource. May not be null
+     * @param value Value associated with specified uri. Value may be null if uri does not map to primitive type.
+     */
+    public ModelProperty( String uri, String value )
+    {
+    	this( uri, value, null);
+    }
+    
+    public void setTag(String tag)
+    {
+    	this.tag = tag;
     }
 
     /**
@@ -124,6 +135,11 @@ public final class ModelProperty
     public String getUri()
     {
         return uri;
+    }
+    
+    public String getTag()
+    {
+    	return tag;
     }
 
     /**
@@ -278,6 +294,6 @@ public final class ModelProperty
     public String toString()
     {
         return "Uri = " + uri + ", Value = " + value + ", Resolved Value = " + resolvedValue + ", Hash = " +
-            this.hashCode();
+            this.hashCode() + ", tag = " + tag;
     }
 }

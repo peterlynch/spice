@@ -105,19 +105,19 @@ public final class DefaultModelDataSource
     public ModelContainer replaceWithMultipleRoots(ModelContainer a, ModelContainer b)
     {
         int position = modelProperties.indexOf(a.getProperties().get(0));
-        this.delete(a);
-
-       // modelProperties.addAll(position, x);
+        this.delete(a, "replaceWithMultipleRoots");
         return b;
     }
 
     public ModelContainer replace(ModelContainer a, ModelContainer b)
     {
+    	ModelContainer mc = null;
         int position = modelProperties.indexOf(a.getProperties().get(0));
-        this.delete(a);
+        this.delete(a, "replace");
         if(hasRoot(b.getProperties()))
         {
             modelProperties.addAll(position, b.getProperties());
+            mc = b;
         }
         else {
             List<String> contained = new ArrayList<String>();
@@ -129,8 +129,9 @@ public final class DefaultModelDataSource
                 }
             }
             modelProperties.addAll(position, x);
+            mc = b.createNewInstance(x);
         }
-        return b;
+        return mc;
     }    
 
     private static boolean hasRoot(List<ModelProperty> modelProperties) {
@@ -171,7 +172,7 @@ public final class DefaultModelDataSource
         {
             throw new IllegalArgumentException( "b: null or b.properties: empty" );
         }
-        /*
+        
         if ( !modelProperties.containsAll( a.getProperties() ) )
         {
             List<ModelProperty> unknownProperties = new ArrayList<ModelProperty>();
@@ -203,7 +204,7 @@ public final class DefaultModelDataSource
             System.out.println( sb );
             throw new DataSourceException( "ModelContainer 'a' contains elements not within datasource" );
         }
-        */
+        
         if ( a.equals( b ) || b.getProperties().size() == 0 )
         {
             return a;
@@ -217,8 +218,8 @@ public final class DefaultModelDataSource
                 return null;
             }
         }
-        delete( a );
-        delete( b );
+        delete( a, "join" );
+        delete( b, "join" );
 
         List<ModelProperty> joinedProperties = mergeModelContainers( a, b );
         if ( modelProperties.size() == 0 )
@@ -232,7 +233,7 @@ public final class DefaultModelDataSource
         }
 
         modelProperties.addAll( startIndex, joinedProperties );
-        /*
+        
         List<ModelProperty> deletedProperties = new ArrayList<ModelProperty>();
         deletedProperties.addAll( a.getProperties() );
         deletedProperties.addAll( b.getProperties() );
@@ -241,7 +242,7 @@ public final class DefaultModelDataSource
         {
             dataEvents.add( new DataEvent( a, b, deletedProperties, "join" ) );
         }
-        */
+        
         return a.createNewInstance( joinedProperties );
     }
     
@@ -250,6 +251,11 @@ public final class DefaultModelDataSource
      * @see ModelDataSource#delete(org.apache.maven.shared.model.ModelContainer)
      */
     public void delete( ModelContainer modelContainer )
+    {
+    	delete( modelContainer, "default");
+    }
+    
+    public void delete( ModelContainer modelContainer, String tag )
     {
         if ( modelContainer == null )
         {
@@ -260,7 +266,7 @@ public final class DefaultModelDataSource
             throw new IllegalArgumentException( "modelContainer.properties: null" );
         }
         modelProperties.removeAll( modelContainer.getProperties() );
-        //dataEvents.add( new DataEvent( modelContainer, null, modelContainer.getProperties(), "delete" ) );
+        dataEvents.add( new DataEvent( modelContainer, null, modelContainer.getProperties(), "delete: " + tag ) );    	
     }
 
     /**
@@ -347,7 +353,14 @@ public final class DefaultModelDataSource
                     {
                         tmp.add( mp );
                     }
-                    modelContainers.add( factory.create( tmp ) );
+                    try 
+                    {
+						modelContainers.add( factory.create( tmp ) );
+					} 
+                    catch (Exception e) 
+					{
+					//	e.printStackTrace();
+					}
                     tmp.clear();
                     state = NO_TAG;
                 }
@@ -375,7 +388,7 @@ public final class DefaultModelDataSource
     public String getEventHistory()
     {
         StringBuffer sb = new StringBuffer();
-        /*
+        
         sb.append( "Original Model Properties\r\n" );
         for ( ModelProperty mp : originalModelProperties )
         {
@@ -392,7 +405,7 @@ public final class DefaultModelDataSource
         {
             sb.append( mp ).append( "\r\n" );
         }
-        */
+       
         return sb.toString();
     }
 
