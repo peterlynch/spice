@@ -69,8 +69,6 @@ public interface ModelDataSource
      */
     void delete( ModelContainer modelContainer );
 
-    void delete( ModelContainer modelContainer, String tag );
-    
 
     /**
      * Return copy of underlying model properties. No changes in this list will be reflected in the data source.

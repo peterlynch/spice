@@ -32,25 +32,14 @@ package org.apache.maven.shared.model;
  */
 
 import static org.junit.Assert.*;
-
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class ModelTransformerContextTest
 {
-	private static final String MODEL_DIR = "src/test/resource-models";
-	
     @Test
     public void sortWithDuplicateProperty1()
     {
@@ -136,8 +125,8 @@ public class ModelTransformerContextTest
         List<ModelProperty> sortedProperties = ctx.sort( modelProperties, "http://apache.org/maven" );
         assertEquals( a, sortedProperties.get( 0 ) );
         assertEquals( b, sortedProperties.get( 1 ) );
-        assertEquals( c, sortedProperties.get( 2 ) );
-        assertEquals( d, sortedProperties.get( 3 ) );
+        assertEquals( d, sortedProperties.get( 2 ) );
+        assertEquals( c, sortedProperties.get( 3 ) );
     }
 
     @Test
@@ -155,8 +144,8 @@ public class ModelTransformerContextTest
         List<ModelProperty> sortedProperties = ctx.sort( modelProperties, "http://apache.org/maven" );
         assertEquals( a, sortedProperties.get( 0 ) );
         assertEquals( b, sortedProperties.get( 1 ) );
-        assertEquals( c, sortedProperties.get( 2 ) );
-        assertEquals( f, sortedProperties.get( 3 ) );
+        assertEquals( f, sortedProperties.get( 2 ) );
+        assertEquals( c, sortedProperties.get( 3 ) );
     }
 
     @Test
@@ -184,24 +173,18 @@ public class ModelTransformerContextTest
         ModelTransformerContext ctx = new ModelTransformerContext(  );
         List<ModelProperty> sortedProperties = ctx.sort( modelProperties, "http://apache.org/maven" );
 
-        for(ModelProperty mp : sortedProperties)
-        {
-        	System.out.println(mp);
-        }
         assertEquals( a, sortedProperties.get( 0 ) );
         assertEquals( b, sortedProperties.get( 1 ) );
 
-        assertEquals( c, sortedProperties.get( 2 ) );
-        assertEquals( d, sortedProperties.get( 3 ) );
-        assertEquals( e, sortedProperties.get( 4 ) );
-        assertEquals( f, sortedProperties.get( 5 ) );        
-        
-        assertEquals( g, sortedProperties.get( 6 ) );
-        assertEquals( h, sortedProperties.get( 7 ) );
-        assertEquals( i, sortedProperties.get( 8 ) );
-        assertEquals( j, sortedProperties.get( 9 ) );
+        assertEquals( g, sortedProperties.get( 2 ) );
+        assertEquals( h, sortedProperties.get( 3 ) );
+        assertEquals( j, sortedProperties.get( 4 ) );
+        assertEquals( i, sortedProperties.get( 5 ) );
 
-
+        assertEquals( c, sortedProperties.get( 6 ) );
+        assertEquals( d, sortedProperties.get( 7 ) );
+        assertEquals( f, sortedProperties.get( 8 ) );
+        assertEquals( e, sortedProperties.get( 9 ) );
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -217,36 +200,4 @@ public class ModelTransformerContextTest
         ModelTransformerContext ctx = new ModelTransformerContext( );
         assertEquals( 0, ctx.sort( new ArrayList<ModelProperty>(), "http://apache.org/maven" ).size() );
     }
-    
-    @Test
-    public void transformContainersInCorrectOrder()
-    	throws IOException, XmlPullParserException
-    {    	
-    	ModelTransformerContext ctx = new ModelTransformerContext(MODEL_CONTAINER_INFOS);
-    	DomainModelWrapper model = new DomainModelWrapper(ctx.transform(Arrays.asList(new DomainModelSimple(getPropertiesFromFile("container-order", "model-a.xml")), 
-    			new DomainModelSimple(getPropertiesFromFile("container-order", "model-b.xml"))), 
-    			new DummyTransformer(), new DummyTransformer()));
-    	for(ModelProperty mp : model.getDomainModel().getModelProperties())
-    	{
-    		System.out.println(mp);
-    	}
-    	//assertEquals(2, (List<?>) model.getValue("containers"));
-    	//String value = (String) model.getValue("containers[1]");
-    	//System.out.println(value);
-
-    }
-    public static final Collection<ModelContainerInfo> MODEL_CONTAINER_INFOS = Arrays.asList(
-            ModelContainerInfo.Factory.createModelContainerInfo(
-                    new DummyModelContainerFactory(), null, null)); 
-    
-    public static final Set<String> URIS = Collections.unmodifiableSet(new HashSet<String>( Arrays.asList(  "http://test/project/containers#collection")));
-            
-    private List<ModelProperty> getPropertiesFromFile(String project, String model)
-    	throws IOException
-    {
-    	FileInputStream fis = new FileInputStream( new File(MODEL_DIR, project + File.separator + model) );
-    	return ModelMarshaller.marshallXmlToModelProperties(fis, "http://test", null);
-    }
-    
-    
 }

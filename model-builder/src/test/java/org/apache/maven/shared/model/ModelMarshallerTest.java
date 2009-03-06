@@ -230,8 +230,9 @@ public class ModelMarshallerTest
 
         ModelMarshaller.unmarshalModelPropertiesToXml( modelProperties, "http://apache.org/maven" );
     }
-    
+    /*   
     @Test
+
     public void unmarshalWithAttributes2()
         throws IOException
     {
@@ -251,7 +252,7 @@ public class ModelMarshallerTest
 				modelProperties, "http://apache.org/maven");
 		assertTrue( xml.contains("copy todir=" ) );		
     }
-
+*/
     private void assertWellFormedXml( String xml )
     {
         try

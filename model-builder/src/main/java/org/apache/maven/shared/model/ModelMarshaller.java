@@ -88,8 +88,7 @@ public final class ModelMarshaller
         }
 
         List<ModelProperty> modelProperties = new ArrayList<ModelProperty>();
-        
-        XMLInputFactory xmlInputFactory = new com.ctc.wstx.stax.WstxInputFactory();
+        XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
         xmlInputFactory.setProperty( XMLInputFactory.IS_REPLACING_ENTITY_REFERENCES, Boolean.FALSE );
         xmlInputFactory.setProperty( XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.FALSE );
 
@@ -241,11 +240,6 @@ public final class ModelMarshaller
         {
             throw new IllegalArgumentException( "baseUri: null or empty" );
         }
-        
-        if( needsSort( modelProperties ))
-        {
-        	modelProperties = ModelTransformerContext.sort(modelProperties, baseUri);	
-        }
 
         final int basePosition = baseUri.length();
 
@@ -316,21 +310,6 @@ public final class ModelMarshaller
         return sb.toString();
     }
 
-    private static boolean needsSort(List<ModelProperty> modelProperties)
-    {
-    	for(ModelProperty mp : modelProperties)
-    	{
-    		if(mp.getUri().contains("#property"))
-    		{
-    			if(mp.isParentOfExcludingProperties(modelProperties.get( modelProperties.indexOf(mp)  - 1) ) )
-    			{
-    				return true;	
-    			}   				
-    		}
-    	}
-    	return false;
-    }
-    
     /**
      * Returns list of tag names parsed from the specified uri. All #collection parts of the tag are removed from the
      * tag names.
