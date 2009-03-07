@@ -29,7 +29,7 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.maven.mercury.MavenDependencyProcessor;
 import org.apache.maven.mercury.artifact.Artifact;
-import org.apache.maven.mercury.artifact.ArtifactBasicMetadata;
+import org.apache.maven.mercury.artifact.ArtifactMetadata;
 import org.apache.maven.mercury.artifact.ArtifactMetadata;
 import org.apache.maven.mercury.artifact.ArtifactQueryList;
 import org.apache.maven.mercury.artifact.ArtifactScopeEnum;
@@ -272,14 +272,14 @@ extends AbstractCli
         {
             _versions = new ArrayList<Artifact>();
             
-            _remoteVersions = _mercury.read( _remoteRepos, new ArtifactBasicMetadata(VERSIONS_GAV) );
+            _remoteVersions = _mercury.read( _remoteRepos, new ArtifactMetadata(VERSIONS_GAV) );
             
             if( !Util.isEmpty( _remoteVersions ) )
             {
                 Artifact ver = _remoteVersions.get( 0 );
                 if( !Util.isEmpty( ver.getFile() ) )
                 {
-                 List<ArtifactBasicMetadata> verMds = CdUtil.getVersions( ver.getFile(), CdUtil.DEFAULT_SCOPE_NAME );
+                 List<ArtifactMetadata> verMds = CdUtil.getVersions( ver.getFile(), CdUtil.DEFAULT_SCOPE_NAME );
                  
                  _remoteVersions = _mercury.read( _remoteRepos, verMds );
                  
@@ -339,7 +339,7 @@ extends AbstractCli
           {
               String f = sortedFiles.last();
               
-              DefaultArtifact da = new DefaultArtifact( new ArtifactBasicMetadata("org.apache.maven:maven-cd:"+f) );
+              DefaultArtifact da = new DefaultArtifact( new ArtifactMetadata("org.apache.maven:maven-cd:"+f) );
               
               da.setFile( new File( cdDir, f ) );
               
@@ -703,7 +703,7 @@ extends AbstractCli
 
             if( testBinaries && binaries.size() != deps.size() )
             {
-                List<ArtifactBasicMetadata> diff = (List<ArtifactBasicMetadata>) CdUtil.binDiff( deps, binaries);
+                List<ArtifactMetadata> diff = (List<ArtifactMetadata>) CdUtil.binDiff( deps, binaries);
                 int diffSize = diff == null ? 0 : diff.size();
                 
                 _monitor.message( LANG.getMessage( "no.all.binaries.for", ""+binaries.size(), ""+deps.size()

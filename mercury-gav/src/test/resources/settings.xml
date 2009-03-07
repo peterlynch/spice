@@ -11,7 +11,7 @@
 
                 <repository>
                     <id>test.central</id>
-                    <url>http://localhost:9000/repo</url>
+                    <url>http://localhost:${port}/repo</url>
                     <snapshots><enabled>true</enabled></snapshots>
                     <releases><enabled>true</enabled></releases>
                 </repository>

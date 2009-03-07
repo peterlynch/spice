@@ -1,6 +1,13 @@
 <plexus>
   <components>
-
+  
+   <component>
+      <role>org.sonatype.mercury.configurator.MercuryConfigurator</role>
+      <role-hint>default</role-hint>
+      <implementation>org.sonatype.mercury.configurator.DefaultMercuryConfigurator</implementation>
+      <isolated-realm>false</isolated-realm>
+    </component>
+    
     <component>
       <role>org.apache.maven.mercury.builder.api.DependencyProcessor</role>
       <role-hint>maven</role-hint>

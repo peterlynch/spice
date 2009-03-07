@@ -23,13 +23,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 
+import org.apache.maven.mercury.spi.http.server.HttpTestServer;
 import org.apache.maven.mercury.util.FileUtil;
-import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.PlexusTestCase;
-import org.sonatype.plexus.webcontainer.ServletContainer;
 
 /**
  *
@@ -44,6 +41,11 @@ public class MercuryGavCliTest
     File _jar = new File("./target/mercury-gav-test-tests.jar");
     
     File _lr;
+
+    HttpTestServer _server;
+    String _port;
+    
+    File _settings;
 
     protected void setUp()
         throws Exception
@@ -64,13 +66,29 @@ public class MercuryGavCliTest
         File pom = new File( "./src/test/resources/a-1.pom" );
         FileUtil.copy( pom, new File(rr,"a-1.pom"), true );
         
-        lookup( ServletContainer.class );
+        _server = new HttpTestServer( new File("./target/remote-repo"), "/repo" );
+        _server.start();
+        _port = String.valueOf( _server.getPort() );
+//        lookup( ServletContainer.class );
+        
+        _settings = File.createTempFile( "mercury-gav-", "-settings.xml" );
+        _settings.deleteOnExit();
+        
+        replace( new File("./src/test/resources/settings.xml"), "${port}", _port, _settings );
     }
 
     protected void tearDown()
         throws Exception
     {
         super.tearDown();
+    }
+    
+    private static void replace( File fFrom, String from, String to, File fTo )
+    throws IOException
+    {
+        String s = FileUtil.readRawDataAsString( fFrom );
+        s = s.replace( from, to );
+        FileUtil.writeRawData( fTo, s );
     }
 
     public void testMain()
@@ -85,7 +103,7 @@ public class MercuryGavCliTest
         System.setOut( new PrintStream(os) );
         
         MercuryGavCli.main( new String [] {
-              "-s "+new File("src/test/resources/settings.xml").getCanonicalPath()
+              "-s "+_settings.getCanonicalPath()
             , "a:a:1", "org.sonatype.mercury.gav.MercuryGavCliTest"
             , "1", "2", "3", test
                                           }
@@ -99,21 +117,8 @@ public class MercuryGavCliTest
         
         int ind = oss.indexOf( "3: "+test );
         
-        assertTrue( ind > 1);
+        assertTrue( ind > 1 );
         
-    }
-    
-    protected void customizeContainerConfiguration( ContainerConfiguration containerConfiguration )
-    {
-        try 
-        {
-            URL url = new File( getBasedir(), "src/main/plexus/plexus.xml" ).toURI().toURL();
-            containerConfiguration.setContainerConfigurationURL( url );
-        } 
-        catch (MalformedURLException e) 
-        {
-            // do nothing
-        }
     }
     
     public static void main( String[] args ) throws IOException

@@ -23,7 +23,7 @@ under the License.
   <parent>
     <groupId>org.sonatype.spice</groupId>
     <artifactId>spice-parent</artifactId>
-    <version>10</version>
+    <version>11</version>
   </parent>
 
   <groupId>org.sonatype.mercury</groupId>

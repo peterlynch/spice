@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.apache.maven.mercury.artifact.Artifact;
-import org.apache.maven.mercury.artifact.ArtifactBasicMetadata;
+import org.apache.maven.mercury.artifact.ArtifactMetadata;
 import org.apache.maven.mercury.artifact.ArtifactMetadata;
 import org.apache.maven.mercury.artifact.ArtifactQueryList;
 import org.apache.maven.mercury.artifact.ArtifactScopeEnum;
@@ -196,7 +196,7 @@ implements DeltaManager
             
             if( ! Util.isEmpty( depList ))
             {
-                List<ArtifactBasicMetadata> bmdList = CdUtil.toDepList( depList );
+                List<ArtifactMetadata> bmdList = CdUtil.toDepList( depList );
                 
                 List<ArtifactMetadata> deps;
                 try
@@ -215,7 +215,7 @@ implements DeltaManager
         {
             Util.say( LANG.getMessage( "adjusting.install", cc.getId(), mavenHome.getAbsolutePath() ) , monitor );
 
-            List<ArtifactBasicMetadata> dependencies = CdUtil.toDepList( cc.getDependencies() );
+            List<ArtifactMetadata> dependencies = CdUtil.toDepList( cc.getDependencies() );
 
             if ( Util.isEmpty( dependencies ) )
                 throw new DeltaManagerException( LANG.getMessage( "no.new.deps", cc.getId() ) );
@@ -234,7 +234,7 @@ implements DeltaManager
             // TODO oleg 2009-01-28 a hack for maven single container to work container 
             ContainerConfig oldCc = CdUtil.findContainer( oldConfig, TYPE, null );
             
-            List<ArtifactBasicMetadata> oldDependencies = CdUtil.toDepList( oldCc.getDependencies() );
+            List<ArtifactMetadata> oldDependencies = CdUtil.toDepList( oldCc.getDependencies() );
             
             String oldVersion = oldCc.getVersion();
 
@@ -263,9 +263,9 @@ implements DeltaManager
                     Util.say( LANG.getMessage( "read.old.version", oldVersion, oldLdlFile.getAbsolutePath() ), monitor );
                 }
 
-                List<ArtifactBasicMetadata> deleteDiff = (List<ArtifactBasicMetadata>) CdUtil.minus( oldRes, newRes );
+                List<ArtifactMetadata> deleteDiff = (List<ArtifactMetadata>) CdUtil.minus( oldRes, newRes );
 
-                List<ArtifactBasicMetadata> installDiff = (List<ArtifactBasicMetadata>) CdUtil.minus( newRes, oldRes );
+                List<ArtifactMetadata> installDiff = (List<ArtifactMetadata>) CdUtil.minus( newRes, oldRes );
 
                 List<Artifact> artifacts = null;
 
@@ -278,7 +278,7 @@ implements DeltaManager
                     
                     if( artifacts.size() != installDiff.size() )
                     {
-                        List<ArtifactBasicMetadata> notFound = (List<ArtifactBasicMetadata>) CdUtil.binDiff( installDiff, artifacts );
+                        List<ArtifactMetadata> notFound = (List<ArtifactMetadata>) CdUtil.binDiff( installDiff, artifacts );
                         int diffSize = notFound == null ? 0 : notFound.size();
 
                         throw new DeltaManagerException( 
@@ -353,12 +353,12 @@ implements DeltaManager
      * @param diff
      * @throws IOException
      */
-    private void remove( File mavenHome, List<ArtifactBasicMetadata> diff, Monitor monitor )
+    private void remove( File mavenHome, List<ArtifactMetadata> diff, Monitor monitor )
         throws IOException
     {
         File lib = new File( mavenHome, "lib" );
 
-        for ( ArtifactBasicMetadata bmd : diff )
+        for ( ArtifactMetadata bmd : diff )
         {
             File binary = new File( lib, bmd.getFileName() );
 

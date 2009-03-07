@@ -31,7 +31,6 @@
   <properties>
     <mercury.version>1.0-alpha-6-SNAPSHOT</mercury.version>
     <maven.version>3.0-SNAPSHOT</maven.version>
-    <mercury.mp3.version>${project.version}</mercury.mp3.version>
 
     <plexus.version>1.0-beta-3.0.6</plexus.version>
     
@@ -54,162 +53,37 @@
     <url>http://grid.sonatype.org/ci/view/Mercury/job/mercury</url>
   </ciManagement>
 
-  <dependencyManagement>
-    <dependencies>
-    
-      <!-- Mercury deps -->
-      <dependency>
-        <groupId>org.apache.maven.mercury</groupId>
-        <artifactId>mercury-repo-local-m2</artifactId>
-        <version>${mercury.version}</version>
-      </dependency>
-      
-      <dependency>
-        <groupId>org.apache.maven.mercury</groupId>
-        <artifactId>mercury-repo-remote-m2</artifactId>
-        <version>${mercury.version}</version>
-      </dependency>
-  
-      <!-- Maven dependencies -->
-      <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-mercury</artifactId>
-        <version>${maven.version}</version>
-      </dependency>
-      
-      <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-core</artifactId>
-        <version>${maven.version}</version>
-      </dependency>
-      
-      <!--  Plexus dependencies -->
-      <dependency>
-        <groupId>org.codehaus.plexus</groupId>
-        <artifactId>plexus-container-default</artifactId>
-        <version>${plexus.version}</version>
-      </dependency>
-      
-      <dependency>
-        <groupId>org.codehaus.plexus</groupId>
-        <artifactId>plexus-component-annotations</artifactId>
-        <version>${plexus.version}</version>
-      </dependency>
-  
-      <dependency>
-        <groupId>org.codehaus.plexus</groupId>
-        <artifactId>plexus-utils</artifactId>
-        <version>${plexus.utils.version}</version>
-      </dependency>
-      
-      <dependency>
-        <groupId>org.codehaus.plexus</groupId>
-        <artifactId>plexus-lang</artifactId>
-        <version>${plexus.lang.version}</version>
-      </dependency>
-      
-      <dependency>
-        <groupId>org.codehaus.plexus</groupId>
-        <artifactId>plexus-component-metadata</artifactId>
-        <version>${plexus.version}</version>
-      </dependency>
- 
-      <dependency>
-        <groupId>org.codehaus.plexus</groupId>
-        <artifactId>plexus-cli</artifactId>
-        <version>${plexus.cli.version}</version>
-      </dependency>
-  
-      <!-- Jetty Dependencies for uber jar -->
-       
-      <dependency>
-        <groupId>org.apache.maven.mercury</groupId>
-        <artifactId>mercury-transport-http</artifactId>
-        <version>${mercury.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.mortbay.jetty</groupId>
-        <artifactId>jetty-util</artifactId>
-        <version>${jetty.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.mortbay.jetty</groupId>
-        <artifactId>jetty-util5</artifactId>
-        <version>${jetty.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.mortbay.jetty</groupId>
-        <artifactId>jetty-client</artifactId>
-        <version>${jetty.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.mortbay.jetty</groupId>
-        <artifactId>jetty-client</artifactId>
-        <classifier>assembly</classifier>
-        <version>${jetty.version}</version>
-      </dependency>
-<!-- 
-      <dependency>
-        <groupId>org.mortbay.jetty</groupId>
-        <artifactId>jetty</artifactId>
-        <version>${jetty.version}</version>
-      </dependency>
- -->
-      
-      <!-- Test Dependencies -->
-      <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>${junit.version}</version>
-        <scope>test</scope>
-      </dependency>
-  
-      <dependency>
-        <groupId>org.mortbay.jetty</groupId>
-        <artifactId>jetty</artifactId>
-        <scope>test</scope>
-        <version>${jetty.version}</version>
-      </dependency>
-      
-      <dependency>
-        <groupId>org.apache.maven.mercury</groupId>
-        <artifactId>mercury-transport-http</artifactId>
-        <version>${mercury.version}</version>
-        <type>test-jar</type>
-        <scope>test</scope>
-      </dependency>
-      
-    </dependencies>
-  </dependencyManagement>
-
-
-
   <dependencies>
 
       <dependency>
         <groupId>org.apache.maven.mercury</groupId>
         <artifactId>mercury-repo-local-m2</artifactId>
+        <version>${mercury.version}</version>
       </dependency>
 
       <dependency>
         <groupId>org.apache.maven.mercury</groupId>
         <artifactId>mercury-repo-remote-m2</artifactId>
+        <version>${mercury.version}</version>
       </dependency>
       
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-core</artifactId>
+        <version>${maven.version}</version>
       </dependency>
 
     <dependency>
       <groupId>org.mortbay.jetty</groupId>
       <artifactId>jetty-util5</artifactId>
+        <version>${jetty.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.mortbay.jetty</groupId>
       <artifactId>jetty-client</artifactId>
       <classifier>assembly</classifier>
+        <version>${jetty.version}</version>
       <exclusions>
         <exclusion>
          <groupId>org.mortbay.jetty</groupId> 
@@ -292,8 +166,8 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>${java.version}</source>
-          <target>${java.version}</target>
+          <source>1.5</source>
+          <target>1.5</target>
         </configuration>
       </plugin>
 

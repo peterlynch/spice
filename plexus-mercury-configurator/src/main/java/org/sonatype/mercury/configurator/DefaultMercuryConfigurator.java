@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
 import org.apache.maven.mercury.MavenDependencyProcessor;
 import org.apache.maven.mercury.builder.api.DependencyProcessor;
 import org.apache.maven.mercury.repository.api.Repository;
@@ -54,9 +56,52 @@ public class DefaultMercuryConfigurator
     
     private boolean _showDetails = true;
     // --------------------------------------------------------------------------------------------------------
-    public static void main( String[] args )
-        throws Exception
+    @SuppressWarnings("static-access")
+    public static Options getOptions()
     {
+        Options opt = new Options();
+        
+        opt.addOption( 
+                      OptionBuilder
+                      .withLongOpt( OPTION_SETTINGS_LONG )
+                      .hasArg()
+                      .withDescription( LANG.getMessage( OPTION_MESSAGE_PREFIX+OPTION_SETTINGS_LONG, DEFAULT_SETTINGS ) )
+                      .create( OPTION_SETTINGS ) 
+                           );
+        opt.addOption( 
+                      OptionBuilder
+                      .withLongOpt( OPTION_LOCAL_LONG )
+                      .hasArg()
+                      .withDescription( LANG.getMessage( OPTION_MESSAGE_PREFIX+OPTION_LOCAL_LONG, DEFAULT_LOCAL_REPO ) )
+                      .create( OPTION_LOCAL ) 
+                           );
+        opt.addOption( 
+                      OptionBuilder
+                      .withLongOpt( OPTION_REMOTE_LONG )
+                      .hasArg()
+                      .withDescription( LANG.getMessage( OPTION_MESSAGE_PREFIX+OPTION_REMOTE_LONG, DEFAULT_REMOTE_REPO ) )
+                      .create( OPTION_REMOTE ) 
+                           );
+        opt.addOption( 
+               OptionBuilder
+               .withLongOpt( OPTION_HELP_LONG )
+               .withDescription( LANG.getMessage( OPTION_HELP_LONG ) )
+               .create( OPTION_HELP ) 
+                    );
+        opt.addOption( 
+               OptionBuilder
+               .withLongOpt( OPTION_SHOW_DETAILS_LONG )
+               .withDescription( LANG.getMessage( OPTION_MESSAGE_PREFIX+OPTION_SHOW_DETAILS_LONG ) )
+               .create( OPTION_SHOW_DETAILS ) 
+                    );
+        opt.addOption( 
+               OptionBuilder
+               .withLongOpt( OPTION_OFFLINE_LONG )
+               .withDescription( LANG.getMessage( OPTION_MESSAGE_PREFIX+OPTION_OFFLINE_LONG ) )
+               .create( OPTION_OFFLINE ) 
+                    );
+        
+        return opt;
     }
 
     // --------------------------------------------------------------------------------------------------------
@@ -99,23 +144,6 @@ public class DefaultMercuryConfigurator
             setRepositories( cli, _monitor );
             
             return _repos;
-//            DependencyProcessor dp = new MavenDependencyProcessor();
-//
-//            Server server = new Server( "central", new URL( "http://repository.sonatype.org/content/groups/public" ) );
-//
-//            RemoteRepositoryM2 rr = new RemoteRepositoryM2( server, dp );
-//
-//            LocalRepositoryM2 lr = new LocalRepositoryM2( "local", new File( USER_HOME + "/.m2/repository" ), dp );
-//
-//            List<Repository> repos;
-//
-//            repos = new ArrayList<Repository>( 4 );
-//
-//            repos.add( lr );
-//
-//            repos.add( rr );
-//
-//            return repos;
         }
         catch ( Exception e )
         {
@@ -133,7 +161,7 @@ public class DefaultMercuryConfigurator
         
         if( ! cli.hasOption( OPTION_SETTINGS ) )
         {
-            getDefaultRepositories( cli, monitor, DEFAULT_LOCAL_REPO, DEFAULT_CENTRAL );
+            getDefaultRepositories( cli, monitor, DEFAULT_LOCAL_REPO, DEFAULT_REMOTE_REPO );
             return;
         }
 
@@ -162,29 +190,32 @@ public class DefaultMercuryConfigurator
         
         List<String> repoUrls = new ArrayList<String>(8);
         
-        if( hasRemote )
+        if( !cli.hasOption( OPTION_OFFLINE ) )
         {
-            StringTokenizer st = new StringTokenizer( System.getProperty( SYSTEM_PROPERTY_REMOTE_REPO ), ",");
-            
-            while( st.hasMoreTokens() )
-                repoUrls.add( st.nextToken() );
-        }
-        else
-            for( Profile p : profiles )
+            if( hasRemote )
             {
-                List<org.apache.maven.settings.Repository> repositories = p.getRepositories();
-                    if( Util.isEmpty( repositories ) )
-                        continue;
-    
-                for( org.apache.maven.settings.Repository r : repositories )
-                {
-                    String layout = r.getLayout();
-                    
-                    if( layout == null || "default".equals( layout ) )
-                        if( ! repoUrls.contains( r.getUrl() ) )
-                            repoUrls.add( r.getUrl() );
-                }
+                StringTokenizer st = new StringTokenizer( System.getProperty( SYSTEM_PROPERTY_REMOTE_REPO ), ",");
+                
+                while( st.hasMoreTokens() )
+                    repoUrls.add( st.nextToken() );
             }
+            else
+                for( Profile p : profiles )
+                {
+                    List<org.apache.maven.settings.Repository> repositories = p.getRepositories();
+                        if( Util.isEmpty( repositories ) )
+                            continue;
+        
+                    for( org.apache.maven.settings.Repository r : repositories )
+                    {
+                        String layout = r.getLayout();
+                        
+                        if( layout == null || "default".equals( layout ) )
+                            if( ! repoUrls.contains( r.getUrl() ) )
+                                repoUrls.add( r.getUrl() );
+                    }
+                }
+        }
         
         if( Util.isEmpty( repoUrls ) )
             throw new Exception( LANG.getMessage( "no.repos", settingsFile.getCanonicalPath() ) );

@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.maven.mercury.artifact.Artifact;
-import org.apache.maven.mercury.artifact.ArtifactBasicMetadata;
+import org.apache.maven.mercury.artifact.ArtifactMetadata;
 import org.apache.maven.mercury.artifact.ArtifactMetadata;
 import org.apache.maven.mercury.artifact.version.DefaultArtifactVersion;
 import org.apache.maven.mercury.artifact.version.VersionQuery;
@@ -79,18 +79,18 @@ public class CdUtil
         return res;
     }
 
-    public static List<ArtifactBasicMetadata> toDepList( List<DependencyConfig> deps )
+    public static List<ArtifactMetadata> toDepList( List<DependencyConfig> deps )
     {
         if ( deps == null )
             return null;
 
         if ( deps.isEmpty() )
-            return new ArrayList<ArtifactBasicMetadata>( 1 );
+            return new ArrayList<ArtifactMetadata>( 1 );
 
-        List<ArtifactBasicMetadata> res = new ArrayList<ArtifactBasicMetadata>( deps.size() );
+        List<ArtifactMetadata> res = new ArrayList<ArtifactMetadata>( deps.size() );
 
         for ( DependencyConfig dc : deps )
-            res.add( new ArtifactBasicMetadata( dc.getName() ) );
+            res.add( new ArtifactMetadata( dc.getName() ) );
 
         return res;
     }
@@ -142,8 +142,8 @@ public class CdUtil
      * @param subtrahend
      * @return
      */
-    public static List<? extends ArtifactBasicMetadata> minus( List<? extends ArtifactBasicMetadata> minuend,
-                                                               List<? extends ArtifactBasicMetadata> subtrahend )
+    public static List<? extends ArtifactMetadata> minus( List<? extends ArtifactMetadata> minuend,
+                                                               List<? extends ArtifactMetadata> subtrahend )
     {
         if ( Util.isEmpty( minuend ) )
             return subtrahend;
@@ -151,9 +151,9 @@ public class CdUtil
         if ( Util.isEmpty( subtrahend ) )
             return minuend;
 
-        List<ArtifactBasicMetadata> difference = new ArrayList<ArtifactBasicMetadata>();
+        List<ArtifactMetadata> difference = new ArrayList<ArtifactMetadata>();
 
-        for ( ArtifactBasicMetadata bmd : minuend )
+        for ( ArtifactMetadata bmd : minuend )
             if ( !subtrahend.contains( bmd ) )
                 difference.add( bmd );
 
@@ -165,13 +165,13 @@ public class CdUtil
      * @param ldlFile
      * @throws IOException 
      */
-    public static void write( List<? extends ArtifactBasicMetadata> deps, File ldlFile )
+    public static void write( List<? extends ArtifactMetadata> deps, File ldlFile )
     throws IOException
     {
         LockDownList ldl = new LockDownList();
         
         if( !Util.isEmpty( deps ) )
-            for( ArtifactBasicMetadata bmd : deps )
+            for( ArtifactMetadata bmd : deps )
             {
                 DependencyConfig dc = new DependencyConfig();
                 
@@ -206,21 +206,21 @@ public class CdUtil
         
         List< DependencyConfig > dcList = ldl.getDependencies();
         
-        List< ArtifactBasicMetadata> bmdList = toDepList( dcList );
+        List< ArtifactMetadata> bmdList = toDepList( dcList );
         
         if( Util.isEmpty( bmdList ))
             return null;
         
         List< ArtifactMetadata> mdList = new ArrayList<ArtifactMetadata>( dcList.size() );
         
-        for( ArtifactBasicMetadata bmd : bmdList)
+        for( ArtifactMetadata bmd : bmdList)
             mdList.add( new ArtifactMetadata(bmd) );
         
         return mdList;
     }
     //----------------------------------------------------------------------------------------------------
     @SuppressWarnings("unchecked")
-    public static List<ArtifactBasicMetadata> getVersions( File versFile, String scope )
+    public static List<ArtifactMetadata> getVersions( File versFile, String scope )
     throws IOException, XmlPullParserException
     {
         VersionListXpp3Reader reader = new VersionListXpp3Reader();
@@ -244,18 +244,18 @@ public class CdUtil
                 if( Util.isEmpty( vl ) )
                     throw new IOException( LANG.getMessage( "no.scoped.versions", scope) );
                 
-                List<ArtifactBasicMetadata> res = new ArrayList<ArtifactBasicMetadata>( vl.size() );
+                List<ArtifactMetadata> res = new ArrayList<ArtifactMetadata>( vl.size() );
                 
                 for( Version v : vl )
                 {
-                    ArtifactBasicMetadata bmd = new ArtifactBasicMetadata( v.getName() ); 
+                    ArtifactMetadata bmd = new ArtifactMetadata( v.getName() ); 
                     bmd.setType( DeltaManager.CD_EXT );
                     res.add( bmd );
                 }
                 
-                Collections.sort( res, new Comparator<ArtifactBasicMetadata>()
+                Collections.sort( res, new Comparator<ArtifactMetadata>()
                       {
-                         public int compare( ArtifactBasicMetadata o1, ArtifactBasicMetadata o2 )
+                         public int compare( ArtifactMetadata o1, ArtifactMetadata o2 )
                          {
                              return new DefaultArtifactVersion(o2.getVersion()).compareTo( new DefaultArtifactVersion(o1.getVersion()) );
                          }
@@ -267,7 +267,7 @@ public class CdUtil
         return null;
     }
     //----------------------------------------------------------------------------------------------------
-    public static final List<? extends ArtifactBasicMetadata> binDiff( List<? extends ArtifactBasicMetadata> in, List<Artifact> out )
+    public static final List<? extends ArtifactMetadata> binDiff( List<? extends ArtifactMetadata> in, List<Artifact> out )
     {
         if( Util.isEmpty( in ) )
             return null;
@@ -275,9 +275,9 @@ public class CdUtil
         if( Util.isEmpty( out ) )
             return in;
         
-        List<ArtifactBasicMetadata> res = new ArrayList<ArtifactBasicMetadata>( in.size() );
+        List<ArtifactMetadata> res = new ArrayList<ArtifactMetadata>( in.size() );
         
-        for( ArtifactBasicMetadata bmd : in )
+        for( ArtifactMetadata bmd : in )
         {
             boolean notExists = true;
             String gid = bmd.getGroupId();

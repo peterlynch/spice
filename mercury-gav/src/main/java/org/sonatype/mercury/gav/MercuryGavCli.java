@@ -13,20 +13,19 @@
 
 package org.sonatype.mercury.gav;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.maven.mercury.artifact.Artifact;
-import org.apache.maven.mercury.artifact.ArtifactBasicMetadata;
+import org.apache.maven.mercury.artifact.ArtifactMetadata;
 import org.apache.maven.mercury.artifact.ArtifactMetadata;
 import org.apache.maven.mercury.artifact.ArtifactQueryList;
 import org.apache.maven.mercury.artifact.ArtifactScopeEnum;
@@ -35,11 +34,11 @@ import org.apache.maven.mercury.repository.api.Repository;
 import org.apache.maven.mercury.util.Monitor;
 import org.apache.maven.mercury.util.Util;
 import org.codehaus.plexus.PlexusContainer;
-import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.lang.DefaultLanguage;
 import org.codehaus.plexus.lang.Language;
 import org.codehaus.plexus.tools.cli.AbstractCli;
+import org.sonatype.mercury.configurator.DefaultMercuryConfigurator;
 import org.sonatype.mercury.configurator.MercuryConfigurator;
 
 /**
@@ -60,13 +59,13 @@ extends AbstractCli
     
     public static final String SYSTEM_PROPERTY_MONITOR = "mercury.monitor";
     
-    private static final char LOCAL_REPO = 'l';
+    private static final char OPTION_LOCAL_REPO = 'l';
     
-    private static final char REMOTE_REPO = 'r';
+    private static final char OPTION_REMOTE_REPO = 'r';
     
     private static final char SETTINGS = 's';
     
-    private static final char SHOW_DETAILS = 'd';
+    private static final char VERBOSE = 'v';
     
     @Requirement
     private PlexusMercury _mercury;
@@ -89,7 +88,36 @@ extends AbstractCli
     public static void main( String[] args )
      throws Exception
      {
-         new MercuryGavCli().execute( args );
+        if( args == null || args.length < 1 )
+        {
+            usage();
+            return;
+        }
+        
+        List<String> gavArgs = new ArrayList<String>( args.length );
+        List<String> mainArgs = new ArrayList<String>( args.length );
+        
+        boolean flip = false;
+        
+        for( String a : args )
+        {
+            if( a.indexOf( ':' ) != -1 )
+                flip = true;
+            
+            if( flip )
+                mainArgs.add( a );
+            else
+                gavArgs.add( a );
+        }
+        
+         new MercuryGavCli().execute( gavArgs.toArray( new String[ mainArgs.size() ] ) );
+     }
+    //--------------------------------------------------------------------------------------------------------
+     public static void usage()
+     {
+         System.out.println();
+
+         System.out.println(LANG.getMessage( "cli.usage" ));
      }
     //--------------------------------------------------------------------------------------------------------
     @Override
@@ -103,27 +131,11 @@ extends AbstractCli
      }
     //--------------------------------------------------------------------------------------------------------
      @Override
-     @SuppressWarnings( "static-access" )
      public Options buildCliOptions( Options someOptions )
      {
-         _options.addOption( 
-                            OptionBuilder.withLongOpt( "settings" ).hasArg()
-                            .withDescription( LANG.getMessage( "cli.settings", DEFAULT_SETTINGS ) ).create( SETTINGS ) 
-                         );
-         _options.addOption( 
-                            OptionBuilder.withLongOpt( "help" )
-                            .withDescription( LANG.getMessage( "cli.help" ) ).create( HELP ) 
-                         );
-         _options.addOption( 
-                            OptionBuilder.withLongOpt( "local" )
-                            .withDescription( LANG.getMessage( "cli.help" ) ).create( LOCAL_REPO ) 
-                         );
-         _options.addOption( 
-                            OptionBuilder.withLongOpt( "remote" )
-                            .withDescription( LANG.getMessage( "cli.help" ) ).create( REMOTE_REPO ) 
-                         );
+         _options = DefaultMercuryConfigurator.getOptions();
          
-        return _options;
+         return _options;
      }
 
     @SuppressWarnings("unchecked")
@@ -159,7 +171,7 @@ extends AbstractCli
             
             _executableClass = theRest.get( 1 );
             
-            ArtifactQueryList list = new ArtifactQueryList( new ArtifactBasicMetadata(_executableGAV) );
+            ArtifactQueryList list = new ArtifactQueryList( new ArtifactMetadata(_executableGAV) );
 
             _mercury = plexus.lookup( PlexusMercury.class );
 

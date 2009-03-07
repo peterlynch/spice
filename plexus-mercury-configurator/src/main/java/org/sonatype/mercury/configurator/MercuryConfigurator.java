@@ -17,6 +17,7 @@ package org.sonatype.mercury.configurator;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Options;
 import org.apache.maven.mercury.repository.api.Repository;
 import org.apache.maven.mercury.util.Monitor;
 
@@ -38,12 +39,6 @@ public interface MercuryConfigurator
     public static final String SYSTEM_PROPERTY_LOCAL_REPO = "maven.repo.local";
 
     public static final String SYSTEM_PROPERTY_REMOTE_REPO = "maven.repo.remote";
-
-    public static final char OPTION_SETTINGS = 's';
-
-    public static final char OPTION_SHOW_DETAILS = 'd';
-
-    public static final char OPTION_OFFLINE = 'o';
     
     public static final String SYSTEM_PROPERTY_DEFAULT_LOCAL_REPO = "maven.repo.local";
     public static final String DEFAULT_LOCAL_REPO = System.getProperty(   
@@ -51,11 +46,32 @@ public interface MercuryConfigurator
                                                  , USER_HOME+"/.m2/repository"
                                                                        );
     
-    public static final String SYSTEM_PROPERTY_DEFAULT_CENTRAL = "maven.repo.central";
-    public static final String DEFAULT_CENTRAL = System.getProperty( SYSTEM_PROPERTY_DEFAULT_CENTRAL
+    public static final String SYSTEM_PROPERTY_DEFAULT_REMOTE = "maven.repo.central";
+    public static final String DEFAULT_REMOTE_REPO = System.getProperty( SYSTEM_PROPERTY_DEFAULT_REMOTE
 //                                                                     , "http://repo1.maven.org/maven2"
                                                                      , "http://repository.sonatype.org/content/groups/public/"
                                                                    );
+
+    public static final String OPTION_MESSAGE_PREFIX = "opt.";
+    
+    public static final char OPTION_HELP = 'h';
+    public static final String OPTION_HELP_LONG = "help";
+
+    public static final String OPTION_SETTINGS_LONG = "settings";
+    public static final char OPTION_SETTINGS = 's';
+
+    public static final String OPTION_LOCAL_LONG = "local";
+    public static final char OPTION_LOCAL = 'l';
+
+    public static final String OPTION_REMOTE_LONG = "remote";
+    public static final char OPTION_REMOTE = 'r';
+
+    public static final char OPTION_SHOW_DETAILS = 'd';
+    public static final String OPTION_SHOW_DETAILS_LONG = "details";
+
+    public static final char OPTION_OFFLINE = 'o';
+    public static final String OPTION_OFFLINE_LONG = "offline";
+
     public Monitor getMonitor( CommandLine cli )
     throws MercuryConfiguratorException
     ;
