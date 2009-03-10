@@ -175,9 +175,11 @@ public class PlexusConfiguration
         }
         catch ( ComponentLookupException e )
         {
-            getLogger().info(
-                "Could not lookup SecurityManager with role='" + getSecurityManagerRole() + "' and roleHint='"
-                    + getSecurityManagerRoleHint() + "'. Will look for Realms..." );
+//            getLogger().info(
+//                "Could not lookup SecurityManager with role='" + getSecurityManagerRole() + "' and roleHint='"
+//                    + getSecurityManagerRoleHint() + "'. Will look for Realms..." );
+            getLogger().warn(  "Could not lookup SecurityManager with role='" + getSecurityManagerRole() + "' and roleHint='"
+                + getSecurityManagerRoleHint() + "'. Will look for Realms...", e );
 
             securityManager = null;
         }

@@ -21,6 +21,7 @@ import org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StartingException;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StoppingException;
 import org.mortbay.jetty.Connector;
+import org.mortbay.jetty.Handler;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.handler.ContextHandlerCollection;
 import org.mortbay.jetty.nio.SelectChannelConnector;
@@ -28,6 +29,8 @@ import org.mortbay.jetty.security.Constraint;
 import org.mortbay.jetty.security.ConstraintMapping;
 import org.mortbay.jetty.security.HashUserRealm;
 import org.mortbay.jetty.servlet.Context;
+import org.mortbay.jetty.servlet.Dispatcher;
+import org.mortbay.jetty.servlet.FilterHolder;
 import org.mortbay.jetty.servlet.ServletHolder;
 
 /**
@@ -50,6 +53,8 @@ public class ServletServer
 
     /** The webapp contexts. */
     private List<WebappContext> webappContexts;
+    
+    private List<EventListenerInfo> eventListenerInfos;
 
     /**
      * Gets the server.
@@ -132,7 +137,7 @@ public class ServletServer
         Connector connector = new SelectChannelConnector();
         connector.setPort( getPort() );
         server.setConnectors( new Connector[] { connector } );
-
+        
         ContextHandlerCollection contextHandlerCollection = new ContextHandlerCollection();
         getServer().addHandler( contextHandlerCollection );
 
@@ -149,7 +154,7 @@ public class ServletServer
                             contextHandlerCollection,
                             webappContext.getContextPath(),
                             Context.SESSIONS | Context.SECURITY );
-
+                       
                         HashUserRealm userRealm = new HashUserRealm( "default" );
                         userRealm.setConfig( webappContext.getAuthenticationInfo().getCredentialsFilePath() );
 
@@ -176,14 +181,41 @@ public class ServletServer
                             Context.SESSIONS | Context.NO_SECURITY );
                     }
                     context.setDisplayName( webappContext.getName() );
+                   
+                    if( this.eventListenerInfos != null )
+                    {
+                        for ( EventListenerInfo eventListenerInfo : this.eventListenerInfos )
+                        {
+                            context.addEventListener( eventListenerInfo.getEventListener() );
+                        }
+                    }
 
                     for ( ServletInfo servletInfo : webappContext.getServletInfos() )
                     {
-                        ServletHolder servletHolder = context.addServlet( servletInfo.getServletClass(), servletInfo
-                            .getMapping() );
+                        ServletHolder servletHolder = new ServletHolder();
+                        servletHolder.setInitOrder( servletInfo.getInitOrder() );
+                        servletHolder.setClassName( servletInfo.getServletClass() );
+                        if( servletInfo.getName() != null)
+                        {
+                            servletHolder.setName( servletInfo.getName() );
+                        }
+                        
+                        context.addServlet( servletHolder, servletInfo.getMapping() );
+                        
                         for ( Map.Entry<Object, Object> entry : servletInfo.getParameters().entrySet() )
                         {
                             servletHolder.setInitParameter( entry.getKey().toString(), entry.getValue().toString() );
+                        }
+                    }
+                    
+                    // add the servlet filters
+                    for( ServletFilterInfo filterInfo : webappContext.getServletFilterInfos())
+                    {
+                        FilterHolder filter = context.addFilter( filterInfo.getFilterClass(), filterInfo.getMapping(), Handler.DEFAULT );
+                        // add the init params
+                        for ( Map.Entry<Object, Object> entry : filterInfo.getParameters().entrySet() )
+                        {
+                            filter.setInitParameter( entry.getKey().toString(), entry.getValue().toString() );
                         }
                     }
                 }

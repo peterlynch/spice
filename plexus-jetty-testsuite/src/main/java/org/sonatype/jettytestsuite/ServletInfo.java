@@ -31,6 +31,16 @@ public class ServletInfo
     /** The parameters. */
     private Properties parameters;
     
+    /** The servlets name */
+    private String name;
+
+    /** Set the initialize order.
+     * Holders with order<0, are initialized on use. Those with
+     * order>=0 are initialized in increasing order when the handler
+     * is started.
+     */
+    private int initOrder;
+    
     /**
      * Gets the parameters.
      * 
@@ -89,6 +99,26 @@ public class ServletInfo
     public void setServletClass( String servletClass )
     {
         this.servletClass = servletClass;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public void setName( String name )
+    {
+        this.name = name;
+    }
+
+    public int getInitOrder()
+    {
+        return this.initOrder;
+    }
+    
+    public void setInitOrder( int initOrder )
+    {
+        this.initOrder = initOrder;
     }
 
 }

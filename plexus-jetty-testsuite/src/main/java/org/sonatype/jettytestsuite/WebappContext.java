@@ -33,6 +33,8 @@ public class WebappContext
 
     /** The servlet infos. */
     private List<ServletInfo> servletInfos;
+    
+    private List<ServletFilterInfo> servletFilterInfos;
 
     /**
      * Gets the name.
@@ -115,4 +117,14 @@ public class WebappContext
         this.servletInfos = servletInfos;
     }
 
+    public List<ServletFilterInfo> getServletFilterInfos()
+    {
+        return servletFilterInfos;
+    }
+
+    public void setServletFilterInfos( List<ServletFilterInfo> servletFilterInfos )
+    {
+        this.servletFilterInfos = servletFilterInfos;
+    }    
+    
 }
