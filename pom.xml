@@ -42,6 +42,7 @@ under the License.
       <module>plexus-jetty6</module>
       <module>plexus-jetty-testsuite</module>
       <module>plexus-jsecurity-realms</module>
+      <module>plexus-security</module>
       <module>plexus-ldap-testsuite</module>
       <!--module>plexus-restlet-bridge</module-->
       <!--module>plexus-sec-dispatcher</module-->
