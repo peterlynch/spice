@@ -6,7 +6,7 @@
     </parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>security-url-realm</artifactId>
-  <version>1.0.6</version>
+  <version>1.0.7-SNAPSHOT</version>
     <name>Plexus URL Realm</name>
     <description>URL based Realm</description>
 
@@ -79,10 +79,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
-  <scm>
-    <connection>scm:svn:http://svn.sonatype.org/spice/tags/security-url-realm-1.0.6</connection>
-    <developerConnection>scm:svn:https://svn.sonatype.org/spice/tags/security-url-realm-1.0.6</developerConnection>
-    <url>http://svn.sonatype.org/spice/tags/security-url-realm-1.0.6</url>
-  </scm>
 </project>
