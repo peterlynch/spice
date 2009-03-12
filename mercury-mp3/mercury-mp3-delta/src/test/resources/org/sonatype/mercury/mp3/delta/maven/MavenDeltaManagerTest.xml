@@ -21,18 +21,15 @@
       <isolated-realm>false</isolated-realm>
       <requirements>
         <requirement>
-          <role>org.apache.maven.mercury.builder.api.DependencyProcessor</role>
-          <role-hint>maven</role-hint>
-          <field-name>dependencyProcessor</field-name>
-        </requirement>
-        <requirement>
-          <role>org.codehaus.plexus.PlexusContainer</role>
-          <role-hint>default</role-hint>
-          <field-name>plexus</field-name>
+          <role>java.util.Map</role>
+          <field-name>_dependencyProcessors</field-name>
         </requirement>
       </requirements>
+      <configuration>
+        <default-dependency-processor-hint>maven</default-dependency-processor-hint>
+      </configuration>
     </component>
-    
+        
     <component>
       <role>org.apache.maven.mercury.builder.api.DependencyProcessor</role>
       <role-hint>maven</role-hint>

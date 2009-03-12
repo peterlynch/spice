@@ -119,10 +119,10 @@ under the License.
             </goals>
             <configuration>
               
-              <keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
+              <keepDependenciesWithProvidedScope>false</keepDependenciesWithProvidedScope>
               <shadedArtifactAttached>false</shadedArtifactAttached>
               <shadedClassifierName>cli</shadedClassifierName>
-              <createDependencyReducedPom>false</createDependencyReducedPom>
+              <createDependencyReducedPom>true</createDependencyReducedPom>
               
               <artifactSet>
                 <excludes>
