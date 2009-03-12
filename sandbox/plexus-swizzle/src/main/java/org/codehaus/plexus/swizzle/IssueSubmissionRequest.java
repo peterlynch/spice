@@ -22,6 +22,7 @@ public class IssueSubmissionRequest
     private String reporter;
     private String assignee;
     private File problemReportBundle;
+	private String environment;
     public String getProjectId()
     {
         return projectId;
@@ -70,6 +71,12 @@ public class IssueSubmissionRequest
     {
         this.problemReportBundle = problemReportBundle;
     }
+    public void setEnvironment(String environment) {
+    	this.environment = environment;
+    }
+	public String getEnvironment() {
+		return environment;
+	}
 
     
 }

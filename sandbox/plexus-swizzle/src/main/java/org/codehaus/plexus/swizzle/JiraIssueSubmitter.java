@@ -16,11 +16,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.Date;
 
+import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
@@ -35,7 +37,6 @@ import org.codehaus.swizzle.jira.IssueType;
 import org.codehaus.swizzle.jira.Jira;
 import org.codehaus.swizzle.jira.Priority;
 import org.codehaus.swizzle.jira.Project;
-import org.codehaus.swizzle.jira.User;
 
 //TODO detect whether the remote api is enabled
 @Component(role=IssueSubmitter.class, hint="jira" )
@@ -84,6 +85,7 @@ public class JiraIssueSubmitter
         issue.setAssignee( jira.getUser( request.getAssignee() ) );
         issue.setType( type );
         issue.setPriority( priority );         
+        issue.setEnvironment(request.getEnvironment());
                 
          // We need to create an issue so that we can create an attachment. The XMLRPC API does not
          // allow for attachments so we have to use separate http client call to submit the attachment. 
@@ -151,7 +153,7 @@ public class JiraIssueSubmitter
         
         String uploadUrl = serverUrl + "/secure/AttachFile.jspa?id=" + issueId + "&os_username=" + username + "&os_password=" + password;
         
-        HttpClient client = new HttpClient();
+        HttpClient client = getHttpClient();
         client.getHttpConnectionManager().getParams().setConnectionTimeout( 8000 );
         PostMethod upload = new PostMethod( uploadUrl );
 
@@ -203,4 +205,28 @@ public class JiraIssueSubmitter
             throw new InitializationException( "The username and password combination is invalid.", e );
         }
     }
+    
+    private HttpClient getHttpClient() {
+        HttpClient client = new HttpClient();
+
+        String proxySet = System.getProperty("http.proxySet");
+        String proxyHost = System.getProperty("http.proxyHost");
+        String proxyPort = System.getProperty("http.proxyPort");
+        String proxyUser = System.getProperty("http.proxyUserName");
+        String proxyPass = System.getProperty("http.proxyPassword");
+        
+        if (!Boolean.TRUE.toString().equals(proxySet) || proxyHost == null || proxyPort == null) {
+        	return client;
+        }
+        
+        client.getHostConfiguration().setProxy(proxyHost, Integer.parseInt(proxyPort));
+
+        if (proxyUser != null) {
+          Credentials cred = new UsernamePasswordCredentials(proxyUser, proxyPass);
+          client.getState().setProxyCredentials(AuthScope.ANY, cred);
+        }
+
+        return client;
+      }
+
 }
