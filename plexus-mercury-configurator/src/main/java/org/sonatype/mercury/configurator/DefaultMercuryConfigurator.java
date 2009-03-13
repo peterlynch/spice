@@ -85,7 +85,7 @@ public class DefaultMercuryConfigurator
         opt.addOption( 
                OptionBuilder
                .withLongOpt( OPTION_HELP_LONG )
-               .withDescription( LANG.getMessage( OPTION_HELP_LONG ) )
+               .withDescription( LANG.getMessage( OPTION_MESSAGE_PREFIX+OPTION_HELP_LONG ) )
                .create( OPTION_HELP ) 
                     );
         opt.addOption( 

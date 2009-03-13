@@ -13,7 +13,7 @@
         </requirement>
       </requirements>
     </component>
-    
+
     <component>
       <role>org.apache.maven.mercury.plexus.PlexusMercury</role>
       <role-hint>default</role-hint>
@@ -22,13 +22,7 @@
       <requirements>
         <requirement>
           <role>org.apache.maven.mercury.builder.api.DependencyProcessor</role>
-          <role-hint>maven</role-hint>
-          <field-name>dependencyProcessor</field-name>
-        </requirement>
-        <requirement>
-          <role>org.codehaus.plexus.PlexusContainer</role>
-          <role-hint>default</role-hint>
-          <field-name>plexus</field-name>
+          <field-name>_dependencyProcessors</field-name>
         </requirement>
       </requirements>
     </component>

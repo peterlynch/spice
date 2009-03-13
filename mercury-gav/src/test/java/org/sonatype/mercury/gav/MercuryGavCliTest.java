@@ -115,12 +115,14 @@ public class MercuryGavCliTest
         
         assertNotNull( oss );
         
+//        System.out.println( oss );
+        
         int ind = oss.indexOf( "3: "+test );
         
         assertTrue( ind > 1 );
         
     }
-    
+
     public static void main( String[] args ) throws IOException
     {
         int count = 0;
@@ -131,5 +133,5 @@ public class MercuryGavCliTest
             for( String a : args )
                 System.out.println((count++)+": "+a);
     }
-
+    
 }

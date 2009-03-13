@@ -84,6 +84,9 @@ extends AbstractCli
     
     private Options _options = new Options();
     
+    private static List<String> _gavArgs;
+    
+    private static List<String> _mainArgs;
     //--------------------------------------------------------------------------------------------------------
     public static void main( String[] args )
      throws Exception
@@ -94,23 +97,24 @@ extends AbstractCli
             return;
         }
         
-        List<String> gavArgs = new ArrayList<String>( args.length );
-        List<String> mainArgs = new ArrayList<String>( args.length );
-        
         boolean flip = false;
         
+        _gavArgs = new ArrayList<String>( args.length );
+        
+        _mainArgs = new ArrayList<String>( args.length );
+   
         for( String a : args )
         {
             if( a.indexOf( ':' ) != -1 )
                 flip = true;
             
             if( flip )
-                mainArgs.add( a );
+                _mainArgs.add( a );
             else
-                gavArgs.add( a );
+                _gavArgs.add( a );
         }
         
-         new MercuryGavCli().execute( gavArgs.toArray( new String[ mainArgs.size() ] ) );
+         new MercuryGavCli().execute( _gavArgs.toArray( new String[ _gavArgs.size() ] ) );
      }
     //--------------------------------------------------------------------------------------------------------
      public static void usage()
@@ -158,18 +162,16 @@ extends AbstractCli
             
             _repos = _mc.getRepositories( cli );
 
-            List<String> theRest = cli.getArgList();
-            
-            if( Util.isEmpty( theRest ) || theRest.size() < 2 )
+            if( Util.isEmpty( _mainArgs ) || _mainArgs.size() < 2 )
             {
                 displayHelp();
 
                 return;
             }
             
-            _executableGAV = theRest.get( 0 );
+            _executableGAV = _mainArgs.get( 0 );
             
-            _executableClass = theRest.get( 1 );
+            _executableClass = _mainArgs.get( 1 );
             
             ArtifactQueryList list = new ArtifactQueryList( new ArtifactMetadata(_executableGAV) );
 
@@ -221,12 +223,12 @@ extends AbstractCli
             
             String [] args = null;
             
-            if( theRest.size() > 2 )
+            if( _mainArgs.size() > 2 )
             {
-                args = new String[ theRest.size() - 2 ];
+                args = new String[ _mainArgs.size() - 2 ];
                 
-                for( int i=2; i<theRest.size(); i++ )
-                    args[i-2] = theRest.get( i ); 
+                for( int i=2; i < _mainArgs.size(); i++ )
+                    args[i-2] = _mainArgs.get( i ); 
             }
             
             @SuppressWarnings("unused")
