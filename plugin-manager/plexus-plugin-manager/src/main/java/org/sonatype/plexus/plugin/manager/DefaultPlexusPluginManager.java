@@ -61,24 +61,17 @@ public class DefaultPlexusPluginManager
         for ( Iterator<File> i = request.getLocalRepositories().iterator(); i.hasNext(); )
         {
             File repository = i.next();
-                        
-            if ( !repository.exists() )
-            {
-                repository.mkdirs();
-            }
-            
-            LocalRepositoryM2 localRepository = null;
-            
+                                        
             try
             {
-                localRepository = mercury.constructLocalRepositoryM2( "local-"+repository.getName(), repository, null, null, null, null );
+                LocalRepositoryM2 localRepository = mercury.constructLocalRepositoryM2( "local-"+repository.getName(), repository, null, null, null, null );
+                
+                repositories.add( localRepository );                
             }
-            catch ( RepositoryException e ) // This exception is not very helpful.
+            catch ( RepositoryException e )
             {
-                // Should not happen.                
-            }
-            
-            repositories.add( localRepository );
+                throw new PluginResolutionException( "Error creating local repository: ", e );
+            }            
         }
 
         for ( Iterator<String> i = request.getRemoteRepositories().iterator(); i.hasNext(); )
