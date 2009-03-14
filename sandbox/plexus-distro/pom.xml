@@ -10,40 +10,7 @@
   <artifactId>plexus-distro</artifactId>
   <packaging>jar</packaging>
   <version>0.8-SNAPSHOT</version>
-  <name>plexus-distro</name>
-  <url>http://maven.apache.org</url>
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.0</version>
-        <executions>
-          <execution>
-            <id>libs</id>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${distro}/lib</outputDirectory>
-              <excludeArtifactIds>${excludeArtifacts}</excludeArtifactIds>
-            </configuration>
-          </execution>
-          <execution>
-            <id>jsw</id>
-            <phase>generate-resources</phase>
-            <goals>
-              <goal>unpack-dependencies</goal>
-            </goals>
-            <configuration>
-              <includeArtifactIds>jsw-binaries</includeArtifactIds>
-              <outputDirectory>${distro}/bin/jsw</outputDirectory>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
+  <name>Sonatype Runtimes</name>
   <dependencies>
     <!-- We need a way to start start/monitor the booter -->
     <dependency>
@@ -80,6 +47,34 @@
       </dependencies>
       <build>
         <plugins>
+          <plugin>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <version>2.0</version>
+            <executions>
+              <execution>
+                <id>libs</id>
+                <phase>process-resources</phase>
+                <goals>
+                  <goal>copy-dependencies</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${distro}/lib</outputDirectory>
+                  <excludeArtifactIds>${excludeArtifacts}</excludeArtifactIds>
+                </configuration>
+              </execution>
+              <execution>
+                <id>jsw</id>
+                <phase>generate-resources</phase>
+                <goals>
+                  <goal>unpack-dependencies</goal>
+                </goals>
+                <configuration>
+                  <includeArtifactIds>jsw-binaries</includeArtifactIds>
+                  <outputDirectory>${distro}/bin/jsw</outputDirectory>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
           <plugin>
             <groupId>org.sonatype.plexus.template</groupId>
             <artifactId>plexus-template</artifactId>
@@ -119,7 +114,7 @@
         <applicationId>application</applicationId>
         <applicationName>My Application</applicationName>
         <mainClass>org.tanukisoftware.wrapper.WrapperSimpleApp</mainClass>
-        <excludeArtifacts>jsw-binaries,junit,aspectjrt</excludeArtifacts>
+        <excludeArtifacts>jsw-binaries,junit,aspectjrt,eclipse-equinox</excludeArtifacts>
       </properties>
       <dependencies>
         <dependency>
@@ -128,9 +123,53 @@
           <version>3.4</version>
           <type>zip</type>
         </dependency>
+        <dependency>
+          <groupId>tanukisoft</groupId>
+          <artifactId>wrapper</artifactId>
+          <version>3.2.3</version>
+        </dependency>
       </dependencies>
       <build>
         <plugins>
+          <plugin>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <version>2.0</version>
+            <executions>
+              <execution>
+                <id>libs</id>
+                <phase>process-resources</phase>
+                <goals>
+                  <goal>copy-dependencies</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${distro}/lib</outputDirectory>
+                  <excludeArtifactIds>${excludeArtifacts}</excludeArtifactIds>
+                </configuration>
+              </execution>
+              <execution>
+                <id>jsw</id>
+                <phase>generate-resources</phase>
+                <goals>
+                  <goal>unpack-dependencies</goal>
+                </goals>
+                <configuration>
+                  <includeArtifactIds>jsw-binaries</includeArtifactIds>
+                  <outputDirectory>${distro}/bin/jsw</outputDirectory>
+                </configuration>
+              </execution>
+              <execution>
+                <id>equinox</id>
+                <phase>generate-resources</phase>
+                <goals>
+                  <goal>unpack-dependencies</goal>
+                </goals>
+                <configuration>
+                  <includeArtifactIds>eclipse-equinox</includeArtifactIds>
+                  <outputDirectory>${distro}/lib</outputDirectory>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
           <plugin>
             <groupId>org.sonatype.plexus.template</groupId>
             <artifactId>plexus-template</artifactId>
