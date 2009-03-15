@@ -8,7 +8,7 @@
   </parent>
   <groupId>org.sonatype.runtime</groupId>
   <artifactId>sonatype-runtime</artifactId>
-  <packaging>jar</packaging>
+  <packaging>pom</packaging>
   <version>1.0-SNAPSHOT</version>
   <name>Sonatype Runtime</name>
   <dependencies>
