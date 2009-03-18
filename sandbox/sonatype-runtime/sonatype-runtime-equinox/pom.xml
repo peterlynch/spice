@@ -15,7 +15,7 @@
     <applicationId>application</applicationId>
     <applicationName>My Application</applicationName>
     <mainClass>org.tanukisoftware.wrapper.WrapperSimpleApp</mainClass>
-    <excludeArtifacts>jsw-binaries,junit,aspectjrt,eclipse-equinox</excludeArtifacts>
+    <excludeArtifacts>jsw-binaries,junit,aspectjrt,eclipse-equinox,nexus-osgi-install</excludeArtifacts>
   </properties>
   <dependencies>
     <dependency>
@@ -23,6 +23,11 @@
       <artifactId>eclipse-equinox</artifactId>
       <version>3.4</version>
       <type>zip</type>
+    </dependency>
+    <dependency>
+      <groupId>com.sonatype.sandbox</groupId>
+      <artifactId>nexus-osgi-install</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
     </dependency>
   </dependencies>
   <build>
@@ -64,6 +69,18 @@
               <outputDirectory>${distro}/lib</outputDirectory>
             </configuration>
           </execution>
+          <execution>
+            <!-- TODO copy result should have conventional file name, i.e. <symbolicName>_<version>.jar -->
+            <id>nexus-osgi-install</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <includeArtifactIds>nexus-osgi-install</includeArtifactIds>
+              <outputDirectory>${distro}/lib/eclipse/plugins</outputDirectory>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
       <plugin>
@@ -80,6 +97,10 @@
                 <template>
                   <source>${basedir}/src/main/templates/runtime/equinox/wrapper-equinox.conf</source>
                   <target>${distro}/conf/wrapper.conf</target>
+                </template>
+                <template>
+                  <source>${basedir}/src/main/templates/runtime/equinox/config.ini</source>
+                  <target>${distro}/lib/eclipse/configuration/config.ini</target>
                 </template>
                 <template>
                   <source>${basedir}/src/main/templates/jsw/bin/sh.script.in</source>
