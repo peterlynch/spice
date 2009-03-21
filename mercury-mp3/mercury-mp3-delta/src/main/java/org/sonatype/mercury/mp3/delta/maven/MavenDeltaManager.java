@@ -23,7 +23,6 @@ import java.util.TreeSet;
 
 import org.apache.maven.mercury.artifact.Artifact;
 import org.apache.maven.mercury.artifact.ArtifactMetadata;
-import org.apache.maven.mercury.artifact.ArtifactMetadata;
 import org.apache.maven.mercury.artifact.ArtifactQueryList;
 import org.apache.maven.mercury.artifact.ArtifactScopeEnum;
 import org.apache.maven.mercury.plexus.PlexusMercury;
@@ -31,7 +30,6 @@ import org.apache.maven.mercury.repository.api.Repository;
 import org.apache.maven.mercury.repository.api.RepositoryException;
 import org.apache.maven.mercury.util.FileUtil;
 import org.apache.maven.mercury.util.Monitor;
-import org.apache.maven.mercury.util.TimeUtil;
 import org.apache.maven.mercury.util.Util;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;

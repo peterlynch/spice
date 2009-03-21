@@ -28,7 +28,7 @@ under the License.
 
   <groupId>org.sonatype.mercury</groupId>
   <artifactId>mercury-mp3</artifactId>
-  <version>1.0-alpha-1-SNAPSHOT</version>
+  <version>1.0-alpha-2-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Mercury Provisioning subsystem</name>
