@@ -312,13 +312,6 @@ public class DefaultConfigurationValidator
         {
             existingRoleNameMap.put( role.getId(), role.getName() );
         }
-
-        if ( !role.getId().matches( "\\S*" ) )
-        {
-            ValidationMessage message = new ValidationMessage( "id", "Whitespace is not allowed in Role ID '" + role.getId()
-                + ".", "Whitespace is not allowed." );
-            response.addValidationError( message );
-        }
         
         if ( 1 > role.getSessionTimeout() )
         {
