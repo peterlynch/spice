@@ -19,13 +19,10 @@ under the License.
 
 package org.sonatype.plexus.nexus.decryptor;
 
-import java.util.Map;
-
-import org.codehaus.plexus.component.annotations.Component;
-import org.codehaus.plexus.component.annotations.Requirement;
-import org.sonatype.plexus.components.cipher.PlexusCipher;
+import org.codehaus.plexus.PlexusTestCase;
 import org.sonatype.plexus.components.sec.dispatcher.PasswordDecryptor;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
+
 
 /**
  *
@@ -34,36 +31,40 @@ import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
  * @version $Id$
  *
  */
-@Component (role=PasswordDecryptor.class, hint="nexus")
-public class NexusDecryptor
-    implements PasswordDecryptor
+public class NexusDecryptorTest
+extends PlexusTestCase
 {
+    PasswordDecryptor _npd;
     
-    @Requirement
-    PlexusCipher _cipher;
-    
-    public String decrypt( String pass, Map attributes, Map config )
-    throws SecDispatcherException
+    @Override
+    protected void setUp()
+        throws Exception
     {
-        if( pass == null )
-            return null;
+        super.setUp();
         
-        if( ! _cipher.isEncryptedString( pass ) )
-            return pass;
+        _npd = getContainer().lookup( PasswordDecryptor.class, "nexus" );
+    }
+    
+    public void testDecrypt()
+    throws Exception
+    {
+        String expected1 = "blahblah";
+        String expected2 = "{blahblah}";
         
-        int x1 = pass.indexOf( PlexusCipher.ENCRYPTED_STRING_DECORATION_START );
+        String [] in  = new String [] { 
+                  "blahblah"
+                , "{blahblah}"
+                , "  blah-aaa {blahblah}"
+                , "  blah-aaa {blahblah}  blah-bbb"
+        };
         
-        if( x1 == -1 )
-            return pass;
-        
-        int x2 = pass.indexOf( PlexusCipher.ENCRYPTED_STRING_DECORATION_STOP );
-        
-        if( x1 == -1 )
-            return pass;
-        
-        if( x2 < x1 )
-            return pass;
-        
-        return pass.substring( x1, x2 ) + PlexusCipher.ENCRYPTED_STRING_DECORATION_STOP; 
+        for( String s : in )
+        {
+            String out = _npd.decrypt( s, null, null );
+            
+            int pos = s.indexOf( '{' );
+            
+            assertEquals( pos == -1 ? expected1 : expected2 , out );
+        }
     }
 }
