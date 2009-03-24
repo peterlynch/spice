@@ -48,23 +48,17 @@ extends PlexusTestCase
     public void testDecrypt()
     throws Exception
     {
-        String expected1 = "blahblah";
-        String expected2 = "{blahblah}";
+        String expected = "{blahblah}";
         
         String [] in  = new String [] { 
                   "blahblah"
-                , "{blahblah}"
-                , "  blah-aaa {blahblah}"
-                , "  blah-aaa {blahblah}  blah-bbb"
         };
         
         for( String s : in )
         {
             String out = _npd.decrypt( s, null, null );
             
-            int pos = s.indexOf( '{' );
-            
-            assertEquals( pos == -1 ? expected1 : expected2 , out );
+            assertEquals( expected, out );
         }
     }
 }

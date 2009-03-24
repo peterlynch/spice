@@ -48,22 +48,6 @@ public class NexusDecryptor
         if( pass == null )
             return null;
         
-        if( ! _cipher.isEncryptedString( pass ) )
-            return pass;
-        
-        int x1 = pass.indexOf( PlexusCipher.ENCRYPTED_STRING_DECORATION_START );
-        
-        if( x1 == -1 )
-            return pass;
-        
-        int x2 = pass.indexOf( PlexusCipher.ENCRYPTED_STRING_DECORATION_STOP );
-        
-        if( x1 == -1 )
-            return pass;
-        
-        if( x2 < x1 )
-            return pass;
-        
-        return pass.substring( x1, x2 ) + PlexusCipher.ENCRYPTED_STRING_DECORATION_STOP; 
+        return PlexusCipher.ENCRYPTED_STRING_DECORATION_START + pass + PlexusCipher.ENCRYPTED_STRING_DECORATION_STOP; 
     }
 }
