@@ -180,7 +180,6 @@ public class DefaultBundlePublisher
                 }
                 else
                 {
-                    String location = artifact.getLocation();
                     file = getArtifactFile( bundleDir, artifact );
 
                     if ( artifact.getClassifier() == null )
@@ -197,15 +196,6 @@ public class DefaultBundlePublisher
                 artifacts.add( mavenArtifact );
             }
 
-            String groupId = descriptor.getDefaults().getGroupId();
-            String artifactId = "bundle";
-            String version = descriptor.getDefaults().getVersion();
-            String type = "zip";
-
-            Artifact mavenArtifact =
-                artifactFactory.createArtifactWithClassifier( groupId, artifactId, version, type, null );
-            mavenArtifact.setFile( sourceFile );
-            artifacts.add( mavenArtifact );
         }
         catch ( IOException e )
         {
