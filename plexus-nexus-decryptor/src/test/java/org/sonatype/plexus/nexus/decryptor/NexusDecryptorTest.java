@@ -19,9 +19,11 @@ under the License.
 
 package org.sonatype.plexus.nexus.decryptor;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.codehaus.plexus.PlexusTestCase;
 import org.sonatype.plexus.components.sec.dispatcher.PasswordDecryptor;
-import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
 
 
 /**
@@ -36,16 +38,22 @@ extends PlexusTestCase
 {
     PasswordDecryptor _npd;
     
+    Map<String, String> _config;
+    
     @Override
     protected void setUp()
         throws Exception
     {
         super.setUp();
         
+        _config = new HashMap<String, String>();
+        
+        _config.put( NexusDecryptor.CONFIGURATION_PROPERTY_ENCODE,"true");
+        
         _npd = getContainer().lookup( PasswordDecryptor.class, "nexus" );
     }
     
-    public void testDecrypt()
+    public void testDecryptBase64()
     throws Exception
     {
         String expected = "{blahblah}";
@@ -56,9 +64,26 @@ extends PlexusTestCase
         
         for( String s : in )
         {
-            String out = _npd.decrypt( s, null, null );
+            String out = _npd.decrypt( s, null, _config );
             
             assertEquals( expected, out );
+        }
+    }
+    
+    public void testDecryptRaw()
+    throws Exception
+    {
+        String expected = "blahblahblah";
+        
+        String [] in  = new String [] { 
+                  "YmxhaGJsYWhibGFo"
+        };
+        
+        for( String s : in )
+        {
+            String out = _npd.decrypt( s, null, null );
+            
+            assertEquals( expected, out.substring( 2 ) );
         }
     }
 }
