@@ -6,7 +6,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.sonatype.jsecurity</groupId>
-    <version>1.0.8-SNAPSHOT</version>
+    <version>1.0.7-SNAPSHOT</version>
     <name>Plexus JSecurity Realms</name>
     <artifactId>plexus-jsecurity-realms</artifactId>
     <packaging>pom</packaging>
