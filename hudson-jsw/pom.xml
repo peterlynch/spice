@@ -29,6 +29,9 @@
     <hudson-release-dir>112009</hudson-release-dir>
     <windows-app-name>Hudson</windows-app-name>
     <unix-app-name>hudson</unix-app-name>
+    
+    <windows-slave-app-name>HudsonSlave</windows-slave-app-name>
+    <unix-slave-app-name>hudson-slave</unix-slave-app-name>
   </properties>
   
   <dependencies>
@@ -83,6 +86,12 @@
                   <tasks>
                     <mkdir dir="tmp" />
                     <get src="https://hudson.dev.java.net/files/documents/2402/${hudson-release-dir}/hudson.war" dest="tmp/hudson-${hudsonVersion}.war" verbose="true" />
+                    <unzip src="tmp/hudson-${hudsonVersion}.war"
+                           dest="tmp">
+                      <patternset>
+                        <include name="WEB-INF/slave.jar"/>
+                      </patternset>
+                    </unzip>
                   </tasks>
                 </configuration>
               </execution>
@@ -177,7 +186,8 @@
         </executions>
         <configuration>
           <descriptors>
-            <descriptor>src/main/assembly/bundle.xml</descriptor>
+            <descriptor>src/main/assembly/master.xml</descriptor>
+            <descriptor>src/main/assembly/slave.xml</descriptor>
           </descriptors>
           <tarLongFileMode>gnu</tarLongFileMode>
         </configuration>
