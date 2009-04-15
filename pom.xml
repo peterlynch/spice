@@ -27,15 +27,19 @@ under the License.
     <name>Sonatype Spice Aggregator</name>
 
     <modules>
+      <!--module>hudson-jsw</module-->
+      <!--module>mercury-mp3</module-->
+      <!--module>plexus-build-api</module-->
+      <!--module>plexus-restlet-bridge</module-->
+      <!--module>plexus-sec-dispatcher</module-->
+      <!--module>plexus-task-scheduler</module-->
+      <!--module>plugin-manager</module-->
       <module>appbooter</module>
       <module>digest-applet</module>
-      <!--module>hudson-jsw</module-->
       <module>jsw-binaries</module>
       <module>maven-assembly-helpers</module>
-      <!--module>mercury-mp3</module-->
       <module>micromailer</module>
       <module>model-builder</module>
-      <!--module>plexus-build-api</module-->
       <module>plexus-bundle-publisher</module>
       <module>plexus-cipher</module>
       <module>plexus-ehcache</module>
@@ -44,12 +48,9 @@ under the License.
       <module>plexus-jsecurity-realms</module>
       <module>plexus-security</module>
       <module>plexus-ldap-testsuite</module>
-      <!--module>plexus-restlet-bridge</module-->
-      <!--module>plexus-sec-dispatcher</module-->
-      <!--module>plexus-task-scheduler</module-->
       <module>plexus-webdav</module>
-      <!--module>plugin-manager</module-->
       <module>spice-parent</module>
+      <module>spice-timeline</module>
       
       
       
