@@ -19,6 +19,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import org.codehaus.plexus.component.annotations.Component;
@@ -34,7 +35,15 @@ public class FSTimelinePersistor
 {
     private static XStream xStream;
 
+    public static final int DEFAULT_ROLLING_INTERVAL = 60 * 60 * 24;
+
+    private int rollingInterval;
+
     private File persistDirectory;
+
+    private long lastRolledTimestamp = 0L;
+
+    private File lastRolledFile;
 
     {
         xStream = new XStream();
@@ -44,12 +53,19 @@ public class FSTimelinePersistor
 
     public void configure( File persistDirectory )
     {
+        configure( persistDirectory, DEFAULT_ROLLING_INTERVAL );
+    }
+
+    public void configure( File persistDirectory, int rollingInterval )
+    {
         this.persistDirectory = persistDirectory;
 
         if ( !this.persistDirectory.exists() )
         {
             this.persistDirectory.mkdirs();
         }
+
+        this.rollingInterval = rollingInterval;
     }
 
     public void persist( TimelineRecord record )
@@ -89,7 +105,7 @@ public class FSTimelinePersistor
         }
     }
 
-    public List<TimelineRecord> readAll()
+    private List<TimelineRecord> readFile( File file )
         throws TimelineException
     {
         List<TimelineRecord> result = new ArrayList<TimelineRecord>();
@@ -100,7 +116,7 @@ public class FSTimelinePersistor
 
             try
             {
-                reader = new BufferedReader( new FileReader( getDataFile() ) );
+                reader = new BufferedReader( new FileReader( file ) );
 
                 String line = null;
 
@@ -115,7 +131,7 @@ public class FSTimelinePersistor
                         while ( true )
                         {
                             line = reader.readLine();
-                            
+
                             xmlRecord.append( line );
 
                             if ( line.equals( "</record>" ) )
@@ -151,17 +167,59 @@ public class FSTimelinePersistor
         return result;
     }
 
+    public List<TimelineRecord> readAll()
+        throws TimelineException
+    {
+        List<TimelineRecord> result = new ArrayList<TimelineRecord>();
+
+        for ( File file : persistDirectory.listFiles() )
+        {
+            result.addAll( readFile( file ) );
+        }
+
+        return result;
+    }
+
     private File getDataFile()
         throws IOException
     {
-        File dataFile = new File( persistDirectory, "timeline.data" );
+        long now = System.currentTimeMillis();
 
-        if ( !dataFile.exists() )
+        if ( lastRolledTimestamp == 0L || ( now - lastRolledTimestamp ) > ( rollingInterval * 1000 ) )
         {
-            dataFile.createNewFile();
+            lastRolledTimestamp = now;
+
+            lastRolledFile = new File( persistDirectory, buildTimestampedFileName() );
+
+            lastRolledFile.createNewFile();
         }
 
-        return dataFile;
+        return lastRolledFile;
+    }
+
+    private String buildTimestampedFileName()
+    {
+        Calendar calendar = Calendar.getInstance();
+
+        int y = calendar.get( Calendar.YEAR );
+
+        int mon = calendar.get( Calendar.MONTH );
+
+        int d = calendar.get( Calendar.DAY_OF_MONTH );
+
+        int h = calendar.get( Calendar.HOUR );
+
+        int min = calendar.get( Calendar.MINUTE );
+
+        int s = calendar.get( Calendar.SECOND );
+
+        StringBuffer fileName = new StringBuffer();
+
+        fileName
+            .append( "timeline" ).append( "-" ).append( y ).append( "-" ).append( mon ).append( "-" ).append( d )
+            .append( "-" ).append( h ).append( ":" ).append( min ).append( ":" ).append( s ).append( ".data" );
+
+        return fileName.toString();
     }
 
 }

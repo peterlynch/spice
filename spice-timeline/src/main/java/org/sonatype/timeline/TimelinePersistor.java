@@ -24,6 +24,13 @@ public interface TimelinePersistor
 {
     void configure( File persistDirectory );
 
+    /**
+     * TimelinePersistor must be configured before being used.
+     * @param persistDirectory the place to put the persistent file
+     * @param rollingInterval the interval for rolling the persistent file (seconds)
+     */
+    public void configure( File persistDirectory, int rollingInterval );
+    
     void persist( TimelineRecord record )
         throws TimelineException;
 

@@ -25,6 +25,8 @@ public class TimelinePersistorTest
 {
     protected TimelinePersistor persistor;
 
+    protected File persistDirectory;
+
     @Override
     public void setUp()
         throws Exception
@@ -33,7 +35,7 @@ public class TimelinePersistorTest
 
         persistor = this.lookup( TimelinePersistor.class );
 
-        File persistDirectory = new File( PlexusTestCase.getBasedir(), "target/timeline" );
+        persistDirectory = new File( PlexusTestCase.getBasedir(), "target/timeline" );
 
         if ( persistDirectory.exists() )
         {
@@ -133,6 +135,23 @@ public class TimelinePersistorTest
         }
 
         assertEquals( count, persistor.readAll().size() );
+    }
+
+    public void testRolling()
+        throws Exception
+    {
+        persistor.configure( new File( PlexusTestCase.getBasedir(), "target/timeline" ), 1 );
+
+        persistor.persist( createTimelineRecord() );
+        persistor.persist( createTimelineRecord() );
+
+        Thread.sleep( 1100 );
+
+        persistor.persist( createTimelineRecord() );
+
+        assertEquals( 2, persistDirectory.listFiles().length );
+
+        assertEquals( 3, persistor.readAll().size() );
     }
 
     private TimelineRecord createTimelineRecord()
