@@ -12,15 +12,14 @@
  */
 package org.sonatype.timeline;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TimelineRecord
-    implements Serializable
-{
-    private static final long serialVersionUID = -5096104182932850648L;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
 
+@XStreamAlias("record")
+public class TimelineRecord
+{
     private long timestamp;
 
     private String type;

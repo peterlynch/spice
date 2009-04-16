@@ -12,17 +12,18 @@
  */
 package org.sonatype.timeline;
 
-import java.io.EOFException;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.codehaus.plexus.component.annotations.Component;
+
+import com.thoughtworks.xstream.XStream;
 
 /**
  * @author juven
@@ -31,7 +32,15 @@ import org.codehaus.plexus.component.annotations.Component;
 public class FSTimelinePersistor
     implements TimelinePersistor
 {
+    private static XStream xStream;
+
     private File persistDirectory;
+
+    {
+        xStream = new XStream();
+
+        xStream.processAnnotations( TimelineRecord.class );
+    }
 
     public void configure( File persistDirectory )
     {
@@ -46,27 +55,31 @@ public class FSTimelinePersistor
     public void persist( TimelineRecord record )
         throws TimelineException
     {
-        ObjectOutputStream out = null;
+        String xml = xStream.toXML( record );
+
+        BufferedWriter writer = null;
 
         synchronized ( this )
         {
             try
             {
-                out = new ObjectOutputStream( new FileOutputStream( getDataFile() ) );
+                writer = new BufferedWriter( new FileWriter( getDataFile(), true ) );
 
-                out.writeObject( record );
+                writer.write( xml );
+
+                writer.write( '\n' );
             }
-            catch ( Exception e )
+            catch ( IOException e )
             {
                 throw new TimelineException( "Failed to persist timeline record to data file!", e );
             }
             finally
             {
-                if ( out != null )
+                if ( writer != null )
                 {
                     try
                     {
-                        out.close();
+                        writer.close();
                     }
                     catch ( IOException e )
                     {
@@ -83,21 +96,38 @@ public class FSTimelinePersistor
 
         synchronized ( this )
         {
-            ObjectInputStream in = null;
+            BufferedReader reader = null;
 
             try
             {
-                in = new ObjectInputStream( new FileInputStream( getDataFile() ) );
+                reader = new BufferedReader( new FileReader( getDataFile() ) );
 
-                while ( true )
+                String line = null;
+
+                while ( reader.ready() )
                 {
-                    result.add( (TimelineRecord) in.readObject() );
+                    line = reader.readLine();
+
+                    if ( line.equals( "<record>" ) )
+                    {
+                        StringBuffer xmlRecord = new StringBuffer( line );
+
+                        while ( true )
+                        {
+                            line = reader.readLine();
+                            
+                            xmlRecord.append( line );
+
+                            if ( line.equals( "</record>" ) )
+                            {
+                                break;
+                            }
+                        }
+
+                        result.add( (TimelineRecord) xStream.fromXML( xmlRecord.toString() ) );
+                    }
                 }
 
-            }
-            catch ( EOFException e )
-            {
-                // end of the file
             }
             catch ( Exception e )
             {
@@ -105,11 +135,11 @@ public class FSTimelinePersistor
             }
             finally
             {
-                if ( in != null )
+                if ( reader != null )
                 {
                     try
                     {
-                        in.close();
+                        reader.close();
                     }
                     catch ( IOException e )
                     {
