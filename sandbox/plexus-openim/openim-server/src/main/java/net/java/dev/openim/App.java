@@ -22,9 +22,7 @@ public class App
     {
         Embedder embedder = new Embedder();
         embedder.start();
-
-        embedder.lookup( IMServer.class.getName(), "IMServer" );
-    	
+        embedder.lookup( IMServer.class.getName(), "IMServer" );    	
     }
     
 }
