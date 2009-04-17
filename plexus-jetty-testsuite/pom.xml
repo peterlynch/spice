@@ -7,13 +7,13 @@
   </parent>
   <groupId>org.sonatype.plexus</groupId>
   <artifactId>plexus-jetty-testsuite</artifactId>
-  <version>1.4</version>
+  <version>1.5-SNAPSHOT</version>
   <name>Plexus Jetty Testsuite</name>
 
   <scm>
-    <connection>scm:svn:http://svn.sonatype.org/spice/tags/plexus-jetty-testsuite-1.4</connection>
-    <url>http://svn.sonatype.org/spice/tags/plexus-jetty-testsuite-1.4</url>
-    <developerConnection>scm:svn:https://svn.sonatype.org/spice/tags/plexus-jetty-testsuite-1.4</developerConnection>
+    <connection>scm:svn:http://svn.sonatype.org/spice/trunk/plexus-jetty-testsuite</connection>
+    <url>http://svn.sonatype.org/spice/trunk/plexus-jetty-testsuite</url>
+    <developerConnection>scm:svn:https://svn.sonatype.org/spice/trunk/plexus-jetty-testsuite</developerConnection>
   </scm>
 
   <dependencies>
