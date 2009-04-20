@@ -15,9 +15,6 @@ package org.sonatype.timeline;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-
-@XStreamAlias("record")
 public class TimelineRecord
 {
     private long timestamp;

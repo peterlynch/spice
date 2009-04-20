@@ -12,19 +12,20 @@
  */
 package org.sonatype.timeline;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.codehaus.plexus.component.annotations.Component;
-
-import com.thoughtworks.xstream.XStream;
+import org.sonatype.timeline.proto.TimeLineRecordProtos;
 
 /**
  * @author juven
@@ -33,8 +34,6 @@ import com.thoughtworks.xstream.XStream;
 public class FSTimelinePersistor
     implements TimelinePersistor
 {
-    private static XStream xStream;
-
     public static final int DEFAULT_ROLLING_INTERVAL = 60 * 60 * 24;
 
     private int rollingInterval;
@@ -44,12 +43,6 @@ public class FSTimelinePersistor
     private long lastRolledTimestamp = 0L;
 
     private File lastRolledFile;
-
-    {
-        xStream = new XStream();
-
-        xStream.processAnnotations( TimelineRecord.class );
-    }
 
     public void configure( File persistDirectory )
     {
@@ -71,19 +64,20 @@ public class FSTimelinePersistor
     public void persist( TimelineRecord record )
         throws TimelineException
     {
-        String xml = xStream.toXML( record );
-
-        BufferedWriter writer = null;
+        OutputStream out = null;
 
         synchronized ( this )
         {
             try
             {
-                writer = new BufferedWriter( new FileWriter( getDataFile(), true ) );
+                out = new FileOutputStream( getDataFile(), true );
 
-                writer.write( xml );
+                byte[] bytes = toProto( record ).toByteArray();
 
-                writer.write( '\n' );
+                out.write( bytes.length );
+
+                out.write( bytes );
+
             }
             catch ( IOException e )
             {
@@ -91,11 +85,11 @@ public class FSTimelinePersistor
             }
             finally
             {
-                if ( writer != null )
+                if ( out != null )
                 {
                     try
                     {
-                        writer.close();
+                        out.close();
                     }
                     catch ( IOException e )
                     {
@@ -112,36 +106,21 @@ public class FSTimelinePersistor
 
         synchronized ( this )
         {
-            BufferedReader reader = null;
+            InputStream in = null;
 
             try
             {
-                reader = new BufferedReader( new FileReader( file ) );
+                in = new FileInputStream( file );
 
-                String line = null;
-
-                while ( reader.ready() )
+                while ( in.available() > 0 )
                 {
-                    line = reader.readLine();
+                    int length = in.read();
 
-                    if ( line.equals( "<record>" ) )
-                    {
-                        StringBuffer xmlRecord = new StringBuffer( line );
+                    byte[] bytes = new byte[length];
 
-                        while ( true )
-                        {
-                            line = reader.readLine();
+                    in.read( bytes, 0, length );
 
-                            xmlRecord.append( line );
-
-                            if ( line.equals( "</record>" ) )
-                            {
-                                break;
-                            }
-                        }
-
-                        result.add( (TimelineRecord) xStream.fromXML( xmlRecord.toString() ) );
-                    }
+                    result.add( fromProto( TimeLineRecordProtos.TimeLineRecord.parseFrom( bytes ) ) );
                 }
 
             }
@@ -151,11 +130,11 @@ public class FSTimelinePersistor
             }
             finally
             {
-                if ( reader != null )
+                if ( in != null )
                 {
                     try
                     {
-                        reader.close();
+                        in.close();
                     }
                     catch ( IOException e )
                     {
@@ -172,6 +151,7 @@ public class FSTimelinePersistor
     {
         List<TimelineRecord> result = new ArrayList<TimelineRecord>();
 
+        // TODO: only files match our pattern should be processed
         for ( File file : persistDirectory.listFiles() )
         {
             result.addAll( readFile( file ) );
@@ -220,6 +200,47 @@ public class FSTimelinePersistor
             .append( "-" ).append( h ).append( ":" ).append( min ).append( ":" ).append( s ).append( ".data" );
 
         return fileName.toString();
+    }
+
+    private TimeLineRecordProtos.TimeLineRecord toProto( TimelineRecord record )
+    {
+        TimeLineRecordProtos.TimeLineRecord.Builder builder = TimeLineRecordProtos.TimeLineRecord.newBuilder();
+
+        builder.setTimestamp( record.getTimestamp() );
+
+        builder.setType( record.getType() );
+
+        builder.setSubType( record.getSubType() );
+
+        for ( Map.Entry<String, String> entry : record.getData().entrySet() )
+        {
+            builder.addData( TimeLineRecordProtos.TimeLineRecord.Data.newBuilder().setKey( entry.getKey() ).setValue(
+                entry.getValue() ).build() );
+        }
+
+        return builder.build();
+    }
+
+    private TimelineRecord fromProto( TimeLineRecordProtos.TimeLineRecord rec )
+    {
+        TimelineRecord record = new TimelineRecord();
+
+        record.setTimestamp( rec.getTimestamp() );
+
+        record.setType( rec.getType() );
+
+        record.setSubType( rec.getSubType() );
+
+        Map<String, String> dataMap = new HashMap<String, String>();
+
+        for ( TimeLineRecordProtos.TimeLineRecord.Data data : rec.getDataList() )
+        {
+            dataMap.put( data.getKey(), data.getValue() );
+        }
+
+        record.setData( dataMap );
+
+        return record;
     }
 
 }
