@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.codehaus.plexus.PlexusTestCase;
+import org.codehaus.plexus.util.FileUtils;
 
 public class TimelinePersistorTest
     extends PlexusTestCase
@@ -152,6 +153,20 @@ public class TimelinePersistorTest
         assertEquals( 2, persistDirectory.listFiles().length );
 
         assertEquals( 3, persistor.readAll().size() );
+    }
+
+    public void testIllegalDataFile()
+        throws Exception
+    {
+        persistor.configure( new File( PlexusTestCase.getBasedir(), "target/timeline" ) );
+
+        persistor.persist( createTimelineRecord() );
+
+        File badFile = new File( PlexusTestCase.getBasedir(), "target/timeline/bad.txt" );
+
+        FileUtils.fileWrite( badFile.getAbsolutePath(), "some bad data" );
+
+        assertEquals( 1, persistor.readAll().size() );
     }
 
     private TimelineRecord createTimelineRecord()

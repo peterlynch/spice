@@ -18,8 +18,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,8 @@ public class FSTimelinePersistor
     implements TimelinePersistor
 {
     public static final int DEFAULT_ROLLING_INTERVAL = 60 * 60 * 24;
+    
+    public static final String DATA_FILE_NAME_PATTERN = "^timeline\\.\\d{4}-\\d{2}-\\d{2}\\.\\d{2}-\\d{2}-\\d{2}\\.dat$";
 
     private int rollingInterval;
 
@@ -154,7 +157,11 @@ public class FSTimelinePersistor
         // TODO: only files match our pattern should be processed
         for ( File file : persistDirectory.listFiles() )
         {
+            if ( file.getName().matches( DATA_FILE_NAME_PATTERN ))
+            {
+            
             result.addAll( readFile( file ) );
+            }
         }
 
         return result;
@@ -179,25 +186,11 @@ public class FSTimelinePersistor
 
     private String buildTimestampedFileName()
     {
-        Calendar calendar = Calendar.getInstance();
-
-        int y = calendar.get( Calendar.YEAR );
-
-        int mon = calendar.get( Calendar.MONTH );
-
-        int d = calendar.get( Calendar.DAY_OF_MONTH );
-
-        int h = calendar.get( Calendar.HOUR );
-
-        int min = calendar.get( Calendar.MINUTE );
-
-        int s = calendar.get( Calendar.SECOND );
+        SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyy-MM-dd.HH-mm-ss" );
 
         StringBuffer fileName = new StringBuffer();
 
-        fileName
-            .append( "timeline" ).append( "-" ).append( y ).append( "-" ).append( mon ).append( "-" ).append( d )
-            .append( "-" ).append( h ).append( ":" ).append( min ).append( ":" ).append( s ).append( ".data" );
+        fileName.append( "timeline." ).append( dateFormat.format( new Date() ) ).append( ".dat" );
 
         return fileName.toString();
     }
