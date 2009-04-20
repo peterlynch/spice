@@ -88,6 +88,15 @@ public class XmlAuthorizingRealm
             throw new AuthorizationException( "User '" + username + "' cannot be retrieved." );
         }
 
+        // FIXME: This should use the RoleResolver, its to late in the release cycle to change it now,
+        // but it will be something simple like:
+        //
+        // for( String permission : roleResolver.resolvePermissions( user.getRoles() )
+        // {
+        //    permissions.add( new WildcardPermission( permission );
+        // }
+        //
+        
         LinkedList<String> rolesToProcess = new LinkedList<String>();
         Set<PlexusRole> roles = user.getRoles();
         

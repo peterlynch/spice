@@ -119,6 +119,8 @@ import org.jsecurity.authc.pam.ModularRealmAuthenticator;
 import org.jsecurity.authz.AuthorizationException;
 import org.jsecurity.authz.ModularRealmAuthorizer;
 import org.jsecurity.authz.Permission;
+import org.jsecurity.cache.CacheManager;
+import org.jsecurity.cache.ehcache.EhCacheManager;
 import org.jsecurity.realm.Realm;
 import org.jsecurity.subject.PrincipalCollection;
 import org.jsecurity.web.DefaultWebSecurityManager;
@@ -126,6 +128,7 @@ import org.sonatype.jsecurity.locators.RememberMeLocator;
 import org.sonatype.jsecurity.realms.PlexusSecurity;
 import org.sonatype.jsecurity.selectors.RealmCriteria;
 import org.sonatype.jsecurity.selectors.RealmSelector;
+import org.sonatype.plexus.components.ehcache.PlexusEhCacheWrapper;
 
 /**
  * Currently only supports a single child realm. Plan on implementing mulitiple child realms and a seperation of
@@ -144,6 +147,9 @@ public class WebPlexusSecurity
 
     @Requirement
     private Logger logger;
+    
+    @Requirement 
+    private PlexusEhCacheWrapper cacheWrapper;
 
     public Realm selectRealm( RealmCriteria criteria )
     {
@@ -477,6 +483,14 @@ public class WebPlexusSecurity
     protected void afterCacheManagerSet()
     {
         // do nothing here, stack overflow
+        super.afterCacheManagerSet();
+    }
+    
+    @Override
+    protected CacheManager createCacheManager()
+    {
+        // this is called from the constructor, we want to use the initialize() method.
+        return null;
     }
 
     // Plexus Lifecycle
@@ -492,11 +506,18 @@ public class WebPlexusSecurity
         // this.setAuthenticator( realmAuthenticator );
         //        
         // this.setRealms( this.getRealms() );
-
+        
         this.setRealm( this );
 
         setRememberMeManager( rememberMeLocator.getRememberMeManager() );
 
+        //setup the CacheManager
+        // The plexus wrapper can interpolate the config
+        EhCacheManager ehCacheManager = new EhCacheManager();
+        ehCacheManager.setCacheManager( this.cacheWrapper.getEhCacheManager() );
+        this.setCacheManager( ehCacheManager );
+        
+        
     }
 
     public void enableLogging( Logger logger )

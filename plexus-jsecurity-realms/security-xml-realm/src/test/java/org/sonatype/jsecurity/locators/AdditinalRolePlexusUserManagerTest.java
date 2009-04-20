@@ -168,6 +168,27 @@ public class AdditinalRolePlexusUserManagerTest
         
     }
   
+  public void testNestedRoles()
+        throws Exception
+    {
+        PlexusUserSearchCriteria criteria = new PlexusUserSearchCriteria();
+        criteria.getOneOfRoleIds().add( "Role1" );
+
+        Set<PlexusUser> result = this.getUserManager().searchUsers( criteria, PlexusUserManager.SOURCE_ALL );
+
+        Map<String, PlexusUser> userMap = this.toUserMap( result );
+
+        Assert.assertTrue( "User not found in: " + userMap, userMap.containsKey( "admin" ) );
+        Assert.assertTrue( "User not found in: " + userMap, userMap.containsKey( "test-user" ) );
+        Assert.assertTrue( "User not found in: " + userMap, userMap.containsKey( "jcoder" ) );
+        Assert.assertTrue( "User not found in: " + userMap, userMap.containsKey( "cdugas" ) );
+//        Assert.assertTrue( "User not found in: " + userMap, userMap.containsKey( "other-user" ) ); 
+        // other user is only defined in the mapping, simulates a user that was deleted
+
+        Assert.assertEquals( 4, result.size() );
+
+    }
+  
     private PlexusUser searchForSingleUser( PlexusUserSearchCriteria criteria, String userId, String source ) throws Exception
     {
         PlexusUserManager userManager = this.getUserManager();

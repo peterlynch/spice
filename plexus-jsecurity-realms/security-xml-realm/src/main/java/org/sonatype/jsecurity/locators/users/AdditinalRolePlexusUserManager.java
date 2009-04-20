@@ -21,6 +21,7 @@ import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.util.CollectionUtils;
 import org.codehaus.plexus.util.StringUtils;
+import org.sonatype.jsecurity.locators.RoleResolver;
 import org.sonatype.jsecurity.locators.SecurityXmlPlexusUserLocator;
 import org.sonatype.jsecurity.model.CRole;
 import org.sonatype.jsecurity.model.CUserRoleMapping;
@@ -38,6 +39,9 @@ public class AdditinalRolePlexusUserManager
     
     @Requirement
     private Logger logger;
+    
+    @Requirement
+    private RoleResolver roleResolver;
 
     @Override
     public PlexusUser getUser( String userId )
@@ -78,6 +82,10 @@ public class AdditinalRolePlexusUserManager
     @Override
     public Set<PlexusUser> searchUsers( PlexusUserSearchCriteria criteria, String source )
     {
+        // we need to resolve the nested roles TODO: should we be changing the criteria object?
+        // the security.xml file allows nested roles.
+        criteria.setOneOfRoleIds( roleResolver.effectiveRoles( criteria.getOneOfRoleIds() ) );
+        
         Set<PlexusUser> users = super.searchUsers( criteria, source );
 
         // add the roles mapped in the security.xml
@@ -101,7 +109,11 @@ public class AdditinalRolePlexusUserManager
         {
             if ( this.userMatchesCriteria( userRoleMapping, criteria, source ) )
             {
-                mappedUsers.add( this.getUser( userRoleMapping.getUserId(), userRoleMapping.getSource() ) );
+                PlexusUser user =  this.getUser( userRoleMapping.getUserId(), userRoleMapping.getSource() );
+                if( user != null )
+                {
+                    mappedUsers.add( user );
+                }
             }
         }
         return mappedUsers;

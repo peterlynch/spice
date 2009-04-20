@@ -2,9 +2,8 @@
   <components>
     <component>
       <role>org.sonatype.jsecurity.realms.tools.StaticSecurityResource</role>
-      <role-hint>UnitTestSecurityResource</role-hint>
-      <implementation>org.sonatype.jsecurity.realms.tools.UnitTestSecurityResource</implementation>
-      <description>UnitTestSecurityResource</description>
+      <role-hint>mock</role-hint>
+      <implementation>org.sonatype.jsecurity.locators.MockStaticSecurityResource</implementation>
       <isolated-realm>false</isolated-realm>
     </component>
   </components>

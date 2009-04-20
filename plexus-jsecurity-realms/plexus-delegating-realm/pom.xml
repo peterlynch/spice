@@ -43,6 +43,11 @@
             <artifactId>plexus-container-default</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+        	<groupId>org.sonatype.spice</groupId>
+        	<artifactId>plexus-ehcache</artifactId>
+        	<version>1.0.1-SNAPSHOT</version>
+        </dependency>
 
 		<!-- A backend for testing -->
         <dependency>

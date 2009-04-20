@@ -35,7 +35,7 @@
 	
 	<roles>
     <role>
-      <id>Role1</id>
+      <id>role1</id>
       <name>RoleOne</name>
       <description>Role One</description>
       <sessionTimeout>60</sessionTimeout>
@@ -45,7 +45,7 @@
       </privileges>
     </role>
     <role>
-      <id>Role2</id>
+      <id>role2</id>
       <name>RoleTwo</name>
       <description>Role Two</description>
       <sessionTimeout>60</sessionTimeout>
@@ -55,7 +55,7 @@
       </privileges>
     </role>
     <role>
-      <id>Role3</id>
+      <id>role3</id>
       <name>RoleThree</name>
       <description>Role Three</description>
       <sessionTimeout>60</sessionTimeout>
@@ -63,8 +63,41 @@
         <privilege>1</privilege>
         <privilege>4</privilege>
       </privileges>
+    </role>
+    <role>
+      <id>role10</id>
+      <name>RoleTen</name>
+      <description>Role Ten</description>
+      <sessionTimeout>60</sessionTimeout>
+      <privileges>
+        <privilege>3</privilege>
+      </privileges>
+    </role>
+    <role>
+      <id>role11</id>
+      <name>RoleEleven</name>
+      <description>Role Eleven</description>
+      <sessionTimeout>60</sessionTimeout>
       <roles>
-      	<role>Role1</role>
+        <role>role10</role>
+      </roles>
+    </role>
+    <role>
+      <id>role12</id>
+      <name>RoleTwelve</name>
+      <description>Role Twelve</description>
+      <sessionTimeout>60</sessionTimeout>
+      <roles>
+        <role>role11</role>
+      </roles>
+    </role>
+    <role>
+      <id>role13</id>
+      <name>RoleThirteen</name>
+      <description>Role Thirteen</description>
+      <sessionTimeout>60</sessionTimeout>
+      <roles>
+        <role>role12</role>
       </roles>
     </role>
   </roles>
@@ -138,8 +171,8 @@
 			<userId>other-user</userId>
 			<source>default</source>
 			<roles>
-				<role>Role2</role>
-				<role>Role3</role>
+				<role>role2</role>
+				<role>role3</role>
 			</roles>
 
 		</userRoleMapping>
@@ -149,7 +182,7 @@
 			<userId>admin</userId>
 			<source>default</source>
 			<roles>
-				<role>Role1</role>
+				<role>role1</role>
 			</roles>
 
 		</userRoleMapping>
@@ -159,8 +192,8 @@
 			<userId>test-user</userId>
 			<source>default</source>
 			<roles>
-				<role>Role1</role>
-				<role>Role2</role>
+				<role>role1</role>
+				<role>role2</role>
 			</roles>
 
 		</userRoleMapping>
@@ -169,26 +202,9 @@
 			<userId>anonymous</userId>
 			<source>default</source>
 			<roles>
-				<role>Role2</role>
+				<role>role2</role>
 			</roles>
+
 		</userRoleMapping>
-		
-				
-		<userRoleMapping>
-			<userId>jcoder</userId>
-			<source>MockUserLocatorA</source>
-			<roles>
-				<role>Role1</role>
-			</roles>
-		</userRoleMapping>
-		
-		<userRoleMapping>
-			<userId>dknudsen</userId>
-			<source>MockUserLocatorA</source>
-			<roles>
-				<role>Role2</role>
-			</roles>
-		</userRoleMapping>
-		
 	</userRoleMappings>
 </security>
