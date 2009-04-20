@@ -15,7 +15,6 @@ package org.sonatype.timeline;
 public class TimelineException
     extends Exception
 {
-
     private static final long serialVersionUID = -6910542365717001247L;
 
     public TimelineException()

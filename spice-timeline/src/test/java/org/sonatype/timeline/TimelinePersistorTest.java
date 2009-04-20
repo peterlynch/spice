@@ -48,7 +48,7 @@ public class TimelinePersistorTest
             persistDirectory.delete();
         }
 
-        persistor.configure( new File( PlexusTestCase.getBasedir(), "target/timeline" ) );
+        persistor.configure( persistDirectory );
     }
 
     public void testPersistSingleRecord()
