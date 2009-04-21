@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Default nexus security configuration -->
+<!-- used as default config source -->
+<security>
+	<version>2.0.2</version>
+	<users>
+		<user>
+			<id>admin</id>
+			<name>Administrator</name>
+			<!-- admin123 -->
+			<password>f865b53623b121fd34ee5426c792e5c33af8c227</password>
+			<status>active</status>
+			<email>changeme@yourcompany.com</email>
+		</user>
+		<user>
+			<id>anonymous</id>
+			<name>Nexus Anonynmous User</name>
+			<!-- anonymous -->
+			<password>0a92fab3230134cca6eadd9898325b9b2ae67998</password>
+			<status>active</status>
+			<email>changeme2@yourcompany.com</email>
+		</user>
+		<user>
+			<id>user</id>
+			<name>Test User</name>
+			<!-- admin123 -->
+			<password>f865b53623b121fd34ee5426c792e5c33af8c227</password>
+			<status>active</status>
+			<email>changeme3@yourcompany.com</email>
+		</user>
+	</users>
+	<roles>
+        <role>
+            <id>admin</id>
+            <name>Nexus Administrator Role</name>
+            <description>Administration role for Nexus</description>
+            <sessionTimeout>30</sessionTimeout>
+            <privileges>
+                <privilege>admin</privilege>
+            </privileges>
+            <roles />
+        </role>
+        
+        <role>
+            <id>test</id>
+            <name>Test Role</name>
+            <description>Test Role</description>
+            <sessionTimeout>30</sessionTimeout>
+            <privileges>
+                <privilege>test</privilege>
+            </privileges>
+            <roles />
+        </role>
+        
+	</roles>
+	
+	<privileges>
+		<privilege>
+            <id>admin</id>
+            <type>method</type>
+            <name>Administrator privilege (ALL)</name>
+            <description>Give permission to everything available in nexus.</description>
+            <properties>
+                <property>
+                    <key>method</key>
+                    <value>*</value>
+                </property>
+                <property>
+                    <key>permission</key>
+                    <value>sample:*</value>
+                </property>
+            </properties>
+        </privilege>
+        <privilege>
+            <id>test</id>
+            <type>method</type>
+            <name>Test Privilege - (read)</name>
+            <description>Test Privilege - (read)</description>
+            <properties>
+                <property>
+                    <key>method</key>
+                    <value>read</value>
+                </property>
+                <property>
+                    <key>permission</key>
+                    <value>sample:priv-name</value>
+                </property>
+            </properties>
+        </privilege>
+    </privileges>
+	
+	<userRoleMappings>
+	
+		<userRoleMapping>
+			<userId>admin</userId>
+			<source>default</source>
+			<roles>
+				<role>admin</role>
+			</roles>
+		</userRoleMapping>
+		
+		<userRoleMapping>
+			<userId>user</userId>
+			<source>default</source>
+			<roles>
+				<role>test</role>
+			</roles>
+		</userRoleMapping>
+		
+		 <userRoleMapping>
+			<userId>anonymous</userId>
+			<source>default</source>
+			<roles>
+				<role>anonymous</role>
+			</roles>
+		</userRoleMapping>
+		
+	</userRoleMappings>
+</security>

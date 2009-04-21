@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+
+    <display-name>Sample Application</display-name>
+
+    <!-- Booter -->
+  	<listener>
+  		<listener-class>org.sonatype.plexus.rest.PlexusContainerContextListener</listener-class>
+  	</listener>
+  	  	
+    <!-- Security filter -->
+    <filter>
+        <filter-name>securityFilter</filter-name>
+        <filter-class>org.sonatype.jsecurity.web.PlexusJSecurityFilter</filter-class>
+        <init-param>
+            <param-name>config</param-name>
+            <param-value>
+			[filters]
+				authcBasic = org.jsecurity.web.filter.authc.BasicHttpAuthenticationFilter
+				authcBasic.applicationName = Sample Application
+				#authcBasic.fakeAuthScheme = true
+				
+				perms = org.sonatype.jsecurity.web.filter.authz.HttpVerbMappingAuthorizationFilter
+			</param-value>
+        </init-param>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>securityFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>securityFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!-- Sample REST Application -->
+    <servlet>
+        <servlet-name>sample</servlet-name>
+        <servlet-class>org.sonatype.plexus.rest.PlexusServerServlet</servlet-class>
+        
+        <init-param>
+            <!-- A stupid hack to avoid OneServletServerPerWebapp limitation, see PlexusServerServlet#getInitParameter -->
+            <param-name>sample.role</param-name>
+            <param-value>org.restlet.Application</param-value>
+        </init-param>
+        <init-param>
+            <!-- A stupid hack to avoid OneServletServerPerWebapp limitation, see PlexusServerServlet#getInitParameter -->
+            <param-name>sample.roleHint</param-name>
+            <param-value>secureApplication</param-value>
+        </init-param>
+        <init-param>
+            <param-name>plexus.discoverResources</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>sample</servlet-name>
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Welcome File -->
+    <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
+    </welcome-file-list>
+
+    <!--
+        Uncomment this if you need to edit JavaScript files and other resources while Jetty is running (to prevent it from locking
+        everything). 
+    <servlet>
+        <servlet-name>default</servlet-name>
+        <servlet-class>org.mortbay.jetty.servlet.DefaultServlet</servlet-class>
+        <init-param>
+            <param-name>useFileMappedBuffer</param-name>
+            <param-value>false</param-value>
+        </init-param>
+    </servlet>
+    -->
+</web-app>

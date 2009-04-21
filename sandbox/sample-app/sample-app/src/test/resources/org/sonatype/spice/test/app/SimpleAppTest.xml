@@ -1,0 +1,78 @@
+<plexus>
+
+	
+	<components>
+
+		<!--<component>
+			<role>org.codehaus.plexus.logging.LoggerManager</role>
+			<implementation>org.codehaus.plexus.logging.slf4j.Slf4jLoggerManager</implementation>
+			<configuration>
+				<threshold>DEBUG</threshold>
+			</configuration>
+		</component>-->
+
+		<component>
+			<role>org.sonatype.jettytestsuite.ServletServer</role>
+			<implementation>
+				org.sonatype.jettytestsuite.ServletServer
+			</implementation>
+			<configuration>
+				<port>12345</port>
+				<webappContexts>
+					<webappContext>
+						<name>sample</name>
+						<servletInfos>
+							<servletInfo>
+								<mapping>/*</mapping>
+								<servletClass>org.sonatype.plexus.rest.PlexusServerServlet</servletClass>
+								<name>sample</name>
+								<initOrder>1</initOrder>
+								<parameters>
+								
+									<property>
+										<!-- A stupid hack to avoid OneServletServerPerWebapp limitation, see PlexusServerServlet#getInitParameter -->
+										<name>plexus.discoverResources</name>
+										<value>true</value>
+									</property>
+									<property>
+							            <!-- A stupid hack to avoid OneServletServerPerWebapp limitation, see PlexusServerServlet#getInitParameter -->
+							            <name>sample.roleHint</name>
+							            <value>secureApplication</value>
+						        	</property>
+								
+								</parameters>
+							</servletInfo>
+						</servletInfos>
+						<servletFilterInfos>
+							<servletFilterInfo>
+								<mapping>/*</mapping>
+								<filterClass>org.sonatype.jsecurity.web.PlexusJSecurityFilter</filterClass>
+								<parameters>
+									<property>
+										<name>config</name>
+										<value>
+				[filters]
+				authcBasic = org.jsecurity.web.filter.authc.BasicHttpAuthenticationFilter
+				authcBasic.applicationName = Sample Application
+				#authcBasic.fakeAuthScheme = true
+				
+				perms = org.sonatype.jsecurity.web.filter.authz.HttpVerbMappingAuthorizationFilter
+				
+			                           </value>
+									</property>
+								</parameters>
+							</servletFilterInfo>
+						</servletFilterInfos>
+					</webappContext>
+				</webappContexts>
+				<eventListenerInfos>
+					<eventListenerInfo>
+					    <!-- ThreadLocal hack for using the same Plexus Container as the tests are running on  -->
+						<clazz>org.sonatype.spice.test.app.HackServletContextListener</clazz>
+						<!--<clazz>org.sonatype.plexus.rest.PlexusContainerContextListener</clazz>-->
+					</eventListenerInfo>
+				</eventListenerInfos>
+			</configuration>
+		</component>
+	</components>
+</plexus>
