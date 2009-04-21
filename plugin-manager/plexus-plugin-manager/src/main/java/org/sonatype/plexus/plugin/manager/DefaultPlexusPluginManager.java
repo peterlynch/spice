@@ -205,4 +205,11 @@ public class DefaultPlexusPluginManager
         
         return componentDescriptors;
     }
+
+    // Default implementation does nothign to the request
+    public PluginResolutionRequest augment( PluginResolutionRequest request )
+        throws PluginRequestAugmentationException
+    {
+        return request;
+    }
 }

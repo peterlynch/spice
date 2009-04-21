@@ -8,4 +8,45 @@
   </parent>
   <artifactId>idiom-plugin-api</artifactId>
   <name>Idiom :: Plugin API</name>
+  <dependencies>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
+      <version>1.5.8</version>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+        <plugin>
+          <groupId>org.codehaus.modello</groupId>
+          <artifactId>modello-maven-plugin</artifactId>
+          <version>1.0.1</version>
+          <configuration>
+            <version>1.0.0</version>
+            <models>
+              <model>src/main/mdo/plugin.mdo</model>
+            </models>
+            <useJava5>true</useJava5>
+          </configuration>
+          <executions>
+            <execution>
+              <id>site-docs</id>
+              <phase>pre-site</phase>
+              <goals>
+                <goal>xdoc</goal>
+                <goal>xsd</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>standard</id>
+              <goals>
+                <goal>java</goal>
+                <goal>xpp3-reader</goal>
+                <goal>xpp3-writer</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </build>
 </project>

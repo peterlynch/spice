@@ -22,6 +22,9 @@ import org.codehaus.plexus.component.repository.exception.ComponentLookupExcepti
 
 public interface PlexusPluginManager
 {
+    PluginResolutionRequest augment( PluginResolutionRequest request )
+        throws PluginRequestAugmentationException;
+    
     // we couldn't really make a plugin execution request because we don't know what method to
     // execute ...
     // - someone would need to make a custom plugin execution request or a plugin manager
@@ -41,7 +44,7 @@ public interface PlexusPluginManager
     // for pico for example.
     List<ComponentDescriptor<?>> discoverComponents( ClassRealm realm );
 
-    ComponentDescriptor getComponentDescriptor( String role, String hint );
+    ComponentDescriptor<?> getComponentDescriptor( String role, String hint );
 
     // We need to find all available plugins without loading them.
     
