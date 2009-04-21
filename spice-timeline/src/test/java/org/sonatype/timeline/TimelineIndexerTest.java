@@ -13,7 +13,6 @@
 package org.sonatype.timeline;
 
 import java.io.File;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -22,6 +21,11 @@ import java.util.Set;
 
 import org.codehaus.plexus.PlexusTestCase;
 
+/**
+ * Test the timeline indexer
+ * 
+ * @author juven
+ */
 public class TimelineIndexerTest
     extends PlexusTestCase
 {
@@ -293,7 +297,7 @@ public class TimelineIndexerTest
         rec3.getData().put( "t", "3" );
         TimelineRecord rec4 = createTimelineRecord();
         rec4.setTimestamp( 4000000L );
-        rec4.getData().put( "t", "4" );        
+        rec4.getData().put( "t", "4" );
 
         indexer.add( rec2 );
         indexer.add( rec1 );
@@ -307,6 +311,199 @@ public class TimelineIndexerTest
         assertEquals( "3", results.get( 1 ).get( "t" ) );
         assertEquals( "2", results.get( 2 ).get( "t" ) );
         assertEquals( "1", results.get( 3 ).get( "t" ) );
+    }
+
+    public void testPurgeByTime()
+        throws Exception
+    {
+        TimelineRecord rec1 = createTimelineRecord();
+        rec1.setTimestamp( 1000000L );
+        rec1.getData().put( "t", "1" );
+        TimelineRecord rec2 = createTimelineRecord();
+        rec2.setTimestamp( 2000000L );
+        rec2.getData().put( "t", "2" );
+        TimelineRecord rec3 = createTimelineRecord();
+        rec3.setTimestamp( 3000000L );
+        rec3.getData().put( "t", "3" );
+        TimelineRecord rec4 = createTimelineRecord();
+        rec4.setTimestamp( 4000000L );
+        rec4.getData().put( "t", "4" );
+
+        indexer.add( rec2 );
+        indexer.add( rec1 );
+        indexer.add( rec4 );
+        indexer.add( rec3 );
+
+        assertEquals( 2, indexer.purge( 1500000L, 3500000L, null, null ) );
+        List<Map<String, String>> results = indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null );
+        assertEquals( 2, results.size() );
+        assertEquals( "4", results.get( 0 ).get( "t" ) );
+        assertEquals( "1", results.get( 1 ).get( "t" ) );
+        assertEquals( 2, indexer.purge( 0, 4500000L, null, null ) );
+        assertEquals( 0, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
+    }
+
+    public void testPurgeByType()
+        throws Exception
+    {
+        TimelineRecord rec1 = createTimelineRecord();
+        rec1.setType( "typeA" );
+        TimelineRecord rec2 = createTimelineRecord();
+        rec2.setType( "typeB" );
+        TimelineRecord rec3 = createTimelineRecord();
+        rec3.setType( "typeB" );
+        TimelineRecord rec4 = createTimelineRecord();
+        rec4.setType( "typeC" );
+        indexer.add( rec1 );
+        indexer.add( rec2 );
+        indexer.add( rec3 );
+        indexer.add( rec4 );
+
+        Set<String> types = new HashSet<String>();
+        types.add( "typeA" );
+        assertEquals( 1, indexer.purge( 0, System.currentTimeMillis(), types, null ) );
+        assertEquals( 3, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
+
+        indexer.add( rec1 );
+        types.clear();
+        types.add( "typeB" );
+        assertEquals( 2, indexer.purge( 0, System.currentTimeMillis(), types, null ) );
+        assertEquals( 2, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
+
+        indexer.add( rec2 );
+        indexer.add( rec3 );
+        types.clear();
+        types.add( "typeB" );
+        types.add( "typeC" );
+        assertEquals( 3, indexer.purge( 0, System.currentTimeMillis(), types, null ) );
+        assertEquals( 1, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
+
+        types.clear();
+        types.add( "typeA" );
+        assertEquals( 1, indexer.purge( 0, System.currentTimeMillis(), types, null ) );
+        assertEquals( 0, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
+
+        types.clear();
+        types.add( "typeA" );
+        types.add( "typeB" );
+        types.add( "typeC" );
+        assertEquals( 0, indexer.purge( 0, System.currentTimeMillis(), types, null ) );
+    }
+
+    public void testPurgeBySubType()
+        throws Exception
+    {
+        TimelineRecord rec1 = createTimelineRecord();
+        rec1.setSubType( "typeA" );
+        TimelineRecord rec2 = createTimelineRecord();
+        rec2.setSubType( "typeB" );
+        TimelineRecord rec3 = createTimelineRecord();
+        rec3.setSubType( "typeB" );
+        TimelineRecord rec4 = createTimelineRecord();
+        rec4.setSubType( "typeC" );
+        indexer.add( rec1 );
+        indexer.add( rec2 );
+        indexer.add( rec3 );
+        indexer.add( rec4 );
+
+        Set<String> subTypes = new HashSet<String>();
+        subTypes.add( "typeA" );
+        assertEquals( 1, indexer.purge( 0, System.currentTimeMillis(), null, subTypes ) );
+        assertEquals( 3, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
+
+        indexer.add( rec1 );
+        subTypes.clear();
+        subTypes.add( "typeB" );
+        assertEquals( 2, indexer.purge( 0, System.currentTimeMillis(), null, subTypes ) );
+        assertEquals( 2, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
+
+        indexer.add( rec2 );
+        indexer.add( rec3 );
+        subTypes.clear();
+        subTypes.add( "typeB" );
+        subTypes.add( "typeC" );
+        assertEquals( 3, indexer.purge( 0, System.currentTimeMillis(), null, subTypes ) );
+        assertEquals( 1, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
+
+        subTypes.clear();
+        subTypes.add( "typeA" );
+        assertEquals( 1, indexer.purge( 0, System.currentTimeMillis(), null, subTypes ) );
+        assertEquals( 0, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
+
+        subTypes.clear();
+        subTypes.add( "typeA" );
+        subTypes.add( "typeB" );
+        subTypes.add( "typeC" );
+        assertEquals( 0, indexer.purge( 0, System.currentTimeMillis(), null, subTypes ) );
+    }
+
+    public void testPurgeByTypeAndSubType()
+        throws Exception
+    {
+        TimelineRecord rec1 = createTimelineRecord();
+        rec1.setType( "typeA" );
+        rec1.setSubType( "subX" );
+        TimelineRecord rec2 = createTimelineRecord();
+        rec2.setType( "typeB" );
+        rec2.setSubType( "subX" );
+        TimelineRecord rec3 = createTimelineRecord();
+        rec3.setType( "typeB" );
+        rec3.setSubType( "subY" );
+        TimelineRecord rec4 = createTimelineRecord();
+        rec4.setType( "typeA" );
+        rec4.setSubType( "subX" );
+        TimelineRecord rec5 = createTimelineRecord();
+        rec5.setType( "typeC" );
+        rec5.setSubType( "subY" );
+        indexer.add( rec1 );
+        indexer.add( rec2 );
+        indexer.add( rec3 );
+        indexer.add( rec4 );
+        indexer.add( rec5 );
+        
+        
+        Set<String> types = new HashSet<String>();
+        Set<String> subTypes = new HashSet<String>();
+        types.add( "typeA" );
+        subTypes.add( "subX" );
+        assertEquals( 2, indexer.purge( 0, System.currentTimeMillis(), types, subTypes ) );
+        assertEquals( 3, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
+        
+        indexer.add( rec1 );
+        indexer.add( rec4 );
+        types.clear();
+        subTypes.clear();
+        types.add( "typeA" );
+        types.add( "typeB" );
+        subTypes.add( "subX" );
+        assertEquals( 3, indexer.purge( 0, System.currentTimeMillis(), types, subTypes ) );
+        assertEquals( 2, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
+        
+        indexer.add( rec1 );
+        indexer.add( rec2 );
+        indexer.add( rec4 );
+        types.clear();
+        subTypes.clear();
+        types.add( "typeA" );
+        types.add( "typeB" );
+        subTypes.add( "subX" );
+        subTypes.add( "subY" );
+        assertEquals( 4, indexer.purge( 0, System.currentTimeMillis(), types, subTypes ) );
+        assertEquals( 1, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
+     
+        indexer.add( rec1 );
+        indexer.add( rec2 );
+        indexer.add( rec3 );
+        indexer.add( rec4 );
+        types.clear();
+        subTypes.clear();
+        types.add( "typeA" );
+        types.add( "typeB" );
+        types.add( "typeC" );
+        subTypes.add( "subX" );
+        subTypes.add( "subY" );
+        assertEquals( 5, indexer.purge( 0, System.currentTimeMillis(), types, subTypes ) );
+        assertEquals( 0, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
     }
 
     private TimelineRecord createTimelineRecord()

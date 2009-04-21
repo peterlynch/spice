@@ -35,9 +35,21 @@ public interface TimelineIndexer
      * @param from form which index to return results
      * @param count max number to return
      * @param filter used to filter the result
-     * @return search result, ordered by timestamp
+     * @return search result, ordered by timestamp (the minimum unit is minute)
      */
     List<Map<String, String>> retrieve( long fromTime, long toTime, Set<String> types, Set<String> subTypes, int from,
         int count, TimelineFilter filter )
+        throws TimelineException;
+
+    /**
+     * Purge the indexed timeline records
+     * 
+     * @param fromTime from what time to purge
+     * @param toTime to what time to purge
+     * @param types which types to purge
+     * @param subTypes which subType to purge
+     * @return the number of purged records
+     */
+    int purge( long fromTime, long toTime, Set<String> types, Set<String> subTypes )
         throws TimelineException;
 }

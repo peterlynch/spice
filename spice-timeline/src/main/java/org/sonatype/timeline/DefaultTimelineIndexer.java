@@ -35,6 +35,7 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopFieldDocs;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.store.Directory;
@@ -333,6 +334,44 @@ public class DefaultTimelineIndexer
         }
 
         return result;
+    }
+
+    public int purge( long fromTime, long toTime, Set<String> types, Set<String> subTypes )
+        throws TimelineException
+    {
+        try
+        {
+            synchronized ( this )
+            {
+                closeIndexWriter();
+
+                IndexSearcher searcher = getIndexSearcher();
+
+                if ( searcher.maxDoc() == 0 )
+                {
+                    return 0;
+                }
+
+                TopDocs topDocs = searcher.search( buildQuery( fromTime, toTime, types, subTypes ), searcher.maxDoc() );
+
+                for ( ScoreDoc scoreDoc : topDocs.scoreDocs )
+                {
+                    searcher.getIndexReader().deleteDocument( scoreDoc.doc );
+                }
+
+                closeIndexReaderAndSearcher();
+
+                getIndexWriter().optimize();
+
+                closeIndexWriter();
+
+                return topDocs.scoreDocs.length;
+            }
+        }
+        catch ( IOException e )
+        {
+            throw new TimelineException( "Failed to purge records from the timeline index!", e );
+        }
     }
 
 }
