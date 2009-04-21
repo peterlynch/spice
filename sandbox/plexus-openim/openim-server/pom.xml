@@ -47,13 +47,13 @@
 	</dependency>
 
 	<dependency>
-		<groupId>org.jivesoftware</groupId>
+		<groupId>jivesoftware</groupId>
 		<artifactId>smack</artifactId>
 		<scope>test</scope>
 	</dependency>
 
 	<dependency>
-		<groupId>org.jivesoftware</groupId>
+		<groupId>jivesoftware</groupId>
 		<artifactId>smackx</artifactId>
 		<scope>test</scope>
 	</dependency>
