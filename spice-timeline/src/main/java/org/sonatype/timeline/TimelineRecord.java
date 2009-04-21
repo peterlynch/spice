@@ -25,6 +25,22 @@ public class TimelineRecord
 
     private Map<String, String> data = new HashMap<String, String>();
 
+    public TimelineRecord()
+    {
+
+    }
+
+    public TimelineRecord( long timestamp, String type, String subType, Map<String, String> data )
+    {
+        this.timestamp = timestamp;
+
+        this.type = type;
+
+        this.subType = subType;
+
+        this.data = data;
+    }
+
     public long getTimestamp()
     {
         return timestamp;

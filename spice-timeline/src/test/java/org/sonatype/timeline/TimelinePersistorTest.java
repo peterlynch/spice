@@ -22,10 +22,8 @@ import org.codehaus.plexus.PlexusTestCase;
 import org.codehaus.plexus.util.FileUtils;
 
 public class TimelinePersistorTest
-    extends PlexusTestCase
+    extends AbstractTimelineTestCase
 {
-    protected TimelinePersistor persistor;
-
     protected File persistDirectory;
 
     @Override
@@ -34,19 +32,9 @@ public class TimelinePersistorTest
     {
         super.setUp();
 
-        persistor = this.lookup( TimelinePersistor.class );
+        persistDirectory = new File( PlexusTestCase.getBasedir(), "target/persist" );
 
-        persistDirectory = new File( PlexusTestCase.getBasedir(), "target/timeline" );
-
-        if ( persistDirectory.exists() )
-        {
-            for ( File file : persistDirectory.listFiles() )
-            {
-                file.delete();
-            }
-
-            persistDirectory.delete();
-        }
+        cleanDirectory( persistDirectory );
 
         persistor.configure( persistDirectory );
     }
@@ -141,7 +129,7 @@ public class TimelinePersistorTest
     public void testRolling()
         throws Exception
     {
-        persistor.configure( new File( PlexusTestCase.getBasedir(), "target/timeline" ), 1 );
+        persistor.configure( persistDirectory, 1 );
 
         persistor.persist( createTimelineRecord() );
         persistor.persist( createTimelineRecord() );
@@ -158,30 +146,12 @@ public class TimelinePersistorTest
     public void testIllegalDataFile()
         throws Exception
     {
-        persistor.configure( new File( PlexusTestCase.getBasedir(), "target/timeline" ) );
-
         persistor.persist( createTimelineRecord() );
 
-        File badFile = new File( PlexusTestCase.getBasedir(), "target/timeline/bad.txt" );
+        File badFile = new File( persistDirectory, "bad.txt" );
 
         FileUtils.fileWrite( badFile.getAbsolutePath(), "some bad data" );
 
         assertEquals( 1, persistor.readAll().size() );
-    }
-
-    private TimelineRecord createTimelineRecord()
-    {
-        TimelineRecord record = new TimelineRecord();
-        record.setTimestamp( new Date().getTime() );
-        record.setType( "type" );
-        record.setSubType( "subType" );
-        Map<String, String> data = new HashMap<String, String>();
-        data.put( "k1", "v1" );
-        data.put( "k2", "v2" );
-        data.put( "k3", "v3" );
-        data.put( "k4", "v4" );
-        record.setData( data );
-
-        return record;
     }
 }

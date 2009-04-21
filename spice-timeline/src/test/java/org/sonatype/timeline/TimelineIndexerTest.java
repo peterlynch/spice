@@ -13,7 +13,6 @@
 package org.sonatype.timeline;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -27,10 +26,8 @@ import org.codehaus.plexus.PlexusTestCase;
  * @author juven
  */
 public class TimelineIndexerTest
-    extends PlexusTestCase
+    extends AbstractTimelineTestCase
 {
-    protected TimelineIndexer indexer;
-
     protected File indexDirectory;
 
     @Override
@@ -39,18 +36,9 @@ public class TimelineIndexerTest
     {
         super.setUp();
 
-        indexer = this.lookup( TimelineIndexer.class );
+        indexDirectory = new File( PlexusTestCase.getBasedir(), "target/index" );
 
-        indexDirectory = new File( PlexusTestCase.getBasedir(), "target/timeline" );
-
-        if ( indexDirectory.exists() )
-        {
-            for ( File file : indexDirectory.listFiles() )
-            {
-                file.delete();
-            }
-            indexDirectory.delete();
-        }
+        cleanDirectory( indexDirectory );
 
         indexer.configure( indexDirectory );
     }
@@ -460,15 +448,14 @@ public class TimelineIndexerTest
         indexer.add( rec3 );
         indexer.add( rec4 );
         indexer.add( rec5 );
-        
-        
+
         Set<String> types = new HashSet<String>();
         Set<String> subTypes = new HashSet<String>();
         types.add( "typeA" );
         subTypes.add( "subX" );
         assertEquals( 2, indexer.purge( 0, System.currentTimeMillis(), types, subTypes ) );
         assertEquals( 3, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
-        
+
         indexer.add( rec1 );
         indexer.add( rec4 );
         types.clear();
@@ -478,7 +465,7 @@ public class TimelineIndexerTest
         subTypes.add( "subX" );
         assertEquals( 3, indexer.purge( 0, System.currentTimeMillis(), types, subTypes ) );
         assertEquals( 2, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
-        
+
         indexer.add( rec1 );
         indexer.add( rec2 );
         indexer.add( rec4 );
@@ -490,7 +477,7 @@ public class TimelineIndexerTest
         subTypes.add( "subY" );
         assertEquals( 4, indexer.purge( 0, System.currentTimeMillis(), types, subTypes ) );
         assertEquals( 1, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
-     
+
         indexer.add( rec1 );
         indexer.add( rec2 );
         indexer.add( rec3 );
@@ -504,21 +491,5 @@ public class TimelineIndexerTest
         subTypes.add( "subY" );
         assertEquals( 5, indexer.purge( 0, System.currentTimeMillis(), types, subTypes ) );
         assertEquals( 0, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
-    }
-
-    private TimelineRecord createTimelineRecord()
-    {
-        TimelineRecord record = new TimelineRecord();
-        record.setTimestamp( System.currentTimeMillis() );
-        record.setType( "type" );
-        record.setSubType( "subType" );
-        Map<String, String> data = new HashMap<String, String>();
-        data.put( "k1", "v1" );
-        data.put( "k2", "v2" );
-        data.put( "k3", "v3" );
-        data.put( "k4", "v4" );
-        record.setData( data );
-
-        return record;
     }
 }

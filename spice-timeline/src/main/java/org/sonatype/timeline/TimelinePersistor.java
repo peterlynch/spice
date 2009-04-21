@@ -22,6 +22,8 @@ import java.util.List;
  */
 public interface TimelinePersistor
 {
+    public static final int DEFAULT_ROLLING_INTERVAL = 60 * 60 * 24;
+    
     void configure( File persistDirectory );
 
     /**

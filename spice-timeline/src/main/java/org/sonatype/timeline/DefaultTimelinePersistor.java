@@ -35,8 +35,6 @@ import org.sonatype.timeline.proto.TimeLineRecordProtos;
 public class DefaultTimelinePersistor
     implements TimelinePersistor
 {
-    public static final int DEFAULT_ROLLING_INTERVAL = 60 * 60 * 24;
-
     public static final String DATA_FILE_NAME_PATTERN = "^timeline\\.\\d{4}-\\d{2}-\\d{2}\\.\\d{2}-\\d{2}-\\d{2}\\.dat$";
 
     private int rollingInterval;

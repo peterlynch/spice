@@ -95,7 +95,7 @@ public class DefaultTimelineIndexer
                 closeIndexWriter();
             }
         }
-        catch ( IOException e )
+        catch ( Exception e )
         {
             throw new TimelineException( "Fail to configure timeline index!", e );
         }

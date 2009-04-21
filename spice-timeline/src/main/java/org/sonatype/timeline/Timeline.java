@@ -22,13 +22,19 @@ import java.util.Set;
  */
 public interface Timeline
 {
+    /**
+     * Configure it before use
+     * @param config
+     */
+    void configure( TimelineConfiguration config ) throws TimelineException;
+    
     void add( String type, String subType, Map<String, String> data );
 
-    void addAll( String type, String subType, Collection<Map<String, String>> data );
+    void addAll( String type, String subType, Collection<Map<String, String>> datas );
 
     void add( long timestamp, String type, String subType, Map<String, String> data );
 
-    void addAll( long timestamp, String type, String subType, Collection<Map<String, String>> data );
+    void addAll( long timestamp, String type, String subType, Collection<Map<String, String>> datas );
 
     void purgeAll();
 
