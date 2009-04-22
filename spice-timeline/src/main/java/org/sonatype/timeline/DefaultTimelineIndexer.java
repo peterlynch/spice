@@ -276,53 +276,58 @@ public class DefaultTimelineIndexer
         return set == null || set.size() == 0;
     }
 
-    @SuppressWarnings( "unchecked" )
     public List<Map<String, String>> retrieve( long fromTime, long toTime, Set<String> types, Set<String> subTypes,
         int from, int count, TimelineFilter filter )
         throws TimelineException
     {
         List<Map<String, String>> result = new ArrayList<Map<String, String>>();
 
+        int NumberToSkip = from;
+
         try
         {
             synchronized ( this )
             {
+                IndexSearcher searcher = getIndexSearcher();
+
+                if ( searcher.maxDoc() == 0 )
+                {
+                    closeIndexReaderAndSearcher();
+
+                    return result;
+                }
+
                 TopFieldDocs topDocs = getIndexSearcher().search(
                     buildQuery( fromTime, toTime, types, subTypes ),
                     null,
-                    from + count,
+                    searcher.maxDoc(),
                     new Sort( new SortField( TIMESTAMP, SortField.LONG, true ) ) );
 
                 for ( int i = 0; i < topDocs.scoreDocs.length; i++ )
                 {
-                    // step over the unneeded stuff
-                    if ( i < from )
+                    if ( result.size() == count )
+                    {
+                        break;
+                    }
+
+                    Document doc = getIndexSearcher().doc( topDocs.scoreDocs[i].doc );
+
+                    Map<String, String> data = buildData( doc );
+
+                    if ( filter != null && !filter.accept( data ) )
                     {
                         continue;
                     }
 
-                    ScoreDoc scoreDoc = topDocs.scoreDocs[i];
-
-                    Document doc = getIndexSearcher().doc( scoreDoc.doc );
-
-                    Map<String, String> map = new HashMap<String, String>();
-
-                    for ( Field field : (List<Field>) doc.getFields() )
+                    // skip the unneeded stuff
+                    if ( NumberToSkip > 0 )
                     {
-                        if ( !field.name().startsWith( "_" ) )
-                        {
-                            map.put( field.name(), field.stringValue() );
-                        }
+                        NumberToSkip--;
+
+                        continue;
                     }
 
-                    if ( filter != null && filter.accept( map ) )
-                    {
-                        result.add( map );
-                    }
-                    else if ( filter == null )
-                    {
-                        result.add( map );
-                    }
+                    result.add( data );
                 }
 
                 closeIndexReaderAndSearcher();
@@ -333,6 +338,21 @@ public class DefaultTimelineIndexer
             throw new TimelineException( "Failed to retrieve records from the timeline index!", e );
         }
 
+        return result;
+    }
+
+    @SuppressWarnings( "unchecked" )
+    private Map<String, String> buildData( Document doc )
+    {
+        Map<String, String> result = new HashMap<String, String>();
+
+        for ( Field field : (List<Field>) doc.getFields() )
+        {
+            if ( !field.name().startsWith( "_" ) )
+            {
+                result.put( field.name(), field.stringValue() );
+            }
+        }
         return result;
     }
 
@@ -349,6 +369,8 @@ public class DefaultTimelineIndexer
 
                 if ( searcher.maxDoc() == 0 )
                 {
+                    closeIndexReaderAndSearcher();
+
                     return 0;
                 }
 
@@ -373,5 +395,4 @@ public class DefaultTimelineIndexer
             throw new TimelineException( "Failed to purge records from the timeline index!", e );
         }
     }
-
 }

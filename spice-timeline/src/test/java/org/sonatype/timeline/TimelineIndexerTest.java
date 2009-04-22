@@ -492,4 +492,146 @@ public class TimelineIndexerTest
         assertEquals( 5, indexer.purge( 0, System.currentTimeMillis(), types, subTypes ) );
         assertEquals( 0, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
     }
+
+    public void testSearchWithPagination()
+        throws Exception
+    {
+        String key = "count";
+
+        for ( int i = 0; i < 30; i++ )
+        {
+            TimelineRecord rec = createTimelineRecord();
+            rec.setTimestamp( 10000000L - i * 60000 );
+            rec.getData().put( key, "" + i );
+
+            indexer.add( rec );
+        }
+        List<Map<String, String>> results;
+        results = indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 10, null );
+        assertEquals( 10, results.size() );
+        assertEquals( "0", results.get( 0 ).get( key ) );
+        assertEquals( "9", results.get( 9 ).get( key ) );
+
+        results = indexer.retrieve( 0, System.currentTimeMillis(), null, null, 10, 10, null );
+        assertEquals( 10, results.size() );
+        assertEquals( "10", results.get( 0 ).get( key ) );
+        assertEquals( "19", results.get( 9 ).get( key ) );
+
+        results = indexer.retrieve( 0, System.currentTimeMillis(), null, null, 20, 10, null );
+        assertEquals( 10, results.size() );
+        assertEquals( "20", results.get( 0 ).get( key ) );
+        assertEquals( "29", results.get( 9 ).get( key ) );
+
+        results = indexer.retrieve( 0, System.currentTimeMillis(), null, null, 30, 10, null );
+        assertEquals( 0, results.size() );
+    }
+
+    public void testSearchWithFilter()
+        throws Exception
+    {
+        TimelineRecord rec1 = createTimelineRecord();
+        rec1.getData().put( "key", "a1" );
+        TimelineRecord rec2 = createTimelineRecord();
+        rec2.getData().put( "key", "a2" );
+        TimelineRecord rec3 = createTimelineRecord();
+        rec3.getData().put( "key", "a3" );
+        TimelineRecord rec4 = createTimelineRecord();
+        rec4.getData().put( "key", "b1" );
+        TimelineRecord rec5 = createTimelineRecord();
+        rec5.getData().put( "key1", "b2" );
+
+        indexer.add( rec1 );
+        indexer.add( rec2 );
+        indexer.add( rec3 );
+        indexer.add( rec4 );
+        indexer.add( rec5 );
+
+        List<Map<String, String>> results;
+
+        results = indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, new TimelineFilter()
+        {
+            public boolean accept( Map<String, String> hit )
+            {
+                if ( hit.containsKey( "key" ) )
+                {
+                    return true;
+                }
+                return false;
+            }
+        } );
+        assertEquals( 4, results.size() );
+
+        results = indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, new TimelineFilter()
+        {
+            public boolean accept( Map<String, String> hit )
+            {
+                if ( hit.containsKey( "key" ) && hit.get( "key" ).startsWith( "a" ) )
+                {
+                    return true;
+                }
+                return false;
+            }
+        } );
+        assertEquals( 3, results.size() );
+
+        results = indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, new TimelineFilter()
+        {
+            public boolean accept( Map<String, String> hit )
+            {
+                if ( hit.containsKey( "key" ) && hit.get( "key" ).startsWith( "b" ) )
+                {
+                    return true;
+                }
+                return false;
+            }
+        } );
+        assertEquals( 1, results.size() );
+    }
+
+    public void testSearchWithFilterAndPagination()
+        throws Exception
+    {
+        String key = "count";
+
+        for ( int i = 0; i < 30; i++ )
+        {
+            TimelineRecord rec = createTimelineRecord();
+            rec.setTimestamp( 10000000L - i * 60000 );
+            rec.getData().put( key, "" + i );
+
+            indexer.add( rec );
+        }
+
+        TimelineFilter filter = new TimelineFilter()
+        {
+            public boolean accept( Map<String, String> hit )
+            {
+                if ( hit.containsKey( "count" ) )
+                {
+                    int v = Integer.parseInt( hit.get( "count" ) );
+
+                    if ( v % 2 == 0 )
+                    {
+                        return true;
+                    }
+
+                    return false;
+                }
+
+                return false;
+            }
+
+        };
+
+        List<Map<String, String>> results;
+        results = indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 10, filter );
+        assertEquals( 10, results.size() );
+        assertEquals( "0", results.get( 0 ).get( key ) );
+        assertEquals( "18", results.get( 9 ).get( key ) );
+
+        results = indexer.retrieve( 0, System.currentTimeMillis(), null, null, 10, 10, filter );
+        assertEquals( 5, results.size() );
+        assertEquals( "20", results.get( 0 ).get( key ) );
+        assertEquals( "28", results.get( 4 ).get( key ) );
+    }
 }
