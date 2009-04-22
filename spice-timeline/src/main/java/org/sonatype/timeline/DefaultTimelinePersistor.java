@@ -212,14 +212,6 @@ public class DefaultTimelinePersistor
 
     private TimelineRecord fromProto( TimeLineRecordProtos.TimeLineRecord rec )
     {
-        TimelineRecord record = new TimelineRecord();
-
-        record.setTimestamp( rec.getTimestamp() );
-
-        record.setType( rec.getType() );
-
-        record.setSubType( rec.getSubType() );
-
         Map<String, String> dataMap = new HashMap<String, String>();
 
         for ( TimeLineRecordProtos.TimeLineRecord.Data data : rec.getDataList() )
@@ -227,9 +219,6 @@ public class DefaultTimelinePersistor
             dataMap.put( data.getKey(), data.getValue() );
         }
 
-        record.setData( dataMap );
-
-        return record;
+        return new TimelineRecord( rec.getTimestamp(), rec.getType(), rec.getSubType(), dataMap );
     }
-
 }

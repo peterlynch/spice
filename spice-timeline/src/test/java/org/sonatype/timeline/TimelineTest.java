@@ -66,6 +66,27 @@ public class TimelineTest
         assertEquals( data, results.get( 0 ) );
     }
 
+    public void testPurge()
+        throws Exception
+    {
+        timeline.configure( new TimelineConfiguration( persistDirectory, indexDirectory ) );
+
+        String type = "type";
+        Map<String, String> data = new HashMap<String, String>();
+        data.put( "k1", "v1" );
+        
+        timeline.add( 1000000L, type, null, data );
+        timeline.add( 2000000L, type, null, data );
+        timeline.add( 3000000L, type, null, data );
+        timeline.add( 4000000L, type, null, data );
+
+        assertEquals( 4, timeline.retrieve( 0, 10, null ).size() );
+        assertEquals( 3, timeline.purgeOlderThan( 3500000L ) );
+        assertEquals( 1, timeline.retrieve( 0, 10, null ).size() );
+        assertEquals( 1, timeline.purgeAll() );
+        assertEquals( 0, timeline.retrieve( 0, 10, null ).size() );
+    }
+
     public void testRepairIndex()
         throws Exception
     {

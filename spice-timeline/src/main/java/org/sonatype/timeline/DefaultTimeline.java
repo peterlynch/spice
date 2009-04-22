@@ -119,40 +119,54 @@ public class DefaultTimeline
         }
     }
 
-    public void purgeAll()
+    private int purge( long fromTime, long toTime, Set<String> types, Set<String> subTypes )
     {
-        // TODO Auto-generated method stub
+        try
+        {
+            return indexer.purge( fromTime, toTime, types, subTypes );
+        }
+        catch ( TimelineException e )
+        {
+            getLogger().warn( "Failed to purge timeline!", e );
 
+            return 0;
+        }
     }
 
-    public void purgeAll( Set<String> types )
+    public int purgeAll()
     {
-        // TODO Auto-generated method stub
-
+        return purgeAll( null );
     }
 
-    public void purgeAll( Set<String> types, Set<String> subTypes, TimelineFilter filter )
+    public int purgeAll( Set<String> types )
     {
-        // TODO Auto-generated method stub
-
+        return purgeAll( types, null, null );
     }
 
-    public void purgeOlderThan( long timestamp )
+    /**
+     * Note that currently the filter is not used
+     */
+    public int purgeAll( Set<String> types, Set<String> subTypes, TimelineFilter filter )
     {
-        // TODO Auto-generated method stub
-
+        return purge( 0L, System.currentTimeMillis(), types, subTypes );
     }
 
-    public void purgeOlderThan( long timestamp, Set<String> types )
+    public int purgeOlderThan( long timestamp )
     {
-        // TODO Auto-generated method stub
-
+        return purgeOlderThan( timestamp, null );
     }
 
-    public void purgeOlderThan( long timestamp, Set<String> types, Set<String> subTypes, TimelineFilter filter )
+    public int purgeOlderThan( long timestamp, Set<String> types )
     {
-        // TODO Auto-generated method stub
+        return purgeOlderThan( timestamp, types, null, null );
+    }
 
+    /**
+     * Note that currently the filter is not used
+     */
+    public int purgeOlderThan( long timestamp, Set<String> types, Set<String> subTypes, TimelineFilter filter )
+    {
+        return purge( 0L, timestamp, types, subTypes );
     }
 
     public List<Map<String, String>> retrieve( long fromTs, int count, Set<String> types )

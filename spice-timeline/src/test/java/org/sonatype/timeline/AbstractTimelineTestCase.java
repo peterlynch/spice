@@ -54,17 +54,11 @@ public class AbstractTimelineTestCase
 
     protected TimelineRecord createTimelineRecord()
     {
-        TimelineRecord record = new TimelineRecord();
-        record.setTimestamp( new Date().getTime() );
-        record.setType( "type" );
-        record.setSubType( "subType" );
         Map<String, String> data = new HashMap<String, String>();
         data.put( "k1", "v1" );
         data.put( "k2", "v2" );
         data.put( "k3", "v3" );
-        data.put( "k4", "v4" );
-        record.setData( data );
 
-        return record;
+        return new TimelineRecord( System.currentTimeMillis(), "type", "subType", data );
     }
 }

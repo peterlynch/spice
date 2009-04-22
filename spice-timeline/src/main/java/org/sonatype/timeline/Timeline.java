@@ -36,17 +36,17 @@ public interface Timeline
 
     void addAll( long timestamp, String type, String subType, Collection<Map<String, String>> datas );
 
-    void purgeAll();
+    int purgeAll();
 
-    void purgeAll( Set<String> types );
+    int purgeAll( Set<String> types );
 
-    void purgeAll( Set<String> types, Set<String> subTypes, TimelineFilter filter );
+    int purgeAll( Set<String> types, Set<String> subTypes, TimelineFilter filter );
 
-    void purgeOlderThan( long timestamp );
+    int purgeOlderThan( long timestamp );
 
-    void purgeOlderThan( long timestamp, Set<String> types );
+    int purgeOlderThan( long timestamp, Set<String> types );
 
-    void purgeOlderThan( long timestamp, Set<String> types, Set<String> subTypes, TimelineFilter filter );
+    int purgeOlderThan( long timestamp, Set<String> types, Set<String> subTypes, TimelineFilter filter );
 
     List<Map<String, String>> retrieveNewest( int count, Set<String> types );
 

@@ -42,54 +42,43 @@ public class TimelinePersistorTest
     public void testPersistSingleRecord()
         throws Exception
     {
-        long timestamp = new Date().getTime();
-        String type = "typte";
-        String subType = "subType";
-        Map<String, String> data = new HashMap<String, String>();
-        data.put( "k1 test", "v1" );
-        data.put( "k2", "v2" );
-
-        TimelineRecord record = new TimelineRecord();
-        record.setTimestamp( timestamp );
-        record.setType( type );
-        record.setSubType( subType );
-        record.setData( data );
+        TimelineRecord record = createTimelineRecord();
 
         persistor.persist( record );
 
         List<TimelineRecord> results = persistor.readAll();
 
         assertEquals( 1, results.size() );
-        assertEquals( timestamp, results.get( 0 ).getTimestamp() );
-        assertEquals( type, results.get( 0 ).getType() );
-        assertEquals( subType, results.get( 0 ).getSubType() );
-        assertEquals( data, results.get( 0 ).getData() );
+        assertEquals( record.getTimestamp(), results.get( 0 ).getTimestamp() );
+        assertEquals( record.getType(), results.get( 0 ).getType() );
+        assertEquals( record.getSubType(), results.get( 0 ).getSubType() );
+        assertEquals( record.getData(), results.get( 0 ).getData() );
     }
 
     public void testPersistMultipleRecords()
         throws Exception
     {
-        long timestamp1 = new Date().getTime();
+        long timestamp1 = System.currentTimeMillis();
         String type1 = "type";
         String subType1 = "subType";
         Map<String, String> data1 = new HashMap<String, String>();
         data1.put( "k1", "v1" );
         data1.put( "k2", "v2" );
 
-        TimelineRecord record1 = new TimelineRecord();
+        TimelineRecord record1 = createTimelineRecord();
         record1.setTimestamp( timestamp1 );
         record1.setType( type1 );
         record1.setSubType( subType1 );
         record1.setData( data1 );
 
-        long timestamp2 = new Date().getTime();
+        long timestamp2 = System.currentTimeMillis();
         String type2 = "type2";
         String subType2 = "subType2";
         Map<String, String> data2 = new HashMap<String, String>();
         data2.put( "k21", "v21" );
         data2.put( "k22", "v22" );
 
-        TimelineRecord record2 = new TimelineRecord();
+        TimelineRecord record2 = createTimelineRecord();
         record2.setTimestamp( timestamp2 );
         record2.setType( type2 );
         record2.setSubType( subType2 );

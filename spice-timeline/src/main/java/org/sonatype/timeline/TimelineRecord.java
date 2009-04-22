@@ -23,12 +23,7 @@ public class TimelineRecord
 
     private String subType;
 
-    private Map<String, String> data = new HashMap<String, String>();
-
-    public TimelineRecord()
-    {
-
-    }
+    private Map<String, String> data;
 
     public TimelineRecord( long timestamp, String type, String subType, Map<String, String> data )
     {
@@ -39,6 +34,12 @@ public class TimelineRecord
         this.subType = subType;
 
         this.data = data;
+
+        this.type = this.type == null ? "" : this.type;
+
+        this.subType = this.subType == null ? "" : this.subType;
+
+        this.data = this.data == null ? new HashMap<String, String>() : this.data;
     }
 
     public long getTimestamp()
