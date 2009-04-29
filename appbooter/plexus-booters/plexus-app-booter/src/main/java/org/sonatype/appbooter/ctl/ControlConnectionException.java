@@ -14,17 +14,18 @@ package org.sonatype.appbooter.ctl;
 
 import java.io.IOException;
 
+/**
+ * Thrown when there is a connection problem.
+ * 
+ * @see Service
+ */
 public class ControlConnectionException
     extends IOException
 {
-    /**
-     * 
-     */
     private static final long serialVersionUID = 535790489407505217L;
 
     public ControlConnectionException( IOException embedded )
     {
         initCause( embedded );
     }
-
 }

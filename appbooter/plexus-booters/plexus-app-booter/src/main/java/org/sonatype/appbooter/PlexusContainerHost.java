@@ -39,6 +39,7 @@ import org.sonatype.appbooter.ctl.Service;
  * 
  * @version $Id: PlexusContainerHost.java 5337 2008-04-23 21:09:39Z jdcasey $
  * @since 1.0
+ * @deprecated Use PlexusAppBooter or PlexusAppBooterService, depending on your needs.
  */
 public class PlexusContainerHost
     implements Service

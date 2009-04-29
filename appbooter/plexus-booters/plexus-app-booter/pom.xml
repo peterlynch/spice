@@ -16,6 +16,10 @@
             <artifactId>plexus-container-default</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-utils</artifactId>
+        </dependency>
+        <dependency>
         	<groupId>org.codehaus.plexus</groupId>
         	<artifactId>plexus-interpolation</artifactId>
         	<version>1.2</version>

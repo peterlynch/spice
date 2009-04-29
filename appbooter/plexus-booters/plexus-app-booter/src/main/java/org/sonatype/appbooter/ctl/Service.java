@@ -12,17 +12,21 @@
  */
 package org.sonatype.appbooter.ctl;
 
-
+/**
+ * A simple interface for Plexus app seen as Service.
+ */
 public interface Service
 {
-
     boolean isShutdown();
 
-    void shutdown() throws AppBooterServiceException;
-    
+    void shutdown()
+        throws AppBooterServiceException;
+
     boolean isStopped();
-    
-    void stop() throws AppBooterServiceException;
-    
-    void start() throws AppBooterServiceException;
+
+    void stop()
+        throws AppBooterServiceException;
+
+    void start()
+        throws AppBooterServiceException;
 }

@@ -18,28 +18,28 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 /**
- * Using a defined port, the ControllerClient can communicate with a service
- * that is managed by an OutOfProcessController.
- *
+ * Using a defined port, the ControllerClient can communicate with a service that is managed by an
+ * OutOfProcessController.
  */
 public class ControllerClient
 {
-    // Port that this client will attempt to connect to
+    /** Port that this client will attempt to connect to */
     private final int port;
 
-    // Address of the remote host (defaults to localhost)
+    /** Address of the remote host (defaults to localhost) */
     private final InetAddress address;
 
-
     public static final int RUNNING = 0;
+
     public static final int STOPPED = 1;
+
     public static final int SHUTDOWN = 2;
+
     private int state = RUNNING;
 
     private Socket socket;
 
-    public ControllerClient( String host,
-                             int port )
+    public ControllerClient( String host, int port )
         throws UnknownHostException
     {
         address = InetAddress.getByName( host );
@@ -53,8 +53,7 @@ public class ControllerClient
         this.port = port;
     }
 
-    public ControllerClient( InetAddress address,
-                             int port )
+    public ControllerClient( InetAddress address, int port )
     {
         this.address = address;
         this.port = port;
@@ -81,7 +80,7 @@ public class ControllerClient
 
     /**
      * Set the Controller to shutdown the application if this client's socket is closed.
-     *
+     * 
      * @throws ControlConnectionException
      * @throws IOException
      */
@@ -98,7 +97,8 @@ public class ControllerClient
         }
         else
         {
-            System.out.println( "...Requested Shutdown on Port " + port + " Completed without ACK from server - " + response );
+            System.out.println( "...Requested Shutdown on Port " + port + " Completed without ACK from server - "
+                + response );
         }
 
         System.out.println( "Application will shutdown if this client\'s connection closes." );
@@ -107,7 +107,7 @@ public class ControllerClient
 
     /**
      * Set the Controller to ignore this client's socket closing, and continue operating.
-     *
+     * 
      * @throws ControlConnectionException
      * @throws IOException
      */
@@ -125,7 +125,8 @@ public class ControllerClient
         }
         else
         {
-            System.out.println( "...Requested Detach-On-Close on Port " + port + " Completed without ACK from server - " + response );
+            System.out.println( "...Requested Detach-On-Close on Port " + port
+                + " Completed without ACK from server - " + response );
         }
 
         System.out.println( "Application will -NOT- shutdown if this client's connection closes." );
@@ -134,7 +135,7 @@ public class ControllerClient
 
     /**
      * Shutdown the remote Controller
-     *
+     * 
      * @throws ControlConnectionException
      * @throws IOException
      */
@@ -151,7 +152,8 @@ public class ControllerClient
         }
         else
         {
-            System.out.println( "...Requested Shutdown on Port " + port + " Completed without ACK from server - " + response );
+            System.out.println( "...Requested Shutdown on Port " + port + " Completed without ACK from server - "
+                + response );
         }
 
         close();
@@ -171,7 +173,8 @@ public class ControllerClient
         }
         else
         {
-            System.out.println( "...Requested Stop on Port " + port + " Completed without ACK from server - " + response );
+            System.out.println( "...Requested Stop on Port " + port + " Completed without ACK from server - "
+                + response );
         }
     }
 
@@ -182,14 +185,15 @@ public class ControllerClient
 
         byte response = sendControlMessage( ControllerVocabulary.START_SERVICE );
 
-        if ( ControllerVocabulary.START_SERVICE == response)
+        if ( ControllerVocabulary.START_SERVICE == response )
         {
             state = RUNNING;
             System.out.println( "...Requested Start on Port " + port + " Completed" );
         }
         else
         {
-            System.out.println( "...Requested Start on Port " + port + " Completed without ACK from server - " + response );
+            System.out.println( "...Requested Start on Port " + port + " Completed without ACK from server - "
+                + response );
         }
     }
 
@@ -206,7 +210,7 @@ public class ControllerClient
                 socket.setTcpNoDelay( true );
                 socket.setSoLinger( true, 1 );
             }
-            catch( IOException e )
+            catch ( IOException e )
             {
                 throw new ControlConnectionException( e );
             }

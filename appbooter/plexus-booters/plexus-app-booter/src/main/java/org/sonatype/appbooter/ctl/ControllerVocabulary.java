@@ -12,15 +12,22 @@
  */
 package org.sonatype.appbooter.ctl;
 
+/**
+ * The commands recognized by Controller.
+ */
 public final class ControllerVocabulary
 {
-
     public static final byte SHUTDOWN_SERVICE = 0x1;
+
     public static final byte STOP_SERVICE = 0x2;
+
     public static final byte START_SERVICE = 0x3;
+
     public static final byte SHUTDOWN_ON_CLOSE = 0x4;
+
     public static final byte DETACH_ON_CLOSE = 0x5;
 
-    private ControllerVocabulary(){}
-
+    private ControllerVocabulary()
+    {
+    }
 }

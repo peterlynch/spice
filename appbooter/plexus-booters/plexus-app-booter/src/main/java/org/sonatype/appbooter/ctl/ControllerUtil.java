@@ -17,10 +17,14 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+/**
+ * Utilities for network stuff.
+ */
 public final class ControllerUtil
 {
-
-    private ControllerUtil(){}
+    private ControllerUtil()
+    {
+    }
 
     public static void close( Closeable closeable )
     {
@@ -63,5 +67,4 @@ public final class ControllerUtil
             }
         }
     }
-
 }
