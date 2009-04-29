@@ -24,6 +24,8 @@ import org.tanukisoftware.wrapper.WrapperManager;
  * interface so that we can directly respond to selected events and also to properly shutdown the container.
  * 
  * @author brianf@sonatype.com
+ * @since 1.0
+ * @deprecated Deprecated, use PlexusAppBooterJSWListener from now on.
  */
 public class PlexusJSWListener
     extends PlexusContainerHost
