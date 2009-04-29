@@ -243,7 +243,7 @@ public class PlexusAppBooter
             publisher.publishContext( this, containerContext );
         }
         
-        containerContext.put( PlexusAppBooter.class, this );
+        containerContext.put( PlexusAppBooter.class.getName(), this );
 
         return new DefaultContext( containerContext );
     }
