@@ -43,6 +43,7 @@ under the License.
       <module>plexus-webdav</module>
       <module>spice-parent</module>
       <module>spice-timeline</module>
+      <module>base-configuration</module>
       
       
       
