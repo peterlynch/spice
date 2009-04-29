@@ -242,6 +242,8 @@ public class PlexusAppBooter
         {
             publisher.publishContext( this, containerContext );
         }
+        
+        containerContext.put( PlexusAppBooter.class, this );
 
         return new DefaultContext( containerContext );
     }
@@ -252,6 +254,11 @@ public class PlexusAppBooter
     }
 
     protected void customizeContainerConfiguration( ContainerConfiguration containerConfiguration )
+    {
+        // override if needed
+    }
+
+    protected void customizeContainer( PlexusContainer plexusContainer )
     {
         // override if needed
     }
@@ -286,7 +293,9 @@ public class PlexusAppBooter
 
             customizeContainerConfiguration( configuration );
 
-            this.container = new DefaultPlexusContainer( configuration );
+            container = new DefaultPlexusContainer( configuration );
+            
+            customizeContainer( container );
         }
     }
 
