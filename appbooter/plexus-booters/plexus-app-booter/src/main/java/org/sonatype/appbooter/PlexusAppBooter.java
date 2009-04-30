@@ -14,7 +14,6 @@ import org.codehaus.plexus.DefaultPlexusContainer;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.classworlds.ClassWorld;
-import org.codehaus.plexus.classworlds.realm.DuplicateRealmException;
 import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.context.DefaultContext;
 import org.codehaus.plexus.interpolation.Interpolator;
@@ -51,17 +50,7 @@ public class PlexusAppBooter
     {
         if ( world == null )
         {
-            ClassWorld cw = new ClassWorld();
-
-            try
-            {
-                cw.newRealm( "default", getClass().getClassLoader() );
-            }
-            catch ( DuplicateRealmException e )
-            {
-                // TODO: is this okay?
-                // nothing, then we already have something set
-            }
+            ClassWorld cw = new ClassWorld( "plexus.core", Thread.currentThread().getContextClassLoader() );
 
             this.world = cw;
         }
@@ -242,7 +231,7 @@ public class PlexusAppBooter
         {
             publisher.publishContext( this, containerContext );
         }
-        
+
         containerContext.put( PlexusAppBooter.class.getName(), this );
 
         return new DefaultContext( containerContext );
@@ -294,7 +283,7 @@ public class PlexusAppBooter
             customizeContainerConfiguration( configuration );
 
             container = new DefaultPlexusContainer( configuration );
-            
+
             customizeContainer( container );
         }
     }
