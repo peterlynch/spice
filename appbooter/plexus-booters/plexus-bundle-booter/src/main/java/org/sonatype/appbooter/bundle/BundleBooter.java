@@ -12,6 +12,7 @@ import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.context.ContextException;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable;
@@ -23,7 +24,7 @@ import org.sonatype.appbooter.bundle.service.BundleService;
 @Component( role = BundleBooter.class )
 public class BundleBooter
     extends AbstractLogEnabled
-    implements Initializable, Startable
+    implements Contextualizable, Initializable, Startable
 {
     @Requirement
     private PlexusContainer container;
@@ -31,7 +32,7 @@ public class BundleBooter
     @Requirement( role = BundleService.class )
     private Map<String, BundleService> bundleServices;
 
-    private File basedir;
+    private PlexusAppBooter plexusAppBooter;
 
     private final HashMap<String, ApplicationAppBooter> applications = new HashMap<String, ApplicationAppBooter>();
 
@@ -45,15 +46,20 @@ public class BundleBooter
         return bundleServices;
     }
 
-    public File getBasedir()
+    public PlexusAppBooter getPlexusAppBooter()
     {
-        return basedir;
+        return plexusAppBooter;
+    }
+
+    public HashMap<String, ApplicationAppBooter> getApplications()
+    {
+        return applications;
     }
 
     protected void discoverApplications()
         throws Exception
     {
-        File appsDir = new File( getBasedir(), "runtime/apps" );
+        File appsDir = new File( getPlexusAppBooter().getBasedir(), "runtime/apps" );
 
         File[] files = appsDir.listFiles();
 
@@ -80,10 +86,9 @@ public class BundleBooter
                             File libDir = new File( appDir, "lib" );
 
                             // create realm (lib + conf)
-                            ClassRealm appRealm = getContainer().getContainerRealm().getWorld().newRealm( appName );
+                            ClassRealm appRealm = getPlexusAppBooter().getWorld().newRealm( appName );
 
-                            appRealm
-                                    .setParentRealm( getContainer().getContainerRealm().getWorld().getRealm( "plexus" ) );
+                            appRealm.setParentRealm( getPlexusAppBooter().getWorld().getRealm( "plexus" ) );
 
                             // conf is mandatory
                             appRealm.addURL( confDir.toURI().toURL() );
@@ -132,27 +137,15 @@ public class BundleBooter
         }
     }
 
+    public void contextualize( Context context )
+        throws ContextException
+    {
+        plexusAppBooter = (PlexusAppBooter) context.get( PlexusAppBooter.class.getName() );
+    }
+
     public void initialize()
         throws InitializationException
     {
-        Context context = getContainer().getContext();
-
-        if ( context.contains( PlexusAppBooter.class.getName() ) )
-        {
-            try
-            {
-                basedir = ( (PlexusAppBooter) context.get( PlexusAppBooter.class.getName() ) ).getBasedir();
-            }
-            catch ( ContextException e )
-            {
-            }
-        }
-
-        if ( basedir == null )
-        {
-            basedir = new File( "" ).getAbsoluteFile();
-        }
-
         try
         {
             discoverApplications();
@@ -191,5 +184,4 @@ public class BundleBooter
             application.stopContainer();
         }
     }
-
 }

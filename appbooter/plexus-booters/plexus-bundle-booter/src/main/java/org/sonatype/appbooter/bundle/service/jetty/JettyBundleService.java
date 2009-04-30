@@ -9,6 +9,9 @@ import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable;
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.StartingException;
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.StoppingException;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.webapp.WebAppContext;
 import org.sonatype.appbooter.bundle.ApplicationAppBooter;
@@ -17,7 +20,7 @@ import org.sonatype.appbooter.bundle.service.BundleService;
 @Component( role = BundleService.class, hint = "jetty" )
 public class JettyBundleService
     extends AbstractLogEnabled
-    implements BundleService, Initializable
+    implements BundleService, Initializable, Startable
 {
     @Requirement
     private PlexusContainer plexusContainer;
@@ -49,7 +52,7 @@ public class JettyBundleService
             webapp.setClassLoader( application.getWorld().getRealm( application.getName() ) );
 
             server.addHandler( webapp );
-            
+
             webapp.start();
         }
         catch ( Exception e )
@@ -72,12 +75,36 @@ public class JettyBundleService
             server = new Server();
 
             JettyUtils.configureServer( server, jettyXmlFile, plexusContainer.getContext(), getLogger() );
-
-            server.start();
         }
         catch ( Exception e )
         {
             throw new InitializationException( "Jetty was not started!", e );
+        }
+    }
+
+    public void start()
+        throws StartingException
+    {
+        try
+        {
+            server.start();
+        }
+        catch ( Exception e )
+        {
+            throw new StartingException( "Cannot start Jetty!", e );
+        }
+    }
+
+    public void stop()
+        throws StoppingException
+    {
+        try
+        {
+            server.stop();
+        }
+        catch ( Exception e )
+        {
+            throw new StoppingException( "Cannot stop Jetty!", e );
         }
     }
 }
