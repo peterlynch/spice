@@ -28,9 +28,13 @@ import org.codehaus.plexus.interpolation.RegexBasedInterpolator;
  */
 public class PlexusAppBooter
 {
-    public static final String CONFIGURATION_FILE_PROPERTY = "plexus.configuration";
+    public static final String BASEDIR_KEY = "basedir";
+
+    public static final String CONFIGURATION_FILE_PROPERTY_KEY = "plexus.configuration";
 
     public static final String DEV_MODE = "plexus.container.dev.mode";
+
+    private String name;
 
     private ClassWorld world;
 
@@ -45,6 +49,21 @@ public class PlexusAppBooter
     private PlexusContainer container;
 
     protected static final Object waitObj = new Object();
+
+    public String getName()
+    {
+        if ( name == null )
+        {
+            name = "plexus";
+        }
+
+        return name;
+    }
+
+    public void setName( String name )
+    {
+        this.name = name;
+    }
 
     public ClassWorld getWorld()
     {
@@ -70,11 +89,22 @@ public class PlexusAppBooter
             return basedir;
         }
 
-        if ( System.getProperty( "basedir" ) != null )
+        // property "basedir" is looked up 1st
+        if ( System.getProperty( BASEDIR_KEY ) != null )
         {
-            basedir = new File( System.getProperty( "basedir" ) ).getAbsoluteFile();
+            basedir = new File( System.getProperty( BASEDIR_KEY ) ).getAbsoluteFile();
         }
 
+        // 2nd, the "name.basedir" is looked up
+        if ( basedir == null )
+        {
+            if ( System.getProperty( getName() + "." + BASEDIR_KEY ) != null )
+            {
+                basedir = new File( System.getProperty( BASEDIR_KEY ) ).getAbsoluteFile();
+            }
+        }
+
+        // 3rd, defaulting it to current directory
         if ( basedir == null )
         {
             basedir = new File( "" ).getAbsoluteFile();
@@ -92,7 +122,7 @@ public class PlexusAppBooter
     {
         if ( configuration == null )
         {
-            String configPath = System.getProperty( CONFIGURATION_FILE_PROPERTY );
+            String configPath = System.getProperty( CONFIGURATION_FILE_PROPERTY_KEY );
 
             if ( configPath == null )
             {
@@ -178,7 +208,7 @@ public class PlexusAppBooter
 
         Map<Object, Object> environment = new HashMap<Object, Object>();
 
-        environment.put( "basedir", getBasedir().getAbsolutePath() );
+        environment.put( BASEDIR_KEY, getBasedir().getAbsolutePath() );
 
         for ( ContextFiller filler : getContextFillers() )
         {

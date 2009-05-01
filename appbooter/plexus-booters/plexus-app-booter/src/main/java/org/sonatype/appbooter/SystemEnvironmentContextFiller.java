@@ -12,8 +12,6 @@ import java.util.Map;
 public class SystemEnvironmentContextFiller
     implements ContextFiller
 {
-    private static final String PLEXUS_ENV_VAR_PREFIX = "PLEXUS_";
-
     public void fillContext( PlexusAppBooter booter, Map<Object, Object> context )
     {
         /*
@@ -22,14 +20,21 @@ public class SystemEnvironmentContextFiller
          */
         Map<String, String> envMap = System.getenv();
 
+        String envVarPrefix = getKeyPrefix( booter );
+
         for ( String key : envMap.keySet() )
         {
-            if ( key.toUpperCase().startsWith( PLEXUS_ENV_VAR_PREFIX ) && key.length() > PLEXUS_ENV_VAR_PREFIX.length() )
+            if ( key.toUpperCase().startsWith( envVarPrefix ) && key.length() > envVarPrefix.length() )
             {
-                String plexusKey = key.toLowerCase().substring( PLEXUS_ENV_VAR_PREFIX.length() ).replace( '_', '-' );
+                String plexusKey = key.toLowerCase().substring( envVarPrefix.length() ).replace( '_', '-' );
 
                 context.put( plexusKey, envMap.get( key ) );
             }
         }
+    }
+
+    protected String getKeyPrefix( PlexusAppBooter booter )
+    {
+        return booter.getName().toUpperCase() + "_";
     }
 }

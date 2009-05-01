@@ -12,8 +12,6 @@ import java.util.Properties;
 public class SystemPropertiesContextFiller
     implements ContextFiller
 {
-    private static final String PLEXUS_SYSTEM_PROP_PREFIX = "plexus.";
-
     public void fillContext( PlexusAppBooter booter, Map<Object, Object> context )
     {
         /*
@@ -22,16 +20,23 @@ public class SystemPropertiesContextFiller
          */
         Properties sysProps = System.getProperties();
 
+        String systemPropPrefix = getKeyPrefix( booter );
+
         for ( Object obj : sysProps.keySet() )
         {
             String key = obj.toString();
 
-            if ( key.startsWith( PLEXUS_SYSTEM_PROP_PREFIX ) && key.length() > PLEXUS_SYSTEM_PROP_PREFIX.length() )
+            if ( key.startsWith( systemPropPrefix ) && key.length() > systemPropPrefix.length() )
             {
-                String plexusKey = key.substring( PLEXUS_SYSTEM_PROP_PREFIX.length() );
+                String plexusKey = key.substring( systemPropPrefix.length() );
 
                 context.put( plexusKey, sysProps.get( obj ) );
             }
         }
+    }
+
+    protected String getKeyPrefix( PlexusAppBooter booter )
+    {
+        return booter.getName() + ".";
     }
 }
