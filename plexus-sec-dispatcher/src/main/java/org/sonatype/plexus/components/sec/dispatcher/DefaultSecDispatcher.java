@@ -28,7 +28,7 @@ import org.sonatype.plexus.components.cipher.PlexusCipherException;
 import org.sonatype.plexus.components.sec.dispatcher.model.SettingsSecurity;
 
 /**
- * @plexus.component
+ * @plexus.component role-hint="default"
  * @author Oleg Gusakov</a>
  */
 public class DefaultSecDispatcher
