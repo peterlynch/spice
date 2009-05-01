@@ -1,9 +1,3 @@
 <plexus>
 
-	<load-on-start>
-		<component>
-			<role>org.sonatype.security.PlexusSecurity</role>
-		</component>
-	</load-on-start>
-
 </plexus>

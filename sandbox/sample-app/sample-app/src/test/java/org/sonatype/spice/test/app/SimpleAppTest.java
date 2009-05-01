@@ -81,6 +81,7 @@ public class SimpleAppTest
     {
         super.customizeContext( context );
         context.put( "security-xml-file", CONF_DIR + "/security.xml" );
+        context.put( "application-conf", CONF_DIR );
     }
 
     @Override
