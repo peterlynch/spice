@@ -7,29 +7,27 @@ import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.sonatype.appbooter.PlexusAppBooter;
+import org.sonatype.appbooter.TerminalContextPublisher;
 import org.sonatype.appbooter.bundle.service.BundleService;
 
 public class ApplicationAppBooter
     extends PlexusAppBooter
 {
-    private final String name;
-
     private final ClassRealm realm;
 
     private List<BundleService> bundleServices;
 
     public ApplicationAppBooter( String name, ClassRealm realm )
     {
-        this.name = name;
-
         this.realm = realm;
-        
-        setWorld( realm.getWorld() );
-    }
 
-    public String getName()
-    {
-        return name;
+        setName( name );
+
+        setWorld( realm.getWorld() );
+
+        // do not publish to SystemProperties, but to terminal only
+        getContextPublishers().clear();
+        getContextPublishers().add( new TerminalContextPublisher() );
     }
 
     public ClassRealm getRealm()

@@ -1,6 +1,7 @@
 package org.sonatype.appbooter.bundle;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -83,29 +84,8 @@ public class BundleBooter
                                               "Discovered Application [" + appName + "] (" + confFile.getAbsolutePath()
                                                   + ")" );
 
-                            File libDir = new File( appDir, "lib" );
-
                             // create realm (lib + conf)
-                            ClassRealm appRealm = getPlexusAppBooter().getWorld().newRealm( appName );
-
-                            appRealm.setParentRealm( getPlexusAppBooter().getWorld().getRealm( "plexus" ) );
-
-                            // conf is mandatory
-                            appRealm.addURL( confDir.toURI().toURL() );
-
-                            // libdir is optional
-                            if ( libDir.isDirectory() )
-                            {
-                                File[] constituents = libDir.listFiles();
-
-                                if ( constituents != null )
-                                {
-                                    for ( File constituent : constituents )
-                                    {
-                                        appRealm.addURL( constituent.toURI().toURL() );
-                                    }
-                                }
-                            }
+                            ClassRealm appRealm = prepareChildRealm( "plexus." + appName, appDir );
 
                             // wrap it up
                             // setup plexus using conf/plexus.xml + conf/plexus.properties
@@ -184,4 +164,36 @@ public class BundleBooter
             application.stopContainer();
         }
     }
+
+    // ===
+
+    protected ClassRealm prepareChildRealm( String id, File appBasedir )
+        throws IOException
+    {
+        ClassRealm realm = getContainer().createChildRealm( id );
+
+        File confDir = new File( appBasedir, "conf" );
+
+        File libDir = new File( appBasedir, "lib" );
+
+        // conf is mandatory
+        realm.addURL( confDir.toURI().toURL() );
+
+        // libdir is optional
+        if ( libDir.isDirectory() )
+        {
+            File[] constituents = libDir.listFiles();
+
+            if ( constituents != null )
+            {
+                for ( File constituent : constituents )
+                {
+                    realm.addURL( constituent.toURI().toURL() );
+                }
+            }
+        }
+
+        return realm;
+    }
+
 }
