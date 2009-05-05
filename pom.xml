@@ -41,6 +41,7 @@ under the License.
       <module>plexus-security</module>
       <module>plexus-ldap-testsuite</module>
       <module>plexus-webdav</module>
+      <module>plexus-restlet-bridge</module>
       <module>spice-parent</module>
       <module>spice-timeline</module>
       <module>base-configuration</module>
