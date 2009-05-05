@@ -40,6 +40,7 @@ under the License.
       <module>plexus-jetty-testsuite</module>
       <module>plexus-security</module>
       <module>plexus-ldap-testsuite</module>
+      <module>plexus-app-events</module>
       <module>plexus-webdav</module>
       <module>plexus-restlet-bridge</module>
       <module>spice-parent</module>
