@@ -29,13 +29,12 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.ConstantScoreRangeQuery;
+import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopFieldDocs;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.store.Directory;
@@ -78,19 +77,15 @@ public class DefaultTimelineIndexer
 
                 if ( IndexReader.indexExists( directory ) )
                 {
-                    if ( IndexWriter.isLocked( directory ) )
+                    if ( IndexReader.isLocked( directory ) )
                     {
-                        IndexWriter.unlock( directory );
+                        IndexReader.unlock( directory );
                     }
 
                     newIndex = false;
                 }
 
-                indexWriter = new IndexWriter(
-                    indexDirectory,
-                    new KeywordAnalyzer(),
-                    newIndex,
-                    IndexWriter.MaxFieldLength.LIMITED );
+                indexWriter = new IndexWriter( indexDirectory, new KeywordAnalyzer(), newIndex );
 
                 closeIndexWriter();
             }
@@ -107,7 +102,7 @@ public class DefaultTimelineIndexer
     {
         if ( indexWriter == null )
         {
-            indexWriter = new IndexWriter( directory, new KeywordAnalyzer(), false, IndexWriter.MaxFieldLength.LIMITED );
+            indexWriter = new IndexWriter( directory, new KeywordAnalyzer(), false );
         }
 
         return indexWriter;
@@ -118,7 +113,7 @@ public class DefaultTimelineIndexer
     {
         if ( indexWriter != null )
         {
-            indexWriter.commit();
+            indexWriter.flush();
 
             indexWriter.close();
 
@@ -207,15 +202,15 @@ public class DefaultTimelineIndexer
             TIMESTAMP,
             DateTools.timeToString( record.getTimestamp(), DateTools.Resolution.MINUTE ),
             Field.Store.NO,
-            Field.Index.NOT_ANALYZED ) );
+            Field.Index.UN_TOKENIZED ) );
 
-        doc.add( new Field( TYPE, record.getType(), Field.Store.NO, Field.Index.NOT_ANALYZED ) );
+        doc.add( new Field( TYPE, record.getType(), Field.Store.NO, Field.Index.UN_TOKENIZED ) );
 
-        doc.add( new Field( SUBTYPE, record.getSubType(), Field.Store.NO, Field.Index.NOT_ANALYZED ) );
+        doc.add( new Field( SUBTYPE, record.getSubType(), Field.Store.NO, Field.Index.UN_TOKENIZED ) );
 
         for ( String key : record.getData().keySet() )
         {
-            doc.add( new Field( key, record.getData().get( key ), Field.Store.YES, Field.Index.NOT_ANALYZED ) );
+            doc.add( new Field( key, record.getData().get( key ), Field.Store.YES, Field.Index.UN_TOKENIZED ) );
         }
 
         return doc;
@@ -374,11 +369,11 @@ public class DefaultTimelineIndexer
                     return 0;
                 }
 
-                TopDocs topDocs = searcher.search( buildQuery( fromTime, toTime, types, subTypes ), searcher.maxDoc() );
+                Hits hits = searcher.search( buildQuery( fromTime, toTime, types, subTypes ) );
 
-                for ( ScoreDoc scoreDoc : topDocs.scoreDocs )
+                for ( int i = 0; i < hits.length(); i++ )
                 {
-                    searcher.getIndexReader().deleteDocument( scoreDoc.doc );
+                    searcher.getIndexReader().deleteDocument( hits.id( i ) );
                 }
 
                 closeIndexReaderAndSearcher();
@@ -387,7 +382,7 @@ public class DefaultTimelineIndexer
 
                 closeIndexWriter();
 
-                return topDocs.scoreDocs.length;
+                return hits.length();
             }
         }
         catch ( IOException e )
