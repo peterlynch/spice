@@ -39,7 +39,7 @@ public abstract class AbstractSimpleEventMulticaster
         proximityEventListeners.remove( listener );
     }
 
-    public void notifyEventListeners( Event evt )
+    public void notifyEventListeners( Event<?> evt )
     {
         if ( getLogger().isDebugEnabled() )
         {
