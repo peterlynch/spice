@@ -21,9 +21,9 @@ import org.codehaus.plexus.component.annotations.Component;
  * 
  * @author cstamas
  */
-@Component( role = EventMulticaster.class )
-public class SimpleEventMulticaster
+@Component( role = ApplicationEventMulticaster.class )
+public class SimpleApplicationEventMulticaster
     extends AbstractSimpleEventMulticaster
-    implements EventMulticaster
+    implements ApplicationEventMulticaster
 {
 }
