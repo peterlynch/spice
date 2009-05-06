@@ -37,5 +37,5 @@ public interface EventMulticaster
      * 
      * @param evt the evt
      */
-    public void notifyEventListeners( Event evt );
+    public void notifyEventListeners( Event<?> evt );
 }

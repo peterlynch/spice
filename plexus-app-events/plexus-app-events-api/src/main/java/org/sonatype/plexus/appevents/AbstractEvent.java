@@ -20,19 +20,19 @@ import java.util.Date;
  * 
  * @author cstamas
  */
-public abstract class AbstractEvent
-    implements Event
+public abstract class AbstractEvent<T>
+    implements Event<T>
 {
     /** The event date. */
     private final Date eventDate;
 
     /** The sender */
-    private final Object eventSender;
+    private final T eventSender;
 
     /**
      * Instantiates a new abstract event.
      */
-    public AbstractEvent( Object component )
+    public AbstractEvent( T component )
     {
         super();
 
@@ -56,7 +56,7 @@ public abstract class AbstractEvent
      * 
      * @return
      */
-    public Object getEventSender()
+    public T getEventSender()
     {
         return eventSender;
     }

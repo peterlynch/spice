@@ -30,6 +30,6 @@ public interface EventListener
      * 
      * @param evt the evt
      */
-    void onEvent( Event evt );
+    void onEvent( Event<?> evt );
 
 }
