@@ -11,7 +11,7 @@
 
 	<artifactId>simple-event-multicaster</artifactId>
 
-	<name>Plexus Application Events (Simple)</name>
+	<name>Plexus Application Events (Simple providers)</name>
 
 	<dependencies>
 		<dependency>
