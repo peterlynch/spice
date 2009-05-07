@@ -43,6 +43,7 @@ under the License.
       <module>plexus-app-events</module>
       <module>plexus-webdav</module>
       <module>plexus-restlet-bridge</module>
+      <module>plexus-task-scheduler</module>
       <module>spice-parent</module>
       <module>spice-timeline</module>
       <module>base-configuration</module>
