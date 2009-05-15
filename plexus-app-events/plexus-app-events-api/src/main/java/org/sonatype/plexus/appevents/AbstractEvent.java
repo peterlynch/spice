@@ -16,7 +16,7 @@ package org.sonatype.plexus.appevents;
 import java.util.Date;
 
 /**
- * The superclass for all Nexus events.
+ * The superclass for all events.
  * 
  * @author cstamas
  */
