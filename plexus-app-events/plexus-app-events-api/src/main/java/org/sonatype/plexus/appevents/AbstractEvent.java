@@ -14,6 +14,8 @@
 package org.sonatype.plexus.appevents;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The superclass for all events.
@@ -26,6 +28,9 @@ public abstract class AbstractEvent<T>
     /** The event date. */
     private final Date eventDate;
 
+    /** The event context */
+    private final HashMap<Object, Object> eventContext;
+
     /** The sender */
     private final T eventSender;
 
@@ -37,6 +42,8 @@ public abstract class AbstractEvent<T>
         super();
 
         this.eventDate = new Date();
+
+        this.eventContext = new HashMap<Object, Object>();
 
         this.eventSender = component;
     }
@@ -52,9 +59,19 @@ public abstract class AbstractEvent<T>
     }
 
     /**
+     * Gets the modifiable event context.
+     * 
+     * @return the event context
+     */
+    public Map<Object, Object> getEventContext()
+    {
+        return eventContext;
+    }
+
+    /**
      * Gets the sender
      * 
-     * @return
+     * @return the event sender
      */
     public T getEventSender()
     {
