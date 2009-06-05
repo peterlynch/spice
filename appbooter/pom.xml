@@ -1,30 +1,70 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.sonatype.spice</groupId>
-        <artifactId>spice-parent</artifactId>
-        <version>11</version>
-        <relativePath>../spice-parent/pom.xml</relativePath>
-    </parent>
-    <groupId>org.sonatype.appbooter</groupId>
-    <artifactId>appbooter</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
-    <packaging>pom</packaging>
-    <name>Sonatype AppBooter</name>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.sonatype.spice</groupId>
+    <artifactId>spice-parent</artifactId>
+    <version>11</version>
+    <relativePath>../spice-parent/pom.xml</relativePath>
+  </parent>
+  <groupId>org.sonatype.appbooter</groupId>
+  <artifactId>appbooter</artifactId>
+  <version>2.0.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>Sonatype AppBooter</name>
 
-    <scm>
-        <connection>scm:svn:http://svn.sonatype.org/spice/trunk/appbooter</connection>
-        <url>http://svn.sonatype.org/spice/trunk/appbooter</url>
-        <developerConnection>scm:svn:https://svn.sonatype.org/spice/trunk/appbooter</developerConnection>
-    </scm>
-    
-    <properties>
-      <plexus.version>1.0-beta-3.0.8-SNAPSHOT</plexus.version>
-    </properties>
-    
-    <modules>
-        <module>plexus-booters</module>
-        <module>plexus-platforms</module>
-    </modules>
+  <scm>
+    <connection>scm:svn:http://svn.sonatype.org/spice/trunk/appbooter</connection>
+    <url>http://svn.sonatype.org/spice/trunk/appbooter</url>
+    <developerConnection>scm:svn:https://svn.sonatype.org/spice/trunk/appbooter</developerConnection>
+  </scm>
+
+  <properties>
+    <plexus.version>1.0-beta-3.0.8-SNAPSHOT</plexus.version>
+    <plexus-plugin.version>1.0-beta-3.0.5</plexus-plugin.version>
+  </properties>
+
+  <modules>
+    <module>plexus-booters</module>
+    <module>plexus-platforms</module>
+  </modules>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.codehaus.plexus</groupId>
+          <artifactId>plexus-component-metadata</artifactId>
+          <version>${plexus-plugin.version}</version>
+          <executions>
+            <execution>
+              <id>process-classes</id>
+              <goals>
+                <goal>generate-metadata</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>process-test-classes</id>
+              <goals>
+                <goal>generate-test-metadata</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.plexus</groupId>
+          <artifactId>plexus-maven-plugin</artifactId>
+          <version>1.3.8</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>descriptor</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 
 </project>
