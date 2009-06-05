@@ -18,6 +18,10 @@
         <developerConnection>scm:svn:https://svn.sonatype.org/spice/trunk/appbooter</developerConnection>
     </scm>
     
+    <properties>
+      <plexus.version>1.0-beta-3.0.8-SNAPSHOT</plexus.version>
+    </properties>
+    
     <modules>
         <module>plexus-booters</module>
         <module>plexus-platforms</module>
