@@ -28,6 +28,5 @@
   </dependencies>
   <modules>
     <module>sonatype-runtime-equinox</module>
-    <module>sonatype-runtime-plexus</module>
   </modules>
 </project>
