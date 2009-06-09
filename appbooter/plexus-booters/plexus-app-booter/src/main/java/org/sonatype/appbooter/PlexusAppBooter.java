@@ -19,6 +19,7 @@ import org.codehaus.plexus.context.DefaultContext;
 import org.codehaus.plexus.interpolation.Interpolator;
 import org.codehaus.plexus.interpolation.MapBasedValueSource;
 import org.codehaus.plexus.interpolation.RegexBasedInterpolator;
+import org.codehaus.plexus.util.StringUtils;
 
 /**
  * The simplest class needed to bring up a Plexus Application. No hokus-pokus, just real stuff.
@@ -30,8 +31,11 @@ public class PlexusAppBooter
 {
     public static final String BASEDIR_KEY = "basedir";
 
-    public static final String CONFIGURATION_FILE_PROPERTY_KEY = "plexus.configuration";
+    public static final String CONFIGURATION_FILE_PROPERTY_KEY = ".configuration";
 
+    public static final String CUSTOMIZERS_PROPERTY_KEY = ".appbooter.customizers";
+
+    // ???
     public static final String DEV_MODE = "plexus.container.dev.mode";
 
     private String name;
@@ -47,6 +51,8 @@ public class PlexusAppBooter
     private List<ContextPublisher> contextPublishers;
 
     private PlexusContainer container;
+
+    private List<PlexusAppBooterCustomizer> customizers;
 
     protected static final Object waitObj = new Object();
 
@@ -122,7 +128,7 @@ public class PlexusAppBooter
     {
         if ( configuration == null )
         {
-            String configPath = System.getProperty( CONFIGURATION_FILE_PROPERTY_KEY );
+            String configPath = System.getProperty( getName() + CONFIGURATION_FILE_PROPERTY_KEY );
 
             if ( configPath == null )
             {
@@ -269,17 +275,26 @@ public class PlexusAppBooter
 
     protected void customizeContext( Context context )
     {
-        // override if needed
+        for ( PlexusAppBooterCustomizer customizer : getPlexusAppBooterCustomizers() )
+        {
+            customizer.customizeContext( context );
+        }
     }
 
     protected void customizeContainerConfiguration( ContainerConfiguration containerConfiguration )
     {
-        // override if needed
+        for ( PlexusAppBooterCustomizer customizer : getPlexusAppBooterCustomizers() )
+        {
+            customizer.customizeContainerConfiguration( containerConfiguration );
+        }
     }
 
     protected void customizeContainer( PlexusContainer plexusContainer )
     {
-        // override if needed
+        for ( PlexusAppBooterCustomizer customizer : getPlexusAppBooterCustomizers() )
+        {
+            customizer.customizeContainer( plexusContainer );
+        }
     }
 
     public void startContainer()
@@ -307,8 +322,8 @@ public class PlexusAppBooter
 
             ContainerConfiguration configuration =
                 new DefaultContainerConfiguration().setClassWorld( getWorld() )
-                                                   .setContainerConfiguration( getConfiguration().getAbsolutePath() )
-                                                   .setContext( context.getContextData() );
+                    .setContainerConfiguration( getConfiguration().getAbsolutePath() )
+                    .setContext( context.getContextData() );
 
             customizeContainerConfiguration( configuration );
 
@@ -346,6 +361,52 @@ public class PlexusAppBooter
                 container.dispose();
 
                 container = null;
+
+                waitObj.notify();
+            }
+        }
+    }
+
+    protected List<PlexusAppBooterCustomizer> getPlexusAppBooterCustomizers()
+    {
+        if ( customizers == null )
+        {
+            customizers = new ArrayList<PlexusAppBooterCustomizer>();
+
+            gatherPlexusAppBooterCustomizers();
+        }
+
+        return customizers;
+    }
+
+    protected void gatherPlexusAppBooterCustomizers()
+    {
+        String customizersList = System.getProperty( getName() + CUSTOMIZERS_PROPERTY_KEY );
+
+        if ( StringUtils.isNotBlank( customizersList ) )
+        {
+            String[] customizersString = StringUtils.split( customizersList, "," );
+
+            for ( int i = 0; i < customizersString.length; i++ )
+            {
+                String customizerClassName = customizersString[i];
+
+                System.out.println( "Loading PlexusAppBooterCustomizer (implementation=" + customizerClassName + ")." );
+
+                try
+                {
+                    Class<PlexusAppBooterCustomizer> customizerClass =
+                        (Class<PlexusAppBooterCustomizer>) Class.forName( customizerClassName );
+
+                    PlexusAppBooterCustomizer customizer = customizerClass.newInstance();
+
+                    customizers.add( customizer );
+                }
+                catch ( Exception e )
+                {
+                    e.printStackTrace();
+                    // ignore it?
+                }
             }
         }
     }
