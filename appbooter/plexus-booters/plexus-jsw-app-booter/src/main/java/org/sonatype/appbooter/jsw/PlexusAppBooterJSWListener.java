@@ -13,7 +13,7 @@
 package org.sonatype.appbooter.jsw;
 
 import org.codehaus.plexus.classworlds.ClassWorld;
-import org.sonatype.appbooter.PlexusAppBooter;
+import org.sonatype.appbooter.PlexusAppBooterService;
 import org.tanukisoftware.wrapper.WrapperListener;
 import org.tanukisoftware.wrapper.WrapperManager;
 
@@ -24,7 +24,7 @@ import org.tanukisoftware.wrapper.WrapperManager;
  * @author brianf@sonatype.com
  */
 public class PlexusAppBooterJSWListener
-    extends PlexusAppBooter
+    extends PlexusAppBooterService
     implements WrapperListener
 {
     /**
