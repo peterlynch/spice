@@ -19,7 +19,7 @@ public class PlexusAppBooterService
     extends PlexusAppBooter
     implements Service
 {
-    public static final String ENABLE_CONTROL_SOCKET = "plexus.host.control.socket.enabled";
+    public static final String ENABLE_CONTROL_SOCKET = ".host.control.socket.enabled";
 
     public static final int DEFAULT_CONTROL_PORT = 32001;
 
@@ -109,7 +109,7 @@ public class PlexusAppBooterService
 
     protected void startManagementThread()
     {
-        if ( Boolean.getBoolean( ENABLE_CONTROL_SOCKET ) )
+        if ( Boolean.getBoolean( getName() + ENABLE_CONTROL_SOCKET ) )
         {
             System.out.println( "\n\nStarting control socket on port: " + this.controlPort + "\n" );
 

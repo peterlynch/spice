@@ -29,6 +29,8 @@ import org.codehaus.plexus.util.StringUtils;
  */
 public class PlexusAppBooter
 {
+    public static final String DEFAULT_NAME = "plexus";
+
     public static final String BASEDIR_KEY = "basedir";
 
     public static final String CONFIGURATION_FILE_PROPERTY_KEY = ".configuration";
@@ -60,7 +62,7 @@ public class PlexusAppBooter
     {
         if ( name == null )
         {
-            name = "plexus";
+            name = DEFAULT_NAME;
         }
 
         return name;
