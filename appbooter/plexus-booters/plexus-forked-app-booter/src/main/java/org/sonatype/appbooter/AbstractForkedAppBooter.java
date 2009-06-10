@@ -304,7 +304,12 @@ public abstract class AbstractForkedAppBooter
         if ( classworldsJar != null )
         {
             cli.createArg().setLine( "-Dbasedir=\'" + basedir.getAbsolutePath() + "\'" );
-            
+
+            cli.createArg()
+                .setLine(
+                          "-D" + PlexusAppBooterService.DEFAULT_NAME + PlexusAppBooterService.ENABLE_CONTROL_SOCKET
+                              + "=" + Boolean.TRUE.toString() );
+
             if ( classworldsConf != null )
             {
                 cli.createArg().setLine( "-Dclassworlds.conf=\'" + classworldsConf.getAbsolutePath() + "\'" );
