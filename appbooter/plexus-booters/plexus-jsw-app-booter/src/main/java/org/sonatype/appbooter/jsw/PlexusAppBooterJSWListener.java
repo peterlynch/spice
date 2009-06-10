@@ -105,6 +105,8 @@ public class PlexusAppBooterJSWListener
 
         jswListener.setWorld( classWorld );
 
+        jswListener.setControlPort( getControlPortFromArgs( args ) );
+
         WrapperManager.start( jswListener, args );
 
         // once the wrapper is booted, the start() method will be called to actually get everything running.
