@@ -39,79 +39,81 @@ import org.sonatype.plexus.classworlds.validator.ClassworldsModelValidator;
 import org.sonatype.plexus.classworlds.validator.ClassworldsValidationResult;
 
 /**
- * Start a Plexus application, and optionally wait for Ctl-C to shut it down. Otherwise,
- * continue execution with the application still running (useful for
- * integration testing). The application is started in a separate process, with
- * a control port listening for administrative commands.
- *
+ * Start a Plexus application, and optionally wait for Ctl-C to shut it down. Otherwise, continue execution with the
+ * application still running (useful for integration testing). The application is started in a separate process, with a
+ * control port listening for administrative commands.
  */
 public abstract class AbstractForkedAppBooter
     extends AbstractLogEnabled
     implements ForkedAppBooter
 {
 
-
     /**
-     * If true, do NOT wait for CTL-C to terminate the application, just start
-     * it and return. Future calls to stop() or direct use of the
-     * {@link ControllerClient} API can manage the application once started.
-     *
+     * If true, do NOT wait for CTL-C to terminate the application, just start it and return. Future calls to stop() or
+     * direct use of the {@link ControllerClient} API can manage the application once started.
+     * 
      * @plexus.configuration default-value="false"
      */
     private boolean disableBlocking;
 
     /**
-     * Turns on debug mode, which uses the debugJavaCmd to start the plexus
-     * application instead of the normal javaCmd.
-     *
+     * Turns on debug mode, which uses the debugJavaCmd to start the plexus application instead of the normal javaCmd.
+     * 
      * @plexus.configuration default-value="false"
      */
     private boolean debug;
 
-
     /**
-     * Java command used to start the Plexus application under normal (non-debug)
-     * circumstances.
-     *
+     * Java command used to start the Plexus application under normal (non-debug) circumstances.
+     * 
      * @plexus.configuration default-value="java"
      */
     private String javaCmd;
 
     /**
      * Substitutes the given port into the expression '@DEBUG_PORT@' in your debugJavaCmd.
-     *
+     * 
      * @plexus.configuration default-value="5005"
      */
     private int debugPort;
 
     /**
      * Substitutes 'y' or 'n' into the expression '@DEBUG_SUSPEND@' in your debugJavaCmd.
-     *
+     * 
      * @plexus.configuration default-value="true"
      */
     private boolean debugSuspend;
 
     /**
-     * Java command used to start the Plexus application into debugging mode, which
-     * is meant to allow attachment of a remote application debugger via JPDA, etc.
-     *
+     * Java command used to start the Plexus application into debugging mode, which is meant to allow attachment of a
+     * remote application debugger via JPDA, etc.
+     * 
      * @plexus.configuration default-value="java -Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,server=y,suspend=@DEBUG_SUSPEND@,address=@DEBUG_PORT@ -Djava.compiler=NONE"
      */
     private String debugJavaCmd;
 
     /**
-     * The class containing the main method that will be used to start up the Plexus
-     * container to initialize the application.
-     * <br/>
+     * The class containing the main method that will be used to start up the Plexus container to initialize the
+     * application. <br/>
      * CAUTION! Be sure you understand the ramifications before changing this!
-     *
+     * 
      * @plexus.configuration default-value="org.sonatype.appbooter.PlexusContainerHost"
      */
     private String launcherClass;
 
     /**
+     * @plexus.configuration
+     */
+    private File classworldsJar;
+
+    /**
+     * @plexus.configuration
+     */
+    private File classworldsConf;
+
+    /**
      * System properties passed on to the new java process.
-     *
+     * 
      * @plexus.configuration
      */
     private Map<String, String> systemProperties;
@@ -119,26 +121,25 @@ public abstract class AbstractForkedAppBooter
     /** @plexus.configuration default-value="${basedir}/src/main/plexus/plexus.xml" */
     private File configuration;
 
-    /** @plexus.configuration default-value="${basedir}"*/
+    /** @plexus.configuration default-value="${basedir}" */
     private File basedir;
 
-    /** @plexus.configuration default-value="${basedir}/target/appbooter.tmp"*/
+    /** @plexus.configuration default-value="${basedir}/target/appbooter.tmp" */
     private File tempDir;
 
     /**
      * Number of milliseconds to wait after the application starts.
+     * 
      * @plexus.configuration default-value="5000"
      */
     private int sleepAfterStart = 5000;
 
     /**
-     * Uses DEFAULT_CONTROL_PORT from {@link PlexusContainerHost} by default.
-     * <br/>
-     * This is the port used to administer the remote application. If you execute
-     * with disableBlocking == true, you may need to know this port to use the
-     * {@link ControllerClient} API directly (from integration-test JUnit code,
-     * for instance).
-     *
+     * Uses DEFAULT_CONTROL_PORT from {@link PlexusContainerHost} by default. <br/>
+     * This is the port used to administer the remote application. If you execute with disableBlocking == true, you may
+     * need to know this port to use the {@link ControllerClient} API directly (from integration-test JUnit code, for
+     * instance).
+     * 
      * @plexus.configuration default-value="-1"
      */
     private int controlPort;
@@ -151,42 +152,58 @@ public abstract class AbstractForkedAppBooter
 
     /**
      * Returns the location of the plexus platform jar, i.e. plexus-platform-base.jar
-     *
+     * 
      * @return
      * @throws AppBooterServiceException
      */
-    public abstract File getPlatformFile() throws AppBooterServiceException;
+    public abstract File getPlatformFile()
+        throws AppBooterServiceException;
+
+    /**
+     * For test purposes.
+     * 
+     * @param platformFile
+     */
+    public abstract void setPlatformFile( File platformFile );
 
     /**
      * Returns the Classworlds configuration for the process to be started.
-     *
+     * 
      * @return
      */
     public abstract ClassworldsRealmConfiguration getClassworldsRealmConfig();
 
-
     @SuppressWarnings( "unchecked" )
-    public void start() throws AppBooterServiceException
+    public void start()
+        throws AppBooterServiceException
     {
-        //Get the control objects for the 2 running threads we will be handling, the first (controlClient) is our access to the PlexusContainerHost
-        //NOTE: currently only PlexusContainerHost is supported as launcher class, as there are a number of areas throughout where it is directly
-        //referenced.
-        //The second object we get (controlServiceClient) is for this object is strictly used for the ShutdownHook to be able to stop.
+        // Get the control objects for the 2 running threads we will be handling, the first (controlClient) is our
+        // access to the PlexusContainerHost
+        // NOTE: currently only PlexusContainerHost is supported as launcher class, as there are a number of areas
+        // throughout where it is directly
+        // referenced.
+        // The second object we get (controlServiceClient) is for this object is strictly used for the ShutdownHook to
+        // be able to stop.
         if ( !configuration.exists() )
         {
-            throw new AppBooterServiceException( "There is no plexus.xml file present. Make sure you are in a directory where a Plexus application lives." );
+            throw new AppBooterServiceException(
+                                                 "There is no plexus.xml file present. Make sure you are in a directory where a Plexus application lives." );
         }
 
         try
         {
-            controlClient = new ControllerClient( controlPort > -1 ? controlPort : PlexusContainerHost.DEFAULT_CONTROL_PORT );
+            controlClient =
+                new ControllerClient( controlPort > -1 ? controlPort : PlexusAppBooterService.DEFAULT_CONTROL_PORT );
         }
         catch ( UnknownHostException e )
         {
-            throw new AppBooterServiceException( "Remote-control client for plexus application cannot resolve localhost.", e );
+            throw new AppBooterServiceException(
+                                                 "Remote-control client for plexus application cannot resolve localhost.",
+                                                 e );
         }
 
-        //Just in case stop() isn't called at some point later, and this is a non-blocking instance, here is the backup plan
+        // Just in case stop() isn't called at some point later, and this is a non-blocking instance, here is the backup
+        // plan
         getLogger().info( "Enabling shutdown hook for remote plexus application." );
         Runtime.getRuntime().addShutdownHook( new Thread( new ShutdownHook() ) );
 
@@ -197,20 +214,20 @@ public abstract class AbstractForkedAppBooter
 
         if ( debug )
         {
-            //this is not working at windows
-//            getLogger().info( "\n\n\nWaiting for you to attach your debugger. Press -ENTER- when attached." );
-//            try
-//            {
-//                System.in.read();
-//            }
-//            catch ( IOException e )
-//            {
-//                getLogger().info( "Failed to read from System.in. Proceeding anyway..." );
-//            }
+            // this is not working at windows
+            // getLogger().info( "\n\n\nWaiting for you to attach your debugger. Press -ENTER- when attached." );
+            // try
+            // {
+            // System.in.read();
+            // }
+            // catch ( IOException e )
+            // {
+            // getLogger().info( "Failed to read from System.in. Proceeding anyway..." );
+            // }
         }
         else
         {
-            getLogger().info( "Sleeping "+ this.sleepAfterStart / 1000 +" seconds for application to start." );
+            getLogger().info( "Sleeping " + this.sleepAfterStart / 1000 + " seconds for application to start." );
             try
             {
                 Thread.sleep( this.sleepAfterStart );
@@ -228,11 +245,15 @@ public abstract class AbstractForkedAppBooter
             }
             catch ( ControlConnectionException e )
             {
-                throw new AppBooterServiceException( "Failed to send shutdown-on-close command to application host. You may need to terminate the application manually.", e );
+                throw new AppBooterServiceException(
+                                                     "Failed to send shutdown-on-close command to application host. You may need to terminate the application manually.",
+                                                     e );
             }
             catch ( IOException e )
             {
-                throw new AppBooterServiceException( "Failed to send shutdown-on-close command to application host. You may need to terminate the application manually.", e );
+                throw new AppBooterServiceException(
+                                                     "Failed to send shutdown-on-close command to application host. You may need to terminate the application manually.",
+                                                     e );
             }
 
             try
@@ -259,10 +280,6 @@ public abstract class AbstractForkedAppBooter
     protected Commandline buildCommandLine()
         throws AppBooterServiceException
     {
-        File platformFile = getPlatformFile();
-        ClassworldsAppConfiguration config = buildConfig();
-        File classworldsConf = writeConfig( config );
-
         Commandline cli = new Commandline();
 
         String cmd = javaCmd;
@@ -284,13 +301,35 @@ public abstract class AbstractForkedAppBooter
             }
         }
 
-        cli.createArg()
-           .setLine( "-Dclassworlds.conf=\'" + classworldsConf.getAbsolutePath() + "\'" );
-        cli.createArg().setLine( "-jar" );
-        cli.createArg().setLine( "\'" + platformFile.getAbsolutePath() + "\'" );
+        if ( classworldsJar != null )
+        {
+            cli.createArg().setLine( "-Dbasedir=\'" + basedir.getAbsolutePath() + "\'" );
+            
+            if ( classworldsConf != null )
+            {
+                cli.createArg().setLine( "-Dclassworlds.conf=\'" + classworldsConf.getAbsolutePath() + "\'" );
+            }
+
+            cli.createArg().setLine( "-cp" );
+            cli.createArg().setLine( "\'" + classworldsJar.getAbsolutePath() + "\'" );
+            cli.createArg().setLine( "org.codehaus.plexus.classworlds.launcher.Launcher" );
+        }
+        else
+        {
+            // old way
+            File platformFile = getPlatformFile();
+            ClassworldsAppConfiguration config = buildConfig();
+            classworldsConf = writeConfig( config );
+
+            cli.createArg().setLine( "-Dclassworlds.conf=\'" + classworldsConf.getAbsolutePath() + "\'" );
+
+            // old way
+            cli.createArg().setLine( "-jar" );
+            cli.createArg().setLine( "\'" + platformFile.getAbsolutePath() + "\'" );
+        }
 
         // add the control port if it was defined
-        if( controlPort > -1)
+        if ( controlPort > -1 )
         {
             cli.createArg().setLine( Integer.toString( controlPort ) );
         }
@@ -327,8 +366,7 @@ public abstract class AbstractForkedAppBooter
 
         if ( outputDebugMessages() )
         {
-            getLogger().info( "Saving Classworlds configuration at: "
-                           + classworldsConf.getAbsolutePath() );
+            getLogger().info( "Saving Classworlds configuration at: " + classworldsConf.getAbsolutePath() );
         }
 
         return classworldsConf;
@@ -338,9 +376,6 @@ public abstract class AbstractForkedAppBooter
     {
         return debug || getLogger().isDebugEnabled();
     }
-
-
-
 
     private ClassworldsAppConfiguration buildConfig()
         throws AppBooterServiceException
@@ -365,19 +400,21 @@ public abstract class AbstractForkedAppBooter
         // NOTE, this MUST be after the putAll, because this value gets lost. (its not suppose to...)
         sysProps.put( "basedir", basedir.getAbsolutePath() );
 
-        sysProps.put( PlexusContainerHost.CONFIGURATION_FILE_PROPERTY,
+        sysProps.put( PlexusAppBooterService.DEFAULT_NAME + PlexusAppBooterService.CONFIGURATION_FILE_PROPERTY_KEY,
                       configuration.getAbsolutePath() );
-        sysProps.put( PlexusContainerHost.ENABLE_CONTROL_SOCKET, "true" );
+        sysProps.put( PlexusAppBooterService.DEFAULT_NAME + PlexusAppBooterService.ENABLE_CONTROL_SOCKET, Boolean.TRUE
+            .toString() );
 
         // cli wins
         for ( Map.Entry<Object, Object> e : System.getProperties().entrySet() )
         {
             String key = (String) e.getKey();
-            if ( key.startsWith( SYSPROP_PLEXUS ) ) {
+            if ( key.startsWith( SYSPROP_PLEXUS ) )
+            {
                 sysProps.put( key, (String) e.getValue() );
             }
         }
-        
+
         config.setSystemProperties( sysProps );
 
         ClassworldsValidationResult vr = new ClassworldsModelValidator().validate( config );
@@ -388,7 +425,6 @@ public abstract class AbstractForkedAppBooter
 
         return config;
     }
-
 
     private void stopStreamPumps()
     {
@@ -412,11 +448,11 @@ public abstract class AbstractForkedAppBooter
 
         public void run()
         {
-            //If not closed normally...
+            // If not closed normally...
             if ( controlClient != null && controlClient.isOpen() )
             {
                 getLogger().info( "ShutdownHook is closing the client connection." );
-                //Do it now
+                // Do it now
                 controlClient.close();
             }
         }
@@ -450,22 +486,23 @@ public abstract class AbstractForkedAppBooter
         }
         catch ( CommandLineException e )
         {
-            throw new AppBooterServiceException( "Failed to execute plexus application: "
-                                              + e.getMessage(), e );
+            throw new AppBooterServiceException( "Failed to execute plexus application: " + e.getMessage(), e );
         }
     }
 
-
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.sonatype.appbooter.ForkedAppBooter#stop()
      */
-    public void stop() throws AppBooterServiceException
+    public void stop()
+        throws AppBooterServiceException
     {
         getLogger().info( "Stopping plexus application." );
         ControllerClient client = null;
         try
         {
-            client = new ControllerClient( controlPort > -1 ? controlPort : PlexusContainerHost.DEFAULT_CONTROL_PORT );
+            client =
+                new ControllerClient( controlPort > -1 ? controlPort : PlexusAppBooterService.DEFAULT_CONTROL_PORT );
             client.shutdown();
         }
         catch ( ControlConnectionException e )
@@ -489,20 +526,18 @@ public abstract class AbstractForkedAppBooter
         }
     }
 
-
     public boolean isShutdown()
     {
-        throw new NotImplementedException("Method 'isShutdown' is not implemented.");
+        throw new NotImplementedException( "Method 'isShutdown' is not implemented." );
     }
-
 
     public boolean isStopped()
     {
-        throw new NotImplementedException("Method 'isStopped' is not implemented.");
+        throw new NotImplementedException( "Method 'isStopped' is not implemented." );
     }
 
-
-    public void shutdown() throws AppBooterServiceException
+    public void shutdown()
+        throws AppBooterServiceException
     {
         this.stop();
         if ( !getLogger().isDebugEnabled() && !debug && tempDir != null && tempDir.exists() )

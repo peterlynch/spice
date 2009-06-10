@@ -25,8 +25,9 @@ import org.sonatype.plexus.classworlds.model.ClassworldsRealmConfiguration;
  * The default implementation of ForkedAppBooter, a.k.a. a Simple Plexus Component. If a '*' is found in the file name
  * (NOT in the directory names), this implementation will try to resolve the file first. For example if the
  * <code>platformFile</code> is '/mypath/directory/myJar-*.jar', this may resolve to
- * '/mypath/directory/myJar-everChangingVersion.jar'. <BR/><BR/> The regex pattern for this would be
- * '/mypath/directory/myJar-.*\.jar'.
+ * '/mypath/directory/myJar-everChangingVersion.jar'. <BR/>
+ * <BR/>
+ * The regex pattern for this would be '/mypath/directory/myJar-.*\.jar'.
  * 
  * @see AbstractForkedAppBooter
  * @plexus.component instantiation-strategy="per-lookup" role="org.sonatype.appbooter.ForkedAppBooter"
@@ -60,6 +61,11 @@ public class DefaultForkedAppBooter
         return resolvePlatformFile( new File( platformFile ) );
     }
 
+    public void setPlatformFile( File f )
+    {
+        this.platformFile = f.getAbsolutePath();
+    }
+
     /**
      * This is slightly more then a default case, but we will check if the file with the exact name exists first. That
      * should make everyone happy.
@@ -77,7 +83,8 @@ public class DefaultForkedAppBooter
             // now do the fun stuff. A little file finding regex fun
 
             // we want to excape all of the current . and replace them with \., and replace any * with .*
-            final String fileRegEx = platformFile.getAbsolutePath().replace( "\\", "\\\\" ).replace( ".", "\\." ).replace( "*", ".*" );
+            final String fileRegEx =
+                platformFile.getAbsolutePath().replace( "\\", "\\\\" ).replace( ".", "\\." ).replace( "*", ".*" );
             // This may be a little to non standard. but it would be really easy to add a new component to replace the
             // default.
 

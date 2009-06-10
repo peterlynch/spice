@@ -87,7 +87,7 @@ public class DefaultForkedAppBooterTest
         throws Exception
     {
         AbstractForkedAppBooter appBooter = (AbstractForkedAppBooter) this.lookup( ForkedAppBooter.ROLE );
-
+        
         Commandline cmd = appBooter.buildCommandLine();
 
         System.out.println( "cmd: " + cmd );
