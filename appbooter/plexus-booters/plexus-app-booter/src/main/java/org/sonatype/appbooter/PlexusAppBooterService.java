@@ -205,7 +205,7 @@ public class PlexusAppBooterService
 
     // mains
 
-    private static int getControlPortFromArgs( String[] args )
+    protected static int getControlPortFromArgs( String[] args )
     {
 
         // if we need to get more involved we could use commons-cli's CommandLineParser
