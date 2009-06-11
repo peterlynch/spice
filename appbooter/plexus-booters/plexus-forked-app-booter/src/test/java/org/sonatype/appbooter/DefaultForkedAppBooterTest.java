@@ -71,8 +71,8 @@ public class DefaultForkedAppBooterTest
         // get the configurator:
         ComponentConfigurator configurator = (ComponentConfigurator) this.lookup( ComponentConfigurator.ROLE, "basic" );
         // configure the component
-        configurator.configureComponent( appBooter, config,
-                                         this.getContainer().getComponentRealm( ForkedAppBooter.ROLE ) );
+        configurator.configureComponent( appBooter, config, this.getContainer()
+            .getComponentRealm( ForkedAppBooter.ROLE ) );
 
         // now just test the value for kicks
         Field contorlPortField = AbstractForkedAppBooter.class.getDeclaredField( "controlPort" );
@@ -87,7 +87,7 @@ public class DefaultForkedAppBooterTest
         throws Exception
     {
         AbstractForkedAppBooter appBooter = (AbstractForkedAppBooter) this.lookup( ForkedAppBooter.ROLE );
-        
+
         Commandline cmd = appBooter.buildCommandLine();
 
         System.out.println( "cmd: " + cmd );
@@ -108,28 +108,40 @@ public class DefaultForkedAppBooterTest
             (AbstractForkedAppBooter) this.lookup( ForkedAppBooter.ROLE, "withAsterisk" );
 
         Commandline cmd = appBooter.buildCommandLine();
-        
+
         System.out.println( "cmd: " + cmd );
 
         String platformFilePath = appBooter.getPlatformFile().getAbsolutePath();
-        
+
         Assert.assertFalse( platformFilePath.contains( "*" ) );
-        
+
         // this is a very very week test, it doesn't test anything
         Assert.assertTrue( cmd.toString().endsWith( platformFilePath ) // my machine
-                           || cmd.toString().endsWith( platformFilePath + "\"" ) // maybe windows
-                           || cmd.toString().endsWith( platformFilePath + "\"\"" ) // windows
-                           || cmd.toString().endsWith( platformFilePath + "'" ) ); // unix
-        
+            || cmd.toString().endsWith( platformFilePath + "\"" ) // maybe windows
+            || cmd.toString().endsWith( platformFilePath + "\"\"" ) // windows
+            || cmd.toString().endsWith( platformFilePath + "'" ) ); // unix
+
     }
 
     public void testRunAppBooter()
         throws Exception
     {
-        ForkedAppBooter appBooter = (ForkedAppBooter) this.lookup( ForkedAppBooter.ROLE );
+        System.out.println( "*** RUN" );
+        
+        DefaultForkedAppBooter appBooter = (DefaultForkedAppBooter) this.lookup( ForkedAppBooter.ROLE, "runnable" );
+
+        appBooter.setControlPort( 12345 );
+
+        Commandline cmd = appBooter.buildCommandLine();
+
+        System.out.println( "cmd: " + cmd );
 
         // to test this we would need a component to run that just waits.
-        // appBooter.runAppBooter();
+        appBooter.start();
+
+        Thread.sleep( 4000 );
+
+        appBooter.stop();
     }
 
 }

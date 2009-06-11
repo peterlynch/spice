@@ -14,10 +14,8 @@ package org.sonatype.appbooter;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.util.Arrays;
 import java.util.List;
 
-import org.apache.oro.io.RegexFilenameFilter;
 import org.sonatype.appbooter.ctl.AppBooterServiceException;
 import org.sonatype.plexus.classworlds.model.ClassworldsRealmConfiguration;
 
