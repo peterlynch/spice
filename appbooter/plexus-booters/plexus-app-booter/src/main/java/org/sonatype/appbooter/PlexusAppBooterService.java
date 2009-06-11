@@ -113,18 +113,15 @@ public class PlexusAppBooterService
         {
             System.out.println( "\n\nStarting control socket on port: " + this.controlPort + "\n" );
 
-            synchronized ( managementThread )
+            try
             {
-                try
-                {
-                    managementThread = OutOfProcessController.manage( this, this.controlPort );
+                managementThread = OutOfProcessController.manage( this, this.controlPort );
 
-                    System.out.println( "\n\nStarted control socket on port: " + this.controlPort + "\n" );
-                }
-                catch ( UnknownHostException e )
-                {
-                    System.out.println( "Unable to start management thread: " + e.getMessage() );
-                }
+                System.out.println( "\n\nStarted control socket on port: " + this.controlPort + "\n" );
+            }
+            catch ( UnknownHostException e )
+            {
+                System.out.println( "Unable to start management thread: " + e.getMessage() );
             }
         }
     }
