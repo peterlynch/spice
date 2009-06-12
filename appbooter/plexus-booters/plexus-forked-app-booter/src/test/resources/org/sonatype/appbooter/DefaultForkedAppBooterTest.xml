@@ -113,7 +113,7 @@
             </implementation>
             <role-hint>runnable</role-hint>
             <configuration>
-                <disable-blocking>false</disable-blocking>
+                <disable-blocking>true</disable-blocking>
                 <debug>false</debug>
                 <java-cmd>java</java-cmd>
                 <debug-port>5005</debug-port>
