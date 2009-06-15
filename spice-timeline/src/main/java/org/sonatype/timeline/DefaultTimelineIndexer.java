@@ -40,9 +40,11 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.logging.AbstractLogEnabled;
 
 @Component( role = TimelineIndexer.class )
 public class DefaultTimelineIndexer
+    extends AbstractLogEnabled
     implements TimelineIndexer
 {
     private static final String TIMESTAMP = "_t";
@@ -97,7 +99,7 @@ public class DefaultTimelineIndexer
 
     }
 
-    private IndexWriter getIndexWriter()
+    protected IndexWriter getIndexWriter()
         throws IOException
     {
         if ( indexWriter == null )
@@ -108,7 +110,7 @@ public class DefaultTimelineIndexer
         return indexWriter;
     }
 
-    private void closeIndexWriter()
+    protected void closeIndexWriter()
         throws IOException
     {
         if ( indexWriter != null )
@@ -121,7 +123,7 @@ public class DefaultTimelineIndexer
         }
     }
 
-    private IndexReader getIndexReader()
+    protected IndexReader getIndexReader()
         throws IOException
     {
         if ( indexReader == null || !indexReader.isCurrent() )
@@ -135,7 +137,7 @@ public class DefaultTimelineIndexer
         return indexReader;
     }
 
-    private IndexSearcher getIndexSearcher()
+    protected IndexSearcher getIndexSearcher()
         throws IOException
     {
         if ( indexSearcher == null || getIndexReader() != indexSearcher.getIndexReader() )
@@ -152,7 +154,7 @@ public class DefaultTimelineIndexer
         return indexSearcher;
     }
 
-    private void closeIndexReaderAndSearcher()
+    protected void closeIndexReaderAndSearcher()
         throws IOException
     {
         if ( indexSearcher != null )
