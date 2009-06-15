@@ -47,6 +47,8 @@ under the License.
       <module>spice-parent</module>
       <module>spice-timeline</module>
       <module>base-configuration</module>
+      <module>reflect-class-descriptor</module>
+      <module>plexus-plugin</module>
       
       
       

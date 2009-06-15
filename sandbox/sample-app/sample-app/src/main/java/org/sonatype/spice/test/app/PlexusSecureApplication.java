@@ -18,13 +18,13 @@ public class PlexusSecureApplication
 
     @Requirement
     private PlexusWebConfiguration plexusWebConfiguration;
-    
+
     @Override
     protected void doCreateRoot( Router root, boolean isStarted )
     {
         super.doCreateRoot( root, isStarted );
-        
-     // protecting service resources with "wall" permission
+
+        // protecting service resources with "wall" permission
         if ( PlexusMutableWebConfiguration.class.isAssignableFrom( plexusWebConfiguration.getClass() ) )
         {
             try
@@ -58,8 +58,8 @@ public class PlexusSecureApplication
         {
             try
             {
-                ( (PlexusMutableWebConfiguration) plexusWebConfiguration ).addProtectedResource(
-                    descriptor.getPathPattern(), descriptor.getFilterExpression() );
+                ( (PlexusMutableWebConfiguration) plexusWebConfiguration ).addProtectedResource( descriptor
+                    .getPathPattern(), descriptor.getFilterExpression() );
             }
             catch ( SecurityConfigurationException e )
             {

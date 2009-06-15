@@ -10,24 +10,30 @@ import org.sonatype.plexus.rest.resource.AbstractPlexusResource;
 import org.sonatype.plexus.rest.resource.PathProtectionDescriptor;
 import org.sonatype.plexus.rest.resource.PlexusResource;
 
-@Component( role=PlexusResource.class, hint="sample-resource" )
+/**
+ * A Resource that simple returns "Hello".
+ */
+@Component( role = PlexusResource.class, hint = "sample-resource" )
 public class SimplePlexusResource
     extends AbstractPlexusResource
 {
 
     public Object getPayloadInstance()
     {
-        // TODO Auto-generated method stub
+        // do nothing, this is a read only resource.
         return null;
     }
 
     public PathProtectionDescriptor getResourceProtection()
     {
+        // any users with the permission 'sample:priv-name:read' can access this resource, NOTE: the 'read' part is
+        // because we are doing a GET.
         return new PathProtectionDescriptor( this.getResourceUri(), "authcBasic,perms[sample:priv-name]" );
     }
 
     public String getResourceUri()
     {
+        // we need to say where we are mounting this resource.
         return "/test";
     }
 
