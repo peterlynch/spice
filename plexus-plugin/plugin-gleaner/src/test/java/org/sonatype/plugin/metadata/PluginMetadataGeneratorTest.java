@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import junit.framework.Assert;
 
@@ -53,7 +55,7 @@ public class PluginMetadataGeneratorTest
         request.outputFile = new File( "target/testGenerator-plugin.xml" );
         request.classesDirectory = new File( "target/test-classes" );
         request.classpath.add( new File( "target/test-classes" ) );
-        
+
         request.annotationClasses.add( MockExtensionPoint.class );
         request.annotationClasses.add( MockManaged.class );
 
@@ -133,9 +135,9 @@ public class PluginMetadataGeneratorTest
             }
         }
 
-        List<String> components = metadata.getComponents();
+        Set<String> components = new HashSet<String>( metadata.getComponents() );
 
-        List<String> expectedComponents = new ArrayList<String>();
+        Set<String> expectedComponents = new HashSet<String>();
         expectedComponents.add( "org.sonatype.plugin.test.ComponentExtentionPoint" );
         expectedComponents.add( "org.sonatype.plugin.test.ComponentManaged" );
         expectedComponents.add( "org.sonatype.plugin.test.ManagedViaInterface" );
@@ -143,5 +145,5 @@ public class PluginMetadataGeneratorTest
         // now compare the lists
         Assert.assertEquals( expectedComponents, components );
 
-    }    
+    }
 }
