@@ -93,7 +93,7 @@ public class DefaultAnnotationProcessor
                         + annotation.getName() );
                 }
 
-                AnnotationListernEvent event = new AnnotationListernEvent( annotationInstance, className );
+                AnnotationListernEvent event = new AnnotationListernEvent( annotationInstance, annClass.getName() );
 
                 listener.processEvent( event );
             }

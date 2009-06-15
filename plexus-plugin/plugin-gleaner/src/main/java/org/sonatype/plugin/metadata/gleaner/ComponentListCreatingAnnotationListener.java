@@ -13,7 +13,6 @@ public class ComponentListCreatingAnnotationListener
     public void processEvent( AnnotationListernEvent event )
     {
         String className = event.getClassName();
-        className = className.substring( 0, className.lastIndexOf( ".class" ) );
         className = className.replaceAll( "/", "." );
         this.componentClassNames.add( className );
     }
