@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <!--
+    Nexus: Maven Repository Manager Copyright (C) 2008 Sonatype, Inc.
+    This file is part of Nexus. This program is free software; you can
+    redistribute it and/or modify it under the terms of the GNU Lesser
+    General Public License as published by the Free Software Foundation;
+    either version 3 of the License, or (at your option) any later
+    version. This program is distributed in the hope that it will be
+    useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+    Lesser General Public License for more details. You should have
+    received a copy of the GNU Lesser General Public License along with
+    this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+  -->
+
+<model xmlns="http://modello.codehaus.org/MODELLO/1.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://modello.codehaus.org/MODELLO/1.0.0 http://modello.codehaus.org/xsd/modello-1.0.0.xsd">
+
+  <id>plugin</id>
+  <name>PluginModel</name>
+
+  <defaults>
+    <default>
+      <key>package</key>
+      <value>org.sonatype.plugins.model</value>
+    </default>
+  </defaults>
+
+  <versionDefinition>
+    <type>field</type>
+    <value>modelVersion</value>
+  </versionDefinition>
+
+  <classes>
+    <!-- ROOT -->
+    <class rootElement="true" xml.tagName="plugin">
+      <name>PluginMetadata</name>
+      <version>1.0.0+</version>
+      <description>The root element of plugin metadata.</description>
+      <fields>
+        <field>
+          <name>modelVersion</name>
+          <version>1.0.0+</version>
+          <description>
+            The version of the persisted model.
+          </description>
+          <type>String</type>
+          <required>true</required>
+        </field>
+        <field>
+          <name>groupId</name>
+          <version>1.0.0+</version>
+          <description>Plugin groupId.</description>
+          <type>String</type>
+          <required>true</required>
+        </field>
+        <field>
+          <name>artifactId</name>
+          <version>1.0.0+</version>
+          <description>Plugin artifactId.</description>
+          <type>String</type>
+          <required>true</required>
+        </field>
+        <field>
+          <name>version</name>
+          <version>1.0.0+</version>
+          <description>Plugin version.</description>
+          <type>String</type>
+          <required>true</required>
+        </field>
+        <field>
+          <name>name</name>
+          <version>1.0.0+</version>
+          <description>Plugin short name (for display purposes).</description>
+          <type>String</type>
+          <required>true</required>
+        </field>
+        <field>
+          <name>description</name>
+          <version>1.0.0+</version>
+          <description>Plugin description (for display purposes).</description>
+          <type>String</type>
+          <required>true</required>
+        </field>
+        <field>
+          <name>pluginSite</name>
+          <version>1.0.0+</version>
+          <description>Plugin site URL, if any (for UI purposes).</description>
+          <type>String</type>
+          <required>true</required>
+        </field>
+        <field>
+          <name>applicationId</name>
+          <version>1.0.0+</version>
+          <description>Plugin target application Id.</description>
+          <type>String</type>
+          <required>true</required>
+        </field>
+        <field>
+          <name>applicationEdition</name>
+          <version>1.0.0+</version>
+          <description>Plugin target application's edition.  Some applications come in different editions, 'open-source', 'light', 'enterprise', etc.</description>
+          <type>String</type>
+          <required>true</required>
+        </field>
+        <field>
+          <name>applicationMinVersion</name>
+          <version>1.0.0+</version>
+          <description>Plugin target application minimum required version.</description>
+          <type>String</type>
+          <required>true</required>
+        </field>
+        <field>
+          <name>applicationMaxVersion</name>
+          <version>1.0.0+</version>
+          <description>Plugin target application maximum required version.</description>
+          <type>String</type>
+          <required>true</required>
+        </field>
+        <field>
+          <name>licenses</name>
+          <version>1.0.0+</version>
+          <description>The list of licenses this plugin is distributed under.</description>
+          <association>
+            <type>PluginLicense</type>
+            <multiplicity>*</multiplicity>
+          </association>
+          <required>false</required>
+        </field>
+
+        <field>
+          <name>dependencies</name>
+          <version>1.0.0+</version>
+          <description>The library dependencies of this plugin.</description>
+          <association>
+            <type>PluginDependency</type>
+            <multiplicity>*</multiplicity>
+          </association>
+          <required>false</required>
+        </field>
+
+        <field>
+          <name>components</name>
+          <version>1.0.0+</version>
+          <description>Plugin contributed managed components..</description>
+          <association>
+            <type>String</type>
+            <multiplicity>*</multiplicity>
+          </association>
+          <required>false</required>
+        </field>
+
+      </fields>
+      <codeSegments>
+        <codeSegment>
+          <version>1.0.0+</version>
+          <code><![CDATA[
+    public transient java.net.URL sourceUrl;
+]]></code>
+        </codeSegment>
+        <codeSegment>
+          <version>1.0.0</version>
+          <code><![CDATA[
+    public static final String MODEL_VERSION = "1.0.0";
+]]></code>
+        </codeSegment>
+      </codeSegments>
+    </class>
+
+    <class>
+      <name>PluginLicense</name>
+      <version>1.0.0+</version>
+      <description>The license the plugin is disributed under.</description>
+      <fields>
+        <field>
+          <name>type</name>
+          <version>1.0.0+</version>
+          <description>The type of license, GPL, LGPL, ASF, MIT, etc.</description>
+          <type>String</type>
+          <required>true</required>
+        </field>
+        <field>
+          <name>url</name>
+          <version>1.0.0+</version>
+          <description>The URL to the license.</description>
+          <type>String</type>
+          <required>true</required>
+        </field>
+      </fields>
+    </class>
+        
+        
+    <class>
+      <name>PluginDependency</name>
+      <version>1.0.0+</version>
+      <description>The Plugin dependency.</description>
+      <fields>
+        <field>
+          <name>groupId</name>
+          <version>1.0.0+</version>
+          <description>
+            The group id.
+          </description>
+          <type>String</type>
+          <required>true</required>
+        </field>
+        <field>
+          <name>artifactId</name>
+          <version>1.0.0+</version>
+          <description>
+            The artifact id.
+          </description>
+          <type>String</type>
+          <required>true</required>
+        </field>
+        <field>
+          <name>version</name>
+          <version>1.0.0+</version>
+          <description>
+            The version.
+          </description>
+          <type>String</type>
+          <required>true</required>
+        </field>
+      </fields>
+    </class>
+  </classes>
+</model>
