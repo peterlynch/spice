@@ -12,11 +12,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.log4j.Logger;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.component.annotations.Component;
-import org.codehaus.plexus.component.annotations.Requirement;
-import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.IOUtil;
 import org.sonatype.plugin.metadata.gleaner.AnnotationListener;
@@ -34,8 +33,7 @@ public class DefaultPluginMetadataGenerator
     implements PluginMetadataGenerator
 {
 
-    @Requirement
-    private Logger logger;
+    private Logger logger = Logger.getLogger( this.getClass() );
 
     public void generatePluginDescriptor( PluginMetadataGenerationRequest request )
         throws GleanerException
@@ -86,7 +84,7 @@ public class DefaultPluginMetadataGenerator
                 pluginDependency.setArtifactId( dependency.getArtifactId() );
                 pluginDependency.setVersion( dependency.getVersion() );
 
-                pluginMetadata.addDependency( pluginDependency );
+                pluginMetadata.addClasspathDependency( pluginDependency );
             }
         }
 
@@ -181,6 +179,8 @@ public class DefaultPluginMetadataGenerator
     private void writePluginMetadata( PluginMetadata pluginMetadata, File outputFile )
         throws IOException
     {
+        // make sure the file's parent is created
+       outputFile.getParentFile().mkdirs();
 
         FileWriter fileWriter = null;
 

@@ -8,6 +8,8 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.sonatype.plugin</groupId>
   <artifactId>plugin-gleaner</artifactId>
+  
+  <name>Plexus Plugin: Gleaner</name>
 
   <properties>
     <plexus-container.version>1.0-beta-3.0.8-SNAPSHOT</plexus-container.version>
@@ -49,6 +51,12 @@
       <groupId>org.sonatype.reflect</groupId>
       <artifactId>reflect-class-descriptor</artifactId>
       <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>1.2.14</version>
     </dependency>
 
     <!--  TEST  -->

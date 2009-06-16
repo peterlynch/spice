@@ -131,9 +131,19 @@
         </field>
 
         <field>
-          <name>dependencies</name>
+          <name>classpathDependencies</name>
           <version>1.0.0+</version>
           <description>The library dependencies of this plugin.</description>
+          <association>
+            <type>PluginDependency</type>
+            <multiplicity>*</multiplicity>
+          </association>
+          <required>false</required>
+        </field>
+        <field>
+          <name>pluginDependencies</name>
+          <version>1.0.0+</version>
+          <description>The list of plugins this plugin depends on.</description>
           <association>
             <type>PluginDependency</type>
             <multiplicity>*</multiplicity>

@@ -113,12 +113,12 @@ public class PluginMetadataGeneratorTest
         // request.licenses.put( "GPL", "http://www.gnu.org/licenses/gpl.txt" );
         // request.licenses.put( "ASF", "http://www.apache.org/licenses/LICENSE-2.0.txt" );
 
-        Assert.assertEquals( request.dependencies.size(), metadata.getDependencies().size() );
+        Assert.assertEquals( request.dependencies.size(), metadata.getClasspathDependencies().size() );
         for ( Dependency dependency : request.dependencies )
         {
             boolean found = false;
 
-            for ( PluginDependency pluginDependency : (List<PluginDependency>) metadata.getDependencies() )
+            for ( PluginDependency pluginDependency : (List<PluginDependency>) metadata.getClasspathDependencies() )
             {
                 if ( dependency.getGroupId().equals( pluginDependency.getGroupId() )
                     && dependency.getArtifactId().equals( pluginDependency.getArtifactId() )
