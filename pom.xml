@@ -49,6 +49,7 @@ under the License.
       <module>base-configuration</module>
       <module>reflect-class-descriptor</module>
       <module>plexus-plugin</module>
+      <module>jscoverage-component</module>
       
       
       
