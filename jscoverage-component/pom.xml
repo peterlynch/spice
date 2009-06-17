@@ -3,8 +3,8 @@
 
   <parent>
     <groupId>org.sonatype.spice</groupId>
-    <artifactId>spice-aggregator</artifactId>
-    <version>1-SNAPSHOT</version>
+    <artifactId>spice-parent</artifactId>
+    <version>12</version>
   </parent>
 
   <artifactId>jscoverage-component</artifactId>
