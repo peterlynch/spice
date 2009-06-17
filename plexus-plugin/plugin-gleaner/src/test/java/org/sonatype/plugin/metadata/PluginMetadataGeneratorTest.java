@@ -44,13 +44,13 @@ public class PluginMetadataGeneratorTest
         dependency1.setGroupId( "org.sonatype.nexus.plugins" );
         dependency1.setArtifactId( "nexus-other-plugin" );
         dependency1.setVersion( "1.0.1" );
-        request.dependencies.add( dependency1 );
+        request.classpathDependencies.add( dependency1 );
 
         Dependency dependency2 = new Dependency();
         dependency2.setGroupId( "org.your.com" );
         dependency2.setArtifactId( "some-other-lib" );
         dependency2.setVersion( "1.0.2" );
-        request.dependencies.add( dependency2 );
+        request.classpathDependencies.add( dependency2 );
 
         request.outputFile = new File( "target/testGenerator-plugin.xml" );
         request.classesDirectory = new File( "target/test-classes" );
@@ -113,8 +113,8 @@ public class PluginMetadataGeneratorTest
         // request.licenses.put( "GPL", "http://www.gnu.org/licenses/gpl.txt" );
         // request.licenses.put( "ASF", "http://www.apache.org/licenses/LICENSE-2.0.txt" );
 
-        Assert.assertEquals( request.dependencies.size(), metadata.getClasspathDependencies().size() );
-        for ( Dependency dependency : request.dependencies )
+        Assert.assertEquals( request.classpathDependencies.size(), metadata.getClasspathDependencies().size() );
+        for ( Dependency dependency : request.classpathDependencies )
         {
             boolean found = false;
 

@@ -28,7 +28,8 @@ public class PluginMetadataGenerationRequest
     
     public Map<String, String> licenses = new HashMap<String, String>();
     
-    public List<Dependency> dependencies = new ArrayList<Dependency>();
+    public List<Dependency> classpathDependencies = new ArrayList<Dependency>();
+    public List<Dependency> pluginDependencies = new ArrayList<Dependency>();
 
     /** The character encoding of the source files, may be {@code null} or empty to use platform's default encoding. */
     public String sourceEncoding;

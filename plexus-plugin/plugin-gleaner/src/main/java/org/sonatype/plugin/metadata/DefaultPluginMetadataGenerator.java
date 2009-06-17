@@ -75,9 +75,9 @@ public class DefaultPluginMetadataGenerator
         }
 
         // set the dependencies
-        if ( request.dependencies != null )
+        if ( request.classpathDependencies != null )
         {
-            for ( Dependency dependency : request.dependencies )
+            for ( Dependency dependency : request.classpathDependencies )
             {
                 PluginDependency pluginDependency = new PluginDependency();
                 pluginDependency.setGroupId( dependency.getGroupId() );
@@ -85,6 +85,19 @@ public class DefaultPluginMetadataGenerator
                 pluginDependency.setVersion( dependency.getVersion() );
 
                 pluginMetadata.addClasspathDependency( pluginDependency );
+            }
+        }
+        
+        if( request.pluginDependencies != null)
+        {
+            for ( Dependency dependency : request.pluginDependencies )
+            {
+                PluginDependency pluginDependency = new PluginDependency();
+                pluginDependency.setGroupId( dependency.getGroupId() );
+                pluginDependency.setArtifactId( dependency.getArtifactId() );
+                pluginDependency.setVersion( dependency.getVersion() );
+
+                pluginMetadata.addPluginDependency( pluginDependency );
             }
         }
 
