@@ -7,7 +7,7 @@
   <version>0.0.1-SNAPSHOT</version>
   <name>Idiom :: Kingpin</name>
   <properties>
-    <plexusVersion>1.0-beta-3.0.5</plexusVersion>
+    <plexusVersion>1.0-beta-3.0.8-SNAPSHOT</plexusVersion>
     <mavenVersion>3.0-alpha-2</mavenVersion>
   </properties>
   <dependencies>
@@ -45,7 +45,8 @@
       <plugin>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-component-metadata</artifactId>
-        <version>${plexusVersion}</version>
+        <!--version>${plexusVersion}</version-->
+        <version>1.0-beta-3.0.5</version>
         <executions>
           <execution>
             <goals>

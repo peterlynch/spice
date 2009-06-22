@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.maven.mercury.MavenDependencyProcessor;
 import org.apache.maven.mercury.artifact.Artifact;
 import org.apache.maven.mercury.artifact.ArtifactMetadata;
 import org.apache.maven.mercury.artifact.ArtifactScopeEnum;
@@ -92,7 +93,7 @@ public class DefaultPlexusPluginManager
             Server repository = new Server( "id", url );
 
             // We really don't want to hardcode the repository type
-            repositories.add( new RemoteRepositoryM2( repository, null ) );
+            repositories.add( new RemoteRepositoryM2( repository, new MavenDependencyProcessor() ) );
         }
 
         try

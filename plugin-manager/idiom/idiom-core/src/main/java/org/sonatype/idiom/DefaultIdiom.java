@@ -13,7 +13,10 @@
 package org.sonatype.idiom;
 
 import java.io.File;
+import java.util.List;
+import java.util.Map;
 
+import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Configuration;
 import org.codehaus.plexus.component.annotations.Requirement;
@@ -22,22 +25,37 @@ import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
 import org.sonatype.plexus.plugin.manager.PlexusPluginManager;
 
-@Component(role = Idiom.class)
+@Component( role = Idiom.class )
 public class DefaultIdiom
     implements Idiom, Initializable
 {
     @Requirement
     private PlexusPluginManager pm;
 
-    @Configuration(value = "/Users/jvanzyl/js/spice/trunk/plugin-manager/idiom-core/src/test/plugins")
+    @Requirement
+    private PlexusContainer plexusContainer;
+
+    @Requirement( role = IdiomPlugin.class )
+    private Map<String, IdiomPlugin> pluginsMap;
+
+    @Requirement( role = IdiomPlugin.class )
+    private List<IdiomPlugin> pluginsList;
+
+    @Configuration( value = "/Users/cstamas/worx/sonatype/spice/trunk/plugin-manager/idiom/idiom-core/src/test/plugins" )
     private File pluginsDirectory;
-    
+
     public void execute( String id )
     {
         IdiomPlugin p = null;
 
         try
         {
+            Map<String, IdiomPlugin> test = plexusContainer.lookupMap( IdiomPlugin.class );
+
+            IdiomPlugin p1 = pluginsMap.get( id );
+            
+            IdiomPlugin p2 = pluginsList.get( 0 );
+
             p = (IdiomPlugin) pm.findPlugin( IdiomPlugin.class, id );
         }
         catch ( ComponentLookupException e )
@@ -61,12 +79,9 @@ public class DefaultIdiom
             pm.processPlugins( pluginsDirectory );
         }
     }
-    
+
     /*
-    @Override
-    protected void customizeContainerConfiguration( ContainerConfiguration containerConfiguration )
-    {
-        containerConfiguration.addComponentDiscoverer( new PluginDiscoverer() );
-    }
-    */    
+     * @Override protected void customizeContainerConfiguration( ContainerConfiguration containerConfiguration ) {
+     * containerConfiguration.addComponentDiscoverer( new PluginDiscoverer() ); }
+     */
 }
