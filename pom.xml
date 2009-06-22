@@ -32,7 +32,7 @@ under the License.
       <module>jsw-binaries</module>
       <module>maven-assembly-helpers</module>
       <module>micromailer</module>
-      <module>model-builder</module>
+      <!--module>model-builder</module-->
       <module>plexus-bundle-publisher</module>
       <module>plexus-cipher</module>
       <module>plexus-ehcache</module>
