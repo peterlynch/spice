@@ -632,5 +632,10 @@ public abstract class AbstractForkedAppBooter
     {
         this.controlClient = controlClient;
     }
+    
+    public ControllerClient getControllerClient()
+    {
+        return this.controlClient;
+    }
 
 }

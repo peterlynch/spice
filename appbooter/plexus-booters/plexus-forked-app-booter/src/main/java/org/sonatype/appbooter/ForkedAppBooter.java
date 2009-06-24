@@ -12,6 +12,7 @@
  */
 package org.sonatype.appbooter;
 
+import org.sonatype.appbooter.ctl.ControllerClient;
 import org.sonatype.appbooter.ctl.Service;
 
 /**
@@ -26,4 +27,7 @@ public interface ForkedAppBooter
 
     /** plexus system properties prefix */
     public static final String SYSPROP_PLEXUS = "plexus.";
+
+    /** To reach the client that forked appbooter is using */
+    public ControllerClient getControllerClient();
 }
