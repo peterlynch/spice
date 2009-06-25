@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
     <artifactId>plexus-plugin-parent</artifactId>
     <groupId>org.sonatype.plugin</groupId>
@@ -7,7 +8,16 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.sonatype.plugin</groupId>
   <artifactId>plugin-api</artifactId>
-  
+
   <name>Plexus Plugin: Client API</name>
-  
+
+  <dependencies>
+    <dependency>
+      <groupId>com.google.code.atinject</groupId>
+      <artifactId>atinject</artifactId>
+      <version>1.0.0-rev3</version>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
+
 </project>
