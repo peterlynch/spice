@@ -14,14 +14,12 @@ import org.sonatype.reflect.AnnReader;
 public class DefaultAnnotationProcessor
     implements AnnotationProcessor
 {
-
-    public void processClass( String className, ClassLoader classLoader,
-        Map<Class<?>, AnnotationListener> listenerMap )
+    public void processClass( String className, ClassLoader classLoader, Map<Class<?>, AnnotationListener> listenerMap )
         throws GleanerException
     {
         // fix the classname
         String resourceName = this.classNameToResourceName( className );
-        
+
         try
         {
             AnnClass annClass = readClassAnnotations( resourceName, classLoader );
@@ -57,7 +55,8 @@ public class DefaultAnnotationProcessor
                 // check its direct interfaces too
                 for ( String interfaceName : annClass.getInterfaces() )
                 {
-                    AnnClass annotatedInterface = readClassAnnotations( this.classNameToResourceName( interfaceName ), classLoader );
+                    AnnClass annotatedInterface =
+                        readClassAnnotations( this.classNameToResourceName( interfaceName ), classLoader );
                     if ( annotatedInterface == null )
                     {
                         throw new GleanerException( "Failed to fine class: " + interfaceName );
@@ -127,7 +126,7 @@ public class DefaultAnnotationProcessor
         }
         return null;
     }
-    
+
     private String classNameToResourceName( String className )
     {
         String resourceName = className;

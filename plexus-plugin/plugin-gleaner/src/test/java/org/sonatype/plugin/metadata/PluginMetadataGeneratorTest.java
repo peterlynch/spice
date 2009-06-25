@@ -3,14 +3,13 @@ package org.sonatype.plugin.metadata;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.io.ObjectInputStream.GetField;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import junit.framework.Assert;
 
-import org.apache.maven.model.Dependency;
 import org.codehaus.plexus.PlexusTestCase;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
@@ -27,37 +26,28 @@ public class PluginMetadataGeneratorTest
     private PluginMetadataGenerationRequest getTestRequest()
     {
         PluginMetadataGenerationRequest request = new PluginMetadataGenerationRequest();
-        request.groupId = "org.sonatype.nexus.plugins";
-        request.artifactId = "nexus-sample-plugin";
-        request.version = "1.0.0-SNAPSHOT";
-        request.name = "Nexus Sample Plugin";
-        request.description = "Nexus Sample Plugin";
-        request.pluginSiteURL = "http://nexus.sonatype.org/";
-        request.applicationId = "Nexus";
-        request.applicationEdition = "OSS";
-        request.applicationMinVersion = "1.4";
-        request.applicationMaxVersion = "1.4.6";
-        request.licenses.put( "GPL", "http://www.gnu.org/licenses/gpl.txt" );
-        request.licenses.put( "ASF", "http://www.apache.org/licenses/LICENSE-2.0.txt" );
+        request.setGroupId( "org.sonatype.nexus.plugins" );
+        request.setArtifactId( "nexus-sample-plugin" );
+        request.setVersion( "1.0.0-SNAPSHOT" );
+        request.setName( "Nexus Sample Plugin" );
+        request.setDescription( "Nexus Sample Plugin" );
+        request.setPluginSiteURL( "http://nexus.sonatype.org/" );
+        request.setApplicationId( "Nexus" );
+        request.setApplicationEdition( "OSS" );
+        request.setApplicationMinVersion( "1.4" );
+        request.setApplicationMaxVersion( "1.4.6" );
+        request.getLicenses().put( "GPL", "http://www.gnu.org/licenses/gpl.txt" );
+        request.getLicenses().put( "ASF", "http://www.apache.org/licenses/LICENSE-2.0.txt" );
 
-        Dependency dependency1 = new Dependency();
-        dependency1.setGroupId( "org.sonatype.nexus.plugins" );
-        dependency1.setArtifactId( "nexus-other-plugin" );
-        dependency1.setVersion( "1.0.1" );
-        request.classpathDependencies.add( dependency1 );
+        request.addClasspathDependency( "org.sonatype.nexus.plugins:nexus-other-plugin:1.0.1" );
+        request.addClasspathDependency( "org.your.com:some-other-lib:1.0.2" );
 
-        Dependency dependency2 = new Dependency();
-        dependency2.setGroupId( "org.your.com" );
-        dependency2.setArtifactId( "some-other-lib" );
-        dependency2.setVersion( "1.0.2" );
-        request.classpathDependencies.add( dependency2 );
+        request.setOutputFile( getTestFile( "target/testGenerator-plugin.xml" ) );
+        request.setClassesDirectory( getTestFile( "target/test-classes" ) );
+        request.getClasspath().add( getTestFile( "target/test-classes" ) );
 
-        request.outputFile = new File( "target/testGenerator-plugin.xml" );
-        request.classesDirectory = new File( "target/test-classes" );
-        request.classpath.add( new File( "target/test-classes" ) );
-
-        request.annotationClasses.add( MockExtensionPoint.class );
-        request.annotationClasses.add( MockManaged.class );
+        request.getAnnotationClasses().add( MockExtensionPoint.class );
+        request.getAnnotationClasses().add( MockManaged.class );
 
         return request;
     }
@@ -65,7 +55,6 @@ public class PluginMetadataGeneratorTest
     public void testGenerator()
         throws Exception
     {
-
         PluginMetadataGenerator generater = (PluginMetadataGenerator) this.lookup( PluginMetadataGenerator.class );
 
         PluginMetadataGenerationRequest request = this.getTestRequest();
@@ -73,14 +62,14 @@ public class PluginMetadataGeneratorTest
         generater.generatePluginDescriptor( request );
 
         // check the results
-        this.verifyRequest( request );
+        verifyRequest( request );
     }
 
     private void verifyRequest( PluginMetadataGenerationRequest request )
-        throws IOException,
-            XmlPullParserException
+        throws IOException, XmlPullParserException
     {
-        File outputFile = request.outputFile;
+        File outputFile = request.getOutputFile();
+
         Assert.assertTrue( outputFile.exists() );
 
         PluginMetadata metadata = null;
@@ -98,23 +87,24 @@ public class PluginMetadataGeneratorTest
             IOUtil.close( fis );
         }
 
-        Assert.assertEquals( request.groupId, metadata.getGroupId() );
+        Assert.assertEquals( request.getGroupId(), metadata.getGroupId() );
 
-        Assert.assertEquals( request.artifactId, metadata.getArtifactId() );
-        Assert.assertEquals( request.version, metadata.getVersion() );
-        Assert.assertEquals( request.name, metadata.getName() );
-        Assert.assertEquals( request.description, metadata.getDescription() );
-        Assert.assertEquals( request.pluginSiteURL, metadata.getPluginSite() );
-        // Assert.assertEquals( request.applicationId, metadata.getGroupId());
-        // Assert.assertEquals( request.applicationEdition, metadata.getGroupId());
-        // Assert.assertEquals( request.applicationMinVersion, metadata.getGroupId());
-        // Assert.assertEquals( request.applicationMaxVersion, metadata.getGroupId());
+        Assert.assertEquals( request.getArtifactId(), metadata.getArtifactId() );
+        Assert.assertEquals( request.getVersion(), metadata.getVersion() );
+        Assert.assertEquals( request.getName(), metadata.getName() );
+        Assert.assertEquals( request.getDescription(), metadata.getDescription() );
+        Assert.assertEquals( request.getPluginSiteURL(), metadata.getPluginSite() );
+        Assert.assertEquals( request.getApplicationId(), metadata.getApplicationId() );
+        Assert.assertEquals( request.getApplicationEdition(), metadata.getApplicationEdition() );
+        Assert.assertEquals( request.getApplicationMinVersion(), metadata.getApplicationMinVersion() );
+        Assert.assertEquals( request.getApplicationMaxVersion(), metadata.getApplicationMaxVersion() );
 
         // request.licenses.put( "GPL", "http://www.gnu.org/licenses/gpl.txt" );
         // request.licenses.put( "ASF", "http://www.apache.org/licenses/LICENSE-2.0.txt" );
 
-        Assert.assertEquals( request.classpathDependencies.size(), metadata.getClasspathDependencies().size() );
-        for ( Dependency dependency : request.classpathDependencies )
+        Assert.assertEquals( request.getClasspathDependencies().size(), metadata.getClasspathDependencies().size() );
+
+        for ( GAVCoordinate dependency : request.getClasspathDependencies() )
         {
             boolean found = false;
 
@@ -135,7 +125,7 @@ public class PluginMetadataGeneratorTest
             }
         }
 
-        Set<String> components = new HashSet<String>( metadata.getComponents() );
+/*        Set<String> components = new HashSet<String>( metadata.getComponents() );
 
         Set<String> expectedComponents = new HashSet<String>();
         expectedComponents.add( "org.sonatype.plugin.test.ComponentExtentionPoint" );
@@ -144,6 +134,6 @@ public class PluginMetadataGeneratorTest
 
         // now compare the lists
         Assert.assertEquals( expectedComponents, components );
-
+*/
     }
 }

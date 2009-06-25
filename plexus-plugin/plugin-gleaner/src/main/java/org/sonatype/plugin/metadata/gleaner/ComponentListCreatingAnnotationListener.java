@@ -3,17 +3,17 @@ package org.sonatype.plugin.metadata.gleaner;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class ComponentListCreatingAnnotationListener
     implements AnnotationListener
 {
-
     private List<String> componentClassNames = new ArrayList<String>();
 
     public void processEvent( AnnotationListernEvent event )
     {
         String className = event.getClassName();
+        
         className = className.replaceAll( "/", "." );
+        
         this.componentClassNames.add( className );
     }
 

@@ -3,10 +3,6 @@ package org.sonatype.plugin.metadata.gleaner;
 public class GleanerException
     extends Exception
 {
-
-    /**
-     * Serial Version UID.
-     */
     private static final long serialVersionUID = -4244638887256916163L;
 
     public GleanerException()
@@ -28,5 +24,4 @@ public class GleanerException
     {
         super( cause );
     }
-
 }

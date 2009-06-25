@@ -1,6 +1,5 @@
 package org.sonatype.plugin.metadata.gleaner;
 
-
 public class AnnotationListernEvent
 {
     private Object annotation;
@@ -10,6 +9,7 @@ public class AnnotationListernEvent
     public AnnotationListernEvent( Object annotation, String className )
     {
         this.annotation = annotation;
+
         this.className = className;
     }
 
@@ -22,5 +22,4 @@ public class AnnotationListernEvent
     {
         return className;
     }
-
 }

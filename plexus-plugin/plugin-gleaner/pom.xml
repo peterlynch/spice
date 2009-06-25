@@ -1,14 +1,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
   <parent>
     <artifactId>plexus-plugin-parent</artifactId>
     <groupId>org.sonatype.plugin</groupId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <modelVersion>4.0.0</modelVersion>
+
   <groupId>org.sonatype.plugin</groupId>
+
   <artifactId>plugin-gleaner</artifactId>
-  
+
   <name>Plexus Plugin: Gleaner</name>
 
   <properties>
@@ -25,46 +29,34 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-plugin-api</artifactId>
-      <version>2.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-project</artifactId>
-      <version>2.0</version>
-    </dependency>
-
-    <dependency>
       <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-container-default</artifactId>
-      <version>${plexus-container.version}</version>
+      <artifactId>plexus-utils</artifactId>
+      <version>1.5.5</version>
     </dependency>
-
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-component-annotations</artifactId>
       <version>${plexus-container.version}</version>
     </dependency>
-
+    
     <dependency>
       <groupId>org.sonatype.reflect</groupId>
       <artifactId>reflect-class-descriptor</artifactId>
       <version>0.0.1-SNAPSHOT</version>
     </dependency>
 
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.14</version>
-    </dependency>
-
     <!--  TEST  -->
-
     <dependency>
       <groupId>com.google.code.atinject</groupId>
       <artifactId>atinject</artifactId>
       <version>1.0.0-rev3</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-container-default</artifactId>
+      <version>${plexus-container.version}</version>
       <scope>test</scope>
     </dependency>
 

@@ -151,17 +151,6 @@
           <required>false</required>
         </field>
 
-        <field>
-          <name>components</name>
-          <version>1.0.0+</version>
-          <description>Plugin contributed managed components..</description>
-          <association>
-            <type>String</type>
-            <multiplicity>*</multiplicity>
-          </association>
-          <required>false</required>
-        </field>
-
       </fields>
       <codeSegments>
         <codeSegment>

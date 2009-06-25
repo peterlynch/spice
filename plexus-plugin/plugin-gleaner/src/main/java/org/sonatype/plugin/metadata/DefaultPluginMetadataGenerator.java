@@ -12,9 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.log4j.Logger;
-import org.apache.maven.model.Dependency;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.IOUtil;
@@ -32,41 +29,42 @@ import org.sonatype.plugins.model.io.xpp3.PluginModelXpp3Writer;
 public class DefaultPluginMetadataGenerator
     implements PluginMetadataGenerator
 {
-
-    private Logger logger = Logger.getLogger( this.getClass() );
-
     public void generatePluginDescriptor( PluginMetadataGenerationRequest request )
         throws GleanerException
     {
         // check request
-        if ( request.classesDirectory == null || !request.classesDirectory.exists() )
+        if ( request.getClassesDirectory() == null || !request.getClassesDirectory().exists() )
         {
-            throw new GleanerException( "No classes to glean in directory: " + request.classesDirectory );
+            throw new GleanerException( "No classes to glean in directory: " + request.getClassesDirectory() );
         }
 
-        if ( request.classpath == null || request.classpath.isEmpty() )
+        if ( request.getClasspath() == null || request.getClasspath().isEmpty() )
         {
-            throw new GleanerException( "No file on classpath, nothing to glean. " );
+            throw new GleanerException( "No file on classpath, nothing to glean." );
         }
 
         // TODO Auto-generated method stub
         PluginMetadata pluginMetadata = new PluginMetadata();
-        pluginMetadata.setGroupId( request.groupId );
-        pluginMetadata.setArtifactId( request.artifactId );
-        pluginMetadata.setVersion( request.version );
-        pluginMetadata.setName( request.name );
-        pluginMetadata.setDescription( request.description );
-        pluginMetadata.setPluginSite( request.pluginSiteURL );
 
-        pluginMetadata.setApplicationId( request.applicationId );
-        pluginMetadata.setApplicationEdition( request.applicationEdition );
-        pluginMetadata.setApplicationMinVersion( request.applicationMinVersion );
-        pluginMetadata.setApplicationMaxVersion( request.applicationMaxVersion );
+        // put it to request
+        request.setPluginMetadata( pluginMetadata );
+
+        pluginMetadata.setGroupId( request.getGroupId() );
+        pluginMetadata.setArtifactId( request.getArtifactId() );
+        pluginMetadata.setVersion( request.getVersion() );
+        pluginMetadata.setName( request.getName() );
+        pluginMetadata.setDescription( request.getDescription() );
+        pluginMetadata.setPluginSite( request.getPluginSiteURL() );
+
+        pluginMetadata.setApplicationId( request.getApplicationId() );
+        pluginMetadata.setApplicationEdition( request.getApplicationEdition() );
+        pluginMetadata.setApplicationMinVersion( request.getApplicationMinVersion() );
+        pluginMetadata.setApplicationMaxVersion( request.getApplicationMaxVersion() );
 
         // set the licenses
-        if ( request.licenses != null )
+        if ( request.getLicenses() != null )
         {
-            for ( Entry<String, String> licenseEntry : request.licenses.entrySet() )
+            for ( Entry<String, String> licenseEntry : request.getLicenses().entrySet() )
             {
                 PluginLicense license = new PluginLicense();
                 license.setType( licenseEntry.getKey() );
@@ -75,9 +73,9 @@ public class DefaultPluginMetadataGenerator
         }
 
         // set the dependencies
-        if ( request.classpathDependencies != null )
+        if ( request.getClasspathDependencies() != null )
         {
-            for ( Dependency dependency : request.classpathDependencies )
+            for ( GAVCoordinate dependency : request.getClasspathDependencies() )
             {
                 PluginDependency pluginDependency = new PluginDependency();
                 pluginDependency.setGroupId( dependency.getGroupId() );
@@ -87,10 +85,10 @@ public class DefaultPluginMetadataGenerator
                 pluginMetadata.addClasspathDependency( pluginDependency );
             }
         }
-        
-        if( request.pluginDependencies != null)
+
+        if ( request.getPluginDependencies() != null )
         {
-            for ( Dependency dependency : request.pluginDependencies )
+            for ( GAVCoordinate dependency : request.getPluginDependencies() )
             {
                 PluginDependency pluginDependency = new PluginDependency();
                 pluginDependency.setGroupId( dependency.getGroupId() );
@@ -100,38 +98,31 @@ public class DefaultPluginMetadataGenerator
                 pluginMetadata.addPluginDependency( pluginDependency );
             }
         }
-
-        // now for the fun part! glean the classes
-        try
+        /*
+         * // now for the fun part! glean the classes try { List<String> components = this.findComponents(
+         * request.getClassesDirectory(), this.createClassLoader( request.getClasspath() ),
+         * request.getAnnotationClasses() ); // FIXME, update model // pluginMetadata.setComponents(components); for (
+         * String componentClass : components ) { pluginMetadata.addComponent( componentClass ); } } catch ( Exception e
+         * ) { throw new GleanerException( "Failed to glean classes.", e ); }
+         */
+        if ( request.getOutputFile() != null )
         {
-            List<String> components = this.findComponents( request.classesDirectory, this
-                .createClassLoader( request.classpath ), request.annotationClasses );
-
-            // FIXME, update model
-            // pluginMetadata.setComponents(components);
-            for ( String componentClass : components )
+            // write file
+            try
             {
-                pluginMetadata.addComponent( componentClass );
+                this.writePluginMetadata( pluginMetadata, request.getOutputFile() );
             }
-        }
-        catch ( Exception e )
-        {
-            throw new GleanerException( "Failed to glean classes.", e );
-        }
-
-        // write file
-        try
-        {
-            this.writePluginMetadata( pluginMetadata, request.outputFile );
-        }
-        catch ( IOException e )
-        {
-            throw new GleanerException( "Failed to write plugin metadata to: " + request.outputFile, e );
+            catch ( IOException e )
+            {
+                throw new GleanerException( "Failed to write plugin metadata to: " + request.getOutputFile(), e );
+            }
         }
 
     }
 
-    private List<String> findComponents( File classesDirectory, ClassLoader classLoader, List<Class<?>> annotationClasses )
+    private List<String> findComponents( File classesDirectory, ClassLoader classLoader,
+                                         List<Class<?>> annotationClasses )
+        throws GleanerException
     {
         // this will find all the classes we want to glean
         DirectoryScanner scanner = new DirectoryScanner();
@@ -141,11 +132,11 @@ public class DefaultPluginMetadataGenerator
         scanner.scan();
 
         String[] classesToGlean = scanner.getIncludedFiles();
-        
+
         AnnotationProcessor annotationProcessor = new DefaultAnnotationProcessor();
         ComponentListCreatingAnnotationListener listener = new ComponentListCreatingAnnotationListener();
         Map<Class<?>, AnnotationListener> listenerMap = new HashMap<Class<?>, AnnotationListener>();
-        
+
         for ( Class<?> annotationClass : annotationClasses )
         {
             listenerMap.put( annotationClass, listener );
@@ -153,14 +144,7 @@ public class DefaultPluginMetadataGenerator
 
         for ( String classFileName : classesToGlean )
         {
-            try
-            {
-                annotationProcessor.processClass( classFileName, classLoader, listenerMap );
-            }
-            catch ( GleanerException e )
-            {
-                this.logger.error( "Error gleaning class: " + classFileName, e );
-            }
+            annotationProcessor.processClass( classFileName, classLoader, listenerMap );
         }
 
         return listener.getComponentClassNames();
@@ -180,7 +164,7 @@ public class DefaultPluginMetadataGenerator
             }
             catch ( MalformedURLException e )
             {
-                throw new MojoExecutionException( "Invalid classpath entry: " + file, e );
+                // will not happen, File.toURI.toURL!
             }
         }
 
@@ -193,7 +177,7 @@ public class DefaultPluginMetadataGenerator
         throws IOException
     {
         // make sure the file's parent is created
-       outputFile.getParentFile().mkdirs();
+        outputFile.getParentFile().mkdirs();
 
         FileWriter fileWriter = null;
 
