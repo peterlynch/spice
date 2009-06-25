@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +16,10 @@ import org.codehaus.plexus.component.repository.ComponentDescriptor;
 import org.codehaus.plexus.component.repository.ComponentRequirement;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
+import org.sonatype.plugin.metadata.gleaner.AnnotationListener;
+import org.sonatype.plugin.metadata.gleaner.AnnotationProcessor;
+import org.sonatype.plugin.metadata.gleaner.ComponentListCreatingAnnotationListener;
+import org.sonatype.plugin.metadata.gleaner.DefaultAnnotationProcessor;
 import org.sonatype.plugin.metadata.gleaner.GleanerException;
 import org.sonatype.plugins.mock.MockExtensionPoint;
 import org.sonatype.plugins.mock.MockManaged;
@@ -25,8 +30,16 @@ import org.sonatype.reflect.AnnReader;
 public class PlexusComponentGleaner
 {
 
+    List<Class<?>> componentMarkingAnnotations;
+
+    public PlexusComponentGleaner( List<Class<?>> componentMarkingAnnotations )
+    {
+        this.componentMarkingAnnotations = componentMarkingAnnotations;
+    }
+
     public ComponentDescriptor<?> glean( String className, ClassLoader classLoader )
-        throws GleanerException, IOException
+        throws GleanerException,
+            IOException
     {
         assert className != null;
         assert classLoader != null;
@@ -44,6 +57,23 @@ public class PlexusComponentGleaner
         // Skip abstract classes
         if ( Modifier.isAbstract( annClass.getAccess() ) )
         {
+            return null;
+        }
+
+        // check if it is component
+        AnnotationProcessor annotationProcessor = new DefaultAnnotationProcessor();
+        ComponentListCreatingAnnotationListener listener = new ComponentListCreatingAnnotationListener();
+        Map<Class<?>, AnnotationListener> listenerMap = new HashMap<Class<?>, AnnotationListener>();
+
+        for ( Class<?> annotationClass : this.componentMarkingAnnotations )
+        {
+            listenerMap.put( annotationClass, listener );
+        }
+
+        annotationProcessor.processClass( className, classLoader, listenerMap );
+        if ( listener.getComponentClassNames().isEmpty() )
+        {
+            // not a component
             return null;
         }
 
@@ -133,7 +163,7 @@ public class PlexusComponentGleaner
         {
             requirement.setRoleHint( filterEmptyAsNull( namedAnno.value() ) );
         }
-        
+
         requirement.setFieldName( field.getName() );
 
         requirement.setFieldMappingType( type.getName() );
@@ -149,7 +179,7 @@ public class PlexusComponentGleaner
         possibleRoleAnnotations.add( MockManaged.class );
 
         // check the class itself first
-        
+
         for ( Class<?> roleAnnotationClass : possibleRoleAnnotations )
         {
             Object roleAnnotation = annClass.getAnnotation( roleAnnotationClass );
@@ -158,7 +188,7 @@ public class PlexusComponentGleaner
                 return annClass.getName().replaceAll( "/", "." );
             }
         }
-        
+
         for ( String interfaceName : annClass.getInterfaces() )
         {
             AnnClass annInterface = this.readClassAnnotation( interfaceName + ".class", classLoader );
@@ -243,11 +273,12 @@ public class PlexusComponentGleaner
 
         return classes;
     }
-    
-    protected boolean isRequirementListType(final Class<?> type) {
+
+    protected boolean isRequirementListType( final Class<?> type )
+    {
         // assert type != null;
 
-        return Collection.class.isAssignableFrom(type) || Map.class.isAssignableFrom(type);
+        return Collection.class.isAssignableFrom( type ) || Map.class.isAssignableFrom( type );
     }
 
 }

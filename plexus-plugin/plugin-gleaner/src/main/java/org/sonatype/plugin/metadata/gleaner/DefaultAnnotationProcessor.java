@@ -19,13 +19,16 @@ public class DefaultAnnotationProcessor
         Map<Class<?>, AnnotationListener> listenerMap )
         throws GleanerException
     {
+        // fix the classname
+        String resourceName = this.classNameToResourceName( className );
+        
         try
         {
-            AnnClass annClass = readClassAnnotations( className, classLoader );
+            AnnClass annClass = readClassAnnotations( resourceName, classLoader );
 
             if ( annClass == null )
             {
-                throw new GleanerException( "Failed to fine class: " + className );
+                throw new GleanerException( "Failed to fine class: " + resourceName );
             }
 
             // do not process any abstract classes
@@ -54,7 +57,7 @@ public class DefaultAnnotationProcessor
                 // check its direct interfaces too
                 for ( String interfaceName : annClass.getInterfaces() )
                 {
-                    AnnClass annotatedInterface = readClassAnnotations( interfaceName + ".class", classLoader );
+                    AnnClass annotatedInterface = readClassAnnotations( this.classNameToResourceName( interfaceName ), classLoader );
                     if ( annotatedInterface == null )
                     {
                         throw new GleanerException( "Failed to fine class: " + interfaceName );
@@ -123,6 +126,15 @@ public class DefaultAnnotationProcessor
             IOUtil.close( classStream );
         }
         return null;
+    }
+    
+    private String classNameToResourceName( String className )
+    {
+        String resourceName = className;
+        // this could all be done with a single regex... if I only knew what that regex would be
+        resourceName = resourceName.replaceAll( "\\.class\\z", "" );
+        resourceName = resourceName.replaceAll( "\\.", "/" );
+        return resourceName + ".class";
     }
 
 }
