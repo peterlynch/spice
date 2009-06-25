@@ -24,6 +24,16 @@
 
     <dependency>
       <groupId>org.sonatype.plugin</groupId>
+      <artifactId>plugin-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.sonatype.plugin</groupId>
+      <artifactId>plugin-host-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.sonatype.plugin</groupId>
       <artifactId>plugin-model-api</artifactId>
       <version>${project.version}</version>
     </dependency>

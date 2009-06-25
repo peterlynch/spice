@@ -10,6 +10,10 @@ public class GAVCoordinate
 
     private String version;
 
+    public GAVCoordinate()
+    {
+    }
+
     public GAVCoordinate( String groupId, String artifactId, String version )
     {
         setGroupId( groupId );
@@ -71,7 +75,8 @@ public class GAVCoordinate
 
     public String toString()
     {
-        return getGroupId() + ":" + getArtifactId() + ":" + getVersion();
+        return String.valueOf( getGroupId() ) + ":" + String.valueOf( getArtifactId() ) + ":"
+            + String.valueOf( getVersion() );
     }
 
     public int hashCode()

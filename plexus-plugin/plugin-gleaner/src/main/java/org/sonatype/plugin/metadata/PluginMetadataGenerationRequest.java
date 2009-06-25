@@ -3,8 +3,10 @@ package org.sonatype.plugin.metadata;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.sonatype.plugins.model.PluginMetadata;
 
@@ -39,9 +41,9 @@ public class PluginMetadataGenerationRequest
 
     private final Map<String, String> licenses = new HashMap<String, String>();
 
-    private final List<GAVCoordinate> classpathDependencies = new ArrayList<GAVCoordinate>();
+    private final Set<GAVCoordinate> classpathDependencies = new HashSet<GAVCoordinate>();
 
-    private final List<GAVCoordinate> pluginDependencies = new ArrayList<GAVCoordinate>();
+    private final Set<GAVCoordinate> pluginDependencies = new HashSet<GAVCoordinate>();
 
     /** The character encoding of the source files, may be {@code null} or empty to use platform's default encoding. */
     private String sourceEncoding;
@@ -189,7 +191,7 @@ public class PluginMetadataGenerationRequest
         getClasspathDependencies().add( new GAVCoordinate( composite ) );
     }
 
-    public List<GAVCoordinate> getClasspathDependencies()
+    public Set<GAVCoordinate> getClasspathDependencies()
     {
         return classpathDependencies;
     }
@@ -210,7 +212,7 @@ public class PluginMetadataGenerationRequest
         getPluginDependencies().add( new GAVCoordinate( composite ) );
     }
 
-    public List<GAVCoordinate> getPluginDependencies()
+    public Set<GAVCoordinate> getPluginDependencies()
     {
         return pluginDependencies;
     }
