@@ -163,11 +163,11 @@ public class PluginMetadataGenerationRequest
         return annotationClasses;
     }
 
-    public void addLicense(String type, String url)
+    public void addLicense( String type, String url )
     {
         getLicenses().put( type, url );
     }
-    
+
     public Map<String, String> getLicenses()
     {
         return licenses;
@@ -176,6 +176,11 @@ public class PluginMetadataGenerationRequest
     public void addClasspathDependency( GAVCoordinate coordinate )
     {
         getClasspathDependencies().add( coordinate );
+    }
+
+    public void addClasspathDependency( String g, String a, String v )
+    {
+        getClasspathDependencies().add( new GAVCoordinate( g, a, v ) );
     }
 
     public void addClasspathDependency( String composite )
@@ -192,6 +197,11 @@ public class PluginMetadataGenerationRequest
     public void addPluginDependency( GAVCoordinate coordinate )
     {
         getPluginDependencies().add( coordinate );
+    }
+
+    public void addPluginDependency( String g, String a, String v )
+    {
+        getPluginDependencies().add( new GAVCoordinate( g, a, v ) );
     }
 
     public void addPluginDependency( String composite )
