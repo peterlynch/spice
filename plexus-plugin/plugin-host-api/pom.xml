@@ -7,9 +7,9 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.sonatype.plugin</groupId>
-  <artifactId>plugin-api</artifactId>
+  <artifactId>plugin-host-api</artifactId>
 
-  <name>Plexus Plugin: Client API</name>
+  <name>Plexus Plugin: Host Application API</name>
 
   <dependencies>
     <dependency>

@@ -13,8 +13,9 @@
   <version>0.0.1-SNAPSHOT</version>
 
   <modules>
-    <module>plugin-model-api</module>
     <module>plugin-api</module>
+    <module>plugin-host-api</module>
+    <module>plugin-model-api</module>
     <module>plugin-gleaner</module>
   </modules>
 
@@ -24,6 +25,11 @@
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-utils</artifactId>
         <version>1.5.8</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.code.atinject</groupId>
+        <artifactId>atinject</artifactId>
+        <version>1.0.0-rev3</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
