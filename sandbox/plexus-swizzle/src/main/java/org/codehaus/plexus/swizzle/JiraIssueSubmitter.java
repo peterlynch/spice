@@ -106,7 +106,7 @@ public class JiraIssueSubmitter
             attachProblemReport( addedIssue.getId(), request.getProblemReportBundle() );
         }
         
-        return new IssueSubmissionResult( addedIssue.getLink() );
+        return new IssueSubmissionResult( addedIssue.getLink(), addedIssue.getKey() );
     }
 
     private void validateIssueSubmissionRequest( IssueSubmissionRequest request )
