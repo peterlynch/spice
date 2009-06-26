@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Arrays;
 
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpClient;
@@ -32,6 +33,7 @@ import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
 import org.codehaus.plexus.swizzle.jira.authentication.AuthenticationSource;
+import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.swizzle.jira.Issue;
 import org.codehaus.swizzle.jira.IssueType;
 import org.codehaus.swizzle.jira.Jira;
@@ -86,6 +88,11 @@ public class JiraIssueSubmitter
         issue.setType( type );
         issue.setPriority( priority );         
         issue.setEnvironment(request.getEnvironment());
+        
+        if ( StringUtils.isNotEmpty( request.getComponent() ) ) 
+        {
+            issue.setComponents( Arrays.asList( jira.getComponent( project, request.getComponent() ) ) );
+        }
                 
          // We need to create an issue so that we can create an attachment. The XMLRPC API does not
          // allow for attachments so we have to use separate http client call to submit the attachment. 
@@ -117,7 +124,8 @@ public class JiraIssueSubmitter
             throw new IssueSubmissionException( "The reporter must exist in the JIRA users database. The user '" + request.getAssignee() + "' does not exist." );
         }        
 
-        if ( !userExists( request.getAssignee() ) )
+        if ( StringUtils.isNotEmpty( request.getAssignee() )
+            && !userExists( request.getAssignee() ) )
         {
             throw new IssueSubmissionException( "The assignee must exist in the JIRA users database. The user '" + request.getAssignee() + "' does not exist." );
         }        
