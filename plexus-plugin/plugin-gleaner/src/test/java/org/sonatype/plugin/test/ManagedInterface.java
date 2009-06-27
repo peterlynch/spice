@@ -1,8 +1,11 @@
 package org.sonatype.plugin.test;
 
-import org.sonatype.plugins.mock.MockManaged;
+import javax.inject.Singleton;
 
-@MockManaged
+import org.sonatype.plugin.Managed;
+
+@Managed
+@Singleton
 public interface ManagedInterface
 {
 

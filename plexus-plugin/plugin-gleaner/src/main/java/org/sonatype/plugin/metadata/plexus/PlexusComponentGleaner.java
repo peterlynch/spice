@@ -8,10 +8,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Singleton;
 
+import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.repository.ComponentDescriptor;
 import org.codehaus.plexus.component.repository.ComponentRequirement;
 import org.codehaus.plexus.util.IOUtil;
@@ -21,37 +24,34 @@ import org.sonatype.plugin.metadata.gleaner.AnnotationProcessor;
 import org.sonatype.plugin.metadata.gleaner.ComponentListCreatingAnnotationListener;
 import org.sonatype.plugin.metadata.gleaner.DefaultAnnotationProcessor;
 import org.sonatype.plugin.metadata.gleaner.GleanerException;
-import org.sonatype.plugins.mock.MockExtensionPoint;
-import org.sonatype.plugins.mock.MockManaged;
 import org.sonatype.reflect.AnnClass;
 import org.sonatype.reflect.AnnField;
 import org.sonatype.reflect.AnnReader;
 
+/**
+ * This is dirty and hackish. But works for now. The trick is that this gleaner is able to process the class, create a
+ * Plexus specific ComponentDescriptor for it, and also that we are able to "drive" is the component in case a
+ * "singular" or "plural" case.
+ * 
+ * @author toby
+ * @author cstamas
+ */
+@Component( role = PlexusComponentGleaner.class )
 public class PlexusComponentGleaner
 {
-
-    List<Class<?>> componentMarkingAnnotations;
-
-    public PlexusComponentGleaner( List<Class<?>> componentMarkingAnnotations )
+    public ComponentDescriptor<?> glean( PlexusComponentGleanerRequest request )
+        throws GleanerException, IOException
     {
-        this.componentMarkingAnnotations = componentMarkingAnnotations;
-    }
-
-    public ComponentDescriptor<?> glean( String className, ClassLoader classLoader )
-        throws GleanerException,
-            IOException
-    {
-        assert className != null;
-        assert classLoader != null;
-
         AnnClass annClass;
+
         try
         {
-            annClass = readClassAnnotation( className.replace( '.', '/' ) + ".class", classLoader );
+            annClass =
+                readClassAnnotation( request.getClassName().replace( '.', '/' ) + ".class", request.getClassRealm() );
         }
         catch ( IOException e )
         {
-            throw new GleanerException( "Failed to glean class: " + className );
+            throw new GleanerException( "Failed to glean class: " + request.getClassName() );
         }
 
         // Skip abstract classes
@@ -65,59 +65,88 @@ public class PlexusComponentGleaner
         ComponentListCreatingAnnotationListener listener = new ComponentListCreatingAnnotationListener();
         Map<Class<?>, AnnotationListener> listenerMap = new HashMap<Class<?>, AnnotationListener>();
 
-        for ( Class<?> annotationClass : this.componentMarkingAnnotations )
+        for ( Class<?> annotationClass : request.getComponentAnnotations() )
         {
             listenerMap.put( annotationClass, listener );
         }
 
-        annotationProcessor.processClass( className, classLoader, listenerMap );
+        annotationProcessor.processClass( request.getClassName(), request.getClassRealm(), listenerMap );
+
         if ( listener.getComponentClassNames().isEmpty() )
         {
             // not a component
             return null;
         }
 
-        ComponentDescriptor<?> component = new ComponentDescriptor<Object>();
+        boolean isSingular = false;
+
+        String role = null;
 
         try
         {
-            String role = this.getComponentsRole( annClass, classLoader );
-            component.setRole( role );
+            // try to seek for plural
+            role = getComponentsRole( request.getPluralComponentAnnotations(), request.getClassRealm(), annClass );
+
+            if ( role == null )
+            {
+                // try singular
+                role = getComponentsRole( request.getSingularComponentAnnotations(), request.getClassRealm(), annClass );
+
+                isSingular = true;
+            }
         }
         catch ( IOException e )
         {
             throw new GleanerException( "Failed to load " );
         }
 
-        component.setImplementation( className );
+        if ( role == null )
+        {
+            // humm? we checked this already above (is it a component)
+            return null;
+        }
 
+        ComponentDescriptor<?> component = new ComponentDescriptor<Object>();
+
+        component.setRole( role );
+
+        component.setImplementation( request.getClassName() );
+
+        // now a little game: @Named anno always wins, if developer specifies it
+        // otherwise, we have "singular" component type: one role, one imple, aka Plexus "default" role hint
+        // or, "plural" component type: one role, many imple, aka Plexus non-default role hint
+        // usually, the 1st case will be user components (own private but managed stuff), 2nd case will
+        // be @ExtensionPoint
         Named namedAnno = annClass.getAnnotation( Named.class );
         if ( namedAnno != null )
         {
             component.setRoleHint( filterEmptyAsNull( namedAnno.value() ) );
         }
+        else
+        {
+            if ( !isSingular )
+            {
+                component.setRoleHint( component.getImplementation() );
+            }
+        }
 
-        // TODO: add this
-        // check singleton
-        // component.setInstantiationStrategy( filterEmptyAsNull( anno.instantiationStrategy() ) );
+        // honor the Singleton
+        Singleton singletonAnno = annClass.getAnnotation( Singleton.class );
+        if ( singletonAnno == null )
+        {
+            component.setInstantiationStrategy( "per-lookup" );
+        }
 
-        for ( AnnClass c : getClasses( annClass, classLoader ) )
+        for ( AnnClass c : getClasses( annClass, request.getClassRealm() ) )
         {
             for ( AnnField field : c.getFields().values() )
             {
-                ComponentRequirement requirement = findRequirement( field, c, classLoader );
+                ComponentRequirement requirement = findRequirement( field, c, request.getClassRealm() );
 
                 if ( requirement != null )
                 {
                     component.addRequirement( requirement );
                 }
-
-                // PlexusConfiguration config = findConfiguration( field, c, cl );
-                //
-                // if ( config != null )
-                // {
-                // addChildConfiguration( component, config );
-                // }
             }
         }
 
@@ -146,7 +175,6 @@ public class PlexusComponentGleaner
         }
         catch ( ClassNotFoundException ex )
         {
-            // TODO Auto-generated catch block
             throw new GleanerException( "Can't load class " + fieldType );
         }
 
@@ -171,16 +199,12 @@ public class PlexusComponentGleaner
         return requirement;
     }
 
-    private String getComponentsRole( AnnClass annClass, ClassLoader classLoader )
+    private String getComponentsRole( Set<Class<?>> annosToLookFor, ClassLoader classloader, AnnClass annClass )
         throws IOException
     {
-        List<Class<?>> possibleRoleAnnotations = new ArrayList<Class<?>>();
-        possibleRoleAnnotations.add( MockExtensionPoint.class );
-        possibleRoleAnnotations.add( MockManaged.class );
-
         // check the class itself first
 
-        for ( Class<?> roleAnnotationClass : possibleRoleAnnotations )
+        for ( Class<?> roleAnnotationClass : annosToLookFor )
         {
             Object roleAnnotation = annClass.getAnnotation( roleAnnotationClass );
             if ( roleAnnotation != null )
@@ -191,9 +215,9 @@ public class PlexusComponentGleaner
 
         for ( String interfaceName : annClass.getInterfaces() )
         {
-            AnnClass annInterface = this.readClassAnnotation( interfaceName + ".class", classLoader );
+            AnnClass annInterface = this.readClassAnnotation( interfaceName + ".class", classloader );
 
-            for ( Class<?> roleAnnotationClass : possibleRoleAnnotations )
+            for ( Class<?> roleAnnotationClass : annosToLookFor )
             {
                 Object roleAnnotation = annInterface.getAnnotation( roleAnnotationClass );
                 if ( roleAnnotation != null )

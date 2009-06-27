@@ -1,8 +1,8 @@
 package org.sonatype.plugin.test;
 
-import org.sonatype.plugins.mock.MockExtensionPoint;
+import org.sonatype.plugin.ExtensionPoint;
 
-@MockExtensionPoint
+@ExtensionPoint
 public abstract class AbstractWithExtentionPoint
 {
 

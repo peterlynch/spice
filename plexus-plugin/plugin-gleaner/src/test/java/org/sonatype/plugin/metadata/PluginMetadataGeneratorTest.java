@@ -3,18 +3,15 @@ package org.sonatype.plugin.metadata;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream.GetField;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import junit.framework.Assert;
 
 import org.codehaus.plexus.PlexusTestCase;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.sonatype.plugins.mock.MockExtensionPoint;
-import org.sonatype.plugins.mock.MockManaged;
+import org.sonatype.plugin.ExtensionPoint;
+import org.sonatype.plugin.Managed;
 import org.sonatype.plugins.model.PluginDependency;
 import org.sonatype.plugins.model.PluginMetadata;
 import org.sonatype.plugins.model.io.xpp3.PluginModelXpp3Reader;
@@ -46,8 +43,8 @@ public class PluginMetadataGeneratorTest
         request.setClassesDirectory( getTestFile( "target/test-classes" ) );
         request.getClasspath().add( getTestFile( "target/test-classes" ) );
 
-        request.getAnnotationClasses().add( MockExtensionPoint.class );
-        request.getAnnotationClasses().add( MockManaged.class );
+        request.getAnnotationClasses().add( ExtensionPoint.class );
+        request.getAnnotationClasses().add( Managed.class );
 
         return request;
     }

@@ -1,8 +1,11 @@
 package org.sonatype.plugin.test;
 
-import org.sonatype.plugins.mock.MockExtensionPoint;
+import javax.inject.Singleton;
 
-@MockExtensionPoint
+import org.sonatype.plugin.Managed;
+
+@Managed
+@Singleton
 public class ComponentManaged
 {
 
