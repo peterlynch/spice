@@ -80,7 +80,7 @@ public class PlexusComponentGleaner
 
         boolean isSingular = false;
 
-        String role = null;
+        AnnClass role = null;
 
         try
         {
@@ -108,7 +108,7 @@ public class PlexusComponentGleaner
 
         ComponentDescriptor<?> component = new ComponentDescriptor<Object>();
 
-        component.setRole( role );
+        component.setRole( role.getName().replaceAll( "/", "." ) );
 
         component.setImplementation( request.getClassName() );
 
@@ -131,7 +131,7 @@ public class PlexusComponentGleaner
         }
 
         // honor the Singleton
-        Singleton singletonAnno = annClass.getAnnotation( Singleton.class );
+        Singleton singletonAnno = role.getAnnotation( Singleton.class );
         if ( singletonAnno == null )
         {
             component.setInstantiationStrategy( "per-lookup" );
@@ -197,7 +197,7 @@ public class PlexusComponentGleaner
         return requirement;
     }
 
-    private String getComponentsRole( Set<Class<?>> annosToLookFor, ClassLoader classloader, AnnClass annClass )
+    private AnnClass getComponentsRole( Set<Class<?>> annosToLookFor, ClassLoader classloader, AnnClass annClass )
         throws IOException
     {
         // check the class itself first
@@ -207,7 +207,7 @@ public class PlexusComponentGleaner
             Object roleAnnotation = annClass.getAnnotation( roleAnnotationClass );
             if ( roleAnnotation != null )
             {
-                return annClass.getName().replaceAll( "/", "." );
+                return annClass;
             }
         }
 
@@ -220,7 +220,7 @@ public class PlexusComponentGleaner
                 Object roleAnnotation = annInterface.getAnnotation( roleAnnotationClass );
                 if ( roleAnnotation != null )
                 {
-                    return annInterface.getName().replaceAll( "/", "." );
+                    return annInterface;
                 }
             }
         }
