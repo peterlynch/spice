@@ -178,16 +178,14 @@ public class PlexusComponentGleaner
             throw new GleanerException( "Can't load class " + fieldType );
         }
 
-        ComponentRequirement requirement;
-
-        requirement = new ComponentRequirement();
+        ComponentRequirement requirement = new ComponentRequirement();
 
         // use the field type as the Role
         requirement.setRole( type.getName() );
 
         Named namedAnno = field.getAnnotation( Named.class );
 
-        if ( injectAnno == null )
+        if ( namedAnno != null )
         {
             requirement.setRoleHint( filterEmptyAsNull( namedAnno.value() ) );
         }

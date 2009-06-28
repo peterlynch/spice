@@ -14,7 +14,9 @@ public class PlexusComponentGleanerTest
         throws Exception
     {
         String[] componentClassNames =
-            { "org.sonatype.plugin.test.ManagedViaInterface", "org.sonatype.plugin.test.ComponentManaged" };
+            { "org.sonatype.plugin.test.ManagedViaInterface", "org.sonatype.plugin.test.ComponentManaged",
+                "org.sonatype.plugin.test.DefaultUserCustomComponent",
+                "org.sonatype.plugin.test.NamedUserCustomComponent" };
 
         PlexusComponentGleaner componentGleaner = lookup( PlexusComponentGleaner.class );
 
@@ -40,6 +42,10 @@ public class PlexusComponentGleanerTest
         ManagedViaInterface managedViaInterface = (ManagedViaInterface) component;
 
         Assert.assertNotNull( managedViaInterface.getMangedComponent() );
+
+        assertEquals( "default", managedViaInterface.getUserCustomComponent().getMessage() );
+
+        assertEquals( "another", managedViaInterface.getNamedUserCustomComponent().getMessage() );
 
     }
 
