@@ -53,6 +53,11 @@ public class PlexusComponentGleaner
         {
             throw new GleanerException( "Failed to glean class: " + request.getClassName() );
         }
+        
+        if( annClass == null )
+        {
+            throw new GleanerException( "Failed to glean class: " + request.getClassName() );
+        }
 
         // Skip abstract classes
         if ( Modifier.isAbstract( annClass.getAccess() ) )
@@ -201,7 +206,6 @@ public class PlexusComponentGleaner
         throws IOException
     {
         // check the class itself first
-
         for ( Class<?> roleAnnotationClass : annosToLookFor )
         {
             Object roleAnnotation = annClass.getAnnotation( roleAnnotationClass );
@@ -230,7 +234,7 @@ public class PlexusComponentGleaner
 
     private AnnClass readClassAnnotation( String resourceName, ClassLoader classLoader )
         throws IOException
-    {
+    {   
         InputStream classStream = null;
         try
         {
@@ -281,7 +285,7 @@ public class PlexusComponentGleaner
             classes.add( annClass );
             if ( annClass.getSuperName() != null )
             {
-                annClass = this.readClassAnnotation( annClass.getSuperName(), classLoader );
+                annClass = this.readClassAnnotation( annClass.getSuperName() + ".class", classLoader );
             }
             else
             {
