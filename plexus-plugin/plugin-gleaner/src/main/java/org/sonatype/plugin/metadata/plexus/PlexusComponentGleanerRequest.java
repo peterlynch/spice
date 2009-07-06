@@ -1,7 +1,9 @@
 package org.sonatype.plugin.metadata.plexus;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.sonatype.plugin.ExtensionPoint;
@@ -16,6 +18,8 @@ public class PlexusComponentGleanerRequest
     private Set<Class<?>> singularComponentAnnotations;
 
     private Set<Class<?>> pluralComponentAnnotations;
+
+    private List<Class<?>> markerAnnotations;
 
     public PlexusComponentGleanerRequest( String className, ClassLoader classRealm )
     {
@@ -78,5 +82,15 @@ public class PlexusComponentGleanerRequest
         result.addAll( getPluralComponentAnnotations() );
 
         return Collections.unmodifiableSet( result );
+    }
+
+    public List<Class<?>> getMarkerAnnotations()
+    {
+        if ( markerAnnotations == null )
+        {
+            markerAnnotations = new ArrayList<Class<?>>();
+        }
+
+        return markerAnnotations;
     }
 }

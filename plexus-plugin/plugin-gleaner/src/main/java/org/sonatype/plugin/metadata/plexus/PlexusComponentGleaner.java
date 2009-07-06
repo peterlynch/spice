@@ -39,7 +39,7 @@ import org.sonatype.reflect.AnnReader;
 @Component( role = PlexusComponentGleaner.class )
 public class PlexusComponentGleaner
 {
-    public ComponentDescriptor<?> glean( PlexusComponentGleanerRequest request )
+    public PlexusComponentGleanerResponse glean( PlexusComponentGleanerRequest request )
         throws GleanerException, IOException
     {
         AnnClass annClass;
@@ -53,8 +53,8 @@ public class PlexusComponentGleaner
         {
             throw new GleanerException( "Failed to glean class: " + request.getClassName() );
         }
-        
-        if( annClass == null )
+
+        if ( annClass == null )
         {
             throw new GleanerException( "Failed to glean class: " + request.getClassName() );
         }
@@ -111,11 +111,15 @@ public class PlexusComponentGleaner
             return null;
         }
 
+        PlexusComponentGleanerResponse response = new PlexusComponentGleanerResponse( request );
+
         ComponentDescriptor<?> component = new ComponentDescriptor<Object>();
 
         component.setRole( role.getName().replaceAll( "/", "." ) );
 
         component.setImplementation( request.getClassName() );
+
+        response.setComponentDescriptor( component );
 
         // now a little game: @Named anno always wins, if developer specifies it
         // otherwise, we have "singular" component type: one role, one imple, aka Plexus "default" role hint
@@ -155,7 +159,18 @@ public class PlexusComponentGleaner
             }
         }
 
-        return component;
+        // gather markers
+        for ( Class<?> markerClass : request.getMarkerAnnotations() )
+        {
+            Object markerAnno = annClass.getAnnotation( markerClass );
+
+            if ( markerAnno != null )
+            {
+                response.getMarkerAnnotations().put( markerClass, markerAnno );
+            }
+        }
+
+        return response;
     }
 
     private ComponentRequirement findRequirement( final AnnField field, AnnClass annClass, ClassLoader cl )
@@ -234,7 +249,7 @@ public class PlexusComponentGleaner
 
     private AnnClass readClassAnnotation( String resourceName, ClassLoader classLoader )
         throws IOException
-    {   
+    {
         InputStream classStream = null;
         try
         {
