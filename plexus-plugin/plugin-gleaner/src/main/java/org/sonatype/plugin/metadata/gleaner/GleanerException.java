@@ -5,11 +5,6 @@ public class GleanerException
 {
     private static final long serialVersionUID = -4244638887256916163L;
 
-    public GleanerException()
-    {
-        super();
-    }
-
     public GleanerException( String message, Throwable cause )
     {
         super( message, cause );
