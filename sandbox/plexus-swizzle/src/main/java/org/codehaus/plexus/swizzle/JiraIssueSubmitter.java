@@ -12,18 +12,14 @@
  */
 package org.codehaus.plexus.swizzle;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Arrays;
 
-import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
@@ -110,7 +106,7 @@ public class JiraIssueSubmitter
         
         if ( request.getProblemReportBundle() != null )
         {
-            attachProblemReport( addedIssue.getId(), request.getProblemReportBundle() );
+            attachProblemReport( addedIssue.getId(), request );
         }
         
         return new IssueSubmissionResult( addedIssue.getLink(), addedIssue.getKey() );
@@ -146,14 +142,14 @@ public class JiraIssueSubmitter
     //
     // /secure/AttachFile.jspa?id=${issueId}&os_username=${username}&os_password=${password}
     
-    private void attachProblemReport( String issueKey, File bundle )
+    private void attachProblemReport( String issueKey, IssueSubmissionRequest request )
         throws IssueSubmissionException
     {
         Issue issue = jira.getIssue( issueKey );
-        attachProblemReport( issue.getId(), bundle );
+        attachProblemReport( issue.getId(), request );
     }
 
-    private void attachProblemReport( int issueId, File bundle )
+    private void attachProblemReport( int issueId, IssueSubmissionRequest request )
         throws IssueSubmissionException
     {
         String username = authenticationSource.getLogin();
@@ -161,13 +157,13 @@ public class JiraIssueSubmitter
         
         String uploadUrl = serverUrl + "/secure/AttachFile.jspa?id=" + issueId + "&os_username=" + username + "&os_password=" + password;
         
-        HttpClient client = getHttpClient();
+        HttpClient client = getHttpClient( request );
         client.getHttpConnectionManager().getParams().setConnectionTimeout( 8000 );
         PostMethod upload = new PostMethod( uploadUrl );
 
         try
         {
-            Part[] parts = { new FilePart( FILE_ATTATCHMENT_PARAMETER, bundle ) };
+            Part[] parts = { new FilePart( FILE_ATTATCHMENT_PARAMETER, request.getProblemReportBundle() ) };
             upload.setRequestEntity( new MultipartRequestEntity( parts, upload.getParams() ) );
             int status = client.executeMethod( upload );
 
@@ -184,7 +180,7 @@ public class JiraIssueSubmitter
         }
         catch ( FileNotFoundException e )
         {
-            throw new IssueSubmissionException( "The problem report bundle specified does not exist: " + bundle );
+            throw new IssueSubmissionException( "The problem report bundle specified does not exist: " + request.getProblemReportBundle() );
         }
         catch ( HttpException e )
         {
@@ -214,26 +210,18 @@ public class JiraIssueSubmitter
         }
     }
     
-    private HttpClient getHttpClient() {
+    private HttpClient getHttpClient( IssueSubmissionRequest request ) {
         HttpClient client = new HttpClient();
-
-        String proxySet = System.getProperty("http.proxySet");
-        String proxyHost = System.getProperty("http.proxyHost");
-        String proxyPort = System.getProperty("http.proxyPort");
-        String proxyUser = System.getProperty("http.proxyUserName");
-        String proxyPass = System.getProperty("http.proxyPassword");
         
-        if (!Boolean.TRUE.toString().equals(proxySet) || proxyHost == null || proxyPort == null) {
-        	return client;
+        ProxyServerConfigurator configurator = request.getProxyConfigurator();
+        
+        if ( configurator == null )
+        {
+            configurator = new DefaultProxyServerConfigurator();
         }
         
-        client.getHostConfiguration().setProxy(proxyHost, Integer.parseInt(proxyPort));
-
-        if (proxyUser != null) {
-          Credentials cred = new UsernamePasswordCredentials(proxyUser, proxyPass);
-          client.getState().setProxyCredentials(AuthScope.ANY, cred);
-        }
-
+        configurator.applyToClient( client );
+        
         return client;
       }
 

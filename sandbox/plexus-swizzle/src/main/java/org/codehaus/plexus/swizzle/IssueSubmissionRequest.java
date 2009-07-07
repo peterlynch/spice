@@ -31,6 +31,8 @@ public class IssueSubmissionRequest
     private String environment;
 
     private String component;
+    
+    private ProxyServerConfigurator proxyConfigurator;
 
     public String getProjectId()
     {
@@ -112,4 +114,13 @@ public class IssueSubmissionRequest
         this.component = component;
     }
 
+    public ProxyServerConfigurator getProxyConfigurator()
+    {
+        return proxyConfigurator;
+    }
+    
+    public void setProxyConfigurator( ProxyServerConfigurator proxyConfigurator )
+    {
+        this.proxyConfigurator = proxyConfigurator;
+    }
 }
