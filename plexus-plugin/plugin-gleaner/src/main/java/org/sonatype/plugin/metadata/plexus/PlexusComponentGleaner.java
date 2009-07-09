@@ -15,6 +15,7 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.component.repository.ComponentDescriptor;
 import org.codehaus.plexus.component.repository.ComponentRequirement;
 import org.codehaus.plexus.util.IOUtil;
@@ -178,14 +179,26 @@ public class PlexusComponentGleaner
     {
         assert field != null;
 
+        String fieldType = field.getType();
+
         Inject injectAnno = field.getAnnotation( Inject.class );
+
+        Requirement requirementAnno = null;
 
         if ( injectAnno == null )
         {
-            return null;
-        }
+            requirementAnno = field.getAnnotation( Requirement.class );
 
-        String fieldType = field.getType();
+            if ( requirementAnno == null )
+            {
+                return null;
+            }
+
+            if ( requirementAnno.role() != null && !requirementAnno.role().equals( Object.class ) )
+            {
+                fieldType = requirementAnno.role().getName();
+            }
+        }
 
         // TODO implement type resolution without loading classes
         Class<?> type;
@@ -208,6 +221,14 @@ public class PlexusComponentGleaner
         if ( namedAnno != null )
         {
             requirement.setRoleHint( filterEmptyAsNull( namedAnno.value() ) );
+        }
+        else
+        {
+            // check for @Requirement roleHint
+            if ( requirementAnno != null )
+            {
+                requirement.setRoleHint( filterEmptyAsNull( requirementAnno.hint() ) );
+            }
         }
 
         requirement.setFieldName( field.getName() );
