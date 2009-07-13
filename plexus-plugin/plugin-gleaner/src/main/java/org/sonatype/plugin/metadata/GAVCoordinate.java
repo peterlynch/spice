@@ -71,12 +71,17 @@ public class GAVCoordinate
         this.version = version;
     }
 
+    public String toCompositeForm()
+    {
+        return String.valueOf( getGroupId() ) + ":" + String.valueOf( getArtifactId() ) + ":"
+            + String.valueOf( getVersion() );
+    }
+
     // ==
 
     public String toString()
     {
-        return String.valueOf( getGroupId() ) + ":" + String.valueOf( getArtifactId() ) + ":"
-            + String.valueOf( getVersion() );
+        return toCompositeForm();
     }
 
     public int hashCode()
