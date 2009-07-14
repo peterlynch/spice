@@ -200,21 +200,10 @@ public class PlexusComponentGleaner
             }
         }
 
-        // TODO implement type resolution without loading classes
-        Class<?> type;
-        try
-        {
-            type = Class.forName( fieldType, false, cl );
-        }
-        catch ( ClassNotFoundException ex )
-        {
-            throw new GleanerException( "Can't load class " + fieldType );
-        }
-
         ComponentRequirement requirement = new ComponentRequirement();
 
         // use the field type as the Role
-        requirement.setRole( type.getName() );
+        requirement.setRole( fieldType );
 
         Named namedAnno = field.getAnnotation( Named.class );
 
@@ -233,7 +222,7 @@ public class PlexusComponentGleaner
 
         requirement.setFieldName( field.getName() );
 
-        requirement.setFieldMappingType( type.getName() );
+        requirement.setFieldMappingType( fieldType );
 
         return requirement;
     }

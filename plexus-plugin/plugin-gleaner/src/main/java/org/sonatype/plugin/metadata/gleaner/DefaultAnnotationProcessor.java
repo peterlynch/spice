@@ -59,7 +59,7 @@ public class DefaultAnnotationProcessor
                         readClassAnnotations( this.classNameToResourceName( interfaceName ), classLoader );
                     if ( annotatedInterface == null )
                     {
-                        throw new GleanerException( "Failed to fine class: " + interfaceName );
+                        throw new GleanerException( "Failed to find class: " + interfaceName );
                     }
 
                     // now look up the expected annotations
