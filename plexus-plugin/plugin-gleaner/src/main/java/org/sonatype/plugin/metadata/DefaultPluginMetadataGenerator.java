@@ -1,17 +1,5 @@
 package org.sonatype.plugin.metadata;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.IOUtil;
@@ -25,11 +13,23 @@ import org.sonatype.plugins.model.PluginLicense;
 import org.sonatype.plugins.model.PluginMetadata;
 import org.sonatype.plugins.model.io.xpp3.PluginModelXpp3Writer;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 @Component( role = PluginMetadataGenerator.class )
 public class DefaultPluginMetadataGenerator
     implements PluginMetadataGenerator
 {
-    public void generatePluginDescriptor( PluginMetadataGenerationRequest request )
+    public void generatePluginDescriptor( final PluginMetadataGenerationRequest request )
         throws GleanerException
     {
         // check request
@@ -81,6 +81,12 @@ public class DefaultPluginMetadataGenerator
                 pluginDependency.setGroupId( dependency.getGroupId() );
                 pluginDependency.setArtifactId( dependency.getArtifactId() );
                 pluginDependency.setVersion( dependency.getVersion() );
+                pluginDependency.setType( dependency.getType() );
+
+                if ( dependency.getClassifier() != null )
+                {
+                    pluginDependency.setClassifier( dependency.getClassifier() );
+                }
 
                 pluginMetadata.addClasspathDependency( pluginDependency );
             }
@@ -120,8 +126,8 @@ public class DefaultPluginMetadataGenerator
 
     }
 
-    private List<String> findComponents( File classesDirectory, ClassLoader classLoader,
-                                         List<Class<?>> annotationClasses )
+    private List<String> findComponents( final File classesDirectory, final ClassLoader classLoader,
+                                         final List<Class<?>> annotationClasses )
         throws GleanerException
     {
         // this will find all the classes we want to glean
@@ -173,7 +179,7 @@ public class DefaultPluginMetadataGenerator
         return new URLClassLoader( urls, ClassLoader.getSystemClassLoader() );
     }
 
-    private void writePluginMetadata( PluginMetadata pluginMetadata, File outputFile )
+    private void writePluginMetadata( final PluginMetadata pluginMetadata, final File outputFile )
         throws IOException
     {
         // make sure the file's parent is created
