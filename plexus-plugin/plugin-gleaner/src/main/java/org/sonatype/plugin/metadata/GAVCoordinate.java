@@ -33,12 +33,16 @@ public class GAVCoordinate
     {
         this( groupId, artifactId, version );
 
-        if ( StringUtils.isNotBlank( classifier ) )
+        // plugin in maven uses plexus-utils 1.1!!!
+        // if ( StringUtils.isBlank( classifier ) )
+        if ( !StringUtils.isEmpty( classifier ) )
         {
             setClassifier( classifier );
         }
 
-        if ( StringUtils.isNotBlank( type ) )
+        // plugin in maven uses plexus-utils 1.1!!!
+        // if ( StringUtils.isNotBlank( type ) )
+        if ( !StringUtils.isEmpty( type ) )
         {
             setType( type );
         }
@@ -47,7 +51,7 @@ public class GAVCoordinate
     public GAVCoordinate( String composite )
         throws IllegalArgumentException
     {
-        if ( StringUtils.isBlank( composite ) )
+        if ( StringUtils.isEmpty( composite ) )
         {
             throw new IllegalArgumentException( "The GAV composite form is bad: \"" + String.valueOf( composite )
                 + "\", it must to conform to \"G:A:V[:[C][:T]]\"!" );
@@ -67,12 +71,12 @@ public class GAVCoordinate
 
         setVersion( parts[2] );
 
-        if ( parts.length >= 4 && StringUtils.isNotBlank( parts[3] ) )
+        if ( parts.length >= 4 && !StringUtils.isEmpty( parts[3] ) )
         {
             setClassifier( parts[3] );
         }
 
-        if ( parts.length >= 5 && StringUtils.isNotBlank( parts[4] ) )
+        if ( parts.length >= 5 && !StringUtils.isEmpty( parts[4] ) )
         {
             setType( parts[4] );
         }
@@ -135,14 +139,14 @@ public class GAVCoordinate
         sb.append( String.valueOf( getGroupId() ) ).append( ":" ).append( String.valueOf( getArtifactId() ) )
             .append( ":" ).append( String.valueOf( getVersion() ) );
 
-        if ( StringUtils.isNotBlank( getClassifier() ) )
+        if ( !StringUtils.isEmpty( getClassifier() ) )
         {
             sb.append( ":" ).append( getClassifier() );
         }
 
-        if ( StringUtils.isNotBlank( getType() ) && !StringUtils.equals( DEFAULT_TYPE, getType() ) )
+        if ( !StringUtils.isEmpty( getType() ) && !StringUtils.equals( DEFAULT_TYPE, getType() ) )
         {
-            if ( StringUtils.isBlank( getClassifier() ) )
+            if ( StringUtils.isEmpty( getClassifier() ) )
             {
                 sb.append( ":" );
             }
