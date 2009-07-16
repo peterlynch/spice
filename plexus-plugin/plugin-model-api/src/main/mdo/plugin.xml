@@ -223,6 +223,24 @@
           <type>String</type>
           <required>true</required>
         </field>
+        <field>
+          <name>classifier</name>
+          <version>1.0.0+</version>
+          <description>
+            The classifier.
+          </description>
+          <type>String</type>
+          <required>false</required>
+        </field>
+        <field>
+          <name>type</name>
+          <version>1.0.0+</version>
+          <description>
+            The type.
+          </description>
+          <type>String</type>
+          <required>false</required>
+        </field>
       </fields>
     </class>
   </classes>
