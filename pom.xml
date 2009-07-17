@@ -50,7 +50,7 @@ under the License.
       <module>reflect-class-descriptor</module>
       <module>plexus-plugin</module>
       <module>jscoverage-component</module>
-      
+      <module>plexus-swizzle</module>      
       
       
       
