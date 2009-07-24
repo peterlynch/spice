@@ -169,6 +169,21 @@ public class PlexusComponentGleaner
             {
                 response.getMarkerAnnotations().put( markerClass, markerAnno );
             }
+            else
+            {
+                // look in interfaces
+                for ( String interfaceName : annClass.getInterfaces() )
+                {
+                    AnnClass annInterface = readClassAnnotation( interfaceName + ".class", request.getClassRealm() );
+
+                    markerAnno = annInterface.getAnnotation( markerClass );
+
+                    if ( markerAnno != null )
+                    {
+                        response.getMarkerAnnotations().put( markerClass, markerAnno );
+                    }
+                }
+            }
         }
 
         return response;
