@@ -15,6 +15,8 @@ package org.sonatype.micromailer.imp;
 import java.util.Collection;
 import java.util.Map;
 
+import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.micromailer.MailType;
 import org.sonatype.micromailer.MailTypeSource;
 
@@ -22,14 +24,12 @@ import org.sonatype.micromailer.MailTypeSource;
  * A mail type source.
  * 
  * @author cstamas
- * @plexus.component
  */
+@Component( role = MailTypeSource.class )
 public class DefaultMailTypeSource
     implements MailTypeSource
 {
-    /**
-     * @plexus.requirement role="org.sonatype.micromailer.MailType"
-     */
+    @Requirement( role = MailType.class )
     private Map<String, MailType> mailTypes;
 
     public Collection<MailType> getKnownMailTypes()
