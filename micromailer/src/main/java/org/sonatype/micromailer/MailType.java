@@ -23,6 +23,10 @@ import javax.activation.DataSource;
  */
 public interface MailType
 {
+    public static final String SUBJECT_KEY = "subject";
+
+    public static final String BODY_KEY = "body";
+    
     public String getTypeId();
 
     public boolean isBodyIsHtml();

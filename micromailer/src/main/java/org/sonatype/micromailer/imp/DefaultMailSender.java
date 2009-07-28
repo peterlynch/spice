@@ -17,6 +17,7 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.MimeMessage;
 
+import org.codehaus.plexus.component.annotations.Component;
 import org.sonatype.micromailer.EmailerConfiguration;
 import org.sonatype.micromailer.MailCompositionAttachmentException;
 import org.sonatype.micromailer.MailCompositionMessagingException;
@@ -28,14 +29,13 @@ import org.sonatype.micromailer.MailType;
  * The JavaMail sender.
  * 
  * @author cstamas
- * @plexus.component
  */
+@Component( role = MailSender.class )
 public class DefaultMailSender
     implements MailSender
 {
     public void sendMail( EmailerConfiguration configuration, MailRequest request, MailType mailType )
-        throws MailCompositionAttachmentException,
-            MailCompositionMessagingException
+        throws MailCompositionAttachmentException, MailCompositionMessagingException
     {
         try
         {

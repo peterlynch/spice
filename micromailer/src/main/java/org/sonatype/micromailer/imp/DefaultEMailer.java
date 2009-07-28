@@ -17,6 +17,8 @@ import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.logging.Logger;
 import org.sonatype.micromailer.EMailer;
@@ -36,34 +38,26 @@ import org.sonatype.micromailer.MailTypeSource;
  * The default implementation of EMailer component.
  * 
  * @author cstamas
- * @plexus.component
  */
+@Component( role = EMailer.class )
 public class DefaultEMailer
     extends AbstractLogEnabled
     implements EMailer
 {
-    /**
-     * @plexus.requirement
-     */
+    @Requirement
     private MailTypeSource mailTypeSource;
 
-    /**
-     * @plexus.requirement
-     */
+    @Requirement
     private MailComposer mailComposer;
 
-    /**
-     * @plexus.requirement
-     */
+    @Requirement
     private MailStorage mailStorage;
 
-    /**
-     * @plexus.requirement
-     */
+    @Requirement
     private MailSender mailSender;
 
     private EmailerConfiguration emailerConfiguration = new EmailerConfiguration();
-    
+
     private ExecutorService executor = Executors.newCachedThreadPool();
 
     // =========================================================================
@@ -127,26 +121,31 @@ public class DefaultEMailer
 
         MailRequestStatus status = new MailRequestStatus( request );
 
-        executor.execute(
-             new RunnableMailer( getLogger(), request, mailTypeSource,
-                                 mailComposer, emailerConfiguration,
-                                 mailStorage, mailSender, status ) );
+        executor.execute( new RunnableMailer( getLogger(), request, mailTypeSource, mailComposer, emailerConfiguration,
+                                              mailStorage, mailSender, status ) );
 
         return status;
     }
-    
+
     private static final class RunnableMailer
         implements Runnable
     {
         private Logger logger;
+
         private MailRequest request;
+
         private MailTypeSource mailTypeSource;
+
         private MailComposer mailComposer;
+
         private EmailerConfiguration emailerConfiguration;
+
         private MailStorage mailStorage;
+
         private MailSender mailSender;
+
         private MailRequestStatus status;
-        
+
         protected RunnableMailer( Logger logger, MailRequest request, MailTypeSource mailTypeSource,
                                   MailComposer mailComposer, EmailerConfiguration emailerConfiguration,
                                   MailStorage mailStorage, MailSender mailSender, MailRequestStatus status )
@@ -160,6 +159,7 @@ public class DefaultEMailer
             this.mailSender = mailSender;
             this.status = status;
         }
+
         public void run()
         {
             try
@@ -203,7 +203,7 @@ public class DefaultEMailer
                 logger.warn( "IOException during handling of mail request Id = [" + request.getRequestId() + "]", ex );
 
                 status.setErrorCause( ex );
-            }   
+            }
         }
     }
 }

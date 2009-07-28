@@ -12,22 +12,26 @@
  */
 package org.sonatype.micromailer.imp;
 
+import org.codehaus.plexus.component.annotations.Component;
 import org.sonatype.micromailer.MailType;
 
 /**
  * The html mail type.
- * 
- * @plexus.component role-hint="html"
  */
+@Component( role = MailType.class, hint = HtmlMailType.HTML_TYPE_ID )
 public class HtmlMailType
-    extends DefaultMailType
-    implements MailType
+    extends AbstractMailType
 {
     public static final String HTML_TYPE_ID = "html";
-    
+
     public HtmlMailType()
     {
-        super();
+        setTypeId( HTML_TYPE_ID );
+
         setBodyIsHtml( true );
+
+        setSubjectTemplate( "$" + SUBJECT_KEY );
+
+        setBodyTemplate( "$" + BODY_KEY );
     }
 }

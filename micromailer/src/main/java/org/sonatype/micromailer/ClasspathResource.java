@@ -32,7 +32,14 @@ public class ClasspathResource
 
     private final String contentType;
 
+    private final ClassLoader classLoader;
+
     public ClasspathResource( String path, String name, String contentType )
+    {
+        this( path, name, contentType, null );
+    }
+
+    public ClasspathResource( String path, String name, String contentType, ClassLoader cl )
     {
         super();
 
@@ -41,6 +48,8 @@ public class ClasspathResource
         this.name = name;
 
         this.contentType = contentType;
+
+        this.classLoader = cl;
     }
 
     public String getPath()
@@ -61,7 +70,14 @@ public class ClasspathResource
     public InputStream getInputStream()
         throws IOException
     {
-        return this.getClass().getResourceAsStream( getPath() );
+        if ( classLoader != null )
+        {
+            return classLoader.getResourceAsStream( getPath() );
+        }
+        else
+        {
+            return this.getClass().getResourceAsStream( getPath() );
+        }
     }
 
     public OutputStream getOutputStream()
@@ -69,5 +85,4 @@ public class ClasspathResource
     {
         throw new UnsupportedOperationException( "Classpath resource is not writable!" );
     }
-
 }

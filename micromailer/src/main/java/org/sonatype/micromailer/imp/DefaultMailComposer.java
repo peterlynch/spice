@@ -29,6 +29,8 @@ import javax.mail.internet.MimeMultipart;
 
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
+import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.velocity.VelocityComponent;
 import org.sonatype.micromailer.Address;
 import org.sonatype.micromailer.EmailerConfiguration;
@@ -43,8 +45,8 @@ import org.sonatype.micromailer.MailType;
  * The Velocity powered mail composer.
  * 
  * @author cstamas
- * @plexus.component
  */
+@Component( role = MailComposer.class )
 public class DefaultMailComposer
     implements MailComposer
 {
@@ -58,9 +60,7 @@ public class DefaultMailComposer
 
     public static final String X_MESSAGE_ID_HEADER = "X-EMailer-Mail-Request-ID";
 
-    /**
-     * @plexus.requirement
-     */
+    @Requirement
     private VelocityComponent velocityComponent;
 
     protected Map<String, Object> initialVelocityContext;
@@ -79,9 +79,7 @@ public class DefaultMailComposer
     // mail composer iface
 
     public void composeMail( EmailerConfiguration configuration, MailRequest request, MailType mailType )
-        throws MailCompositionTemplateException,
-            MailCompositionAttachmentException,
-            MailCompositionMessagingException
+        throws MailCompositionTemplateException, MailCompositionAttachmentException, MailCompositionMessagingException
     {
         // expand subject if needed
 
@@ -135,8 +133,8 @@ public class DefaultMailComposer
 
             if ( request.getReplyTo() != null )
             {
-                message.setReplyTo( new InternetAddress[] { request.getReplyTo().getInternetAddress(
-                    request.getEncoding() ) } );
+                message.setReplyTo( new InternetAddress[] { request.getReplyTo()
+                    .getInternetAddress( request.getEncoding() ) } );
             }
 
             if ( request.getSentDate() != null )
@@ -231,9 +229,8 @@ public class DefaultMailComposer
     }
 
     protected void setRecipientsFromList( String encoding, MimeMessage message, RecipientType type,
-        List<Address> addresses )
-        throws MessagingException,
-            UnsupportedEncodingException
+                                          List<Address> addresses )
+        throws MessagingException, UnsupportedEncodingException
     {
         if ( addresses == null || addresses.size() == 0 )
         {

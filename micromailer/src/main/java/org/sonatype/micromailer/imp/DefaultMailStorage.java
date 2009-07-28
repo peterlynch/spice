@@ -14,6 +14,7 @@ package org.sonatype.micromailer.imp;
 
 import java.io.IOException;
 
+import org.codehaus.plexus.component.annotations.Component;
 import org.sonatype.micromailer.MailRequest;
 import org.sonatype.micromailer.MailStorage;
 
@@ -21,8 +22,8 @@ import org.sonatype.micromailer.MailStorage;
  * A "default" (a doing nothing) MailStorage implementation.
  * 
  * @author cstamas
- * @plexus.component
  */
+@Component( role = MailStorage.class )
 public class DefaultMailStorage
     implements MailStorage
 {

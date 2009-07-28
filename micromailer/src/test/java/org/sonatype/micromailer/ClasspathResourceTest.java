@@ -22,7 +22,6 @@ import org.codehaus.plexus.util.IOUtil;
 public class ClasspathResourceTest
     extends TestCase
 {
-
     public void testSimple()
     {
         ClasspathResource res = new ClasspathResource( "/sample.txt", "sample", "text/plain" );
