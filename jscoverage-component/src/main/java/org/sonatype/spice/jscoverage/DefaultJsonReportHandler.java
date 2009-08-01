@@ -1,7 +1,7 @@
 package org.sonatype.spice.jscoverage;
 
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Set;
 
@@ -94,10 +94,10 @@ public class DefaultJsonReportHandler
     public void persist()
         throws IOException
     {
-        FileOutputStream output = new FileOutputStream( persistedResults );
+        FileWriter output = new FileWriter( persistedResults );
         try
         {
-            IOUtil.copy( results.toString(), output );
+            results.write( output );
         }
         finally
         {
