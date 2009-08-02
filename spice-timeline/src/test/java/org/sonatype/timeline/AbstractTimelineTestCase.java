@@ -18,7 +18,7 @@ import java.util.Map;
 
 import org.codehaus.plexus.PlexusTestCase;
 
-public class AbstractTimelineTestCase
+public abstract class AbstractTimelineTestCase
     extends PlexusTestCase
 {
     protected Timeline timeline;

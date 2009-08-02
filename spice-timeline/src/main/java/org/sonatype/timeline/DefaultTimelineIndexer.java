@@ -41,11 +41,14 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable;
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.StartingException;
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.StoppingException;
 
 @Component( role = TimelineIndexer.class )
 public class DefaultTimelineIndexer
     extends AbstractLogEnabled
-    implements TimelineIndexer
+    implements TimelineIndexer, Startable
 {
     private static final String TIMESTAMP = "_t";
 
@@ -97,6 +100,26 @@ public class DefaultTimelineIndexer
             throw new TimelineException( "Fail to configure timeline index!", e );
         }
 
+    }
+
+    public void start()
+        throws StartingException
+    {
+    }
+
+    public void stop()
+        throws StoppingException
+    {
+        try
+        {
+            closeIndexWriter();
+
+            closeIndexReaderAndSearcher();
+        }
+        catch ( IOException e )
+        {
+            throw new StoppingException( "Unable to stop Timeline!", e );
+        }
     }
 
     protected IndexWriter getIndexWriter()
@@ -200,11 +223,8 @@ public class DefaultTimelineIndexer
     {
         Document doc = new Document();
 
-        doc.add( new Field(
-            TIMESTAMP,
-            DateTools.timeToString( record.getTimestamp(), DateTools.Resolution.MINUTE ),
-            Field.Store.NO,
-            Field.Index.UN_TOKENIZED ) );
+        doc.add( new Field( TIMESTAMP, DateTools.timeToString( record.getTimestamp(), DateTools.Resolution.MINUTE ),
+                            Field.Store.NO, Field.Index.UN_TOKENIZED ) );
 
         doc.add( new Field( TYPE, record.getType(), Field.Store.NO, Field.Index.UN_TOKENIZED ) );
 
@@ -222,25 +242,17 @@ public class DefaultTimelineIndexer
     {
         if ( isEmptySet( types ) && isEmptySet( subTypes ) )
         {
-            return new ConstantScoreRangeQuery(
-                TIMESTAMP,
-                DateTools.timeToString( from, DateTools.Resolution.MINUTE ),
-                DateTools.timeToString( to, DateTools.Resolution.MINUTE ),
-                true,
-                true );
+            return new ConstantScoreRangeQuery( TIMESTAMP, DateTools.timeToString( from, DateTools.Resolution.MINUTE ),
+                                                DateTools.timeToString( to, DateTools.Resolution.MINUTE ), true, true );
         }
         else
         {
             BooleanQuery result = new BooleanQuery();
 
-            result.add(
-                new ConstantScoreRangeQuery(
-                    TIMESTAMP,
-                    DateTools.timeToString( from, DateTools.Resolution.MINUTE ),
-                    DateTools.timeToString( to, DateTools.Resolution.MINUTE ),
-                    true,
-                    true ),
-                Occur.MUST );
+            result.add( new ConstantScoreRangeQuery( TIMESTAMP, DateTools.timeToString( from,
+                                                                                        DateTools.Resolution.MINUTE ),
+                                                     DateTools.timeToString( to, DateTools.Resolution.MINUTE ), true,
+                                                     true ), Occur.MUST );
 
             if ( !isEmptySet( types ) )
             {
@@ -274,7 +286,7 @@ public class DefaultTimelineIndexer
     }
 
     public List<Map<String, String>> retrieve( long fromTime, long toTime, Set<String> types, Set<String> subTypes,
-        int from, int count, TimelineFilter filter )
+                                               int from, int count, TimelineFilter filter )
         throws TimelineException
     {
         List<Map<String, String>> result = new ArrayList<Map<String, String>>();
@@ -294,11 +306,10 @@ public class DefaultTimelineIndexer
                     return result;
                 }
 
-                TopFieldDocs topDocs = getIndexSearcher().search(
-                    buildQuery( fromTime, toTime, types, subTypes ),
-                    null,
-                    searcher.maxDoc(),
-                    new Sort( new SortField( TIMESTAMP, SortField.LONG, true ) ) );
+                TopFieldDocs topDocs =
+                    getIndexSearcher().search( buildQuery( fromTime, toTime, types, subTypes ), null,
+                                               searcher.maxDoc(),
+                                               new Sort( new SortField( TIMESTAMP, SortField.LONG, true ) ) );
 
                 for ( int i = 0; i < topDocs.scoreDocs.length; i++ )
                 {
