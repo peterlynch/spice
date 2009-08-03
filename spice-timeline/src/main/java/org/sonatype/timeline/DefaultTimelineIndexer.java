@@ -115,8 +115,11 @@ public class DefaultTimelineIndexer
             closeIndexWriter();
 
             closeIndexReaderAndSearcher();
-            
-            directory.close();
+
+            if ( directory != null )
+            {
+                directory.close();
+            }
         }
         catch ( IOException e )
         {
