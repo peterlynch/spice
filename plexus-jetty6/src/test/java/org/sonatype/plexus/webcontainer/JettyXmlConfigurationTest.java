@@ -15,6 +15,7 @@ package org.sonatype.plexus.webcontainer;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,28 +28,33 @@ import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.PlexusTestCase;
 import org.codehaus.plexus.interpolation.InterpolationException;
+import org.codehaus.plexus.util.IOUtil;
 import org.mortbay.jetty.Connector;
 import org.mortbay.jetty.Handler;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.ajp.Ajp13SocketConnector;
+import org.mortbay.jetty.handler.ContextHandlerCollection;
 import org.mortbay.jetty.handler.DefaultHandler;
 import org.mortbay.jetty.handler.rewrite.RewriteHandler;
 import org.mortbay.jetty.nio.SelectChannelConnector;
+import org.mortbay.jetty.webapp.WebAppContext;
 
 public class JettyXmlConfigurationTest
     extends TestCase
 {
 
     private String defaultPort;
-    
+
     private String testConnectorPort;
-    
+
     private String testAJPPort;
-    
-    public void setUp() throws Exception
+
+    @Override
+    public void setUp()
+        throws Exception
     {
         super.setUp();
-        
+
         defaultPort = System.getProperty( "default-jetty-port", "18088" );
         testConnectorPort = System.getProperty( "test-connector-port", "18081" );
         testAJPPort = System.getProperty( "test-ajp-port", "18009" );
@@ -141,11 +147,12 @@ public class JettyXmlConfigurationTest
         Server server = null;
         try
         {
-            DefaultServletContainer servletContainer = (DefaultServletContainer) container.lookup( ServletContainer.class );
+            DefaultServletContainer servletContainer =
+                (DefaultServletContainer) container.lookup( ServletContainer.class );
 
             server = servletContainer.getServer();
             assertNotNull( server );
-            
+
             Connector[] connectors = server.getConnectors();
             assertEquals( 1, connectors.length );
             assertTrue( connectors[0] instanceof SelectChannelConnector );
@@ -157,7 +164,7 @@ public class JettyXmlConfigurationTest
             {
                 handlers = new Handler[] { server.getHandler() };
             }
-            
+
             boolean foundDefaultHandler = false;
             for ( int i = 0; i < handlers.length; i++ )
             {
@@ -167,7 +174,7 @@ public class JettyXmlConfigurationTest
                     break;
                 }
             }
-            
+
             assertTrue( "Should have found DefaultHandler", foundDefaultHandler );
         }
         finally
@@ -282,4 +289,51 @@ public class JettyXmlConfigurationTest
         return getClass().getName().replace( '.', '/' ) + ".xml";
     }
 
+    public void testTwoContexts()
+        throws Exception
+    {
+        // artifactory migration plugin does use 2 contexts!
+
+        String jettyXmlName = "jetty-two-war-context.xml";
+        PlexusContainer container = getContainer( getJettyXmlPath( jettyXmlName ) );
+
+        Server server = null;
+        try
+        {
+            DefaultServletContainer servletContainer =
+                (DefaultServletContainer) container.lookup( ServletContainer.class );
+
+            server = servletContainer.getServer();
+            assertNotNull( server );
+
+            ContextHandlerCollection handler = (ContextHandlerCollection) server.getHandler();
+            assertNotNull( handler );
+            assertEquals( 2, handler.getHandlers().length );
+
+            WebAppContext h1 = (WebAppContext) handler.getHandlers()[0];
+            assertEquals( "/context1", h1.getContextPath() );
+
+            WebAppContext h2 = (WebAppContext) handler.getHandlers()[1];
+            assertEquals( "/context2", h2.getContextPath() );
+
+            assertTrue( server.isStarted() );
+
+            URL u = new URL( "http://localhost:" + testConnectorPort + "/context1" );
+            URLConnection conn = u.openConnection();
+            String content = IOUtil.toString( conn.getInputStream() );
+            assertTrue( content, content.contains( "Hello World!" ) );
+
+            u = new URL( "http://localhost:" + testConnectorPort + "/context2" );
+            conn = u.openConnection();
+            content = IOUtil.toString( conn.getInputStream() );
+            assertTrue( content, content.contains( "Hello Webapp0!" ) );
+        }
+        finally
+        {
+            if ( server != null )
+            {
+                server.stop();
+            }
+        }
+    }
 }
