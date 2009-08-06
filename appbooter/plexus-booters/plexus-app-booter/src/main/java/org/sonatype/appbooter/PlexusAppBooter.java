@@ -23,7 +23,7 @@ import org.codehaus.plexus.util.StringUtils;
 
 /**
  * The simplest class needed to bring up a Plexus Application. No hokus-pokus, just real stuff.
- * 
+ *
  * @author cstamas
  * @since 2.0
  */
@@ -55,6 +55,8 @@ public class PlexusAppBooter
     private PlexusContainer container;
 
     private List<PlexusAppBooterCustomizer> customizers;
+
+    private boolean started = false;
 
     protected static final Object waitObj = new Object();
 
@@ -332,6 +334,8 @@ public class PlexusAppBooter
             container = new DefaultPlexusContainer( configuration );
 
             customizeContainer( container );
+
+            started=true;
         }
     }
 
@@ -365,6 +369,8 @@ public class PlexusAppBooter
                 container = null;
 
                 waitObj.notify();
+
+                started = false;
             }
         }
     }
@@ -434,5 +440,9 @@ public class PlexusAppBooter
     public static void main( String[] args )
     {
         main( args, null );
+    }
+
+    public boolean isStarted() {
+        return started ;
     }
 }
