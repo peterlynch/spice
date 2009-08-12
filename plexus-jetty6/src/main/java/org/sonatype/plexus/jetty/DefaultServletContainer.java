@@ -35,13 +35,12 @@ import org.mortbay.jetty.deployer.WebAppDeployer;
 import org.mortbay.jetty.handler.ContextHandlerCollection;
 import org.mortbay.jetty.handler.DefaultHandler;
 import org.mortbay.jetty.nio.SelectChannelConnector;
-import org.mortbay.jetty.webapp.WebAppContext;
 import org.sonatype.plexus.jetty.custom.PlexusContainerHolder;
 import org.sonatype.plexus.util.JettyUtils;
 
 /**
  * The Class ServletServer. Heavily based on Joakim Erfeldt's work in wagon-webdav tests.
- * 
+ *
  * @author cstamas
  * @plexus.component
  */
@@ -58,10 +57,10 @@ public class DefaultServletContainer
 
     /** @plexus.configuration default-value="8080" */
     private int defaultPort = 8081;
-    
+
     /** @plexus.configuration */
     private String jettyXml;
-    
+
     /** @plexus.configuration */
     private List<LifecycleListenerInfo> lifecycleListenerInfos;
 
@@ -134,7 +133,7 @@ public class DefaultServletContainer
         // Log.setLog( new PlexusJettyLogger( getLogger() ) );
 
         setServer( new Server() );
-        
+
         if ( jettyXml != null && new File( jettyXml ).isFile() )
         {
             JettyUtils.configureServer( getServer(), new File( jettyXml ), context, getLogger() );
@@ -145,7 +144,7 @@ public class DefaultServletContainer
             {
                 getLogger().debug( "Cannot load: " + jettyXml + "; it is not a valid configuration file." );
             }
-            
+
             try
             {
                 // connectors
@@ -158,7 +157,7 @@ public class DefaultServletContainer
                         getLogger().info(
                             "Adding Jetty Connector " + conn.getClass().getName() + " on port "
                                 + conn.getPort() );
-                        
+
                         getServer().addConnector( conn );
                     }
                 }
@@ -173,13 +172,13 @@ public class DefaultServletContainer
                     getLogger().info(
                         "Adding default Jetty Connector " + conn.getClass().getName() + " on port "
                             + getDefaultPort() );
-                    
+
                     getServer().addConnector( conn );
                 }
 
                 // customizations, such as disabling TLD scanning.
-                List<Listener> listeners = new ArrayList<Listener>(); 
-                
+                List<Listener> listeners = new ArrayList<Listener>();
+
                 if ( lifecycleListenerInfos != null && !lifecycleListenerInfos.isEmpty() )
                 {
                     for ( LifecycleListenerInfo listenerInfo : lifecycleListenerInfos )
@@ -189,7 +188,7 @@ public class DefaultServletContainer
                             try
                             {
                                 Listener listener = listenerInfo.getListener( context );
-                                
+
                                 listeners.add( listener );
                             }
                             catch ( Exception e )
@@ -199,7 +198,7 @@ public class DefaultServletContainer
                         }
                     }
                 }
-                
+
                 // gathering stuff
 
                 Handler handler;
@@ -219,12 +218,12 @@ public class DefaultServletContainer
                             }
                         }
                     }
-                    
+
                     if ( webappInfos != null && webappInfos.size() > 0 )
                     {
                         for ( WebappInfo webappInfo : webappInfos )
                         {
-                            handler = (WebAppContext) webappInfo.getWebAppContext( context, ctxHandler );
+                            handler = webappInfo.getWebAppContext( context, ctxHandler );
 
                             getLogger().info(
                                 "Adding Jetty WebAppContext " + handler.getClass().getName() + " on context path "
@@ -246,7 +245,7 @@ public class DefaultServletContainer
                                 }
                             }
                         }
-                        
+
                         webAppDeployer.setContexts( ctxHandler );
 
                         webAppDeployer.setExtract( true );
@@ -254,7 +253,7 @@ public class DefaultServletContainer
                         webAppDeployer.setAllowDuplicates( false );
 
                         webAppDeployer.setWebAppDir( webapps.getAbsolutePath() );
-                        
+
                         getServer().addLifeCycle( webAppDeployer );
                     }
 
@@ -281,11 +280,11 @@ public class DefaultServletContainer
                     DefaultHandler defHandler = new DefaultHandler();
 
                     defHandler.setServer( server );
-                    
+
                     defHandler.setServeIcon( false );
-                    
+
                     getLogger().info( "Adding default Jetty Handler " + defHandler.getClass().getName() );
-                    
+
                     getServer().addHandler( defHandler );
                 }
             }
@@ -294,7 +293,7 @@ public class DefaultServletContainer
                 throw new InitializationException( "Could not initialize ServletContainer!", e );
             }
         }
-        
+
     }
 
     // ===
@@ -320,6 +319,11 @@ public class DefaultServletContainer
         try
         {
             getServer().stop();
+
+            // NEXUS-2465 memory leak here, since jetty is already stopped but kept in memory by shutdown hook
+            getServer().setStopAtShutdown( false );
+            setServer( null );
+
             PlexusContainerHolder.clear();
         }
         catch ( Exception e )
