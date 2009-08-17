@@ -4,6 +4,7 @@ import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
+import org.sonatype.spice.utils.proxyserver.ProxyServerConfigurator;
 
 public class DefaultProxyServerConfigurator
     implements ProxyServerConfigurator

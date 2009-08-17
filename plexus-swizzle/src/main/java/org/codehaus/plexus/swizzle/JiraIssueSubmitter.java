@@ -35,6 +35,7 @@ import org.codehaus.swizzle.jira.IssueType;
 import org.codehaus.swizzle.jira.Jira;
 import org.codehaus.swizzle.jira.Priority;
 import org.codehaus.swizzle.jira.Project;
+import org.sonatype.spice.utils.proxyserver.ProxyServerConfigurator;
 
 //TODO detect whether the remote api is enabled
 @Component(role=IssueSubmitter.class, hint="jira" )

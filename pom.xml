@@ -27,6 +27,7 @@ under the License.
     <name>Sonatype Spice Aggregator</name>
 
     <modules>
+	  <module>spice-utils</module>
       <module>appbooter</module>
       <module>digest-applet</module>
       <module>jsw-binaries</module>

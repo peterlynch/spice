@@ -14,6 +14,8 @@ package org.codehaus.plexus.swizzle;
 
 import java.io.File;
 
+import org.sonatype.spice.utils.proxyserver.ProxyServerConfigurator;
+
 public class IssueSubmissionRequest
 {
     private String projectId;

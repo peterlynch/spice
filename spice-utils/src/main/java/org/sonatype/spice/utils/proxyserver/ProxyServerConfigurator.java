@@ -1,4 +1,4 @@
-package org.codehaus.plexus.swizzle;
+package org.sonatype.spice.utils.proxyserver;
 
 import org.apache.commons.httpclient.HttpClient;
 
