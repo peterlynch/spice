@@ -38,27 +38,27 @@ import org.codehaus.swizzle.jira.Project;
 import org.sonatype.spice.utils.proxyserver.ProxyServerConfigurator;
 
 //TODO detect whether the remote api is enabled
-@Component(role=IssueSubmitter.class, hint="jira" )
+@Component( role = IssueSubmitter.class, hint = "jira" )
 public class JiraIssueSubmitter
     implements IssueSubmitter, Initializable
 {
     /* This is just what JIRA seems to use */
     private static String FILE_ATTATCHMENT_PARAMETER = "filename.1";
-    
+
     /** Connection to the JIRA instance provided by Swizzle */
     private Jira jira;
-    
+
     /** JIRA server URL to connect to. */
     private String serverUrl;
 
     @Requirement
     private AuthenticationSource authenticationSource;
-    
+
     /* For plexus use */
     public JiraIssueSubmitter()
-    {        
+    {
     }
-    
+
     public JiraIssueSubmitter( String serverUrl, AuthenticationSource authenticationSource )
         throws InitializationException
     {
@@ -66,50 +66,53 @@ public class JiraIssueSubmitter
         this.authenticationSource = authenticationSource;
         initialize();
     }
-    
+
     public IssueSubmissionResult submitIssue( IssueSubmissionRequest request )
         throws IssueSubmissionException
     {
         Project project = jira.getProject( request.getProjectId() );
         IssueType type = jira.getIssueType( 2 );
         Priority priority = jira.getPriority( 1 );
-        
+
         validateIssueSubmissionRequest( request );
-        
-        Issue issue = new Issue();                   
+
+        Issue issue = new Issue();
         issue.setProject( project );
         issue.setSummary( request.getSummary() );
         issue.setDescription( request.getDescription() );
         issue.setReporter( jira.getUser( request.getReporter() ) );
-        issue.setAssignee( jira.getUser( request.getAssignee() ) );
+        if ( request.getAssignee() != null )
+        {
+            issue.setAssignee( jira.getUser( request.getAssignee() ) );
+        }
         issue.setType( type );
-        issue.setPriority( priority );         
-        issue.setEnvironment(request.getEnvironment());
-        
-        if ( StringUtils.isNotEmpty( request.getComponent() ) ) 
+        issue.setPriority( priority );
+        issue.setEnvironment( request.getEnvironment() );
+
+        if ( StringUtils.isNotEmpty( request.getComponent() ) )
         {
             issue.setComponents( Arrays.asList( jira.getComponent( project, request.getComponent() ) ) );
         }
-                
-         // We need to create an issue so that we can create an attachment. The XMLRPC API does not
-         // allow for attachments so we have to use separate http client call to submit the attachment. 
-        
+
+        // We need to create an issue so that we can create an attachment. The XMLRPC API does not
+        // allow for attachments so we have to use separate http client call to submit the attachment.
+
         Issue addedIssue;
-        
+
         try
         {
-            addedIssue = jira.createIssue(issue);
+            addedIssue = jira.createIssue( issue );
         }
         catch ( Exception e )
         {
             throw new IssueSubmissionException( "Error creating issue: " + e.getMessage(), e );
         }
-        
+
         if ( request.getProblemReportBundle() != null )
         {
             attachProblemReport( addedIssue.getId(), request );
         }
-        
+
         return new IssueSubmissionResult( addedIssue.getLink(), addedIssue.getKey() );
     }
 
@@ -118,31 +121,33 @@ public class JiraIssueSubmitter
     {
         if ( !userExists( request.getReporter() ) )
         {
-            throw new IssueSubmissionException( "The reporter must exist in the JIRA users database. The user '" + request.getAssignee() + "' does not exist." );
-        }        
+            throw new IssueSubmissionException( "The reporter must exist in the JIRA users database. The user '"
+                + request.getAssignee() + "' does not exist." );
+        }
 
-        if ( StringUtils.isNotEmpty( request.getAssignee() )
-            && !userExists( request.getAssignee() ) )
+        if ( StringUtils.isNotEmpty( request.getAssignee() ) && !userExists( request.getAssignee() ) )
         {
-            throw new IssueSubmissionException( "The assignee must exist in the JIRA users database. The user '" + request.getAssignee() + "' does not exist." );
-        }        
+            throw new IssueSubmissionException( "The assignee must exist in the JIRA users database. The user '"
+                + request.getAssignee() + "' does not exist." );
+        }
     }
-    
+
     private boolean userExists( String login )
     {
         if ( jira.getUser( login ).getName() != null )
         {
             return true;
         }
-        
+
         return false;
     }
-    
-    // Attachment support is being provided by creating a direct call against the web interface. We need to use the following
+
+    // Attachment support is being provided by creating a direct call against the web interface. We need to use the
+    // following
     // URL template:
     //
     // /secure/AttachFile.jspa?id=${issueId}&os_username=${username}&os_password=${password}
-    
+
     private void attachProblemReport( String issueKey, IssueSubmissionRequest request )
         throws IssueSubmissionException
     {
@@ -155,9 +160,11 @@ public class JiraIssueSubmitter
     {
         String username = authenticationSource.getLogin();
         String password = authenticationSource.getPassword();
-        
-        String uploadUrl = serverUrl + "/secure/AttachFile.jspa?id=" + issueId + "&os_username=" + username + "&os_password=" + password;
-        
+
+        String uploadUrl =
+            serverUrl + "/secure/AttachFile.jspa?id=" + issueId + "&os_username=" + username + "&os_password="
+                + password;
+
         HttpClient client = getHttpClient( request );
         client.getHttpConnectionManager().getParams().setConnectionTimeout( 8000 );
         PostMethod upload = new PostMethod( uploadUrl );
@@ -170,7 +177,7 @@ public class JiraIssueSubmitter
 
             // JIRA returns temporarily moved because the web UI moves to another page when the attachment
             // submission is done normally.
-            
+
             if ( status != HttpStatus.SC_MOVED_TEMPORARILY )
             {
                 // This should not fail once we have successfully created the issue, but in the event the
@@ -181,7 +188,8 @@ public class JiraIssueSubmitter
         }
         catch ( FileNotFoundException e )
         {
-            throw new IssueSubmissionException( "The problem report bundle specified does not exist: " + request.getProblemReportBundle() );
+            throw new IssueSubmissionException( "The problem report bundle specified does not exist: "
+                + request.getProblemReportBundle() );
         }
         catch ( HttpException e )
         {
@@ -210,20 +218,21 @@ public class JiraIssueSubmitter
             throw new InitializationException( "The username and password combination is invalid.", e );
         }
     }
-    
-    private HttpClient getHttpClient( IssueSubmissionRequest request ) {
+
+    private HttpClient getHttpClient( IssueSubmissionRequest request )
+    {
         HttpClient client = new HttpClient();
-        
+
         ProxyServerConfigurator configurator = request.getProxyConfigurator();
-        
+
         if ( configurator == null )
         {
             configurator = new DefaultProxyServerConfigurator();
         }
-        
+
         configurator.applyToClient( client );
-        
+
         return client;
-      }
+    }
 
 }

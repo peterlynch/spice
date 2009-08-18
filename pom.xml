@@ -52,10 +52,7 @@ under the License.
       <module>plexus-plugin</module>
       <module>jscoverage-component</module>
       <module>plexus-swizzle</module>
-      <module>banned-plugins-enforcer</module>      
-      
-      
-      
+      <module>plexus-encryptor</module>
     </modules>
 
 	<build>
