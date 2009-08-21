@@ -2,18 +2,19 @@ package org.sonatype.plugin.metadata.plexus;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
-
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.component.repository.ComponentDescriptor;
@@ -33,13 +34,14 @@ import org.sonatype.reflect.AnnReader;
  * This is dirty and hackish. But works for now. The trick is that this gleaner is able to process the class, create a
  * Plexus specific ComponentDescriptor for it, and also that we are able to "drive" is the component in case a
  * "singular" or "plural" case.
- * 
+ *
  * @author toby
  * @author cstamas
  */
-@Component( role = PlexusComponentGleaner.class )
+@Component ( role = PlexusComponentGleaner.class )
 public class PlexusComponentGleaner
 {
+
     public PlexusComponentGleanerResponse glean( PlexusComponentGleanerRequest request )
         throws GleanerException, IOException
     {
@@ -96,7 +98,8 @@ public class PlexusComponentGleaner
             if ( role == null )
             {
                 // try singular
-                role = getComponentsRole( request.getSingularComponentAnnotations(), request.getClassRealm(), annClass );
+                role =
+                    getComponentsRole( request.getSingularComponentAnnotations(), request.getClassRealm(), annClass );
 
                 isSingular = true;
             }
@@ -151,7 +154,9 @@ public class PlexusComponentGleaner
         {
             for ( AnnField field : c.getFields().values() )
             {
-                ComponentRequirement requirement = findRequirement( field, c, request.getClassRealm() );
+                ComponentRequirement requirement = findRequirement(
+                    request.getClassName(), field, request.getClassRealm()
+                );
 
                 if ( requirement != null )
                 {
@@ -189,7 +194,9 @@ public class PlexusComponentGleaner
         return response;
     }
 
-    private ComponentRequirement findRequirement( final AnnField field, AnnClass annClass, ClassLoader cl )
+    private ComponentRequirement findRequirement( final String className,
+                                                  final AnnField field,
+                                                  final ClassLoader cl )
         throws GleanerException
     {
         assert field != null;
@@ -212,6 +219,37 @@ public class PlexusComponentGleaner
             if ( requirementAnno.role() != null && !requirementAnno.role().equals( Object.class ) )
             {
                 fieldType = requirementAnno.role().getName();
+            }
+        }
+        else
+        {
+            if ( List.class.getName().equals( fieldType ) )
+            {
+                try
+                {
+                    final Class<?> clazz = cl.loadClass( className );
+                    final Field fieldToBeInjected = clazz.getDeclaredField( field.getName() );
+                    if ( fieldToBeInjected != null )
+                    {
+                        final Type type = fieldToBeInjected.getGenericType();
+                        if ( type != null && type instanceof ParameterizedType )
+                        {
+                            final Type[] ats = ( (ParameterizedType) type ).getActualTypeArguments();
+                            if ( ats.length == 1 )
+                            {
+                                if ( ats[ 0 ] instanceof Class )
+                                {
+                                    fieldType = ( (Class) ats[0] ).getName();
+                                }
+                            }
+                        }
+                    }
+                }
+                catch ( Throwable ignore )
+                {
+                    // we did our best ;)
+                    ignore.getMessage(); // only for debugging purpose
+                }
             }
         }
 
@@ -310,8 +348,6 @@ public class PlexusComponentGleaner
 
     /**
      * Returns a list of all of the classes which the given type inherits from.
-     * 
-     * @throws IOException
      */
     private List<AnnClass> getClasses( AnnClass annClass, ClassLoader classLoader )
         throws IOException
@@ -320,7 +356,7 @@ public class PlexusComponentGleaner
 
         List<AnnClass> classes = new ArrayList<AnnClass>();
 
-        while ( annClass != null )
+        while( annClass != null )
         {
             classes.add( annClass );
             if ( annClass.getSuperName() != null )
