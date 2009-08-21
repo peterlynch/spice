@@ -225,32 +225,13 @@ public class PlexusComponentGleaner
         {
             if ( List.class.getName().equals( fieldType ) )
             {
-                try
-                {
-                    final Class<?> clazz = cl.loadClass( className );
-                    final Field fieldToBeInjected = clazz.getDeclaredField( field.getName() );
-                    if ( fieldToBeInjected != null )
-                    {
-                        final Type type = fieldToBeInjected.getGenericType();
-                        if ( type != null && type instanceof ParameterizedType )
-                        {
-                            final Type[] ats = ( (ParameterizedType) type ).getActualTypeArguments();
-                            if ( ats.length == 1 )
-                            {
-                                if ( ats[ 0 ] instanceof Class )
-                                {
-                                    fieldType = ( (Class) ats[0] ).getName();
-                                }
-                            }
-                        }
-                    }
-                }
-                catch ( Throwable ignore )
-                {
-                    // we did our best ;)
-                    ignore.getMessage(); // only for debugging purpose
-                }
+                fieldType = extractListElementsType( className, field.getName(), cl, fieldType );
             }
+            else if ( Map.class.getName().equals( fieldType ) )
+            {
+                fieldType = extractMapElementsType( className, field.getName(), cl, fieldType );
+            }
+
         }
 
         ComponentRequirement requirement = new ComponentRequirement();
@@ -278,6 +259,94 @@ public class PlexusComponentGleaner
         requirement.setFieldMappingType( fieldType );
 
         return requirement;
+    }
+
+    /**
+     * Extract list elements type via reflection.
+     *
+     * @param className              class containing the field
+     * @param fieldName              field name
+     * @param cl                     class loader to be used
+     * @param defaultElementTypeName default element name if cannot be determined
+     *
+     * @return element type name or default
+     */
+    private String extractListElementsType( final String className,
+                                            final String fieldName,
+                                            final ClassLoader cl,
+                                            final String defaultElementTypeName )
+    {
+        String elementTypeName = defaultElementTypeName;
+        try
+        {
+            final Class<?> clazz = cl.loadClass( className );
+            final Field fieldToBeInjected = clazz.getDeclaredField( fieldName );
+            if ( fieldToBeInjected != null )
+            {
+                final Type type = fieldToBeInjected.getGenericType();
+                if ( type != null && type instanceof ParameterizedType )
+                {
+                    final Type[] ats = ( (ParameterizedType) type ).getActualTypeArguments();
+                    if ( ats.length == 1 )
+                    {
+                        if ( ats[ 0 ] instanceof Class )
+                        {
+                            elementTypeName = ( (Class) ats[ 0 ] ).getName();
+                        }
+                    }
+                }
+            }
+        }
+        catch ( Throwable ignore )
+        {
+            // we did our best ;)
+            ignore.getMessage(); // only for debugging purpose
+        }
+        return elementTypeName;
+    }
+
+    /**
+     * Extract map values elements type via reflection.
+     *
+     * @param className              class containing the field
+     * @param fieldName              field name
+     * @param cl                     class loader to be used
+     * @param defaultElementTypeName default element name if cannot be determined
+     *
+     * @return element type name or default
+     */
+    private String extractMapElementsType( final String className,
+                                           final String fieldName,
+                                           final ClassLoader cl,
+                                           final String defaultElementTypeName )
+    {
+        String elementTypeName = defaultElementTypeName;
+        try
+        {
+            final Class<?> clazz = cl.loadClass( className );
+            final Field fieldToBeInjected = clazz.getDeclaredField( fieldName );
+            if ( fieldToBeInjected != null )
+            {
+                final Type type = fieldToBeInjected.getGenericType();
+                if ( type != null && type instanceof ParameterizedType )
+                {
+                    final Type[] ats = ( (ParameterizedType) type ).getActualTypeArguments();
+                    if ( ats.length == 2 )
+                    {
+                        if ( ats[ 1 ] instanceof Class )
+                        {
+                            elementTypeName = ( (Class) ats[ 1 ] ).getName();
+                        }
+                    }
+                }
+            }
+        }
+        catch ( Throwable ignore )
+        {
+            // we did our best ;)
+            ignore.getMessage(); // only for debugging purpose
+        }
+        return elementTypeName;
     }
 
     private AnnClass getComponentsRole( Set<Class<?>> annosToLookFor, ClassLoader classloader, AnnClass annClass )
