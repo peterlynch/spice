@@ -26,7 +26,6 @@ import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.codec.binary.Base64OutputStream;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
-import org.codehaus.plexus.util.Base64;
 import org.codehaus.plexus.util.IOUtil;
 
 @Component( role = PlexusEncryptor.class, hint = "rsa-aes" )
@@ -165,12 +164,13 @@ public class RsaAesPlexusEncryptor
         byte[] raw = aesKey.getEncoded();
         byte[] encryptedKey = getCipher( "RSA/ECB/PKCS1Padding", key, javax.crypto.Cipher.ENCRYPT_MODE ).doFinal( raw );
 
-        if ( getLogger().isDebugEnabled() )
-        {
-            getLogger().debug( "before encrypt: " + new String( Base64.encodeBase64( raw ) ) );
-            getLogger().debug( "Encrypted key: " + new String( Base64.encodeBase64( encryptedKey ) ) );
-            getLogger().debug( "Encrypted data: " + new String( Base64.encodeBase64( encryptedData ) ) );
-        }
+        // useful when debugging but can't be left uncommented due to NEXUS-2530
+        // if ( getLogger().isDebugEnabled() )
+        // {
+        // getLogger().debug( "before encrypt: " + new String( Base64.encodeBase64( raw ) ) );
+        // getLogger().debug( "Encrypted key: " + new String( Base64.encodeBase64( encryptedKey ) ) );
+        // getLogger().debug( "Encrypted data: " + new String( Base64.encodeBase64( encryptedData ) ) );
+        // }
 
         Base64OutputStream output = new Base64OutputStream( encryptedOutput );
         IOUtil.copy( encryptedKey, output );
@@ -220,12 +220,13 @@ public class RsaAesPlexusEncryptor
 
         byte[] raw = getCipher( "RSA/ECB/PKCS1Padding", key, javax.crypto.Cipher.DECRYPT_MODE ).doFinal( encryptedKey );
 
-        if ( getLogger().isDebugEnabled() )
-        {
-            getLogger().debug( "enc key: " + new String( Base64.encodeBase64( encryptedKey ) ) );
-            getLogger().debug( "enc data: " + new String( Base64.encodeBase64( encryptedData ) ) );
-            getLogger().debug( "after decrypt: " + new String( Base64.encodeBase64( raw ) ) );
-        }
+        // useful when debugging but can't be left uncommented due to NEXUS-2530
+        // if ( getLogger().isDebugEnabled() )
+        // {
+        // getLogger().debug( "enc key: " + new String( Base64.encodeBase64( encryptedKey ) ) );
+        // getLogger().debug( "enc data: " + new String( Base64.encodeBase64( encryptedData ) ) );
+        // getLogger().debug( "after decrypt: " + new String( Base64.encodeBase64( raw ) ) );
+        // }
 
         SecretKeySpec aesKey = new SecretKeySpec( raw, "AES" );
 
