@@ -47,6 +47,13 @@ public class DefaultTimeline
         try
         {
             indexer.configure( config.getIndexDirectory() );
+
+            if ( getLogger().isDebugEnabled() )
+            {
+                getLogger().debug( "Trying to read a record from timeline." );
+            }
+
+            indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 1, null );
         }
         catch ( TimelineException e )
         {

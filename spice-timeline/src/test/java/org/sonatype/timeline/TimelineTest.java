@@ -87,12 +87,12 @@ public class TimelineTest
         assertEquals( 0, timeline.retrieve( 0, 10, null ).size() );
     }
 
-    public void testRepairIndex()
+    public void testRepairIndexCouldNotRead()
         throws Exception
     {
         // here we use data produced by testSimpleAddAndRetrieve(), but the index file is crashed (manually edited)
-        File crashedPersistDir = new File( PlexusTestCase.getBasedir(), "target/test-classes/crashed/persist" );
-        File carshedIndexDir = new File( PlexusTestCase.getBasedir(), "target/test-classes/crashed/index" );
+        File crashedPersistDir = new File( PlexusTestCase.getBasedir(), "target/test-classes/crashed-could-not-read/persist" );
+        File carshedIndexDir = new File( PlexusTestCase.getBasedir(), "target/test-classes/crashed-could-not-read/index" );
         FileUtils.copyDirectoryStructure( crashedPersistDir, persistDirectory );
         FileUtils.copyDirectoryStructure( carshedIndexDir, indexDirectory );
 
@@ -109,5 +109,22 @@ public class TimelineTest
 
         assertEquals( 1, results.size() );
         assertEquals( data, results.get( 0 ) );
+    }
+    
+    public void testRepairIndexCouldNotRetrieve()
+        throws Exception
+    {
+        File crashedPersistDir = new File(
+            PlexusTestCase.getBasedir(),
+            "target/test-classes/crashed-could-not-retrieve/persist" );
+        File carshedIndexDir = new File(
+            PlexusTestCase.getBasedir(),
+            "target/test-classes/crashed-could-not-retrieve/index" );
+        FileUtils.copyDirectoryStructure( crashedPersistDir, persistDirectory );
+        FileUtils.copyDirectoryStructure( carshedIndexDir, indexDirectory );
+
+        timeline.configure( new TimelineConfiguration( persistDirectory, indexDirectory ) );
+
+        assertTrue( timeline.retrieveNewest( 10, null ).size() > 0 );
     }
 }
