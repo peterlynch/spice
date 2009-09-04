@@ -9,7 +9,7 @@
   </parent>
 
   <artifactId>plexus-encryptor</artifactId>
-  <version>1.0</version>
+  <version>1.1-SNAPSHOT</version>
 
   <name>Plexus Encryptor</name>
 
@@ -98,11 +98,4 @@
       <artifactId>junit</artifactId>
     </dependency>
   </dependencies>
-
-
-  <scm>
-    <connection>scm:svn:http://svn.sonatype.org/spice/tags/plexus-encryptor-1.0</connection>
-    <developerConnection>scm:svn:https://svn.sonatype.org/spice/tags/plexus-encryptor-1.0</developerConnection>
-    <url>http://svn.sonatype.org/spice/tags/plexus-encryptor-1.0</url>
-  </scm>
 </project>
