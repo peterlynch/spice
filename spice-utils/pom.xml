@@ -6,7 +6,7 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>spice-utils</artifactId>
-	<version>1.0.0</version>
+	<version>1.1-SNAPSHOT</version>
 	<name>Spice Utilities</name>
 	<properties>
 		<commons-httpclient.version>3.1</commons-httpclient.version>
@@ -50,10 +50,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
-  <scm>
-    <connection>scm:svn:http://svn.sonatype.org/spice/tags/spice-utils-1.0.0</connection>
-    <developerConnection>scm:svn:https://svn.sonatype.org/spice/tags/spice-utils-1.0.0</developerConnection>
-    <url>http://svn.sonatype.org/spice/tags/spice-utils-1.0.0</url>
-  </scm>
 </project>
