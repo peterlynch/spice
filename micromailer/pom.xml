@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
 
@@ -13,7 +12,7 @@
 
   <artifactId>micromailer</artifactId>
 
-  <version>1.0.3-SNAPSHOT</version>
+  <version>1.0.3</version>
 
   <packaging>jar</packaging>
 
@@ -21,9 +20,9 @@
 
   <!-- SCM -->
   <scm>
-    <connection>scm:svn:http://svn.sonatype.org/spice/trunk/micromailer</connection>
-    <url>http://svn.sonatype.org/spice/trunk/micromailer</url>
-    <developerConnection>scm:svn:https://svn.sonatype.org/spice/trunk/micromailer</developerConnection>
+    <connection>scm:svn:http://svn.sonatype.org/spice/tags/micromailer-1.0.3</connection>
+    <url>http://svn.sonatype.org/spice/tags/micromailer-1.0.3</url>
+    <developerConnection>scm:svn:https://svn.sonatype.org/spice/tags/micromailer-1.0.3</developerConnection>
   </scm>
 
   <dependencies>
