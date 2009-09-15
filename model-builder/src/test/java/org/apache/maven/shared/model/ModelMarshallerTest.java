@@ -31,10 +31,9 @@ package org.apache.maven.shared.model;
  * under the License.
  */
 
-import static org.junit.Assert.*;
-import org.junit.Test;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -50,6 +49,10 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.junit.Test;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
 public class ModelMarshallerTest
 {
 
@@ -57,9 +60,9 @@ public class ModelMarshallerTest
     public void unmarshalWithEmptyCollectionTags()
         throws IOException
     {
-        List<ModelProperty> modelProperties = Arrays.asList(
-            new ModelProperty( "http://apache.org/maven/project", null ),
-            new ModelProperty( "http://apache.org/maven/project/dependencies#collection", null ) );
+        List<ModelProperty> modelProperties =
+            Arrays.asList( new ModelProperty( "http://apache.org/maven/project", null ),
+                           new ModelProperty( "http://apache.org/maven/project/dependencies#collection", null ) );
         String xml = ModelMarshaller.unmarshalModelPropertiesToXml( modelProperties, "http://apache.org/maven" );
         assertWellFormedXml( xml );
     }
@@ -68,9 +71,9 @@ public class ModelMarshallerTest
     public void unmarshalWithSingleProperty()
         throws IOException
     {
-        List<ModelProperty> modelProperties = Arrays.asList(
-            new ModelProperty( "http://apache.org/maven/project", null ),
-            new ModelProperty( "http://apache.org/maven/project/modelVersion", "4.0.0" ) );
+        List<ModelProperty> modelProperties =
+            Arrays.asList( new ModelProperty( "http://apache.org/maven/project", null ),
+                           new ModelProperty( "http://apache.org/maven/project/modelVersion", "4.0.0" ) );
         String xml = ModelMarshaller.unmarshalModelPropertiesToXml( modelProperties, "http://apache.org/maven" );
         assertWellFormedXml( xml );
     }
@@ -79,10 +82,11 @@ public class ModelMarshallerTest
     public void unmarshalWithEmptyTags111()
         throws IOException
     {
-        List<ModelProperty> modelProperties = ModelMarshaller.marshallXmlToModelProperties( new ByteArrayInputStream(
-            "<project><S></S><version>1.2</version><developers><developer><organization></organization></developer></developers><modelVersion>4</modelVersion></project>".getBytes( "UTF-8" ) ),
-                                                                                            "http://apache.org/maven",
-                                                                                            null );
+        List<ModelProperty> modelProperties =
+            ModelMarshaller.marshallXmlToModelProperties(
+                                                          new ByteArrayInputStream(
+                                                                                    "<project><S></S><version>1.2</version><developers><developer><organization></organization></developer></developers><modelVersion>4</modelVersion></project>".getBytes( "UTF-8" ) ),
+                                                          "http://apache.org/maven", null );
 
         String xml = ModelMarshaller.unmarshalModelPropertiesToXml( modelProperties, "http://apache.org/maven" );
         assertWellFormedXml( xml );
@@ -122,15 +126,15 @@ public class ModelMarshallerTest
         String src = "<project groupId='gid' artifactId='aid'><item attrib='value'/></project>";
         List<ModelProperty> modelProperties =
             ModelMarshaller.marshallXmlToModelProperties( toStream( src ), "http://apache.org/maven", null );
-        for(ModelProperty mp : modelProperties)
+        for ( ModelProperty mp : modelProperties )
         {
-        	System.out.println(mp);
+            System.out.println( mp );
         }
         String xml = ModelMarshaller.unmarshalModelPropertiesToXml( modelProperties, "http://apache.org/maven" );
-        System.out.println(xml);
+        System.out.println( xml );
         assertWellFormedXml( xml );
         assertTrue( xml.matches( "(?s).*<item\\s+attrib=\\s*\"value\".*" ) );
-        assertTrue( xml.matches( "(?s).*<project\\s+groupId=\\s*\"gid\"\\s+artifactId=\\s*\"aid\".*" ) );
+        assertTrue( xml.matches( "(?s).*<project\\s+artifactId=\\s*\"aid\"\\s+groupId=\\s*\"gid\".*" ) );
     }
 
     @Test
@@ -148,9 +152,11 @@ public class ModelMarshallerTest
     public void marshal()
         throws IOException
     {
-        List<ModelProperty> modelProperties = ModelMarshaller.marshallXmlToModelProperties(
-            new ByteArrayInputStream( "<project><version>1.1</version></project>".getBytes( "UTF-8" ) ),
-            "http://apache.org/maven", null );
+        List<ModelProperty> modelProperties =
+            ModelMarshaller.marshallXmlToModelProperties(
+                                                          new ByteArrayInputStream(
+                                                                                    "<project><version>1.1</version></project>".getBytes( "UTF-8" ) ),
+                                                          "http://apache.org/maven", null );
 
         assertEquals( 2, modelProperties.size() );
         assertEquals( "http://apache.org/maven/project", modelProperties.get( 0 ).getUri() );
@@ -175,17 +181,13 @@ public class ModelMarshallerTest
     }
 
     /*
-    @Test(expected = IllegalArgumentException.class)
-    public void unmarshalWithBadBaseUri() throws IOException, XmlPullParserException {
-        List<ModelProperty> modelProperties = Arrays.asList(
-                new ModelProperty("http://apache.org/maven/project", null),
-                new ModelProperty("http://apache.org/maven/project/version", "1.1")
-        );
-
-        ModelMarshaller.unmarshalModelPropertiesToXml(modelProperties, "http://apache.org");
-    }
+     * @Test(expected = IllegalArgumentException.class) public void unmarshalWithBadBaseUri() throws IOException,
+     * XmlPullParserException { List<ModelProperty> modelProperties = Arrays.asList( new
+     * ModelProperty("http://apache.org/maven/project", null), new
+     * ModelProperty("http://apache.org/maven/project/version", "1.1") );
+     * ModelMarshaller.unmarshalModelPropertiesToXml(modelProperties, "http://apache.org"); }
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test( expected = IllegalArgumentException.class )
     public void unmarshalWithNullBaseUri()
         throws IOException
     {
@@ -195,7 +197,7 @@ public class ModelMarshallerTest
         ModelMarshaller.unmarshalModelPropertiesToXml( modelProperties, null );
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test( expected = IllegalArgumentException.class )
     public void unmarshalWithEmptyBaseUri()
         throws IOException
     {
@@ -205,7 +207,7 @@ public class ModelMarshallerTest
         ModelMarshaller.unmarshalModelPropertiesToXml( modelProperties, "" );
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test( expected = IllegalArgumentException.class )
     public void unmarshalWithEmptyModelProperties()
         throws IOException
     {
@@ -213,46 +215,33 @@ public class ModelMarshallerTest
                                                        "http://apache.org/maven/project" );
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test( expected = IllegalArgumentException.class )
     public void unmarshalWithNullModelProperties()
         throws IOException
     {
         ModelMarshaller.unmarshalModelPropertiesToXml( null, "http://apache.org/maven/project" );
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test( expected = IllegalArgumentException.class )
     public void unmarshalWithIncorrectModelPropertyUri()
         throws IOException
     {
-        List<ModelProperty> modelProperties = Arrays.asList(
-            new ModelProperty( "http://apache.org/maven/project", null ),
-            new ModelProperty( "http://bogus.org/maven", "1.1" ) );
+        List<ModelProperty> modelProperties =
+            Arrays.asList( new ModelProperty( "http://apache.org/maven/project", null ),
+                           new ModelProperty( "http://bogus.org/maven", "1.1" ) );
 
         ModelMarshaller.unmarshalModelPropertiesToXml( modelProperties, "http://apache.org/maven" );
     }
-    /*   
-    @Test
 
-    public void unmarshalWithAttributes2()
-        throws IOException
-    {
-        List<ModelProperty> modelProperties = ModelMarshaller
-				.marshallXmlToModelProperties(
-						new ByteArrayInputStream(
-								"<project><copy todir=\"src\" overwrite=\"true\"><fileset dir=\"target\" /></copy></project>"
-										.getBytes("UTF-8")),
-						"http://apache.org/maven", null);
-		modelProperties = ModelTransformerContext.sort(modelProperties,
-				"http://apache.org/maven");
-		for(ModelProperty mp : modelProperties)
-		{
-			System.out.println(mp);
-		}
-		String xml = ModelMarshaller.unmarshalModelPropertiesToXml(
-				modelProperties, "http://apache.org/maven");
-		assertTrue( xml.contains("copy todir=" ) );		
-    }
-*/
+    /*
+     * @Test public void unmarshalWithAttributes2() throws IOException { List<ModelProperty> modelProperties =
+     * ModelMarshaller .marshallXmlToModelProperties( new ByteArrayInputStream(
+     * "<project><copy todir=\"src\" overwrite=\"true\"><fileset dir=\"target\" /></copy></project>"
+     * .getBytes("UTF-8")), "http://apache.org/maven", null); modelProperties =
+     * ModelTransformerContext.sort(modelProperties, "http://apache.org/maven"); for(ModelProperty mp : modelProperties)
+     * { System.out.println(mp); } String xml = ModelMarshaller.unmarshalModelPropertiesToXml( modelProperties,
+     * "http://apache.org/maven"); assertTrue( xml.contains("copy todir=" ) ); }
+     */
     private void assertWellFormedXml( String xml )
     {
         try
