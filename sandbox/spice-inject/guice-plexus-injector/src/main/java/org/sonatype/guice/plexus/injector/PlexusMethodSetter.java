@@ -10,12 +10,12 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
-package org.sonatype.guice.plexus.binder;
+package org.sonatype.guice.plexus.injector;
 
 import java.lang.reflect.Method;
 
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.sonatype.guice.plexus.binder.PlexusComponentInjector.Setter;
+import org.sonatype.guice.plexus.injector.PlexusComponentInjector.Setter;
 
 import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;

@@ -15,7 +15,7 @@
   <name>Spice Dependency Injection</name>
 
   <modules>
-    <module>guice-plexus-binder</module>
+    <module>guice-plexus-injector</module>
   </modules>
 
 </project>

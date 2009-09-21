@@ -1,4 +1,4 @@
-package org.sonatype.guice.plexus.binder;
+package org.sonatype.guice.plexus.injector;
 
 import java.util.Collections;
 import java.util.List;
