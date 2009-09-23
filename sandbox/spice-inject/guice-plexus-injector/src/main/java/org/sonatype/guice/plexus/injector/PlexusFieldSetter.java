@@ -21,6 +21,8 @@ import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
 import com.google.inject.spi.TypeEncounter;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  * {@link Setter} that injects a component into a field marked with {@link Requirement}.
  */
@@ -47,6 +49,7 @@ final class PlexusFieldSetter
     }
 
     @Override
+    @SuppressWarnings( "DP_DO_INSIDE_DO_PRIVILEGED" )
     protected void privilegedApply( final Object instance )
         throws Exception
     {

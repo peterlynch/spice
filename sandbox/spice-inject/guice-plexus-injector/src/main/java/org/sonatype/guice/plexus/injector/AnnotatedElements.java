@@ -16,6 +16,8 @@ import java.lang.reflect.AnnotatedElement;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  * {@link Iterable} that supports iteration over all members of a class hierarchy: constructors > methods > fields.
  */
@@ -128,6 +130,7 @@ final class AnnotatedElements
             return i < items.length;
         }
 
+        @SuppressWarnings( "IT_NO_SUCH_ELEMENT" )
         public T next()
         {
             return items[i++];

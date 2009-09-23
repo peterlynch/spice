@@ -18,19 +18,19 @@ import java.lang.reflect.WildcardType;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.guice.plexus.injector.PlexusComponentInjector.Setter;
 
+import com.google.inject.ConfigurationException;
 import com.google.inject.Key;
 import com.google.inject.Provider;
 import com.google.inject.ProvisionException;
 import com.google.inject.TypeLiteral;
-import com.google.inject.name.Names;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.util.Types;
 
@@ -40,6 +40,14 @@ import com.google.inject.util.Types;
 abstract class AbstractPlexusSetter
     implements Setter
 {
+    private static final Provider<Map<String, ?>> EMPTY_MAP_PROVIDER = new Provider<Map<String, ?>>()
+    {
+        public Map<String, ?> get()
+        {
+            return Collections.emptyMap();
+        }
+    };
+
     private final TypeEncounter<?> encounter;
 
     AbstractPlexusSetter( final TypeEncounter<?> encounter )
@@ -56,19 +64,19 @@ abstract class AbstractPlexusSetter
      */
     protected final Provider<?> lookup( final TypeLiteral<?> targetType, final Requirement requirement )
     {
-        final Type role = getRole( targetType, requirement );
+        final Type roleType = getRole( targetType, requirement );
         final String[] hints = getHints( requirement );
 
         if ( targetType.getRawType() == Map.class )
         {
-            return getMapProvider( role, hints );
+            return getMapProvider( roleType, hints );
         }
         else if ( targetType.getRawType() == List.class )
         {
-            return getListProvider( role, hints );
+            return getListProvider( roleType, hints );
         }
 
-        return encounter.getProvider( getRequirementKey( role, hints[0] ) );
+        return getProvider( roleType, hints[0] );
     }
 
     /**
@@ -93,53 +101,78 @@ abstract class AbstractPlexusSetter
                 }
                 catch ( final Exception e )
                 {
-                    throw new ProvisionException( e.getLocalizedMessage(), e );
+                    throw new ProvisionException( e.toString() );
                 }
                 return null;
             }
         } );
     }
 
+    @SuppressWarnings( "unchecked" )
+    private Provider<Map<String, ?>> getMapProvider( final Type roleType )
+    {
+        try
+        {
+            return encounter.getProvider( (Key) Key.get( Types.mapOf( String.class, roleType ) ) );
+        }
+        catch ( final ConfigurationException e )
+        {
+            return EMPTY_MAP_PROVIDER;
+        }
+    }
+
+    @SuppressWarnings( "unchecked" )
+    private Map<String, Provider<?>> getProviderMap( final Type roleType )
+    {
+        try
+        {
+            return (Map) encounter.getProvider( Key.get( Types.mapOf( String.class, Types.providerOf( roleType ) ) ) ).get();
+        }
+        catch ( final ConfigurationException e )
+        {
+            return Collections.EMPTY_MAP;
+        }
+    }
+
     /**
      * Query Guice to build a map of components for the given type and {@link Requirement}.
      * 
-     * @param role the plexus role
+     * @param roleType the plexus role
      * @param hints the plexus hints
      * @return deferred {@link Map} of matching components
      */
-    @SuppressWarnings( "unchecked" )
-    private Provider<Map<String, ?>> getMapProvider( final Type role, final String[] hints )
+    private Provider<Map<String, ?>> getMapProvider( final Type roleType, final String[] hints )
     {
         if ( hints[0].isEmpty() )
         {
-            // @Requirement with no hints means inject all implementations (assume Guice multibinder)
-            return (Provider) encounter.getProvider( Key.get( Types.mapOf( String.class, role ) ) );
+            return getMapProvider( roleType );
         }
 
-        final Map<String, Provider> providers = new LinkedHashMap();
+        final Map<String, Provider<?>> providerMap = getProviderMap( roleType );
         for ( final String h : hints )
         {
-            // convert each hint into a named Guice query for the appropriate interface
-            providers.put( h, encounter.getProvider( getRequirementKey( role, h ) ) );
+            if ( !providerMap.containsKey( h ) )
+            {
+                encounter.addError( "No Component found for Requirement " + roleType + " hint " + h );
+            }
         }
 
-        return new Provider()
+        return new Provider<Map<String, ?>>()
         {
             public Map<String, ?> get()
             {
-                // we can now use the deferred map to build our actual component map
-                final Map<String, Object> map = new LinkedHashMap<String, Object>();
-                for ( final Entry<String, Provider> e : providers.entrySet() )
+                final Map<String, Object> filteredMap = new LinkedHashMap<String, Object>();
+                for ( final String h : hints )
                 {
-                    map.put( e.getKey(), e.getValue().get() );
+                    filteredMap.put( h, providerMap.get( h ).get() );
                 }
-                return map;
+                return filteredMap;
             }
 
             @Override
             public String toString()
             {
-                return providers.toString();
+                return "FIXME";// FIXME
             }
         };
     }
@@ -147,14 +180,14 @@ abstract class AbstractPlexusSetter
     /**
      * Query Guice to build a list of components for the given type and {@link Requirement}.
      * 
-     * @param role the plexus role
+     * @param roleType the plexus role
      * @param hints the plexus hints
      * @return deferred {@link List} of matching components
      */
-    private Provider<List<?>> getListProvider( final Type role, final String[] hints )
+    private Provider<List<?>> getListProvider( final Type roleType, final String[] hints )
     {
         // a list of components is the same as getting a map and using its values
-        final Provider<Map<String, ?>> mapProvider = getMapProvider( role, hints );
+        final Provider<Map<String, ?>> mapProvider = getMapProvider( roleType, hints );
 
         return new Provider<List<?>>()
         {
@@ -167,7 +200,51 @@ abstract class AbstractPlexusSetter
             @Override
             public String toString()
             {
-                return mapProvider.toString();
+                return "FIXME";// FIXME
+            }
+        };
+    }
+
+    /**
+     * Query Guice to build a single component for the given type and {@link Requirement}.
+     * 
+     * @param roleType the plexus role
+     * @param hint the plexus hint
+     * @return deferred matching component
+     */
+    private Provider<?> getProvider( final Type roleType, final String hint )
+    {
+        // single component is same as getting map and using the first value
+        final Map<String, Provider<?>> providerMap = getProviderMap( roleType );
+        if ( !hint.isEmpty() && !providerMap.containsKey( hint ) )
+        {
+            encounter.addError( "No Component found for Requirement " + roleType + " hint " + hint );
+        }
+        else if ( providerMap.isEmpty() )
+        {
+            encounter.addError( "No Components found for Requirement " + roleType );
+        }
+
+        return new Provider<Object>()
+        {
+            public Object get()
+            {
+                final Provider<?> provider;
+                if ( providerMap.containsKey( hint ) )
+                {
+                    provider = providerMap.get( hint );
+                }
+                else
+                {
+                    provider = providerMap.values().iterator().next();
+                }
+                return provider.get();
+            }
+
+            @Override
+            public String toString()
+            {
+                return "FIXME";// FIXME
             }
         };
     }
@@ -235,17 +312,5 @@ abstract class AbstractPlexusSetter
             return ( (WildcardType) type ).getUpperBounds()[0];
         }
         return type;
-    }
-
-    /**
-     * Convert a plexus role/hint combination into the appropriate Guice binding {@link Key}.
-     * 
-     * @param role the plexus role
-     * @param hint the plexus hint
-     * @return appropriate Guice binding {@link Key}
-     */
-    private static Key<?> getRequirementKey( final Type role, final String hint )
-    {
-        return hint.isEmpty() ? Key.get( role ) : Key.get( role, Names.named( hint ) );
     }
 }

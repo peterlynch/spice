@@ -12,6 +12,8 @@
  */
 package org.sonatype.guice.plexus.injector;
 
+import java.util.Collection;
+
 import com.google.inject.MembersInjector;
 
 /**
@@ -33,11 +35,11 @@ final class PlexusComponentInjector<T>
         void apply( Object instance );
     }
 
-    final Iterable<Setter> setters;
+    final Setter[] setters;
 
-    PlexusComponentInjector( final Iterable<Setter> setters )
+    PlexusComponentInjector( final Collection<Setter> setters )
     {
-        this.setters = setters;
+        this.setters = setters.toArray( new Setter[setters.size()] );
     }
 
     public void injectMembers( final T instance )

@@ -15,8 +15,8 @@ package org.sonatype.guice.plexus.injector;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashSet;
 
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.guice.plexus.injector.PlexusComponentInjector.Setter;
@@ -33,7 +33,7 @@ public final class PlexusAnnotationListener
 {
     public <T> void hear( final TypeLiteral<T> literal, final TypeEncounter<T> encounter )
     {
-        final Collection<Setter> setters = new LinkedHashSet<Setter>();
+        final Collection<Setter> setters = new ArrayList<Setter>();
 
         // iterate over all members in class hierarchy: constructors > methods > fields
         for ( final AnnotatedElement e : new AnnotatedElements( literal.getRawType() ) )
@@ -46,10 +46,14 @@ public final class PlexusAnnotationListener
                 }
                 else if ( e instanceof Method )
                 {
-                    // we only support single-argument setter injection
-                    if ( ( (Method) e ).getParameterTypes().length == 1 )
+                    final Method m = (Method) e;
+                    if ( m.getParameterTypes().length == 1 )
                     {
-                        setters.add( new PlexusMethodSetter( encounter, (Method) e ) );
+                        setters.add( new PlexusMethodSetter( encounter, m ) );
+                    }
+                    else
+                    {
+                        encounter.addError( "Requirement setter %s has wrong number of args", m.toGenericString() );
                     }
                 }
             }
