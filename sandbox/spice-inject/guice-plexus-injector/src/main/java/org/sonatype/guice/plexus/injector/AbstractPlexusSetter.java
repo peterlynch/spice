@@ -126,7 +126,8 @@ abstract class AbstractPlexusSetter
     {
         try
         {
-            return (Map) encounter.getProvider( Key.get( Types.mapOf( String.class, Types.providerOf( roleType ) ) ) ).get();
+            return (Map) encounter.getProvider( Key.get( Types.mapOf( String.class, Types.providerOf( roleType ) ) ) )
+                .get();
         }
         catch ( final ConfigurationException e )
         {
@@ -143,7 +144,7 @@ abstract class AbstractPlexusSetter
      */
     private Provider<Map<String, ?>> getMapProvider( final Type roleType, final String[] hints )
     {
-        if ( hints[0].isEmpty() )
+        if ( hints[0] == null || hints[0].length() == 0 )
         {
             return getMapProvider( roleType );
         }
@@ -216,7 +217,8 @@ abstract class AbstractPlexusSetter
     {
         // single component is same as getting map and using the first value
         final Map<String, Provider<?>> providerMap = getProviderMap( roleType );
-        if ( !hint.isEmpty() && !providerMap.containsKey( hint ) )
+
+        if ( !( hint == null || hint.length() == 0 ) && !providerMap.containsKey( hint ) )
         {
             encounter.addError( "No Component found for Requirement " + roleType + " hint " + hint );
         }
