@@ -12,9 +12,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.component.repository.ComponentDescriptor;
@@ -34,11 +36,11 @@ import org.sonatype.reflect.AnnReader;
  * This is dirty and hackish. But works for now. The trick is that this gleaner is able to process the class, create a
  * Plexus specific ComponentDescriptor for it, and also that we are able to "drive" is the component in case a
  * "singular" or "plural" case.
- *
+ * 
  * @author toby
  * @author cstamas
  */
-@Component ( role = PlexusComponentGleaner.class )
+@Component( role = PlexusComponentGleaner.class )
 public class PlexusComponentGleaner
 {
 
@@ -78,7 +80,8 @@ public class PlexusComponentGleaner
             listenerMap.put( annotationClass, listener );
         }
 
-        annotationProcessor.processClass( request.getClassName(), request.getClassRealm(), listenerMap );
+        annotationProcessor.processClass( request.getClassName(), request.getClassRealm(), listenerMap, request
+            .isIgnoreNotFoundImplementedInterfaces() );
 
         if ( listener.getComponentClassNames().isEmpty() )
         {
@@ -98,8 +101,7 @@ public class PlexusComponentGleaner
             if ( role == null )
             {
                 // try singular
-                role =
-                    getComponentsRole( request.getSingularComponentAnnotations(), request.getClassRealm(), annClass );
+                role = getComponentsRole( request.getSingularComponentAnnotations(), request.getClassRealm(), annClass );
 
                 isSingular = true;
             }
@@ -154,9 +156,8 @@ public class PlexusComponentGleaner
         {
             for ( AnnField field : c.getFields().values() )
             {
-                ComponentRequirement requirement = findRequirement(
-                    request.getClassName(), field, request.getClassRealm()
-                );
+                ComponentRequirement requirement =
+                    findRequirement( request.getClassName(), field, request.getClassRealm() );
 
                 if ( requirement != null )
                 {
@@ -194,9 +195,7 @@ public class PlexusComponentGleaner
         return response;
     }
 
-    private ComponentRequirement findRequirement( final String className,
-                                                  final AnnField field,
-                                                  final ClassLoader cl )
+    private ComponentRequirement findRequirement( final String className, final AnnField field, final ClassLoader cl )
         throws GleanerException
     {
         assert field != null;
@@ -263,17 +262,14 @@ public class PlexusComponentGleaner
 
     /**
      * Extract list elements type via reflection.
-     *
-     * @param className              class containing the field
-     * @param fieldName              field name
-     * @param cl                     class loader to be used
+     * 
+     * @param className class containing the field
+     * @param fieldName field name
+     * @param cl class loader to be used
      * @param defaultElementTypeName default element name if cannot be determined
-     *
      * @return element type name or default
      */
-    private String extractListElementsType( final String className,
-                                            final String fieldName,
-                                            final ClassLoader cl,
+    private String extractListElementsType( final String className, final String fieldName, final ClassLoader cl,
                                             final String defaultElementTypeName )
     {
         String elementTypeName = defaultElementTypeName;
@@ -289,9 +285,9 @@ public class PlexusComponentGleaner
                     final Type[] ats = ( (ParameterizedType) type ).getActualTypeArguments();
                     if ( ats.length == 1 )
                     {
-                        if ( ats[ 0 ] instanceof Class )
+                        if ( ats[0] instanceof Class )
                         {
-                            elementTypeName = ( (Class) ats[ 0 ] ).getName();
+                            elementTypeName = ( (Class) ats[0] ).getName();
                         }
                     }
                 }
@@ -307,17 +303,14 @@ public class PlexusComponentGleaner
 
     /**
      * Extract map values elements type via reflection.
-     *
-     * @param className              class containing the field
-     * @param fieldName              field name
-     * @param cl                     class loader to be used
+     * 
+     * @param className class containing the field
+     * @param fieldName field name
+     * @param cl class loader to be used
      * @param defaultElementTypeName default element name if cannot be determined
-     *
      * @return element type name or default
      */
-    private String extractMapElementsType( final String className,
-                                           final String fieldName,
-                                           final ClassLoader cl,
+    private String extractMapElementsType( final String className, final String fieldName, final ClassLoader cl,
                                            final String defaultElementTypeName )
     {
         String elementTypeName = defaultElementTypeName;
@@ -333,9 +326,9 @@ public class PlexusComponentGleaner
                     final Type[] ats = ( (ParameterizedType) type ).getActualTypeArguments();
                     if ( ats.length == 2 )
                     {
-                        if ( ats[ 1 ] instanceof Class )
+                        if ( ats[1] instanceof Class )
                         {
-                            elementTypeName = ( (Class) ats[ 1 ] ).getName();
+                            elementTypeName = ( (Class) ats[1] ).getName();
                         }
                     }
                 }
@@ -425,7 +418,7 @@ public class PlexusComponentGleaner
 
         List<AnnClass> classes = new ArrayList<AnnClass>();
 
-        while( annClass != null )
+        while ( annClass != null )
         {
             classes.add( annClass );
             if ( annClass.getSuperName() != null )

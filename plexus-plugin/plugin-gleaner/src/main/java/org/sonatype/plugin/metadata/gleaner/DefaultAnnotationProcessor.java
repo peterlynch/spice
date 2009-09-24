@@ -14,7 +14,8 @@ import org.sonatype.reflect.AnnReader;
 public class DefaultAnnotationProcessor
     implements AnnotationProcessor
 {
-    public void processClass( String className, ClassLoader classLoader, Map<Class<?>, AnnotationListener> listenerMap )
+    public void processClass( String className, ClassLoader classLoader, Map<Class<?>, AnnotationListener> listenerMap,
+                              boolean ignoreNotFoundInterfaces )
         throws GleanerException
     {
         // fix the classname
@@ -59,17 +60,22 @@ public class DefaultAnnotationProcessor
                         readClassAnnotations( this.classNameToResourceName( interfaceName ), classLoader );
                     if ( annotatedInterface == null )
                     {
-                        throw new GleanerException( "Failed to find class: " + interfaceName );
+                        if ( !ignoreNotFoundInterfaces )
+                        {
+                            throw new GleanerException( "Failed to find class: " + interfaceName );
+                        }
                     }
-
-                    // now look up the expected annotations
-                    annotationInstance = annotatedInterface.getAnnotation( annotationClass );
-
-                    if ( annotationInstance != null )
+                    else
                     {
-                        annotations.add( annotationClass );
-                        annotationDebugString.add( "Annotation: " + annotationClass + " found in interface: "
-                            + interfaceName );
+                        // now look up the expected annotations
+                        annotationInstance = annotatedInterface.getAnnotation( annotationClass );
+
+                        if ( annotationInstance != null )
+                        {
+                            annotations.add( annotationClass );
+                            annotationDebugString.add( "Annotation: " + annotationClass + " found in interface: "
+                                + interfaceName );
+                        }
                     }
                 }
             }

@@ -1,5 +1,17 @@
 package org.sonatype.plugin.metadata;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.IOUtil;
@@ -12,18 +24,6 @@ import org.sonatype.plugins.model.PluginDependency;
 import org.sonatype.plugins.model.PluginLicense;
 import org.sonatype.plugins.model.PluginMetadata;
 import org.sonatype.plugins.model.io.xpp3.PluginModelXpp3Writer;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 @Component( role = PluginMetadataGenerator.class )
 public class DefaultPluginMetadataGenerator
@@ -126,6 +126,7 @@ public class DefaultPluginMetadataGenerator
 
     }
 
+    // TODO: remove this
     private List<String> findComponents( final File classesDirectory, final ClassLoader classLoader,
                                          final List<Class<?>> annotationClasses )
         throws GleanerException
@@ -150,12 +151,13 @@ public class DefaultPluginMetadataGenerator
 
         for ( String classFileName : classesToGlean )
         {
-            annotationProcessor.processClass( classFileName, classLoader, listenerMap );
+            annotationProcessor.processClass( classFileName, classLoader, listenerMap, false );
         }
 
         return listener.getComponentClassNames();
     }
 
+    // TODO: remove this
     private ClassLoader createClassLoader( final List<File> elements )
         throws Exception
     {

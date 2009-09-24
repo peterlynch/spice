@@ -21,6 +21,8 @@ public class PlexusComponentGleanerRequest
 
     private List<Class<?>> markerAnnotations;
 
+    private boolean ignoreNotFoundImplementedInterfaces;
+
     public PlexusComponentGleanerRequest( String className, ClassLoader classRealm )
     {
         this.className = className;
@@ -92,5 +94,15 @@ public class PlexusComponentGleanerRequest
         }
 
         return markerAnnotations;
+    }
+
+    public boolean isIgnoreNotFoundImplementedInterfaces()
+    {
+        return ignoreNotFoundImplementedInterfaces;
+    }
+
+    public void setIgnoreNotFoundImplementedInterfaces( boolean ignoreNotFoundImplementedInterfaces )
+    {
+        this.ignoreNotFoundImplementedInterfaces = ignoreNotFoundImplementedInterfaces;
     }
 }
