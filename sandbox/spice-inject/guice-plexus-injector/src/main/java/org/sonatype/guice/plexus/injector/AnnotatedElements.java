@@ -128,10 +128,9 @@ final class AnnotatedElements
             return i < items.length;
         }
 
-        // Ignore findbugs IT_NO_SUCH_ELEMENT...
         public T next()
         {
-            return items[i++];
+            return items[i++]; // FindBugs IT_NO_SUCH_ELEMENT false-positive
         }
     }
 

@@ -47,12 +47,10 @@ final class PlexusFieldSetter
     }
 
     @Override
-    // Ignore findbugs DP_DO_INSIDE_DO_PRIVILEGED...
     protected void privilegedApply( final Object instance )
         throws Exception
     {
-        // in case field is private
-        field.setAccessible( true );
+        field.setAccessible( true ); // FindBugs DP_DO_INSIDE_DO_PRIVILEGED false-positive
         field.set( instance, delegate.get() );
     }
 }

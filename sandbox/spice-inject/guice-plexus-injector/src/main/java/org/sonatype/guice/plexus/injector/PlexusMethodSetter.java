@@ -47,12 +47,10 @@ final class PlexusMethodSetter
     }
 
     @Override
-    // Ignore findbugs DP_DO_INSIDE_DO_PRIVILEGED...
     protected void privilegedApply( final Object instance )
         throws Exception
     {
-        // in case method is private
-        method.setAccessible( true );
+        method.setAccessible( true ); // FindBugs DP_DO_INSIDE_DO_PRIVILEGED false-positive
         method.invoke( instance, delegate.get() );
     }
 }
