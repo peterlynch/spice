@@ -49,7 +49,7 @@ public class StaticPlexusBindingModule
 
     private final <T> LinkedBindingBuilder<T> singleBinding( final Class<T> role, final String hint )
     {
-        return hint.isEmpty() ? bind( role ) : bind( role ).annotatedWith( named( hint ) );
+        return ( hint == null || hint.length() == 0 ) ? bind( role ) : bind( role ).annotatedWith( named( hint ) );
     }
 
     private final <T> LinkedBindingBuilder<T> multiBinding( final Class<T> role, final String hint )
