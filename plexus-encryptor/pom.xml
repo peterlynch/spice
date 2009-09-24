@@ -5,7 +5,7 @@
     <groupId>org.sonatype.spice</groupId>
     <artifactId>spice-parent</artifactId>
     <version>12</version>
-    <relativePath>../spirce-parent/pom.xml</relativePath>
+    <relativePath>../spice-parent/pom.xml</relativePath>
   </parent>
 
   <artifactId>plexus-encryptor</artifactId>
