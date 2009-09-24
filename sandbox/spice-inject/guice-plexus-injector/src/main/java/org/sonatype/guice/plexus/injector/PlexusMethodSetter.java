@@ -21,8 +21,6 @@ import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
 import com.google.inject.spi.TypeEncounter;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
 /**
  * {@link Setter} that injects a component into a single-argument method marked with {@link Requirement}.
  */
@@ -49,7 +47,7 @@ final class PlexusMethodSetter
     }
 
     @Override
-    @SuppressWarnings( "DP_DO_INSIDE_DO_PRIVILEGED" )
+    // Ignore findbugs DP_DO_INSIDE_DO_PRIVILEGED...
     protected void privilegedApply( final Object instance )
         throws Exception
     {

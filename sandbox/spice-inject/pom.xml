@@ -12,11 +12,13 @@
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>Spice Dependency Injection</name>
+  <name>Spice - Dependency Injection</name>
 
   <modules>
     <module>guice-plexus-bindings</module>
     <module>guice-plexus-injector</module>
+    <module>guice-plexus-shim</module>
+    <module>guice-plexus-test</module>
   </modules>
 
 </project>
