@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.sonatype.guice.plexus.injector.PlexusComponentInjector.Setter;
 
 import com.google.inject.TypeLiteral;
 import com.google.inject.spi.TypeEncounter;
@@ -33,7 +32,7 @@ public final class PlexusAnnotationListener
 {
     public <T> void hear( final TypeLiteral<T> literal, final TypeEncounter<T> encounter )
     {
-        final Collection<Setter> setters = new ArrayList<Setter>();
+        final Collection<PropertyInjector> injectors = new ArrayList<PropertyInjector>();
 
         // iterate over all members in class hierarchy: constructors > methods > fields
         for ( final AnnotatedElement e : new AnnotatedElements( literal.getRawType() ) )
@@ -42,14 +41,14 @@ public final class PlexusAnnotationListener
             {
                 if ( e instanceof Field )
                 {
-                    setters.add( new RequirementFieldSetter( encounter, (Field) e ) );
+                    injectors.add( new RequirementFieldSetter( encounter, (Field) e ) );
                 }
                 else if ( e instanceof Method )
                 {
                     final Method m = (Method) e;
                     if ( m.getParameterTypes().length == 1 )
                     {
-                        setters.add( new RequirementMethodSetter( encounter, m ) );
+                        injectors.add( new RequirementMethodSetter( encounter, m ) );
                     }
                     else
                     {
@@ -59,10 +58,10 @@ public final class PlexusAnnotationListener
             }
         }
 
-        if ( setters.size() > 0 )
+        if ( injectors.size() > 0 )
         {
             // pass wiring information to Guice so it can apply it later on
-            encounter.register( new PlexusComponentInjector<T>( setters ) );
+            encounter.register( new ComponentInjector<T>( injectors ) );
         }
     }
 }

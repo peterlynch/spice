@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.sonatype.guice.plexus.injector.PlexusComponentInjector.Setter;
 
 import com.google.inject.ConfigurationException;
 import com.google.inject.Key;
@@ -35,10 +34,10 @@ import com.google.inject.spi.TypeEncounter;
 import com.google.inject.util.Types;
 
 /**
- * Base {@link Setter} class that injects a component into a member marked with {@link Requirement}.
+ * Base {@link PropertyInjector} class that injects a component into a member marked with {@link Requirement}.
  */
 abstract class AbstractRequirementSetter
-    implements Setter
+    implements PropertyInjector
 {
     private static final Provider<Map<String, ?>> EMPTY_MAP_PROVIDER = new Provider<Map<String, ?>>()
     {
@@ -88,7 +87,7 @@ abstract class AbstractRequirementSetter
     protected abstract void privilegedApply( Object instance )
         throws Exception;
 
-    public final void apply( final Object instance )
+    public final void inject( final Object instance )
     {
         // need this when using reflection inside a web-application
         AccessController.doPrivileged( new PrivilegedAction<Object>()

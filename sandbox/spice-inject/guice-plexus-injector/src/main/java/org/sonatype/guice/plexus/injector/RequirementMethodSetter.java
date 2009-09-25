@@ -15,14 +15,13 @@ package org.sonatype.guice.plexus.injector;
 import java.lang.reflect.Method;
 
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.sonatype.guice.plexus.injector.PlexusComponentInjector.Setter;
 
 import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
 import com.google.inject.spi.TypeEncounter;
 
 /**
- * {@link Setter} that injects a component into a single-argument method marked with {@link Requirement}.
+ * {@link PropertyInjector} that injects a component into a single-argument method marked with {@link Requirement}.
  */
 final class RequirementMethodSetter
     extends AbstractRequirementSetter

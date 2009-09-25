@@ -17,36 +17,36 @@ import java.util.Collection;
 import com.google.inject.MembersInjector;
 
 /**
- * {@link MembersInjector} that can apply a series of {@link Setter}s to a given instance.
+ * Defines a simple component property injector.
  */
-final class PlexusComponentInjector<T>
-    implements MembersInjector<T>
+interface PropertyInjector
 {
     /**
-     * Common interface to provide deferred injection of components.
+     * Inject the property into the given component.
+     * 
+     * @param component the component to inject
      */
-    interface Setter
+    void inject( Object component );
+}
+
+/**
+ * {@link MembersInjector} that injects components by using one or more {@link PropertyInjector}s.
+ */
+final class ComponentInjector<T>
+    implements MembersInjector<T>
+{
+    private final PropertyInjector[] injectors;
+
+    ComponentInjector( final Collection<PropertyInjector> injectors )
     {
-        /**
-         * Inject a component into a member of the given instance.
-         * 
-         * @param instance an instance requiring injection
-         */
-        void apply( Object instance );
+        this.injectors = injectors.toArray( new PropertyInjector[injectors.size()] );
     }
 
-    final Setter[] setters;
-
-    PlexusComponentInjector( final Collection<Setter> setters )
+    public void injectMembers( final T component )
     {
-        this.setters = setters.toArray( new Setter[setters.size()] );
-    }
-
-    public void injectMembers( final T instance )
-    {
-        for ( final Setter s : setters )
+        for ( final PropertyInjector i : injectors )
         {
-            s.apply( instance );
+            i.inject( component );
         }
     }
 }
