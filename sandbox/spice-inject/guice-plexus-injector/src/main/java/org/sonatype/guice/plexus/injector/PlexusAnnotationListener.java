@@ -42,14 +42,14 @@ public final class PlexusAnnotationListener
             {
                 if ( e instanceof Field )
                 {
-                    setters.add( new PlexusFieldSetter( encounter, (Field) e ) );
+                    setters.add( new RequirementFieldSetter( encounter, (Field) e ) );
                 }
                 else if ( e instanceof Method )
                 {
                     final Method m = (Method) e;
                     if ( m.getParameterTypes().length == 1 )
                     {
-                        setters.add( new PlexusMethodSetter( encounter, m ) );
+                        setters.add( new RequirementMethodSetter( encounter, m ) );
                     }
                     else
                     {

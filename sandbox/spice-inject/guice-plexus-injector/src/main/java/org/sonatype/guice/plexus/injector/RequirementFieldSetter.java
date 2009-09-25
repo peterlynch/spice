@@ -12,7 +12,7 @@
  */
 package org.sonatype.guice.plexus.injector;
 
-import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.guice.plexus.injector.PlexusComponentInjector.Setter;
@@ -22,12 +22,12 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.spi.TypeEncounter;
 
 /**
- * {@link Setter} that injects a component into a single-argument method marked with {@link Requirement}.
+ * {@link Setter} that injects a component into a field marked with {@link Requirement}.
  */
-final class PlexusMethodSetter
-    extends AbstractPlexusSetter
+final class RequirementFieldSetter
+    extends AbstractRequirementSetter
 {
-    final Method method;
+    final Field field;
 
     final Provider<?> delegate;
 
@@ -35,22 +35,22 @@ final class PlexusMethodSetter
      * Wire up the appropriate component {@link Provider} but don't call it yet.
      * 
      * @param encounter our link back to Guice
-     * @param method a single-argument method
+     * @param field a field
      */
-    PlexusMethodSetter( final TypeEncounter<?> encounter, final Method method )
+    RequirementFieldSetter( final TypeEncounter<?> encounter, final Field field )
     {
         super( encounter );
-        this.method = method;
+        this.field = field;
 
-        final TypeLiteral<?> targetType = TypeLiteral.get( method.getGenericParameterTypes()[0] );
-        delegate = lookup( targetType, method.getAnnotation( Requirement.class ) );
+        final TypeLiteral<?> targetType = TypeLiteral.get( field.getGenericType() );
+        delegate = lookup( targetType, field.getAnnotation( Requirement.class ) );
     }
 
     @Override
     protected void privilegedApply( final Object instance )
         throws Exception
     {
-        method.setAccessible( true ); // FindBugs DP_DO_INSIDE_DO_PRIVILEGED false-positive
-        method.invoke( instance, delegate.get() );
+        field.setAccessible( true ); // FindBugs DP_DO_INSIDE_DO_PRIVILEGED false-positive
+        field.set( instance, delegate.get() );
     }
 }
