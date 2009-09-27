@@ -2,27 +2,29 @@ package org.sonatype.guice.plexus.bindings;
 
 import static com.google.inject.name.Names.named;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collection;
 
 import org.codehaus.plexus.component.annotations.Component;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Module;
 import com.google.inject.Scopes;
+import com.google.inject.binder.AnnotatedBindingBuilder;
 import com.google.inject.binder.LinkedBindingBuilder;
 import com.google.inject.binder.ScopedBindingBuilder;
-import com.google.inject.multibindings.MapBinder;
+import com.google.inject.name.Named;
 
+/**
+ * Guice {@link Module} that converts Plexus components into {@link Named} bindings.
+ */
 public class StaticPlexusBindingModule
     extends AbstractModule
 {
-    private final Iterable<Class<?>> components;
+    private final Class<?>[] components;
 
-    private final Map<Class<?>, MapBinder<String, ?>> mapBinders = new HashMap<Class<?>, MapBinder<String, ?>>();
-
-    public StaticPlexusBindingModule( final Iterable<Class<?>> components )
+    public StaticPlexusBindingModule( final Collection<Class<?>> components )
     {
-        this.components = components;
+        this.components = components.toArray( new Class[components.size()] );
     }
 
     @Override
@@ -36,31 +38,14 @@ public class StaticPlexusBindingModule
             final Class role = spec.role();
             final String hint = spec.hint();
 
-            final ScopedBindingBuilder singleBinding = singleBinding( role, hint ).to( clazz );
-            final ScopedBindingBuilder multiBinding = multiBinding( role, hint ).to( clazz );
+            final AnnotatedBindingBuilder abb = bind( role );
+            final LinkedBindingBuilder lbb = hint.length() == 0 ? abb : abb.annotatedWith( named( hint ) );
+            final ScopedBindingBuilder sbb = lbb.to( clazz );
 
-            if ( "per-lookup".equals( spec.instantiationStrategy() ) == false )
+            if ( !"per-lookup".equals( spec.instantiationStrategy() ) )
             {
-                singleBinding.in( Scopes.SINGLETON );
-                multiBinding.in( Scopes.SINGLETON );
+                sbb.in( Scopes.SINGLETON );
             }
         }
-    }
-
-    private final <T> LinkedBindingBuilder<T> singleBinding( final Class<T> role, final String hint )
-    {
-        return hint.length() == 0 ? bind( role ) : bind( role ).annotatedWith( named( hint ) );
-    }
-
-    private final <T> LinkedBindingBuilder<T> multiBinding( final Class<T> role, final String hint )
-    {
-        @SuppressWarnings( "unchecked" )
-        MapBinder<String, T> mapBinder = (MapBinder<String, T>) mapBinders.get( role );
-        if ( null == mapBinder )
-        {
-            mapBinder = MapBinder.newMapBinder( binder(), String.class, role );
-            mapBinders.put( role, mapBinder );
-        }
-        return mapBinder.addBinding( hint );
     }
 }

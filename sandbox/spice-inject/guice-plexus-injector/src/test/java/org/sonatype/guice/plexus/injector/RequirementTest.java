@@ -14,8 +14,9 @@ import com.google.inject.Guice;
 import com.google.inject.ImplementedBy;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
+import com.google.inject.ProvisionException;
 import com.google.inject.matcher.Matchers;
-import com.google.inject.multibindings.MapBinder;
+import com.google.inject.name.Names;
 
 /**
  * Test various Plexus {@link Requirement} use-cases.
@@ -37,16 +38,14 @@ public class RequirementTest
             @Override
             protected void configure()
             {
-                final MapBinder<String, A> mapBinderA = MapBinder.newMapBinder( binder(), String.class, A.class );
-                mapBinderA.addBinding( "AA" ).to( AAImpl.class );
-                mapBinderA.addBinding( "AB" ).to( ABImpl.class );
-                mapBinderA.addBinding( "" ).to( AImpl.class );
-                mapBinderA.addBinding( "AC" ).to( ACImpl.class );
+                bind( A.class ).annotatedWith( Names.named( "AA" ) ).to( AAImpl.class );
+                bind( A.class ).annotatedWith( Names.named( "AB" ) ).to( ABImpl.class );
+                bind( A.class ).to( AImpl.class );
+                bind( A.class ).annotatedWith( Names.named( "AC" ) ).to( ACImpl.class );
 
-                final MapBinder<String, B> mapBinderB = MapBinder.newMapBinder( binder(), String.class, B.class );
-                mapBinderB.addBinding( "B" ).to( BImpl.class );
+                bind( B.class ).annotatedWith( Names.named( "B" ) ).to( BImpl.class );
 
-                bindListener( Matchers.any(), new PlexusAnnotationListener() );
+                bindListener( Matchers.any(), new PlexusAnnotationBinder() );
             }
         } ).injectMembers( this );
     }
@@ -271,7 +270,7 @@ public class RequirementTest
             injector.getInstance( Component4.class );
             fail( "Expected error for missing requirement" );
         }
-        catch ( final ConfigurationException e )
+        catch ( final ProvisionException e )
         {
             System.out.println( e );
         }
@@ -284,7 +283,7 @@ public class RequirementTest
             injector.getInstance( Component5.class );
             fail( "Expected error for no such hint" );
         }
-        catch ( final ConfigurationException e )
+        catch ( final ProvisionException e )
         {
             System.out.println( e );
         }
@@ -297,7 +296,7 @@ public class RequirementTest
             injector.getInstance( Component6.class );
             fail( "Expected error for no such hint" );
         }
-        catch ( final ConfigurationException e )
+        catch ( final ProvisionException e )
         {
             System.out.println( e );
         }
@@ -310,7 +309,7 @@ public class RequirementTest
             injector.getInstance( Component7.class );
             fail( "Expected error for no such hint" );
         }
-        catch ( final ConfigurationException e )
+        catch ( final ProvisionException e )
         {
             System.out.println( e );
         }
