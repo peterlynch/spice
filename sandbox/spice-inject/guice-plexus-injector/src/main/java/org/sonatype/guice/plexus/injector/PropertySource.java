@@ -22,5 +22,5 @@ interface PropertySource<A extends Annotation>
 {
     A getAnnotation( AnnotatedElement element );
 
-    Provider<?> getProvider( TypeLiteral<?> expectedType, A annotation );
+    Provider<?> getProvider( String name, TypeLiteral<?> type, A annotation );
 }

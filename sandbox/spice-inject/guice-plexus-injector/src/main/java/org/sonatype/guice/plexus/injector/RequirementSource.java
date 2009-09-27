@@ -39,7 +39,7 @@ final class RequirementSource
 {
     private Provider<Injector> injectorProvider;
 
-    private Injector cachedInjector = null;
+    private Injector cachedInjector;
 
     RequirementSource( final TypeEncounter<?> encounter )
     {
@@ -51,16 +51,16 @@ final class RequirementSource
         return element.getAnnotation( Requirement.class );
     }
 
-    public Provider<?> getProvider( final TypeLiteral<?> expectedType, final Requirement requirement )
+    public Provider<?> getProvider( final String name, final TypeLiteral<?> type, final Requirement requirement )
     {
-        final TypeLiteral<?> roleType = getRole( expectedType, requirement );
+        final TypeLiteral<?> roleType = getRole( type, requirement );
         final String[] hints = getHints( requirement );
 
-        if ( expectedType.getRawType() == Map.class )
+        if ( type.getRawType() == Map.class )
         {
             return getMapProvider( roleType, hints );
         }
-        else if ( expectedType.getRawType() == List.class )
+        else if ( type.getRawType() == List.class )
         {
             return getListProvider( roleType, hints );
         }

@@ -30,13 +30,23 @@ import com.google.inject.spi.TypeListener;
 public final class PlexusAnnotationBinder
     implements TypeListener
 {
+    private PropertySource<Annotation>[] cachedPropertySources;
+
+    @SuppressWarnings( "unchecked" )
+    private PropertySource<Annotation>[] getPropertySources( final TypeEncounter<?> encounter )
+    {
+        if ( null == cachedPropertySources )
+        {
+            cachedPropertySources =
+                new PropertySource[] { new RequirementSource( encounter ), new ConfigurationSource( encounter ) };
+        }
+        return cachedPropertySources;
+    }
+
     public <T> void hear( final TypeLiteral<T> literal, final TypeEncounter<T> encounter )
     {
         final Collection<PropertyInjector> propertyInjectors = new ArrayList<PropertyInjector>();
-
-        @SuppressWarnings( "unchecked" )
-        final PropertySource[] propertySources =
-            new PropertySource[] { new RequirementSource( encounter ), new ConfigurationSource( encounter ) };
+        final PropertySource<Annotation>[] propertySources = getPropertySources( encounter );
 
         // iterate over all members in class hierarchy: constructors > methods > fields
         for ( final AnnotatedElement element : new AnnotatedElements( literal.getRawType() ) )
@@ -53,7 +63,7 @@ public final class PlexusAnnotationBinder
                         final Field f = (Field) element;
 
                         final TypeLiteral<?> expectedType = TypeLiteral.get( f.getGenericType() );
-                        final Provider<?> provider = source.getProvider( expectedType, annotation );
+                        final Provider<?> provider = source.getProvider( f.getName(), expectedType, annotation );
                         propertyInjectors.add( new ProvidedFieldInjector( f, provider ) );
                     }
                     else if ( element instanceof Method )
@@ -63,7 +73,7 @@ public final class PlexusAnnotationBinder
                         if ( m.getParameterTypes().length == 1 )
                         {
                             final TypeLiteral<?> expectedType = TypeLiteral.get( m.getGenericParameterTypes()[0] );
-                            final Provider<?> provider = source.getProvider( expectedType, annotation );
+                            final Provider<?> provider = source.getProvider( m.getName(), expectedType, annotation );
                             propertyInjectors.add( new ProvidedParamInjector( m, provider ) );
                         }
                         else
