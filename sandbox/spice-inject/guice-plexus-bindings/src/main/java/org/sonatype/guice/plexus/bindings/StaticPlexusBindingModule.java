@@ -34,17 +34,19 @@ public class StaticPlexusBindingModule
         for ( final Class<?> clazz : components )
         {
             final Component spec = clazz.getAnnotation( Component.class );
-
-            final Class role = spec.role();
-            final String hint = spec.hint();
-
-            final AnnotatedBindingBuilder abb = bind( role );
-            final LinkedBindingBuilder lbb = hint.length() == 0 ? abb : abb.annotatedWith( named( hint ) );
-            final ScopedBindingBuilder sbb = lbb.to( clazz );
-
-            if ( !"per-lookup".equals( spec.instantiationStrategy() ) )
+            if ( spec != null )
             {
-                sbb.in( Scopes.SINGLETON );
+                final Class role = spec.role();
+                final String hint = spec.hint();
+
+                final AnnotatedBindingBuilder abb = bind( role );
+                final LinkedBindingBuilder lbb = hint.length() == 0 ? abb : abb.annotatedWith( named( hint ) );
+                final ScopedBindingBuilder sbb = lbb.to( clazz );
+
+                if ( !"per-lookup".equals( spec.instantiationStrategy() ) )
+                {
+                    sbb.in( Scopes.SINGLETON );
+                }
             }
         }
     }
