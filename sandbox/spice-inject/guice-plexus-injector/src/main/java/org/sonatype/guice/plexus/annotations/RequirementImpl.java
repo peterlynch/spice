@@ -17,20 +17,31 @@ import java.util.Arrays;
 
 import org.codehaus.plexus.component.annotations.Requirement;
 
+/**
+ * Runtime implementation of Plexus {@link Requirement} annotation.
+ */
 public final class RequirementImpl
     implements Requirement
 {
+    // ----------------------------------------------------------------------
+    // Implementation fields
+    // ----------------------------------------------------------------------
+
     private final Class<?> role;
 
     private final String hint;
 
     private final String[] hints;
 
+    // ----------------------------------------------------------------------
+    // Constructors
+    // ----------------------------------------------------------------------
+
     public RequirementImpl( final Class<?> role, final String... hints )
     {
         if ( null == role || null == hints || Arrays.asList( hints ).contains( null ) )
         {
-            throw new IllegalArgumentException( "@" + Requirement.class.getName() + " cannot contain null values" );
+            throw new IllegalArgumentException( "@Requirement cannot contain null values" );
         }
 
         this.role = role;
@@ -47,6 +58,10 @@ public final class RequirementImpl
         }
     }
 
+    // ----------------------------------------------------------------------
+    // Annotation properties
+    // ----------------------------------------------------------------------
+
     public Class<?> role()
     {
         return role;
@@ -61,6 +76,10 @@ public final class RequirementImpl
     {
         return hints;
     }
+
+    // ----------------------------------------------------------------------
+    // Standard annotation behaviour
+    // ----------------------------------------------------------------------
 
     @Override
     public int hashCode()
@@ -85,8 +104,8 @@ public final class RequirementImpl
     @Override
     public String toString()
     {
-        return "@" + Requirement.class.getName() + "(role=" + role + ", hint=" + hint + ", hints="
-            + Arrays.toString( hints ) + ")";
+        return String.format( "@%s(hints=%s, role=%s, hint=%s)", Requirement.class.getName(), Arrays.toString( hints ),
+                              role, hint );
     }
 
     public Class<? extends Annotation> annotationType()

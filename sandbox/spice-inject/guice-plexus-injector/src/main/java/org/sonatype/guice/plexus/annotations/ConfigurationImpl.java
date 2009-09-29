@@ -16,23 +16,38 @@ import java.lang.annotation.Annotation;
 
 import org.codehaus.plexus.component.annotations.Configuration;
 
+/**
+ * Runtime implementation of Plexus {@link Configuration} annotation.
+ */
 public final class ConfigurationImpl
     implements Configuration
 {
+    // ----------------------------------------------------------------------
+    // Implementation fields
+    // ----------------------------------------------------------------------
+
     private final String name;
 
     private final String value;
+
+    // ----------------------------------------------------------------------
+    // Constructors
+    // ----------------------------------------------------------------------
 
     public ConfigurationImpl( final String name, final String value )
     {
         if ( null == name || null == value )
         {
-            throw new IllegalArgumentException( "@" + Configuration.class.getName() + " cannot contain null values" );
+            throw new IllegalArgumentException( "@Configuration cannot contain null values" );
         }
 
         this.name = name;
         this.value = value;
     }
+
+    // ----------------------------------------------------------------------
+    // Annotation properties
+    // ----------------------------------------------------------------------
 
     public String name()
     {
@@ -43,6 +58,10 @@ public final class ConfigurationImpl
     {
         return value;
     }
+
+    // ----------------------------------------------------------------------
+    // Standard annotation behaviour
+    // ----------------------------------------------------------------------
 
     @Override
     public int hashCode()
@@ -59,13 +78,14 @@ public final class ConfigurationImpl
 
             return name.equals( conf.name() ) && value.equals( conf.value() );
         }
+
         return false;
     }
 
     @Override
     public String toString()
     {
-        return "@" + Configuration.class.getName() + "(name=" + name + ", value=" + value + ")";
+        return String.format( "@%s(name=%s, value=%s)", Configuration.class.getName(), name, value );
     }
 
     public Class<? extends Annotation> annotationType()

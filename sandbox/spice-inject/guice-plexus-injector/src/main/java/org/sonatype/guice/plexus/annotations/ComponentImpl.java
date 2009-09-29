@@ -16,29 +16,52 @@ import java.lang.annotation.Annotation;
 
 import org.codehaus.plexus.component.annotations.Component;
 
+/**
+ * Partial runtime implementation of Plexus {@link Component} annotation, supporting the most common properties.
+ */
 public final class ComponentImpl
     implements Component
 {
-    private static final int HASH_CODE_OFFSET = 1776358393;
+    // ----------------------------------------------------------------------
+    // Constants
+    // ----------------------------------------------------------------------
+
+    // pre-computed hashCode representing fixed properties
+    private static final int HASH_CODE_OFFSET = 71812305;
+
+    // ----------------------------------------------------------------------
+    // Implementation fields
+    // ----------------------------------------------------------------------
 
     private final Class<?> role;
 
     private final String hint;
 
+    private final String version;
+
     private final String instantiationStrategy;
 
-    public ComponentImpl( final Class<?> role, final String hint, final String instantiationStrategy )
+    // ----------------------------------------------------------------------
+    // Constructors
+    // ----------------------------------------------------------------------
+
+    public ComponentImpl( final Class<?> role, final String hint, final String version,
+                          final String instantiationStrategy )
     {
-        if ( null == role || null == hint || null == instantiationStrategy )
+        if ( null == role || null == hint || null == version || null == instantiationStrategy )
         {
-            throw new IllegalArgumentException( "@" + Component.class.getName() + " cannot contain null values" );
+            throw new IllegalArgumentException( "@Component cannot contain null values" );
         }
 
         this.role = role;
         this.hint = hint;
-
+        this.version = version;
         this.instantiationStrategy = instantiationStrategy;
     }
+
+    // ----------------------------------------------------------------------
+    // Annotation properties
+    // ----------------------------------------------------------------------
 
     public Class<?> role()
     {
@@ -50,42 +73,19 @@ public final class ComponentImpl
         return hint;
     }
 
+    public String version()
+    {
+        return version;
+    }
+
     public String instantiationStrategy()
     {
         return instantiationStrategy;
     }
 
-    @Override
-    public int hashCode()
+    public boolean isolatedRealm()
     {
-        return ( 127 * "role".hashCode() ^ role.hashCode() ) + ( 127 * "hint".hashCode() ^ hint.hashCode() )
-            + ( 127 * "instantiationStrategy".hashCode() ^ instantiationStrategy.hashCode() ) + HASH_CODE_OFFSET;
-    }
-
-    @Override
-    public boolean equals( final Object rhs )
-    {
-        if ( rhs instanceof Component )
-        {
-            final Component req = (Component) rhs;
-
-            return role.equals( req.role() ) && hint.equals( req.hint() )
-                && instantiationStrategy.equals( req.instantiationStrategy() );
-        }
-
         return false;
-    }
-
-    @Override
-    public String toString()
-    {
-        return "@" + Component.class.getName() + "(role=" + role + ", hint=" + hint + ", instantiationStrategy="
-            + instantiationStrategy + ")";
-    }
-
-    public Class<? extends Annotation> annotationType()
-    {
-        return Component.class;
     }
 
     public String alias()
@@ -113,11 +113,6 @@ public final class ComponentImpl
         return "";
     }
 
-    public boolean isolatedRealm()
-    {
-        return false;
-    }
-
     public String lifecycleHandler()
     {
         return "";
@@ -133,8 +128,42 @@ public final class ComponentImpl
         return "";
     }
 
-    public String version()
+    // ----------------------------------------------------------------------
+    // Standard annotation behaviour
+    // ----------------------------------------------------------------------
+
+    @Override
+    public boolean equals( final Object rhs )
     {
-        return "";
+        if ( rhs instanceof Component )
+        {
+            final Component cmp = (Component) rhs;
+
+            return role.equals( cmp.role() ) && hint.equals( cmp.hint() ) && version.equals( cmp.version() )
+                && instantiationStrategy.equals( cmp.instantiationStrategy() );
+        }
+
+        return false;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return HASH_CODE_OFFSET + ( 127 * "role".hashCode() ^ role.hashCode() )
+            + ( 127 * "hint".hashCode() ^ hint.hashCode() ) + ( 127 * "version".hashCode() ^ version.hashCode() )
+            + ( 127 * "instantiationStrategy".hashCode() ^ instantiationStrategy.hashCode() );
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format( "@%s(isolatedRealm=false, composer=, configurator=, alias=, description=, "
+            + "instantiationStrategy=%s, factory=, hint=%s, type=, lifecycleHandler=, version=%s, "
+            + "profile=, role=%s)", Component.class.getName(), instantiationStrategy, hint, version, role );
+    }
+
+    public Class<? extends Annotation> annotationType()
+    {
+        return Component.class;
     }
 }
