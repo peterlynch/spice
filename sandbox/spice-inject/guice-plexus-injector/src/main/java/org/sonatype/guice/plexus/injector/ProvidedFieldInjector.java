@@ -17,14 +17,14 @@ import java.lang.reflect.Field;
 import com.google.inject.Provider;
 import com.google.inject.ProvisionException;
 
-final class ProvidedFieldInjector
+public final class ProvidedFieldInjector
     implements PropertyInjector
 {
     final Field field;
 
     final Provider<?> provider;
 
-    ProvidedFieldInjector( final Field field, final Provider<?> provider )
+    public ProvidedFieldInjector( final Field field, final Provider<?> provider )
     {
         this.field = field;
         this.provider = provider;

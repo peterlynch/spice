@@ -18,14 +18,14 @@ import java.lang.reflect.Method;
 import com.google.inject.Provider;
 import com.google.inject.ProvisionException;
 
-final class ProvidedParamInjector
+public final class ProvidedParamInjector
     implements PropertyInjector
 {
     final Method method;
 
     final Provider<?> provider;
 
-    ProvidedParamInjector( final Method method, final Provider<?> provider )
+    public ProvidedParamInjector( final Method method, final Provider<?> provider )
     {
         this.method = method;
         this.provider = provider;

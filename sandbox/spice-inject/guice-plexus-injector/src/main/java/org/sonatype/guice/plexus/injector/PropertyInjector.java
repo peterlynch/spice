@@ -12,15 +12,15 @@
  */
 package org.sonatype.guice.plexus.injector;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
-
-import com.google.inject.Provider;
-import com.google.inject.TypeLiteral;
-
-interface PropertySource<A extends Annotation>
+/**
+ * Defines a simple component property injector.
+ */
+public interface PropertyInjector
 {
-    A getAnnotation( AnnotatedElement element );
-
-    Provider<?> getProvider( String name, TypeLiteral<?> type, A annotation );
+    /**
+     * Inject the property into the given component.
+     * 
+     * @param component the component to inject
+     */
+    void inject( Object component );
 }

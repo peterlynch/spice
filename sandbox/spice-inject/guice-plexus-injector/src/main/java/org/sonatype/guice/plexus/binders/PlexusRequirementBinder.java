@@ -10,10 +10,9 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
-package org.sonatype.guice.plexus.injector;
+package org.sonatype.guice.plexus.binders;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
@@ -32,26 +31,20 @@ import com.google.inject.ProvisionException;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
-import com.google.inject.spi.TypeEncounter;
 
-final class RequirementSource
-    implements PropertySource<Requirement>
+public final class PlexusRequirementBinder
+    implements AnnotatedPropertyBinder<Requirement>
 {
-    private Provider<Injector> injectorProvider;
+    private final Provider<Injector> injectorBinding;
 
     private Injector cachedInjector;
 
-    RequirementSource( final TypeEncounter<?> encounter )
+    public PlexusRequirementBinder( final Provider<Injector> injectorBinding )
     {
-        injectorProvider = encounter.getProvider( Injector.class );
+        this.injectorBinding = injectorBinding;
     }
 
-    public Requirement getAnnotation( final AnnotatedElement element )
-    {
-        return element.getAnnotation( Requirement.class );
-    }
-
-    public Provider<?> getProvider( final String name, final TypeLiteral<?> type, final Requirement requirement )
+    public Provider<?> bindProperty( final Requirement requirement, final TypeLiteral<?> type, final String name )
     {
         final TypeLiteral<?> roleType = getRole( type, requirement );
         final String[] hints = getHints( requirement );
@@ -197,8 +190,7 @@ final class RequirementSource
     {
         if ( null == cachedInjector )
         {
-            cachedInjector = injectorProvider.get();
-            injectorProvider = null;
+            cachedInjector = injectorBinding.get();
         }
         return cachedInjector;
     }

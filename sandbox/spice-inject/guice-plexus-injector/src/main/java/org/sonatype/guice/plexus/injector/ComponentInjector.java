@@ -17,27 +17,14 @@ import java.util.Collection;
 import com.google.inject.MembersInjector;
 
 /**
- * Defines a simple component property injector.
- */
-interface PropertyInjector
-{
-    /**
-     * Inject the property into the given component.
-     * 
-     * @param component the component to inject
-     */
-    void inject( Object component );
-}
-
-/**
  * {@link MembersInjector} that injects components by using one or more {@link PropertyInjector}s.
  */
-final class ComponentInjector<T>
+public final class ComponentInjector<T>
     implements MembersInjector<T>
 {
     private final PropertyInjector[] injectors;
 
-    ComponentInjector( final Collection<PropertyInjector> injectors )
+    public ComponentInjector( final Collection<PropertyInjector> injectors )
     {
         this.injectors = injectors.toArray( new PropertyInjector[injectors.size()] );
     }

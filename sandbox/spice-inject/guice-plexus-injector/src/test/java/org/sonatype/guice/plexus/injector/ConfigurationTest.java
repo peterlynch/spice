@@ -12,16 +12,22 @@
  */
 package org.sonatype.guice.plexus.injector;
 
+import java.util.Collections;
+
 import junit.framework.TestCase;
 
 import org.codehaus.plexus.component.annotations.Configuration;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.sonatype.guice.plexus.binders.PlexusComponentListener;
+import org.sonatype.guice.plexus.binders.PlexusConfigurationBinder;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.google.inject.matcher.Matchers;
 import com.google.inject.name.Names;
+import com.google.inject.spi.TypeListener;
 
 /**
  * Test various Plexus {@link Requirement} use-cases.
@@ -47,7 +53,13 @@ public class ConfigurationTest
                 bindConstant().annotatedWith( Names.named( "testConfig" ) ).to( "This ${blank} a test" );
                 bindConstant().annotatedWith( Names.named( "blank" ) ).to( "is" );
 
-                bindListener( Matchers.any(), new PlexusAnnotationBinder() );
+                final PlexusConfigurationBinder configurationBinder =
+                    new PlexusConfigurationBinder( getProvider( Injector.class ) );
+
+                final TypeListener listener =
+                    new PlexusComponentListener( Collections.singletonMap( Configuration.class, configurationBinder ) );
+
+                bindListener( Matchers.any(), listener );
             }
         } ).injectMembers( this );
     }

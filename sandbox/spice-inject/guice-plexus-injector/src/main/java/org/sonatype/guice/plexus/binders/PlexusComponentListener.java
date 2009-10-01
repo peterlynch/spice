@@ -10,7 +10,7 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
-package org.sonatype.guice.plexus.injector;
+package org.sonatype.guice.plexus.binders;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AccessibleObject;
@@ -21,39 +21,41 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.sonatype.guice.plexus.injector.AnnotatedElements;
+import org.sonatype.guice.plexus.injector.ComponentInjector;
+import org.sonatype.guice.plexus.injector.PropertyInjector;
+import org.sonatype.guice.plexus.injector.ProvidedFieldInjector;
+import org.sonatype.guice.plexus.injector.ProvidedParamInjector;
 
 import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
 
-public final class PlexusAnnotationBinder
+public final class PlexusComponentListener
     implements TypeListener
 {
-    private PropertySource<Annotation>[] cachedPropertySources;
+    private final Map<Class<Annotation>, AnnotatedPropertyBinder<Annotation>> propertyBinders;
 
     @SuppressWarnings( "unchecked" )
-    private PropertySource<Annotation>[] getPropertySources( final TypeEncounter<?> encounter )
+    public PlexusComponentListener( final Map propertyBinders )
     {
-        if ( null == cachedPropertySources )
-        {
-            cachedPropertySources =
-                new PropertySource[] { new RequirementSource( encounter ), new ConfigurationSource( encounter ) };
-        }
-        return cachedPropertySources;
+        this.propertyBinders = propertyBinders;
     }
 
     public <T> void hear( final TypeLiteral<T> literal, final TypeEncounter<T> encounter )
     {
         final Collection<PropertyInjector> propertyInjectors = new ArrayList<PropertyInjector>();
-        final PropertySource<Annotation>[] propertySources = getPropertySources( encounter );
 
         // iterate over all members in class hierarchy: constructors > methods > fields
         for ( final AnnotatedElement element : new AnnotatedElements( literal.getRawType() ) )
         {
-            for ( final PropertySource<Annotation> source : propertySources )
+            for ( final Entry<Class<Annotation>, AnnotatedPropertyBinder<Annotation>> e : propertyBinders.entrySet() )
             {
-                final Annotation annotation = source.getAnnotation( element );
+                final Annotation annotation = element.getAnnotation( e.getKey() );
                 if ( annotation != null )
                 {
                     makeAccessible( (AccessibleObject) element );
@@ -62,8 +64,8 @@ public final class PlexusAnnotationBinder
                     {
                         final Field f = (Field) element;
 
-                        final TypeLiteral<?> expectedType = TypeLiteral.get( f.getGenericType() );
-                        final Provider<?> provider = source.getProvider( f.getName(), expectedType, annotation );
+                        final TypeLiteral<?> type = TypeLiteral.get( f.getGenericType() );
+                        final Provider<?> provider = e.getValue().bindProperty( annotation, type, f.getName() );
                         propertyInjectors.add( new ProvidedFieldInjector( f, provider ) );
                     }
                     else if ( element instanceof Method )
@@ -72,8 +74,8 @@ public final class PlexusAnnotationBinder
 
                         if ( m.getParameterTypes().length == 1 )
                         {
-                            final TypeLiteral<?> expectedType = TypeLiteral.get( m.getGenericParameterTypes()[0] );
-                            final Provider<?> provider = source.getProvider( m.getName(), expectedType, annotation );
+                            final TypeLiteral<?> type = TypeLiteral.get( m.getGenericParameterTypes()[0] );
+                            final Provider<?> provider = e.getValue().bindProperty( annotation, type, m.getName() );
                             propertyInjectors.add( new ProvidedParamInjector( m, provider ) );
                         }
                         else

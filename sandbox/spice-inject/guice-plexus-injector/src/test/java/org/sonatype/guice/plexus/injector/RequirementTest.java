@@ -12,6 +12,7 @@
  */
 package org.sonatype.guice.plexus.injector;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,8 @@ import java.util.Map;
 import junit.framework.TestCase;
 
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.sonatype.guice.plexus.binders.PlexusComponentListener;
+import org.sonatype.guice.plexus.binders.PlexusRequirementBinder;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.ConfigurationException;
@@ -29,6 +32,7 @@ import com.google.inject.Injector;
 import com.google.inject.ProvisionException;
 import com.google.inject.matcher.Matchers;
 import com.google.inject.name.Names;
+import com.google.inject.spi.TypeListener;
 
 /**
  * Test various Plexus {@link Requirement} use-cases.
@@ -57,7 +61,13 @@ public class RequirementTest
 
                 bind( B.class ).annotatedWith( Names.named( "B" ) ).to( BImpl.class );
 
-                bindListener( Matchers.any(), new PlexusAnnotationBinder() );
+                final PlexusRequirementBinder requirementBinder =
+                    new PlexusRequirementBinder( getProvider( Injector.class ) );
+
+                final TypeListener listener =
+                    new PlexusComponentListener( Collections.singletonMap( Requirement.class, requirementBinder ) );
+
+                bindListener( Matchers.any(), listener );
             }
         } ).injectMembers( this );
     }
