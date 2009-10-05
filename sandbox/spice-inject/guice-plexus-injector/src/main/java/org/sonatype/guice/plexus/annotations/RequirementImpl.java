@@ -24,6 +24,12 @@ public final class RequirementImpl
     implements Requirement
 {
     // ----------------------------------------------------------------------
+    // Constants
+    // ----------------------------------------------------------------------
+
+    private static final String[] EMPTY_HINTS = {};
+
+    // ----------------------------------------------------------------------
     // Implementation fields
     // ----------------------------------------------------------------------
 
@@ -49,7 +55,7 @@ public final class RequirementImpl
         if ( hints.length == 1 )
         {
             hint = hints[0];
-            this.hints = new String[0];
+            this.hints = EMPTY_HINTS;
         }
         else
         {

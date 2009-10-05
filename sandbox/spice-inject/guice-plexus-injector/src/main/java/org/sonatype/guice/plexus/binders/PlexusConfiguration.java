@@ -22,51 +22,36 @@ import org.codehaus.plexus.util.StringUtils;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Provider;
-import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
+import com.google.inject.spi.TypeEncounter;
 import com.google.inject.util.Types;
 
-/**
- * Binds @{@link Configuration} properties to {@link Provider}s.
- */
-public final class PlexusConfigurationBinder
-    implements AnnotatedPropertyBinder<Configuration>
+final class PlexusConfiguration
 {
     private static final Type CONFIGURATION_TYPE = Types.mapOf( String.class, String.class );
 
     static final Key<Map<String, String>> CONFIGURATION_KEY = getConfigurationKey( Configuration.class.getName() );
 
-    final Provider<Injector> injectorBinding;
-
-    // ----------------------------------------------------------------------
-    // Constructors
-    // ----------------------------------------------------------------------
-
-    public PlexusConfigurationBinder( final Provider<Injector> injectorBinding )
+    static Provider<?> getProvider( final TypeEncounter<?> encounter, final Configuration configuration,
+                                    final PlexusProperty property )
     {
-        this.injectorBinding = injectorBinding;
-    }
+        final String fqn = property.getName();
 
-    // ----------------------------------------------------------------------
-    // Public methods
-    // ----------------------------------------------------------------------
-
-    public Provider<?> bindProperty( final Configuration configuration, final TypeLiteral<?> type, final String fqn )
-    {
         final int cursor = fqn.lastIndexOf( '.' );
         final String key = configuration.name().length() == 0 ? fqn.substring( cursor + 1 ) : configuration.name();
         final String defaultValue = configuration.value();
 
+        final Provider<Injector> injectorProvider = encounter.getProvider( Injector.class );
         return new Provider<String>()
         {
             public String get()
             {
                 final Map<String, String> propertyMap = new HashMap<String, String>();
-                propertyMap.putAll( injectorBinding.get().getInstance( CONFIGURATION_KEY ) );
+                propertyMap.putAll( injectorProvider.get().getInstance( CONFIGURATION_KEY ) );
                 if ( cursor > 0 )
                 {
                     final String namespace = fqn.substring( 0, cursor );
-                    propertyMap.putAll( injectorBinding.get().getInstance( getConfigurationKey( namespace ) ) );
+                    propertyMap.putAll( injectorProvider.get().getInstance( getConfigurationKey( namespace ) ) );
                 }
                 final String value = propertyMap.get( key );
 

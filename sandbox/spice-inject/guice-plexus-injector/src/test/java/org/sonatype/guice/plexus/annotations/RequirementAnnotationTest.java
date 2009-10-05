@@ -12,6 +12,8 @@
  */
 package org.sonatype.guice.plexus.annotations;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -65,7 +67,9 @@ public class RequirementAnnotationTest
         assertFalse( clone.equals( "" ) );
 
         assertEquals( orig.hashCode(), clone.hashCode() );
-        assertEquals( orig.toString(), clone.toString() );
+
+        assertEquals( new HashSet<String>( Arrays.asList( orig.toString().split( "[(, )]" ) ) ),
+                      new HashSet<String>( Arrays.asList( clone.toString().split( "[(, )]" ) ) ) );
 
         assertEquals( orig.annotationType(), clone.annotationType() );
     }

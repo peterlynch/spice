@@ -12,33 +12,11 @@
  */
 package org.sonatype.guice.plexus.injector;
 
-import java.lang.reflect.Field;
+import java.lang.reflect.AnnotatedElement;
 
-import com.google.inject.Provider;
-import com.google.inject.ProvisionException;
+import com.google.inject.spi.TypeEncounter;
 
-public final class ProvidedFieldInjector
-    implements PropertyInjector
+public interface PropertyBinder
 {
-    final Field field;
-
-    final Provider<?> provider;
-
-    public ProvidedFieldInjector( final Field field, final Provider<?> provider )
-    {
-        this.field = field;
-        this.provider = provider;
-    }
-
-    public void inject( final Object component )
-    {
-        try
-        {
-            field.set( component, provider.get() );
-        }
-        catch ( final IllegalAccessException e )
-        {
-            throw new ProvisionException( e.toString() );
-        }
-    }
+    PropertyInjector bindProperty( TypeEncounter<?> encounter, AnnotatedElement element );
 }

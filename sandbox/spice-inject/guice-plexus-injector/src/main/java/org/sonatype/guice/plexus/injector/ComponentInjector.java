@@ -16,9 +16,6 @@ import java.util.Collection;
 
 import com.google.inject.MembersInjector;
 
-/**
- * {@link MembersInjector} that injects components by using one or more {@link PropertyInjector}s.
- */
 public final class ComponentInjector<T>
     implements MembersInjector<T>
 {
@@ -33,7 +30,7 @@ public final class ComponentInjector<T>
     {
         for ( final PropertyInjector i : injectors )
         {
-            i.inject( component );
+            i.injectProperty( component );
         }
     }
 }

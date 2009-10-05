@@ -12,7 +12,6 @@
  */
 package org.sonatype.guice.plexus.injector;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -20,8 +19,7 @@ import java.util.Map;
 import junit.framework.TestCase;
 
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.sonatype.guice.plexus.binders.PlexusComponentListener;
-import org.sonatype.guice.plexus.binders.PlexusRequirementBinder;
+import org.sonatype.guice.plexus.binders.PlexusPropertyBinder;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.ConfigurationException;
@@ -61,11 +59,7 @@ public class RequirementTest
 
                 bind( B.class ).annotatedWith( Names.named( "B" ) ).to( BImpl.class );
 
-                final PlexusRequirementBinder requirementBinder =
-                    new PlexusRequirementBinder( getProvider( Injector.class ) );
-
-                final TypeListener listener =
-                    new PlexusComponentListener( Collections.singletonMap( Requirement.class, requirementBinder ) );
+                final TypeListener listener = new PropertyListener( new PlexusPropertyBinder() );
 
                 bindListener( Matchers.any(), listener );
             }
@@ -81,7 +75,7 @@ public class RequirementTest
     {
     }
 
-    class C
+    interface C
     {
     }
 
@@ -113,10 +107,7 @@ public class RequirementTest
     static class Component1
     {
         @Requirement
-        A testField1;
-
-        @Requirement
-        B testField2;
+        A testField;
 
         A testSetter;
 
@@ -194,8 +185,7 @@ public class RequirementTest
 
     public void testSingleRequirement()
     {
-        assertEquals( AImpl.class, component.testField1.getClass() );
-        assertEquals( BImpl.class, component.testField2.getClass() );
+        assertEquals( AImpl.class, component.testField.getClass() );
         assertEquals( AImpl.class, component.testSetter.getClass() );
         assertEquals( AImpl.class, component.testRole.getClass() );
         assertEquals( ABImpl.class, component.testHint.getClass() );
@@ -206,16 +196,16 @@ public class RequirementTest
         assertEquals( 4, component.testMap.size() );
 
         // check mapping
-        assertEquals( AImpl.class, component.testMap.get( "" ).getClass() );
+        assertEquals( AImpl.class, component.testMap.get( "default" ).getClass() );
         assertEquals( AAImpl.class, component.testMap.get( "AA" ).getClass() );
         assertEquals( ABImpl.class, component.testMap.get( "AB" ).getClass() );
         assertEquals( ACImpl.class, component.testMap.get( "AC" ).getClass() );
 
         // check ordering is same as original map-binder
         final Iterator<?> i = component.testMap.values().iterator();
+        assertEquals( AImpl.class, i.next().getClass() );
         assertEquals( AAImpl.class, i.next().getClass() );
         assertEquals( ABImpl.class, i.next().getClass() );
-        assertEquals( AImpl.class, i.next().getClass() );
         assertEquals( ACImpl.class, i.next().getClass() );
         assertFalse( i.hasNext() );
     }
@@ -241,9 +231,9 @@ public class RequirementTest
 
         // check ordering is same as original map-binder
         final Iterator<?> i = component.testList.iterator();
+        assertEquals( AImpl.class, i.next().getClass() );
         assertEquals( AAImpl.class, i.next().getClass() );
         assertEquals( ABImpl.class, i.next().getClass() );
-        assertEquals( AImpl.class, i.next().getClass() );
         assertEquals( ACImpl.class, i.next().getClass() );
         assertFalse( i.hasNext() );
     }
@@ -292,7 +282,7 @@ public class RequirementTest
             injector.getInstance( Component4.class );
             fail( "Expected error for missing requirement" );
         }
-        catch ( final ProvisionException e )
+        catch ( final ConfigurationException e )
         {
             System.out.println( e );
         }
@@ -305,7 +295,7 @@ public class RequirementTest
             injector.getInstance( Component5.class );
             fail( "Expected error for no such hint" );
         }
-        catch ( final ProvisionException e )
+        catch ( final ConfigurationException e )
         {
             System.out.println( e );
         }

@@ -12,6 +12,9 @@
  */
 package org.sonatype.guice.plexus.annotations;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
 import junit.framework.TestCase;
 
 import org.codehaus.plexus.component.annotations.Configuration;
@@ -50,7 +53,9 @@ public class ConfigurationAnnotationTest
         assertFalse( clone.equals( "" ) );
 
         assertEquals( orig.hashCode(), clone.hashCode() );
-        assertEquals( orig.toString(), clone.toString() );
+
+        assertEquals( new HashSet<String>( Arrays.asList( orig.toString().split( "[(, )]" ) ) ),
+                      new HashSet<String>( Arrays.asList( clone.toString().split( "[(, )]" ) ) ) );
 
         assertEquals( orig.annotationType(), clone.annotationType() );
     }

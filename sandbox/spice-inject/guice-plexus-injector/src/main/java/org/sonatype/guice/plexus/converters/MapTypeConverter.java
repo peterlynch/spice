@@ -16,11 +16,11 @@ public final class MapTypeConverter
         return null;
     }
 
-    public void configure( Binder binder )
+    public void configure( final Binder binder )
     {
         binder.convertToTypes( new AbstractMatcher<TypeLiteral<?>>()
         {
-            public boolean matches( TypeLiteral<?> type )
+            public boolean matches( final TypeLiteral<?> type )
             {
                 return Map.class.isAssignableFrom( type.getRawType() );
             }

@@ -12,15 +12,7 @@
  */
 package org.sonatype.guice.plexus.injector;
 
-/**
- * Defines a simple component property injector.
- */
 public interface PropertyInjector
 {
-    /**
-     * Inject the property into the given component.
-     * 
-     * @param component the component to inject
-     */
-    void inject( Object component );
+    void injectProperty( Object component );
 }
