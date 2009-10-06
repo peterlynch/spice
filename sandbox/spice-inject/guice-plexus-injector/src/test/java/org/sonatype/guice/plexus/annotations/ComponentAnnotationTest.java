@@ -61,6 +61,12 @@ public class ComponentAnnotationTest
     {
     }
 
+    @Component( role = Simple.class, isolatedRealm = true )
+    static class Simple3
+        extends Simple
+    {
+    }
+
     public void testComponentImpl()
         throws ClassNotFoundException
     {
@@ -73,6 +79,7 @@ public class ComponentAnnotationTest
         assertFalse( replicate( getComponent( "DefaultA" ) ).equals( getComponent( "PrototypeA" ) ) );
         assertFalse( replicate( getComponent( "Simple" ) ).equals( getComponent( "DefaultA" ) ) );
         assertFalse( replicate( getComponent( "Simple" ) ).equals( getComponent( "Simple2" ) ) );
+        assertFalse( replicate( getComponent( "Simple" ) ).equals( getComponent( "Simple3" ) ) );
     }
 
     private static void checkBehaviour( final String name )

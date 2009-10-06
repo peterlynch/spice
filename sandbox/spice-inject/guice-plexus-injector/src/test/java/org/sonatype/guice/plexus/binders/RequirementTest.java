@@ -10,7 +10,7 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
-package org.sonatype.guice.plexus.injector;
+package org.sonatype.guice.plexus.binders;
 
 import java.util.Iterator;
 import java.util.List;
@@ -20,6 +20,7 @@ import junit.framework.TestCase;
 
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.guice.plexus.binders.PlexusPropertyBinder;
+import org.sonatype.guice.plexus.injector.PropertyListener;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.ConfigurationException;
