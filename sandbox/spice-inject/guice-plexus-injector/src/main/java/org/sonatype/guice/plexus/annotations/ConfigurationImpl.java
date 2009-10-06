@@ -17,7 +17,7 @@ import java.lang.annotation.Annotation;
 import org.codehaus.plexus.component.annotations.Configuration;
 
 /**
- * Runtime implementation of Plexus {@link Configuration} annotation.
+ * Runtime implementation of Plexus @{@link Configuration} annotation.
  */
 public final class ConfigurationImpl
     implements Configuration

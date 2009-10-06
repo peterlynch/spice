@@ -18,7 +18,7 @@ import java.util.Arrays;
 import org.codehaus.plexus.component.annotations.Requirement;
 
 /**
- * Runtime implementation of Plexus {@link Requirement} annotation.
+ * Runtime implementation of Plexus @{@link Requirement} annotation.
  */
 public final class RequirementImpl
     implements Requirement

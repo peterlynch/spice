@@ -17,7 +17,7 @@ import java.lang.annotation.Annotation;
 import org.codehaus.plexus.component.annotations.Component;
 
 /**
- * Partial runtime implementation of Plexus {@link Component} annotation, supporting the most common properties.
+ * Partial runtime implementation of Plexus @{@link Component} annotation, supporting the most common attributes.
  */
 public final class ComponentImpl
     implements Component
@@ -26,8 +26,8 @@ public final class ComponentImpl
     // Constants
     // ----------------------------------------------------------------------
 
-    // pre-computed hashCode representing fixed properties
-    private static final int HASH_CODE_OFFSET = 71812305;
+    // computed hashCode representing hard-coded attributes
+    private static final int HASH_CODE_OFFSET = 0x69E113F9;
 
     // ----------------------------------------------------------------------
     // Implementation fields
@@ -37,25 +37,21 @@ public final class ComponentImpl
 
     private final String hint;
 
-    private final String version;
-
     private final String instantiationStrategy;
 
     // ----------------------------------------------------------------------
     // Constructors
     // ----------------------------------------------------------------------
 
-    public ComponentImpl( final Class<?> role, final String hint, final String version,
-                          final String instantiationStrategy )
+    public ComponentImpl( final Class<?> role, final String hint, final String instantiationStrategy )
     {
-        if ( null == role || null == hint || null == version || null == instantiationStrategy )
+        if ( null == role || null == hint || null == instantiationStrategy )
         {
             throw new IllegalArgumentException( "@Component cannot contain null values" );
         }
 
         this.role = role;
         this.hint = hint;
-        this.version = version;
         this.instantiationStrategy = instantiationStrategy;
     }
 
@@ -71,11 +67,6 @@ public final class ComponentImpl
     public String hint()
     {
         return hint;
-    }
-
-    public String version()
-    {
-        return version;
     }
 
     public String instantiationStrategy()
@@ -128,6 +119,11 @@ public final class ComponentImpl
         return "";
     }
 
+    public String version()
+    {
+        return "";
+    }
+
     // ----------------------------------------------------------------------
     // Standard annotation behaviour
     // ----------------------------------------------------------------------
@@ -139,8 +135,16 @@ public final class ComponentImpl
         {
             final Component cmp = (Component) rhs;
 
-            return role.equals( cmp.role() ) && hint.equals( cmp.hint() ) && version.equals( cmp.version() )
-                && instantiationStrategy.equals( cmp.instantiationStrategy() );
+            if ( role.equals( cmp.role() ) && hint.equals( cmp.hint() )
+                && instantiationStrategy.equals( cmp.instantiationStrategy() ) )
+            {
+                // optimisation: we hard-code all these attributes to be empty
+                final String hardCodedAttributes =
+                    cmp.alias() + cmp.composer() + cmp.configurator() + cmp.description() + cmp.factory()
+                        + cmp.lifecycleHandler() + cmp.profile() + cmp.type() + cmp.version();
+
+                return hardCodedAttributes.length() == 0 && !cmp.isolatedRealm();
+            }
         }
 
         return false;
@@ -150,7 +154,7 @@ public final class ComponentImpl
     public int hashCode()
     {
         return HASH_CODE_OFFSET + ( 127 * "role".hashCode() ^ role.hashCode() )
-            + ( 127 * "hint".hashCode() ^ hint.hashCode() ) + ( 127 * "version".hashCode() ^ version.hashCode() )
+            + ( 127 * "hint".hashCode() ^ hint.hashCode() )
             + ( 127 * "instantiationStrategy".hashCode() ^ instantiationStrategy.hashCode() );
     }
 
@@ -158,8 +162,8 @@ public final class ComponentImpl
     public String toString()
     {
         return String.format( "@%s(isolatedRealm=false, composer=, configurator=, alias=, description=, "
-            + "instantiationStrategy=%s, factory=, hint=%s, type=, lifecycleHandler=, version=%s, "
-            + "profile=, role=%s)", Component.class.getName(), instantiationStrategy, hint, version, role );
+            + "instantiationStrategy=%s, factory=, hint=%s, type=, lifecycleHandler=, version=, "
+            + "profile=, role=%s)", Component.class.getName(), instantiationStrategy, hint, role );
     }
 
     public Class<? extends Annotation> annotationType()

@@ -38,18 +38,6 @@ public class ComponentAnnotationTest
     {
     }
 
-    @Component( role = A.class, version = "2" )
-    static class DefaultA2
-        implements A
-    {
-    }
-
-    @Component( role = A.class, hint = "Named", version = "2" )
-    static class NamedA2
-        implements A
-    {
-    }
-
     @Component( role = A.class, instantiationStrategy = "per-lookup" )
     static class PrototypeA
         implements A
@@ -62,20 +50,14 @@ public class ComponentAnnotationTest
     {
     }
 
-    @Component( role = A.class, version = "2", instantiationStrategy = "per-lookup" )
-    static class PrototypeA2
-        implements A
-    {
-    }
-
-    @Component( role = A.class, hint = "Named", version = "2", instantiationStrategy = "per-lookup" )
-    static class NamedPrototypeA2
-        implements A
-    {
-    }
-
     @Component( role = Simple.class )
     static class Simple
+    {
+    }
+
+    @Component( role = Simple.class, version = "2" )
+    static class Simple2
+        extends Simple
     {
     }
 
@@ -84,17 +66,13 @@ public class ComponentAnnotationTest
     {
         checkBehaviour( "DefaultA" );
         checkBehaviour( "NamedA" );
-        checkBehaviour( "DefaultA2" );
-        checkBehaviour( "NamedA2" );
         checkBehaviour( "PrototypeA" );
         checkBehaviour( "NamedPrototypeA" );
-        checkBehaviour( "PrototypeA2" );
-        checkBehaviour( "NamedPrototypeA2" );
 
         assertFalse( replicate( getComponent( "DefaultA" ) ).equals( getComponent( "NamedA" ) ) );
-        assertFalse( replicate( getComponent( "NamedA" ) ).equals( getComponent( "NamedA2" ) ) );
         assertFalse( replicate( getComponent( "DefaultA" ) ).equals( getComponent( "PrototypeA" ) ) );
         assertFalse( replicate( getComponent( "Simple" ) ).equals( getComponent( "DefaultA" ) ) );
+        assertFalse( replicate( getComponent( "Simple" ) ).equals( getComponent( "Simple2" ) ) );
     }
 
     private static void checkBehaviour( final String name )
@@ -123,23 +101,21 @@ public class ComponentAnnotationTest
 
     private static Component replicate( final Component orig )
     {
-        return new ComponentImpl( orig.role(), orig.hint(), orig.version(), orig.instantiationStrategy() );
+        return new ComponentImpl( orig.role(), orig.hint(), orig.instantiationStrategy() );
     }
 
     public void testNullChecks()
     {
-        checkNullNotAllowed( null, "", "", "" );
-        checkNullNotAllowed( Object.class, null, "", "" );
-        checkNullNotAllowed( Object.class, "", null, "" );
-        checkNullNotAllowed( Object.class, "", "", null );
+        checkNullNotAllowed( null, "", "" );
+        checkNullNotAllowed( Object.class, null, "" );
+        checkNullNotAllowed( Object.class, "", null );
     }
 
-    private static void checkNullNotAllowed( final Class<?> role, final String hint, final String version,
-                                             final String instantationStrategy )
+    private static void checkNullNotAllowed( final Class<?> role, final String hint, final String instantationStrategy )
     {
         try
         {
-            new ComponentImpl( role, hint, version, instantationStrategy );
+            new ComponentImpl( role, hint, instantationStrategy );
             fail( "Expected IllegalArgumentException" );
         }
         catch ( final IllegalArgumentException e )
