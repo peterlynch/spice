@@ -17,26 +17,80 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
- * {@link Iterable} that supports iteration over all members of a class hierarchy: constructors > methods > fields.
+ * {@link Iterable} that supports iteration over declared members of a class hierarchy: constructors > methods > fields.
  */
 public final class AnnotatedElements
     implements Iterable<AnnotatedElement>
 {
+    // ----------------------------------------------------------------------
+    // Implementation fields
+    // ----------------------------------------------------------------------
+
     private final Class<?> clazz;
+
+    // ----------------------------------------------------------------------
+    // Constructors
+    // ----------------------------------------------------------------------
 
     /**
      * Create an iterable view of the given class hierarchy.
      * 
-     * @param clazz the leaf class
+     * @param clazz The leaf class
      */
     public AnnotatedElements( final Class<?> clazz )
     {
         this.clazz = clazz;
     }
 
+    // ----------------------------------------------------------------------
+    // Standard iterable behaviour
+    // ----------------------------------------------------------------------
+
     public Iterator<AnnotatedElement> iterator()
     {
         return new AnnotatedElementIterator( clazz );
+    }
+
+    // ----------------------------------------------------------------------
+    // Helper classes
+    // ----------------------------------------------------------------------
+
+    /**
+     * Useful base for all ready-only {@link Iterator}s.
+     */
+    static abstract class ReadOnlyIterator<T>
+        implements Iterator<T>
+    {
+        public final void remove()
+        {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    /**
+     * {@link Iterator} that iterates over a cached array.
+     */
+    private static final class ArrayIterator<T>
+        extends ReadOnlyIterator<T>
+    {
+        private final T[] items;
+
+        private int i;
+
+        ArrayIterator( final T[] items )
+        {
+            this.items = items;
+        }
+
+        public boolean hasNext()
+        {
+            return i < items.length;
+        }
+
+        public T next()
+        {
+            return items[i++]; // FindBugs IT_NO_SUCH_ELEMENT false-positive
+        }
     }
 
     /**
@@ -97,45 +151,7 @@ public final class AnnotatedElements
     }
 
     /**
-     * Useful base for all ready-only {@link Iterator}s.
-     */
-    static abstract class ReadOnlyIterator<T>
-        implements Iterator<T>
-    {
-        public final void remove()
-        {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    /**
-     * {@link Iterator} that iterates over a cached array.
-     */
-    private static final class ArrayIterator<T>
-        extends ReadOnlyIterator<T>
-    {
-        private final T[] items;
-
-        private int i;
-
-        ArrayIterator( final T[] items )
-        {
-            this.items = items;
-        }
-
-        public boolean hasNext()
-        {
-            return i < items.length;
-        }
-
-        public T next()
-        {
-            return items[i++]; // FindBugs IT_NO_SUCH_ELEMENT false-positive
-        }
-    }
-
-    /**
-     * {@link Enum} implementation that provides different views of a class's members (constructors, methods, fields).
+     * {@link Enum} implementation that provides different views of a class's members: constructors, methods, fields.
      */
     private static enum View
     {

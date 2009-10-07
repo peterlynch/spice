@@ -19,7 +19,6 @@ import java.util.Map;
 import junit.framework.TestCase;
 
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.sonatype.guice.plexus.binders.PlexusPropertyBinder;
 import org.sonatype.guice.plexus.injector.PropertyListener;
 
 import com.google.inject.AbstractModule;
@@ -34,13 +33,13 @@ import com.google.inject.name.Names;
 import com.google.inject.spi.TypeListener;
 
 /**
- * Test various Plexus {@link Requirement} use-cases.
+ * Test various Plexus @{@link Requirement} use-cases.
  */
 public class RequirementTest
     extends TestCase
 {
     @Inject
-    Component1 component;
+    Component component;
 
     @Inject
     Injector injector;
@@ -105,7 +104,7 @@ public class RequirementTest
     {
     }
 
-    static class Component1
+    static class Component
     {
         @Requirement
         A testField;

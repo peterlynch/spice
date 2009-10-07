@@ -17,7 +17,7 @@ import org.sonatype.guice.plexus.injector.PropertyInjector;
 import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
 
-interface PlexusProperty
+interface InjectableProperty
 {
     TypeLiteral<?> getType();
 

@@ -22,14 +22,14 @@ import com.google.inject.Provider;
 import com.google.inject.ProvisionException;
 import com.google.inject.TypeLiteral;
 
-final class PlexusFieldProperty
-    implements PlexusProperty, PrivilegedAction<Void>, PropertyInjector
+final class InjectableFieldProperty
+    implements InjectableProperty, PrivilegedAction<Void>, PropertyInjector
 {
     private final Field field;
 
     private Provider<?> provider;
 
-    PlexusFieldProperty( final Field field )
+    InjectableFieldProperty( final Field field )
     {
         this.field = field;
     }

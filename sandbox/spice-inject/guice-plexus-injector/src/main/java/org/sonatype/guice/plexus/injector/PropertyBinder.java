@@ -16,7 +16,17 @@ import java.lang.reflect.AnnotatedElement;
 
 import com.google.inject.spi.TypeEncounter;
 
+/**
+ * Auto-binds property elements (such as fields or setter methods) to {@link PropertyInjector}s.
+ */
 public interface PropertyBinder
 {
+    /**
+     * Returns a {@link PropertyInjector} configured to inject the given {@link AnnotatedElement}.
+     * 
+     * @param encounter The Guice type encounter
+     * @param element The annotated element
+     * @return property injector bound to the given element; null if no injection is required
+     */
     PropertyInjector bindProperty( TypeEncounter<?> encounter, AnnotatedElement element );
 }

@@ -12,6 +12,10 @@
  */
 package org.sonatype.guice.plexus.binders;
 
+import static org.sonatype.guice.plexus.utils.PlexusConstants.NO_HINTS;
+import static org.sonatype.guice.plexus.utils.PlexusConstants.getCanonicalHint;
+import static org.sonatype.guice.plexus.utils.PlexusConstants.isDefaultHint;
+
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
@@ -29,11 +33,9 @@ import com.google.inject.util.Types;
 
 final class PlexusRequirement
 {
-    static final String DEFAULT_HINT = "default";
-
     @SuppressWarnings( "unchecked" )
     static Provider<?> getProvider( final TypeEncounter<?> encounter, final Requirement requirement,
-                                    final PlexusProperty property )
+                                    final InjectableProperty property )
     {
         final TypeLiteral expectedType = property.getType();
         final TypeLiteral roleType = getRole( expectedType, requirement );
@@ -103,21 +105,16 @@ final class PlexusRequirement
         {
             for ( int i = 0; i < hints.length; i++ )
             {
-                hints[i] = normalizeHint( hints[i] );
+                hints[i] = getCanonicalHint( hints[i] );
             }
             return hints;
         }
-        final String hint = normalizeHint( requirement.hint() );
-        if ( DEFAULT_HINT.equals( hint ) )
+        final String hint = requirement.hint();
+        if ( isDefaultHint( hint ) )
         {
-            return new String[0];
+            return NO_HINTS;
         }
-        return new String[] { hint };
-    }
-
-    static String normalizeHint( final String hint )
-    {
-        return hint.length() == 0 ? DEFAULT_HINT : hint;
+        return new String[] { getCanonicalHint( hint ) };
     }
 
     @SuppressWarnings( "unchecked" )

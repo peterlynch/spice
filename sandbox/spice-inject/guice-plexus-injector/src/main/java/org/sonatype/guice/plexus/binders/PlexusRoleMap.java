@@ -12,8 +12,9 @@
  */
 package org.sonatype.guice.plexus.binders;
 
-import static org.sonatype.guice.plexus.binders.PlexusRequirement.DEFAULT_HINT;
-import static org.sonatype.guice.plexus.binders.PlexusRequirement.normalizeHint;
+import static org.sonatype.guice.plexus.utils.PlexusConstants.DEFAULT_HINT;
+import static org.sonatype.guice.plexus.utils.PlexusConstants.getCanonicalHint;
+import static org.sonatype.guice.plexus.utils.PlexusConstants.isDefaultHint;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -58,9 +59,9 @@ final class PlexusRoleMap<T>
             // use explicit query for default, in case it's a Just-In-Time binding
             roleMap.put( DEFAULT_HINT, injector.getProvider( Key.get( roleType ) ) );
         }
-        catch ( final ConfigurationException e )
+        catch ( final ConfigurationException e ) // NOPMD
         {
-            // can be ignored, as a default component is not always available
+            // safe to ignore, as default component not always available
         }
 
         // @Named bindings => Plexus hints
@@ -70,12 +71,12 @@ final class PlexusRoleMap<T>
             final Annotation a = b.getKey().getAnnotation();
             if ( a instanceof Named )
             {
-                final String hint = normalizeHint( ( (Named) a ).value() );
-                if ( DEFAULT_HINT.equals( hint ) )
+                final String hint = ( (Named) a ).value();
+                if ( isDefaultHint( hint ) )
                 {
                     throw new ProvisionException( "Default binding " + b + " should not have a @Named annotation" );
                 }
-                roleMap.put( hint, b.getProvider() );
+                roleMap.put( getCanonicalHint( hint ), b.getProvider() );
             }
         }
 

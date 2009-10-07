@@ -12,7 +12,17 @@
  */
 package org.sonatype.guice.plexus.injector;
 
+import java.lang.reflect.AnnotatedElement;
+
+/**
+ * Injects a single property bound using {@link PropertyBinder} into one or more components.
+ */
 public interface PropertyInjector
 {
+    /**
+     * Injects the property into the right {@link AnnotatedElement} of the given component.
+     * 
+     * @param component The component to inject
+     */
     void injectProperty( Object component );
 }

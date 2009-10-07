@@ -16,7 +16,6 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import org.codehaus.plexus.component.annotations.Configuration;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.guice.plexus.injector.PropertyBinder;
 import org.sonatype.guice.plexus.injector.PropertyInjector;
@@ -33,32 +32,27 @@ public final class PlexusPropertyBinder
             final Requirement req = element.getAnnotation( Requirement.class );
             if ( null != req )
             {
-                final PlexusProperty property = getPlexusProperty( element );
+                final InjectableProperty property = newInjectableProperty( element );
                 return property.bind( PlexusRequirement.getProvider( encounter, req, property ) );
-            }
-            final Configuration conf = element.getAnnotation( Configuration.class );
-            if ( null != conf )
-            {
-                final PlexusProperty property = getPlexusProperty( element );
-                return property.bind( PlexusConfiguration.getProvider( encounter, conf, property ) );
             }
         }
         catch ( final RuntimeException e )
         {
             encounter.addError( e.toString() );
         }
+
         return null;
     }
 
-    private static PlexusProperty getPlexusProperty( final AnnotatedElement element )
+    private static InjectableProperty newInjectableProperty( final AnnotatedElement element )
     {
         if ( element instanceof Field )
         {
-            return new PlexusFieldProperty( (Field) element );
+            return new InjectableFieldProperty( (Field) element );
         }
         if ( element instanceof Method )
         {
-            return new PlexusParamProperty( (Method) element );
+            return new InjectableParamProperty( (Method) element );
         }
         throw new IllegalArgumentException();
     }

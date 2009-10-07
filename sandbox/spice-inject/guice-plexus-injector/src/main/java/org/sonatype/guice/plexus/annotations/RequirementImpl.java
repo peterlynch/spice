@@ -12,6 +12,8 @@
  */
 package org.sonatype.guice.plexus.annotations;
 
+import static org.sonatype.guice.plexus.utils.PlexusConstants.NO_HINTS;
+
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 
@@ -23,12 +25,6 @@ import org.codehaus.plexus.component.annotations.Requirement;
 public final class RequirementImpl
     implements Requirement
 {
-    // ----------------------------------------------------------------------
-    // Constants
-    // ----------------------------------------------------------------------
-
-    private static final String[] EMPTY_HINTS = {};
-
     // ----------------------------------------------------------------------
     // Implementation fields
     // ----------------------------------------------------------------------
@@ -55,12 +51,12 @@ public final class RequirementImpl
         if ( hints.length == 1 )
         {
             hint = hints[0];
-            this.hints = EMPTY_HINTS;
+            this.hints = NO_HINTS;
         }
         else
         {
             hint = "";
-            this.hints = hints;
+            this.hints = hints.clone();
         }
     }
 
@@ -80,7 +76,7 @@ public final class RequirementImpl
 
     public String[] hints()
     {
-        return hints;
+        return hints.clone();
     }
 
     // ----------------------------------------------------------------------

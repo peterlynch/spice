@@ -10,43 +10,53 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
-package org.sonatype.guice.plexus.injector;
-
-import java.util.Collection;
-
-import com.google.inject.MembersInjector;
+package org.sonatype.guice.plexus.utils;
 
 /**
- * Injects properties bound using {@link PropertyBinder} into one or more components.
+ * Plexus related constants and utility methods.
  */
-public final class ComponentInjector<T>
-    implements MembersInjector<T>
+public final class PlexusConstants
 {
     // ----------------------------------------------------------------------
-    // Implementation fields
+    // Constants
     // ----------------------------------------------------------------------
 
-    private final PropertyInjector[] injectors;
+    public static final String[] NO_HINTS = {};
+
+    public static final String DEFAULT_HINT = "default";
 
     // ----------------------------------------------------------------------
     // Constructors
     // ----------------------------------------------------------------------
 
-    public ComponentInjector( final Collection<PropertyInjector> injectors )
+    private PlexusConstants()
     {
-        // cache using a fixed-sized injector array for a small performance boost
-        this.injectors = injectors.toArray( new PropertyInjector[injectors.size()] );
+        // static utility class, not allowed to create instances
     }
 
     // ----------------------------------------------------------------------
-    // Public methods
+    // Utility methods
     // ----------------------------------------------------------------------
 
-    public void injectMembers( final T component )
+    /**
+     * Returns the canonical form of the given Plexus hint.
+     * 
+     * @param hint The Plexus hint
+     * @return canonical hint denoting the same component as the Plexus hint
+     */
+    public static String getCanonicalHint( final String hint )
     {
-        for ( final PropertyInjector i : injectors )
-        {
-            i.injectProperty( component );
-        }
+        return hint.length() == 0 ? DEFAULT_HINT : hint;
+    }
+
+    /**
+     * Returns {@code true} if the given Plexus hint denotes the default component.
+     * 
+     * @param hint The Plexus hint
+     * @return {@code true} if the Plexus hint denotes the default component
+     */
+    public static boolean isDefaultHint( final String hint )
+    {
+        return hint.length() == 0 || DEFAULT_HINT.equals( hint );
     }
 }

@@ -23,14 +23,14 @@ import com.google.inject.Provider;
 import com.google.inject.ProvisionException;
 import com.google.inject.TypeLiteral;
 
-final class PlexusParamProperty
-    implements PlexusProperty, PrivilegedAction<Void>, PropertyInjector
+final class InjectableParamProperty
+    implements InjectableProperty, PrivilegedAction<Void>, PropertyInjector
 {
     private final Method method;
 
     private Provider<?> provider;
 
-    PlexusParamProperty( final Method method )
+    InjectableParamProperty( final Method method )
     {
         if ( method.getParameterTypes().length != 1 )
         {

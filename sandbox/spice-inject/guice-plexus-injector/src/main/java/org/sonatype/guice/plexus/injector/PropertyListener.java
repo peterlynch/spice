@@ -20,21 +20,36 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
 
+/**
+ * Listens for component types and uses a {@link PropertyBinder} to auto-bind property elements.
+ */
 public final class PropertyListener
     implements TypeListener
 {
+    // ----------------------------------------------------------------------
+    // Implementation fields
+    // ----------------------------------------------------------------------
+
     private final PropertyBinder binder;
+
+    // ----------------------------------------------------------------------
+    // Constructors
+    // ----------------------------------------------------------------------
 
     public PropertyListener( final PropertyBinder binder )
     {
         this.binder = binder;
     }
 
+    // ----------------------------------------------------------------------
+    // Public methods
+    // ----------------------------------------------------------------------
+
     public <T> void hear( final TypeLiteral<T> literal, final TypeEncounter<T> encounter )
     {
         final Collection<PropertyInjector> propertyInjectors = new ArrayList<PropertyInjector>();
 
-        // iterate over all members in class hierarchy: constructors > methods > fields
+        // iterate over declared members in class hierarchy: constructors > methods > fields
         for ( final AnnotatedElement element : new AnnotatedElements( literal.getRawType() ) )
         {
             final PropertyInjector injector = binder.bindProperty( encounter, element );

@@ -136,14 +136,14 @@ public final class ComponentImpl
             final Component cmp = (Component) rhs;
 
             if ( role.equals( cmp.role() ) && hint.equals( cmp.hint() )
-                && instantiationStrategy.equals( cmp.instantiationStrategy() ) )
+                && instantiationStrategy.equals( cmp.instantiationStrategy() ) && !cmp.isolatedRealm() )
             {
-                // optimisation: we hard-code all these attributes to be empty
+                // optimization: we hard-code all these attributes to be empty
                 final String hardCodedAttributes =
                     cmp.alias() + cmp.composer() + cmp.configurator() + cmp.description() + cmp.factory()
                         + cmp.lifecycleHandler() + cmp.profile() + cmp.type() + cmp.version();
 
-                return hardCodedAttributes.length() == 0 && !cmp.isolatedRealm();
+                return hardCodedAttributes.length() == 0;
             }
         }
 
