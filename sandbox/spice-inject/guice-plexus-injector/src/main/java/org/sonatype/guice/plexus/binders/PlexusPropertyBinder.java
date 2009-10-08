@@ -18,17 +18,25 @@ import java.lang.reflect.Method;
 
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.guice.plexus.injector.PropertyBinder;
-import org.sonatype.guice.plexus.injector.PropertyInjector;
+import org.sonatype.guice.plexus.injector.PropertyBinding;
 
 import com.google.inject.spi.TypeEncounter;
 
+/**
+ * {@link PropertyBinder} that auto-binds properties according to Plexus annotations.
+ */
 public final class PlexusPropertyBinder
     implements PropertyBinder
 {
-    public PropertyInjector bindProperty( final TypeEncounter<?> encounter, final AnnotatedElement element )
+    // ----------------------------------------------------------------------
+    // Public methods
+    // ----------------------------------------------------------------------
+
+    public PropertyBinding bindProperty( final TypeEncounter<?> encounter, final AnnotatedElement element )
     {
         try
         {
+            // @Requirement binding
             final Requirement req = element.getAnnotation( Requirement.class );
             if ( null != req )
             {
@@ -44,6 +52,16 @@ public final class PlexusPropertyBinder
         return null;
     }
 
+    // ----------------------------------------------------------------------
+    // Implementation methods
+    // ----------------------------------------------------------------------
+
+    /**
+     * Creates a new {@link InjectableProperty} backed by the given {@link AnnotatedElement}.
+     * 
+     * @param element The annotated element
+     * @return Injectable property for the given element
+     */
     private static InjectableProperty newInjectableProperty( final AnnotatedElement element )
     {
         if ( element instanceof Field )
@@ -54,6 +72,6 @@ public final class PlexusPropertyBinder
         {
             return new InjectableParamProperty( (Method) element );
         }
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException( "Unexpected Plexus property type " + element );
     }
 }

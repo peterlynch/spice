@@ -21,7 +21,7 @@ import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
 
 /**
- * Listens for component types and uses a {@link PropertyBinder} to auto-bind property elements.
+ * {@link TypeListener} that listens for component types and uses a {@link PropertyBinder} to auto-bind properties.
  */
 public final class PropertyListener
     implements TypeListener
@@ -47,21 +47,21 @@ public final class PropertyListener
 
     public <T> void hear( final TypeLiteral<T> literal, final TypeEncounter<T> encounter )
     {
-        final Collection<PropertyInjector> propertyInjectors = new ArrayList<PropertyInjector>();
+        final Collection<PropertyBinding> bindings = new ArrayList<PropertyBinding>();
 
         // iterate over declared members in class hierarchy: constructors > methods > fields
         for ( final AnnotatedElement element : new AnnotatedElements( literal.getRawType() ) )
         {
-            final PropertyInjector injector = binder.bindProperty( encounter, element );
-            if ( injector != null )
+            final PropertyBinding binding = binder.bindProperty( encounter, element );
+            if ( binding != null )
             {
-                propertyInjectors.add( injector );
+                bindings.add( binding );
             }
         }
 
-        if ( !propertyInjectors.isEmpty() )
+        if ( !bindings.isEmpty() )
         {
-            encounter.register( new ComponentInjector<Object>( propertyInjectors ) );
+            encounter.register( new ComponentInjector<Object>( bindings ) );
         }
     }
 }

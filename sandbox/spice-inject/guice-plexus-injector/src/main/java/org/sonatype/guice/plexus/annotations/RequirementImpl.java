@@ -31,6 +31,8 @@ public final class RequirementImpl
 
     private final Class<?> role;
 
+    private final boolean optional;
+
     private final String hint;
 
     private final String[] hints;
@@ -39,7 +41,7 @@ public final class RequirementImpl
     // Constructors
     // ----------------------------------------------------------------------
 
-    public RequirementImpl( final Class<?> role, final String... hints )
+    public RequirementImpl( final Class<?> role, final boolean optional, final String... hints )
     {
         if ( null == role || null == hints || Arrays.asList( hints ).contains( null ) )
         {
@@ -47,6 +49,7 @@ public final class RequirementImpl
         }
 
         this.role = role;
+        this.optional = optional;
 
         if ( hints.length == 1 )
         {
@@ -69,6 +72,11 @@ public final class RequirementImpl
         return role;
     }
 
+    public boolean optional()
+    {
+        return optional;
+    }
+
     public String hint()
     {
         return hint;
@@ -86,8 +94,9 @@ public final class RequirementImpl
     @Override
     public int hashCode()
     {
-        return ( 127 * "role".hashCode() ^ role.hashCode() ) + ( 127 * "hint".hashCode() ^ hint.hashCode() )
-            + ( 127 * "hints".hashCode() ^ Arrays.hashCode( hints ) );
+        return ( 127 * "role".hashCode() ^ role.hashCode() )
+            + ( 127 * "optional".hashCode() ^ Boolean.valueOf( optional ).hashCode() )
+            + ( 127 * "hint".hashCode() ^ hint.hashCode() ) + ( 127 * "hints".hashCode() ^ Arrays.hashCode( hints ) );
     }
 
     @Override
@@ -97,7 +106,8 @@ public final class RequirementImpl
         {
             final Requirement req = (Requirement) rhs;
 
-            return role.equals( req.role() ) && hint.equals( req.hint() ) && Arrays.equals( hints, req.hints() );
+            return role.equals( req.role() ) && optional == req.optional() && hint.equals( req.hint() )
+                && Arrays.equals( hints, req.hints() );
         }
 
         return false;
@@ -106,8 +116,8 @@ public final class RequirementImpl
     @Override
     public String toString()
     {
-        return String.format( "@%s(hints=%s, role=%s, hint=%s)", Requirement.class.getName(), Arrays.toString( hints ),
-                              role, hint );
+        return String.format( "@%s(hints=%s, optional=%b, role=%s, hint=%s)", Requirement.class.getName(),
+                              Arrays.toString( hints ), Boolean.valueOf( optional ), role, hint );
     }
 
     public Class<? extends Annotation> annotationType()

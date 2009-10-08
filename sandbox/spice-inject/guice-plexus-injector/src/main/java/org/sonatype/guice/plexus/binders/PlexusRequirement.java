@@ -31,14 +31,36 @@ import com.google.inject.name.Names;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.util.Types;
 
+/**
+ * Creates {@link Provider}s for property elements annotated with @{@link Requirement}.
+ */
 final class PlexusRequirement
 {
+    // ----------------------------------------------------------------------
+    // Constructors
+    // ----------------------------------------------------------------------
+
+    private PlexusRequirement()
+    {
+        // static utility class, not allowed to create instances
+    }
+
+    static
+    {
+        new PlexusRequirement(); // keep Cobertura coverage happy
+    }
+
+    // ----------------------------------------------------------------------
+    // Main provider method
+    // ----------------------------------------------------------------------
+
     @SuppressWarnings( "unchecked" )
     static Provider<?> getProvider( final TypeEncounter<?> encounter, final Requirement requirement,
                                     final InjectableProperty property )
     {
+        // extract the various requirement parameters
         final TypeLiteral expectedType = property.getType();
-        final TypeLiteral roleType = getRole( expectedType, requirement );
+        final TypeLiteral roleType = getRole( requirement, expectedType );
         final String[] hints = getHints( requirement );
 
         if ( Map.class == expectedType.getRawType() )
@@ -65,15 +87,26 @@ final class PlexusRequirement
             };
         }
 
-        if ( hints.length > 0 )
+        if ( hints.length == 0 || isDefaultHint( hints[0] ) )
         {
-            return encounter.getProvider( Key.get( roleType, Names.named( hints[0] ) ) );
+            return encounter.getProvider( Key.get( roleType ) );
         }
 
-        return encounter.getProvider( Key.get( roleType ) );
+        return encounter.getProvider( Key.get( roleType, Names.named( hints[0] ) ) );
     }
 
-    private static TypeLiteral<?> getRole( final TypeLiteral<?> expectedType, final Requirement requirement )
+    // ----------------------------------------------------------------------
+    // Implementation methods
+    // ----------------------------------------------------------------------
+
+    /**
+     * Extracts the role type from the given @{@link Requirement} and expected property type.
+     * 
+     * @param requirement The Plexus requirement
+     * @param expectedType The expected property type
+     * @return The appropriate role type
+     */
+    private static TypeLiteral<?> getRole( final Requirement requirement, final TypeLiteral<?> expectedType )
     {
         final Type role = requirement.role();
         if ( role != Object.class )
@@ -82,22 +115,37 @@ final class PlexusRequirement
         }
         if ( Map.class == expectedType.getRawType() )
         {
+            // Map<String, T> --> T
             return getTypeArgument( expectedType, 1 );
         }
         if ( List.class == expectedType.getRawType() )
         {
+            // List<T> --> T
             return getTypeArgument( expectedType, 0 );
         }
 
         return expectedType;
     }
 
+    /**
+     * Extracts a type argument from a generic type, for example {@code String} from {@code List<String>}.
+     * 
+     * @param genericType The generic type
+     * @param index The type argument index
+     * @return Selected type argument
+     */
     private static TypeLiteral<?> getTypeArgument( final TypeLiteral<?> genericType, final int index )
     {
         final Type t = ( (ParameterizedType) genericType.getType() ).getActualTypeArguments()[index];
         return TypeLiteral.get( t instanceof WildcardType ? ( (WildcardType) t ).getUpperBounds()[0] : t );
     }
 
+    /**
+     * Extracts an array of Plexus hints from the given @{@link Requirement}.
+     * 
+     * @param requirement The Plexus requirement
+     * @return Array of hints
+     */
     private static String[] getHints( final Requirement requirement )
     {
         final String[] hints = requirement.hints();
@@ -110,13 +158,20 @@ final class PlexusRequirement
             return hints;
         }
         final String hint = requirement.hint();
-        if ( isDefaultHint( hint ) )
+        if ( hint.length() > 0 )
         {
-            return NO_HINTS;
+            return new String[] { hint };
         }
-        return new String[] { getCanonicalHint( hint ) };
+        return NO_HINTS;
     }
 
+    /**
+     * Returns a {@link Provider} that can provide a {@link PlexusRoleMap} for the given role type.
+     * 
+     * @param encounter The Guice type encounter
+     * @param roleType The Plexus role type
+     * @return Provider that provides a role map for the given role type
+     */
     @SuppressWarnings( "unchecked" )
     private static <T> Provider<PlexusRoleMap<T>> getRoleMapProvider( final TypeEncounter<?> encounter,
                                                                       final TypeLiteral<T> roleType )

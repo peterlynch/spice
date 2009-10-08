@@ -17,18 +17,29 @@ import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
-import org.sonatype.guice.plexus.injector.PropertyInjector;
+import org.sonatype.guice.plexus.injector.PropertyBinding;
 
 import com.google.inject.Provider;
 import com.google.inject.ProvisionException;
 import com.google.inject.TypeLiteral;
 
+/**
+ * {@link InjectableProperty} backed by a single-parameter setter {@link Method}.
+ */
 final class InjectableParamProperty
-    implements InjectableProperty, PrivilegedAction<Void>, PropertyInjector
+    implements InjectableProperty, PrivilegedAction<Void>, PropertyBinding
 {
+    // ----------------------------------------------------------------------
+    // Implementation fields
+    // ----------------------------------------------------------------------
+
     private final Method method;
 
     private Provider<?> provider;
+
+    // ----------------------------------------------------------------------
+    // Constructors
+    // ----------------------------------------------------------------------
 
     InjectableParamProperty( final Method method )
     {
@@ -40,6 +51,10 @@ final class InjectableParamProperty
         this.method = method;
     }
 
+    // ----------------------------------------------------------------------
+    // InjectableProperty methods
+    // ----------------------------------------------------------------------
+
     public TypeLiteral<?> getType()
     {
         return TypeLiteral.get( method.getGenericParameterTypes()[0] );
@@ -47,20 +62,26 @@ final class InjectableParamProperty
 
     public String getName()
     {
-        return method.getDeclaringClass().getName() + '.' + method.getName();
+        final String name = method.getName().replaceFirst( "^set(\\p{javaUpperCase})", "$1" );
+        return method.getDeclaringClass().getName() + '.' + name;
     }
 
-    public PropertyInjector bind( final Provider<?> toProvider )
+    public PropertyBinding bind( final Provider<?> toProvider )
     {
+        provider = toProvider;
+
         if ( !method.isAccessible() )
         {
+            // make sure we can apply the binding
             AccessController.doPrivileged( this );
         }
 
-        provider = toProvider;
-
-        return this;
+        return this; // save on object creation
     }
+
+    // ----------------------------------------------------------------------
+    // PrivilegedAction methods
+    // ----------------------------------------------------------------------
 
     public Void run()
     {
@@ -68,7 +89,11 @@ final class InjectableParamProperty
         return null;
     }
 
-    public void injectProperty( final Object component )
+    // ----------------------------------------------------------------------
+    // PropertyBinding methods
+    // ----------------------------------------------------------------------
+
+    public void apply( final Object component )
     {
         try
         {

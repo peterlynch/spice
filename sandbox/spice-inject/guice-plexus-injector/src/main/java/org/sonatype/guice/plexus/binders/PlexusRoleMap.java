@@ -13,7 +13,6 @@
 package org.sonatype.guice.plexus.binders;
 
 import static org.sonatype.guice.plexus.utils.PlexusConstants.DEFAULT_HINT;
-import static org.sonatype.guice.plexus.utils.PlexusConstants.getCanonicalHint;
 import static org.sonatype.guice.plexus.utils.PlexusConstants.isDefaultHint;
 
 import java.lang.annotation.Annotation;
@@ -37,11 +36,19 @@ import com.google.inject.name.Named;
 @Singleton
 final class PlexusRoleMap<T>
 {
+    // ----------------------------------------------------------------------
+    // Implementation fields
+    // ----------------------------------------------------------------------
+
     private final TypeLiteral<T> roleType;
 
     private final Map<String, Provider<T>> roleMap;
 
     private final String[] allHints;
+
+    // ----------------------------------------------------------------------
+    // Constructors
+    // ----------------------------------------------------------------------
 
     @Inject
     PlexusRoleMap( final Injector injector, final TypeLiteral<T> roleType )
@@ -74,14 +81,18 @@ final class PlexusRoleMap<T>
                 final String hint = ( (Named) a ).value();
                 if ( isDefaultHint( hint ) )
                 {
-                    throw new ProvisionException( "Default binding " + b + " should not have a @Named annotation" );
+                    throw new ProvisionException( "Bad @Named annotation found at " + b.getSource() );
                 }
-                roleMap.put( getCanonicalHint( hint ), b.getProvider() );
+                roleMap.put( hint, b.getProvider() );
             }
         }
 
         allHints = roleMap.keySet().toArray( new String[roleMap.size()] );
     }
+
+    // ----------------------------------------------------------------------
+    // Package-private methods
+    // ----------------------------------------------------------------------
 
     Map<String, T> getRoleHintMap( final String... selectedHints )
     {

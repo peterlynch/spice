@@ -44,14 +44,14 @@ public class PropertyListenerTest
             {
                 bindListener( Matchers.any(), new PropertyListener( new PropertyBinder()
                 {
-                    public PropertyInjector bindProperty( final TypeEncounter<?> encounter,
+                    public PropertyBinding bindProperty( final TypeEncounter<?> encounter,
                                                           final AnnotatedElement element )
                     {
                         if ( Component.class == ( (Member) element ).getDeclaringClass() && element instanceof Field )
                         {
-                            return new PropertyInjector()
+                            return new PropertyBinding()
                             {
-                                public void injectProperty( final Object o )
+                                public void apply( final Object o )
                                 {
                                     final Field f = (Field) element;
                                     try

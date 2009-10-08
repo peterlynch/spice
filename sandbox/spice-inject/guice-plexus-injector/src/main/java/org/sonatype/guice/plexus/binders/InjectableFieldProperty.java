@@ -16,23 +16,38 @@ import java.lang.reflect.Field;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
-import org.sonatype.guice.plexus.injector.PropertyInjector;
+import org.sonatype.guice.plexus.injector.PropertyBinding;
 
 import com.google.inject.Provider;
 import com.google.inject.ProvisionException;
 import com.google.inject.TypeLiteral;
 
+/**
+ * {@link InjectableProperty} backed by a {@link Field}.
+ */
 final class InjectableFieldProperty
-    implements InjectableProperty, PrivilegedAction<Void>, PropertyInjector
+    implements InjectableProperty, PrivilegedAction<Void>, PropertyBinding
 {
+    // ----------------------------------------------------------------------
+    // Implementation fields
+    // ----------------------------------------------------------------------
+
     private final Field field;
 
     private Provider<?> provider;
+
+    // ----------------------------------------------------------------------
+    // Constructors
+    // ----------------------------------------------------------------------
 
     InjectableFieldProperty( final Field field )
     {
         this.field = field;
     }
+
+    // ----------------------------------------------------------------------
+    // InjectableProperty methods
+    // ----------------------------------------------------------------------
 
     public TypeLiteral<?> getType()
     {
@@ -44,25 +59,35 @@ final class InjectableFieldProperty
         return field.getDeclaringClass().getName() + '.' + field.getName();
     }
 
-    public PropertyInjector bind( final Provider<?> toProvider )
+    public PropertyBinding bind( final Provider<?> toProvider )
     {
+        provider = toProvider;
+
         if ( !field.isAccessible() )
         {
+            // make sure we can apply the binding
             AccessController.doPrivileged( this );
         }
 
-        provider = toProvider;
-
-        return this;
+        return this; // save on object creation
     }
+
+    // ----------------------------------------------------------------------
+    // PrivilegedAction methods
+    // ----------------------------------------------------------------------
 
     public Void run()
     {
+        // enable private injection
         field.setAccessible( true );
         return null;
     }
 
-    public void injectProperty( final Object component )
+    // ----------------------------------------------------------------------
+    // PropertyBinding methods
+    // ----------------------------------------------------------------------
+
+    public void apply( final Object component )
     {
         try
         {

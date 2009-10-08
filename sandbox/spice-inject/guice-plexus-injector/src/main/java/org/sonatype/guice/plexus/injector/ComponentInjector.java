@@ -17,7 +17,7 @@ import java.util.Collection;
 import com.google.inject.MembersInjector;
 
 /**
- * Injects properties bound using {@link PropertyBinder} into one or more components.
+ * {@link MembersInjector} that takes {@link PropertyBinding}s and applies them to components.
  */
 public final class ComponentInjector<T>
     implements MembersInjector<T>
@@ -26,16 +26,16 @@ public final class ComponentInjector<T>
     // Implementation fields
     // ----------------------------------------------------------------------
 
-    private final PropertyInjector[] injectors;
+    private final PropertyBinding[] bindings;
 
     // ----------------------------------------------------------------------
     // Constructors
     // ----------------------------------------------------------------------
 
-    public ComponentInjector( final Collection<PropertyInjector> injectors )
+    public ComponentInjector( final Collection<PropertyBinding> bindings )
     {
-        // cache using a fixed-sized injector array for a small performance boost
-        this.injectors = injectors.toArray( new PropertyInjector[injectors.size()] );
+        // cache using a fixed-sized binding array for small performance boost
+        this.bindings = bindings.toArray( new PropertyBinding[bindings.size()] );
     }
 
     // ----------------------------------------------------------------------
@@ -44,9 +44,9 @@ public final class ComponentInjector<T>
 
     public void injectMembers( final T component )
     {
-        for ( final PropertyInjector i : injectors )
+        for ( final PropertyBinding b : bindings )
         {
-            i.injectProperty( component );
+            b.apply( component );
         }
     }
 }

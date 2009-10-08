@@ -35,7 +35,7 @@ import com.google.inject.spi.TypeListener;
 /**
  * Test various Plexus @{@link Requirement} use-cases.
  */
-public class RequirementTest
+public class PlexusRequirementTest
     extends TestCase
 {
     @Inject
@@ -59,6 +59,8 @@ public class RequirementTest
 
                 bind( B.class ).annotatedWith( Names.named( "B" ) ).to( BImpl.class );
 
+                bind( D.class ).annotatedWith( Names.named( "" ) ).to( DImpl.class );
+
                 final TypeListener listener = new PropertyListener( new PlexusPropertyBinder() );
 
                 bindListener( Matchers.any(), listener );
@@ -79,6 +81,10 @@ public class RequirementTest
     {
     }
 
+    interface D
+    {
+    }
+
     static class AImpl
         implements A
     {
@@ -86,6 +92,11 @@ public class RequirementTest
 
     static class BImpl
         implements B
+    {
+    }
+
+    static class DImpl
+        implements D
     {
     }
 
@@ -111,7 +122,7 @@ public class RequirementTest
 
         A testSetter;
 
-        @Requirement
+        @Requirement( hints = { "default" } )
         void testSetter( final A a )
         {
             testSetter = a;
@@ -181,6 +192,12 @@ public class RequirementTest
     {
         @Requirement( hints = { "AA", "AZ", "A!" } )
         List<C> testNoSuchHint;
+    }
+
+    static class Component8
+    {
+        @Requirement( hints = { "" } )
+        List<D> testBadName;
     }
 
     public void testSingleRequirement()
@@ -320,6 +337,19 @@ public class RequirementTest
         {
             injector.getInstance( Component7.class );
             fail( "Expected error for no such hint" );
+        }
+        catch ( final ProvisionException e )
+        {
+            System.out.println( e );
+        }
+    }
+
+    public void testBadName()
+    {
+        try
+        {
+            injector.getInstance( Component8.class );
+            fail( "Expected error for bad name" );
         }
         catch ( final ProvisionException e )
         {

@@ -17,7 +17,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
- * {@link Iterable} that supports iteration over declared members of a class hierarchy: constructors > methods > fields.
+ * {@link Iterable} that iterates over declared members of a class hierarchy: constructors > methods > fields.
  */
 public final class AnnotatedElements
     implements Iterable<AnnotatedElement>

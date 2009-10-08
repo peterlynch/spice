@@ -12,16 +12,31 @@
  */
 package org.sonatype.guice.plexus.binders;
 
-import org.sonatype.guice.plexus.injector.PropertyInjector;
+import org.sonatype.guice.plexus.injector.PropertyBinding;
 
 import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
 
+/**
+ * Represents a property element (such as a field or setter method) that can be injected.
+ */
 interface InjectableProperty
 {
+    /**
+     * @return The property's reified generic type
+     */
     TypeLiteral<?> getType();
 
+    /**
+     * @return The property's fully qualified name
+     */
     String getName();
 
-    PropertyInjector bind( Provider<?> provider );
+    /**
+     * Creates a {@link PropertyBinding} between the current element and the given provider.
+     * 
+     * @param provider A provider of values for the property
+     * @return Property binding that uses the given provider
+     */
+    PropertyBinding bind( Provider<?> provider );
 }

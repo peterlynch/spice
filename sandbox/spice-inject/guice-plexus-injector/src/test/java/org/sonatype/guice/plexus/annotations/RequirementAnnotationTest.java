@@ -32,6 +32,9 @@ public class RequirementAnnotationTest
     @Requirement( hint = "named" )
     String namedReq;
 
+    @Requirement( optional = true )
+    String optionalReq;
+
     @Requirement( hints = { "A", "B", "C" } )
     List<?> namedListReq;
 
@@ -47,6 +50,7 @@ public class RequirementAnnotationTest
         checkBehaviour( "defaultReq" );
         checkBehaviour( "stringReq" );
         checkBehaviour( "namedReq" );
+        checkBehaviour( "optionalReq" );
         checkBehaviour( "namedListReq" );
         checkBehaviour( "namedStringReq" );
         checkBehaviour( "namedStringListReq" );
@@ -54,6 +58,7 @@ public class RequirementAnnotationTest
         assertFalse( replicate( getRequirement( "defaultReq" ) ).equals( getRequirement( "stringReq" ) ) );
         assertFalse( replicate( getRequirement( "stringReq" ) ).equals( getRequirement( "namedStringReq" ) ) );
         assertFalse( replicate( getRequirement( "defaultReq" ) ).equals( getRequirement( "namedListReq" ) ) );
+        assertFalse( replicate( getRequirement( "defaultReq" ) ).equals( getRequirement( "optionalReq" ) ) );
     }
 
     private static void checkBehaviour( final String name )
@@ -82,9 +87,9 @@ public class RequirementAnnotationTest
 
     private static Requirement replicate( final Requirement orig )
     {
-        final String hint = orig.hint();
+        final String h = orig.hint();
 
-        return new RequirementImpl( orig.role(), hint.length() > 0 ? new String[] { hint } : orig.hints() );
+        return new RequirementImpl( orig.role(), orig.optional(), h.length() > 0 ? new String[] { h } : orig.hints() );
     }
 
     public void testNullChecks()
@@ -98,7 +103,7 @@ public class RequirementAnnotationTest
     {
         try
         {
-            new RequirementImpl( role, hints );
+            new RequirementImpl( role, false, hints );
             fail( "Expected IllegalArgumentException" );
         }
         catch ( final IllegalArgumentException e )
