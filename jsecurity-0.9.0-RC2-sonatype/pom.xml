@@ -24,7 +24,7 @@
 
     <groupId>org.jsecurity</groupId>
     <artifactId>jsecurity</artifactId>
-    <version>0.9.0-RC2-sonatype-SNAPSOT</version>
+    <version>0.9.0-RC2-sonatype-SNAPSHOT</version>
     <name>JSecurity</name>
     <url>http://www.jsecurity.org</url>
     <description>JSecurity is a powerful and flexible open-source Java security framework that cleanly handles
@@ -184,6 +184,12 @@
         <!-- non-standard source locations -->
         <sourceDirectory>${basedir}/src</sourceDirectory>
         <testSourceDirectory>${basedir}/test</testSourceDirectory>
+        <testResources>
+          <testResource>
+            <directory>${basedir}/testResources</directory>
+          </testResource>
+        </testResources>
+
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -210,6 +216,12 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>2.4.2</version>
+                    <configuration>
+                        <excludes>
+                          <exclude>**/TestBean*</exclude>
+                          <exclude>**/AtUnitTest*</exclude>
+                        </excludes>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
