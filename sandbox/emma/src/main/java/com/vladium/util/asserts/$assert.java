@@ -4,7 +4,7 @@
  * the terms of the Common Public License v1.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/cpl-v10.html
  * 
- * $Id$
+ * $Id$assert.java 1410 2009-07-15 14:26:18Z jvanzyl $
  */
 package com.vladium.util.asserts;
 
