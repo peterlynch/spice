@@ -39,6 +39,17 @@
         </license>
     </licenses>
 
+    <distributionManagement>
+      <repository>
+        <id>forge-releases</id>
+        <url>http://repository.sonatype.org/content/repositories/releases</url>
+      </repository>
+      <snapshotRepository>
+        <id>forge-snapshots</id>
+        <url>http://repository.sonatype.org/content/repositories/snapshots</url>
+      </snapshotRepository>
+    </distributionManagement>
+
     <issueManagement>
         <system>Jira</system>
         <url>http://issues.jsecurity.org</url>
