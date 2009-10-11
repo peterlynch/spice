@@ -15,6 +15,7 @@
   <name>Spice - Dependency Injection</name>
 
   <modules>
+    <module>guice-custom-patches</module>
     <module>guice-plexus-bindings</module>
     <module>guice-plexus-injector</module>
     <module>guice-plexus-shim</module>
