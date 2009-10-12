@@ -284,6 +284,15 @@ final class InjectorImpl implements Injector, Lookups {
 
     // Find a matching type converter.
     TypeLiteral<T> type = key.getTypeLiteral();
+    T converted = convertConstantString(stringValue, type, errors, source);
+    if (converted != null) {
+      return new ConvertedConstantBindingImpl<T>(this, key, converted, stringBinding);
+    }
+    return null;
+  }
+
+  private <T> T convertConstantString(String stringValue, TypeLiteral<T> type, Errors errors, Object source)
+      throws ErrorsException {
     MatcherAndConverter matchingConverter = state.getConverter(stringValue, type, errors, source);
 
     if (matchingConverter == null) {
@@ -306,7 +315,7 @@ final class InjectorImpl implements Injector, Lookups {
             .toException();
       }
 
-      return new ConvertedConstantBindingImpl<T>(this, key, converted, stringBinding);
+      return converted;
     } catch (ErrorsException e) {
       throw e;
     } catch (RuntimeException e) {
@@ -821,4 +830,16 @@ final class InjectorImpl implements Injector, Lookups {
         .toString();
   }
 
+  public <T> T convertConstant(String value, TypeLiteral<T> toType) {
+    Errors errors = new Errors();
+    try {
+      T converted = convertConstantString(value, toType, errors, SourceProvider.UNKNOWN_SOURCE);
+      if (null == converted) {
+        errors.missingTypeConverter( toType ).throwConfigurationExceptionIfErrorsExist();
+      }
+      return converted;
+    } catch (ErrorsException e) {
+      throw new ConfigurationException(errors.merge(e.getErrors()).getMessages());
+    }
+  }
 }

@@ -232,4 +232,17 @@ public interface Injector {
    * <p>This method is part of the Guice SPI and is intended for use by tools and extensions.
    */
   Map<Class<? extends Annotation>, Scope> getScopeBindings();
+
+  /**
+   * Converts a string constant to an instance of the given type {@code T}.
+   *
+   * @param value string constant
+   * @param toType target type
+   * 
+   * @throws ConfigurationException if this injector cannot find a suitable type converter.
+   * @throws ProvisionException if there was a runtime failure while converting the constant.
+   * 
+   * @since 2.1
+   */
+  <T> T convertConstant(String value, TypeLiteral<T> toType);
 }

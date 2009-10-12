@@ -295,5 +295,9 @@ public final class InjectorBuilder {
       throw new UnsupportedOperationException(
         "Injector.getInstance(Class<T>) is not supported in Stage.TOOL");
     }
+    public <T> T convertConstant(String value, TypeLiteral<T> toType) {
+      throw new UnsupportedOperationException(
+        "Injector.convertConstant(String, TypeLiteral<T>) is not supported in Stage.TOOL");
+    }
   }
 }

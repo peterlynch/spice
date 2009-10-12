@@ -125,6 +125,10 @@ public final class Errors implements Serializable {
     return addMessage("No implementation for %s was bound.", key);
   }
 
+  public Errors missingTypeConverter(TypeLiteral<?> type) {
+    return addMessage("No type converter for %s was found.", type);
+  }
+
   public Errors converterReturnedNull(String stringValue, Object source,
       TypeLiteral<?> type, MatcherAndConverter matchingConverter) {
     return addMessage("Received null converting '%s' (bound at %s) to %s%n"
