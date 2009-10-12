@@ -68,7 +68,7 @@ public class InjectablePropertyTest
         }
 
         // now check normally with bind()
-        Example example = new Example();
+        final Example example = new Example();
 
         ip.bind( Providers.of( Arrays.asList( "This", "is", "a", "test" ) ) ).apply( example );
         assertEquals( "is", example.getAnExampleProperty().get( 1 ) );

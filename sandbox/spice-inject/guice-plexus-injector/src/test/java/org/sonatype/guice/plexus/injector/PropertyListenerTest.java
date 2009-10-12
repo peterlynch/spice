@@ -45,7 +45,7 @@ public class PropertyListenerTest
                 bindListener( Matchers.any(), new PropertyListener( new PropertyBinder()
                 {
                     public PropertyBinding bindProperty( final TypeEncounter<?> encounter,
-                                                          final AnnotatedElement element )
+                                                         final AnnotatedElement element )
                     {
                         if ( Component.class == ( (Member) element ).getDeclaringClass() && element instanceof Field )
                         {

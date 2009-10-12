@@ -1,12 +1,13 @@
 package org.sonatype.guice.plexus.converters;
 
 import com.google.inject.Binder;
+import com.google.inject.Module;
 import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.AbstractMatcher;
 import com.google.inject.spi.TypeConverter;
 
 public final class BeanTypeConverter
-    implements TypeConverter
+    implements TypeConverter, Module
 {
     public Object convert( final String value, final TypeLiteral<?> toType )
     {
@@ -19,7 +20,7 @@ public final class BeanTypeConverter
         {
             public boolean matches( final TypeLiteral<?> type )
             {
-                return true;
+                return false;// TODO
             }
         }, this );
     }

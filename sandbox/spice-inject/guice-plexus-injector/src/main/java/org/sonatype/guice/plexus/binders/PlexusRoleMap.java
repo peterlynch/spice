@@ -36,6 +36,9 @@ import com.google.inject.name.Named;
 @Singleton
 final class PlexusRoleMap<T>
 {
+    private static final String MISSING_BINDING_ERROR =
+        "No implementation for %s annotated with @com.google.inject.name.Named(value=%s) was bound.";
+
     // ----------------------------------------------------------------------
     // Implementation fields
     // ----------------------------------------------------------------------
@@ -59,7 +62,7 @@ final class PlexusRoleMap<T>
         final List<Binding<T>> typeBindings = injector.findBindingsByType( roleType );
         final int numBindings = typeBindings.size();
 
-        roleMap = new LinkedHashMap<String, Provider<T>>( 1 + numBindings );
+        roleMap = new LinkedHashMap<String, Provider<T>>();
 
         try
         {
@@ -68,7 +71,7 @@ final class PlexusRoleMap<T>
         }
         catch ( final ConfigurationException e ) // NOPMD
         {
-            // safe to ignore, as default component not always available
+            // safe to ignore, as a default component may not always be available
         }
 
         // @Named bindings => Plexus hints
@@ -79,11 +82,10 @@ final class PlexusRoleMap<T>
             if ( a instanceof Named )
             {
                 final String hint = ( (Named) a ).value();
-                if ( isDefaultHint( hint ) )
+                if ( !isDefaultHint( hint ) )
                 {
-                    throw new ProvisionException( "Bad @Named annotation found at " + b.getSource() );
+                    roleMap.put( hint, b.getProvider() );
                 }
-                roleMap.put( hint, b.getProvider() );
             }
         }
 
@@ -97,14 +99,13 @@ final class PlexusRoleMap<T>
     Map<String, T> getRoleHintMap( final String... selectedHints )
     {
         final String[] hints = selectedHints.length > 0 ? selectedHints : allHints;
-        final Map<String, T> roleHintMap = new LinkedHashMap<String, T>( hints.length );
+        final Map<String, T> roleHintMap = new LinkedHashMap<String, T>();
         for ( final String h : hints )
         {
             final Provider<T> provider = roleMap.get( h );
             if ( null == provider )
             {
-                throw new ProvisionException( "No implementation for " + roleType
-                    + " annotated with @com.google.inject.name.Named(value=" + h + ") was bound." );
+                throw new ProvisionException( String.format( MISSING_BINDING_ERROR, roleType, h ) );
             }
             roleHintMap.put( h, provider.get() );
         }

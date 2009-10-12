@@ -1,0 +1,132 @@
+/**
+ * Copyright (c) 2009 Sonatype, Inc. All rights reserved.
+ *
+ * This program is licensed to you under the Apache License Version 2.0,
+ * and you may not use this file except in compliance with the Apache License Version 2.0.
+ * You may obtain a copy of the Apache License Version 2.0 at http://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the Apache License Version 2.0 is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
+ */
+package org.sonatype.guice.plexus.converters;
+
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+
+import junit.framework.TestCase;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Module;
+import com.google.inject.name.Named;
+import com.google.inject.name.Names;
+
+public class TypeConvertersTest
+    extends TestCase
+{
+    Module[] converterModules =
+        { new DateTypeConverter(), new ArrayTypeConverter(), new CollectionTypeConverter(), new MapTypeConverter(),
+            new BeanTypeConverter() };
+
+    @Override
+    protected void setUp()
+        throws Exception
+    {
+        Guice.createInjector( new AbstractModule()
+        {
+            private void bindConfig( final String name, final String value )
+            {
+                bindConstant().annotatedWith( Names.named( name ) ).to( value );
+            }
+
+            @Override
+            protected void configure()
+            {
+                bindConfig( "Date1", "2005-10-06 2:22:55.1 PM" );
+                bindConfig( "Date2", "2005-10-06 2:22:55PM" );
+
+                bindConfig( "Array1", "<items><item>1</item><item>2</item><item>3</item></items>" );
+                bindConfig( "Array2", "<items><item>4</item><item>5</item><item>6</item></items>" );
+                bindConfig( "Array3",
+                            "<as><a><bs><b>1</b><b>2</b></bs></a><a><bs><b>3</b><b>4</b></bs></a><a><bs><b>5</b><b>6</b></bs></a></as>" );
+
+                bindConfig( "Collection1",
+                            "<animals><animal>cat</animal><animal>dog</animal><animal>aardvark</animal></animals>" );
+                bindConfig( "Collection2",
+                            "<as><a><bs><b>1</b><b>2</b></bs></a><a><bs><b>3</b><b>4</b></bs></a><a><bs><b>5</b><b>6</b></bs></a></as>" );
+
+                bindConfig( "Map", "<entries><key1>value1</key1><key2>value2</key2></entries>" );
+
+                bindConfig( "Properties", "<properties><property><name>key1</name><value>value1</value></property>"
+                    + "<property><name>key2</name><value>value2</value></property></properties>" );
+
+                bindConfig( "File", "temp/readme.txt" );
+                bindConfig( "URL", "http://www.sonatype.org" );
+
+                bindConfig( "Bean", "<person><firstname>John<firstname><lastname>Smith</lastname></person>" );
+
+                for ( final Module m : converterModules )
+                {
+                    install( m );
+                }
+            }
+        } ).injectMembers( this );
+    }
+
+    @Inject
+    @Named( "Date1" )
+    String dateString1;
+
+    @Inject
+    @Named( "Date1" )
+    Date date1;
+
+    @Inject
+    @Named( "Date2" )
+    String dateString2;
+
+    @Inject
+    @Named( "Date2" )
+    Date date2;
+
+    @Inject
+    @Named( "Array1" )
+    String[] array1;
+
+    @Inject
+    @Named( "Array2" )
+    Integer[] array2;
+
+    @Inject
+    @Named( "Array3" )
+    Integer[][] array3;
+
+    @Inject
+    @Named( "Collection1" )
+    Collection<?> collection1;
+
+    @Inject
+    @Named( "Collection2" )
+    Collection<Collection<Integer>> collection2;
+
+    @SuppressWarnings( { "boxing", "unchecked" } )
+    public void testTypeConversions()
+    {
+        assertEquals( dateString1, new SimpleDateFormat( "yyyy-MM-dd h:mm:ss.S a" ).format( date1 ) );
+        assertEquals( dateString2, new SimpleDateFormat( "yyyy-MM-dd h:mm:ssa" ).format( date2 ) );
+
+        assertTrue( Arrays.equals( new String[] { "1", "2", "3" }, array1 ) );
+        assertTrue( Arrays.equals( new Integer[] { 4, 5, 6 }, array2 ) );
+
+        assertTrue( Arrays.deepEquals( new Integer[][] { { 1, 2 }, { 3, 4 }, { 5, 6 } }, array3 ) );
+
+        assertEquals( Arrays.asList( "cat", "dog", "aardvark" ), collection1 );
+
+        assertEquals( Arrays.asList( Arrays.asList( 1, 2 ), Arrays.asList( 3, 4 ), Arrays.asList( 5, 6 ) ), collection2 );
+    }
+}
