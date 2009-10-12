@@ -3,23 +3,12 @@ package org.sonatype.plugin.metadata;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import org.codehaus.plexus.component.annotations.Component;
-import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.IOUtil;
-import org.sonatype.plugin.metadata.gleaner.AnnotationListener;
-import org.sonatype.plugin.metadata.gleaner.AnnotationProcessor;
-import org.sonatype.plugin.metadata.gleaner.ComponentListCreatingAnnotationListener;
-import org.sonatype.plugin.metadata.gleaner.DefaultAnnotationProcessor;
 import org.sonatype.plugin.metadata.gleaner.GleanerException;
+import org.sonatype.plugins.model.ClasspathDependency;
 import org.sonatype.plugins.model.PluginDependency;
 import org.sonatype.plugins.model.PluginLicense;
 import org.sonatype.plugins.model.PluginMetadata;
@@ -77,11 +66,12 @@ public class DefaultPluginMetadataGenerator
         {
             for ( GAVCoordinate dependency : request.getClasspathDependencies() )
             {
-                PluginDependency pluginDependency = new PluginDependency();
+                ClasspathDependency pluginDependency = new ClasspathDependency();
                 pluginDependency.setGroupId( dependency.getGroupId() );
                 pluginDependency.setArtifactId( dependency.getArtifactId() );
                 pluginDependency.setVersion( dependency.getVersion() );
                 pluginDependency.setType( dependency.getType() );
+                pluginDependency.setHasComponents( dependency.isHasComponents() );
 
                 if ( dependency.getClassifier() != null )
                 {
@@ -104,13 +94,7 @@ public class DefaultPluginMetadataGenerator
                 pluginMetadata.addPluginDependency( pluginDependency );
             }
         }
-        /*
-         * // now for the fun part! glean the classes try { List<String> components = this.findComponents(
-         * request.getClassesDirectory(), this.createClassLoader( request.getClasspath() ),
-         * request.getAnnotationClasses() ); // FIXME, update model // pluginMetadata.setComponents(components); for (
-         * String componentClass : components ) { pluginMetadata.addComponent( componentClass ); } } catch ( Exception e
-         * ) { throw new GleanerException( "Failed to glean classes.", e ); }
-         */
+
         if ( request.getOutputFile() != null )
         {
             // write file
@@ -124,61 +108,6 @@ public class DefaultPluginMetadataGenerator
             }
         }
 
-    }
-
-    // TODO: remove this
-    private List<String> findComponents( final File classesDirectory, final ClassLoader classLoader,
-                                         final List<Class<?>> annotationClasses )
-        throws GleanerException
-    {
-        // this will find all the classes we want to glean
-        DirectoryScanner scanner = new DirectoryScanner();
-        scanner.setBasedir( classesDirectory );
-        scanner.addDefaultExcludes();
-        scanner.setIncludes( new String[] { "**/*.class" } );
-        scanner.scan();
-
-        String[] classesToGlean = scanner.getIncludedFiles();
-
-        AnnotationProcessor annotationProcessor = new DefaultAnnotationProcessor();
-        ComponentListCreatingAnnotationListener listener = new ComponentListCreatingAnnotationListener();
-        Map<Class<?>, AnnotationListener> listenerMap = new HashMap<Class<?>, AnnotationListener>();
-
-        for ( Class<?> annotationClass : annotationClasses )
-        {
-            listenerMap.put( annotationClass, listener );
-        }
-
-        for ( String classFileName : classesToGlean )
-        {
-            annotationProcessor.processClass( classFileName, classLoader, listenerMap, false );
-        }
-
-        return listener.getComponentClassNames();
-    }
-
-    // TODO: remove this
-    private ClassLoader createClassLoader( final List<File> elements )
-        throws Exception
-    {
-        List<URL> list = new ArrayList<URL>();
-
-        // Add the projects dependencies
-        for ( File file : elements )
-        {
-            try
-            {
-                list.add( file.toURI().toURL() );
-            }
-            catch ( MalformedURLException e )
-            {
-                // will not happen, File.toURI.toURL!
-            }
-        }
-
-        URL[] urls = list.toArray( new URL[list.size()] );
-
-        return new URLClassLoader( urls, ClassLoader.getSystemClassLoader() );
     }
 
     private void writePluginMetadata( final PluginMetadata pluginMetadata, final File outputFile )

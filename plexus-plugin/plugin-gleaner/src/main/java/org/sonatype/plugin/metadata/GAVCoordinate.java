@@ -15,6 +15,8 @@ public class GAVCoordinate
     private String classifier;
 
     private String type = DEFAULT_TYPE;
+    
+    private boolean hasComponents;
 
     public GAVCoordinate()
     {
@@ -130,6 +132,16 @@ public class GAVCoordinate
     public void setType( String type )
     {
         this.type = type;
+    }
+
+    public boolean isHasComponents()
+    {
+        return hasComponents;
+    }
+
+    public void setHasComponents( boolean hasComponents )
+    {
+        this.hasComponents = hasComponents;
     }
 
     public String toCompositeForm()

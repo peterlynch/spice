@@ -1,21 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
   <!--
-    Nexus: Maven Repository Manager Copyright (C) 2008 Sonatype, Inc.
-    This file is part of Nexus. This program is free software; you can
-    redistribute it and/or modify it under the terms of the GNU Lesser
-    General Public License as published by the Free Software Foundation;
-    either version 3 of the License, or (at your option) any later
-    version. This program is distributed in the hope that it will be
-    useful, but WITHOUT ANY WARRANTY; without even the implied warranty
-    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-    Lesser General Public License for more details. You should have
-    received a copy of the GNU Lesser General Public License along with
-    this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+    Nexus: Maven Repository Manager Copyright (C) 2008 Sonatype, Inc. This file is part of Nexus. This program is free
+    software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as
+    published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
+    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+    details. You should have received a copy of the GNU Lesser General Public License along with this program; if not,
+    write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   -->
 
-<model xmlns="http://modello.codehaus.org/MODELLO/1.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<model xmlns="http://modello.codehaus.org/MODELLO/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://modello.codehaus.org/MODELLO/1.0.0 http://modello.codehaus.org/xsd/modello-1.0.0.xsd">
 
   <id>plugin</id>
@@ -135,7 +129,7 @@
           <version>1.0.0+</version>
           <description>The library dependencies of this plugin.</description>
           <association>
-            <type>PluginDependency</type>
+            <type>ClasspathDependency</type>
             <multiplicity>*</multiplicity>
           </association>
           <required>false</required>
@@ -189,12 +183,12 @@
         </field>
       </fields>
     </class>
-        
-        
+
+
     <class>
-      <name>PluginDependency</name>
+      <name>ClasspathDependency</name>
       <version>1.0.0+</version>
-      <description>The Plugin dependency.</description>
+      <description>The private dependencies of the plugin.</description>
       <fields>
         <field>
           <name>groupId</name>
@@ -241,7 +235,53 @@
           <type>String</type>
           <required>false</required>
         </field>
+        <field>
+          <name>hasComponents</name>
+          <version>1.0.0+</version>
+          <description>
+            Set True if the classpath dependency needs gleaning for components.
+          </description>
+          <type>boolean</type>
+          <required>true</required>
+          <defaultValue>false</defaultValue>
+        </field>
       </fields>
     </class>
+
+    <class>
+      <name>PluginDependency</name>
+      <version>1.0.0+</version>
+      <description>The inter-plugin dependency.</description>
+      <fields>
+        <field>
+          <name>groupId</name>
+          <version>1.0.0+</version>
+          <description>
+            The group id.
+          </description>
+          <type>String</type>
+          <required>true</required>
+        </field>
+        <field>
+          <name>artifactId</name>
+          <version>1.0.0+</version>
+          <description>
+            The artifact id.
+          </description>
+          <type>String</type>
+          <required>true</required>
+        </field>
+        <field>
+          <name>version</name>
+          <version>1.0.0+</version>
+          <description>
+            The version.
+          </description>
+          <type>String</type>
+          <required>true</required>
+        </field>
+      </fields>
+    </class>
+
   </classes>
 </model>

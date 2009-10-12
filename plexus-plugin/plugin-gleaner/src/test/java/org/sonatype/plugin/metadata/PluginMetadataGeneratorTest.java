@@ -3,7 +3,6 @@ package org.sonatype.plugin.metadata;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.List;
 
 import junit.framework.Assert;
 
@@ -12,7 +11,7 @@ import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.sonatype.plugin.ExtensionPoint;
 import org.sonatype.plugin.Managed;
-import org.sonatype.plugins.model.PluginDependency;
+import org.sonatype.plugins.model.ClasspathDependency;
 import org.sonatype.plugins.model.PluginMetadata;
 import org.sonatype.plugins.model.io.xpp3.PluginModelXpp3Reader;
 
@@ -105,7 +104,7 @@ public class PluginMetadataGeneratorTest
         {
             boolean found = false;
 
-            for ( PluginDependency pluginDependency : (List<PluginDependency>) metadata.getClasspathDependencies() )
+            for ( ClasspathDependency pluginDependency : metadata.getClasspathDependencies() )
             {
                 if ( dependency.getGroupId().equals( pluginDependency.getGroupId() )
                     && dependency.getArtifactId().equals( pluginDependency.getArtifactId() )
@@ -122,15 +121,12 @@ public class PluginMetadataGeneratorTest
             }
         }
 
-/*        Set<String> components = new HashSet<String>( metadata.getComponents() );
-
-        Set<String> expectedComponents = new HashSet<String>();
-        expectedComponents.add( "org.sonatype.plugin.test.ComponentExtentionPoint" );
-        expectedComponents.add( "org.sonatype.plugin.test.ComponentManaged" );
-        expectedComponents.add( "org.sonatype.plugin.test.ManagedViaInterface" );
-
-        // now compare the lists
-        Assert.assertEquals( expectedComponents, components );
-*/
+        /*
+         * Set<String> components = new HashSet<String>( metadata.getComponents() ); Set<String> expectedComponents =
+         * new HashSet<String>(); expectedComponents.add( "org.sonatype.plugin.test.ComponentExtentionPoint" );
+         * expectedComponents.add( "org.sonatype.plugin.test.ComponentManaged" ); expectedComponents.add(
+         * "org.sonatype.plugin.test.ManagedViaInterface" ); // now compare the lists Assert.assertEquals(
+         * expectedComponents, components );
+         */
     }
 }
