@@ -1,7 +1,7 @@
 package org.sonatype.guice.plexus.bindings;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import junit.framework.TestCase;
 
@@ -28,21 +28,27 @@ public class ComponentTest
             @Override
             protected void configure()
             {
-                final Collection<Class<?>> components = new ArrayList<Class<?>>();
+                final Map<Class<?>, Component> components = new HashMap<Class<?>, Component>();
 
-                components.add( ComponentA.class );
-                components.add( ComponentD.class );
+                addComponent( components, ComponentA.class );
+                addComponent( components, ComponentD.class );
 
                 install( new StaticPlexusBindingModule( components ) );
 
                 components.clear();
-                components.add( ComponentB.class );
-                components.add( ComponentC.class );
-                components.add( ComponentE.class );
+
+                addComponent( components, ComponentB.class );
+                addComponent( components, ComponentC.class );
+                addComponent( components, ComponentE.class );
 
                 install( new StaticPlexusBindingModule( components ) );
             }
         } ).injectMembers( this );
+    }
+
+    static void addComponent( final Map<Class<?>, Component> components, final Class<?> clazz )
+    {
+        components.put( clazz, clazz.getAnnotation( Component.class ) );
     }
 
     private static interface I

@@ -1,8 +1,10 @@
 package org.sonatype.guice.plexus.bindings;
 
 import static com.google.inject.name.Names.named;
+import static org.sonatype.guice.plexus.utils.PlexusConstants.isDefaultHint;
 
-import java.util.Collection;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.codehaus.plexus.component.annotations.Component;
 
@@ -20,33 +22,37 @@ import com.google.inject.name.Named;
 public class StaticPlexusBindingModule
     extends AbstractModule
 {
-    private final Class<?>[] components;
+    private final Map<Class<?>, Component> components;
 
-    public StaticPlexusBindingModule( final Collection<Class<?>> components )
+    public StaticPlexusBindingModule( final Map<Class<?>, Component> components )
     {
-        this.components = components.toArray( new Class[components.size()] );
+        this.components = components;
     }
 
     @Override
     @SuppressWarnings( "unchecked" )
     protected void configure()
     {
-        for ( final Class<?> clazz : components )
+        for ( final Entry<Class<?>, Component> e : components.entrySet() )
         {
-            final Component spec = clazz.getAnnotation( Component.class );
-            if ( spec != null )
+            final Class<?> clazz = e.getKey();
+            final Component spec = e.getValue();
+
+            if ( null == spec )
             {
-                final Class role = spec.role();
-                final String hint = spec.hint();
+                continue;
+            }
 
-                final AnnotatedBindingBuilder abb = bind( role );
-                final LinkedBindingBuilder lbb = hint.length() == 0 ? abb : abb.annotatedWith( named( hint ) );
-                final ScopedBindingBuilder sbb = lbb.to( clazz );
+            final Class role = spec.role();
+            final String hint = spec.hint();
 
-                if ( !"per-lookup".equals( spec.instantiationStrategy() ) )
-                {
-                    sbb.in( Scopes.SINGLETON );
-                }
+            final AnnotatedBindingBuilder abb = bind( role );
+            final LinkedBindingBuilder lbb = isDefaultHint( hint ) ? abb : abb.annotatedWith( named( hint ) );
+            final ScopedBindingBuilder sbb = lbb.to( clazz );
+
+            if ( !"per-lookup".equals( spec.instantiationStrategy() ) )
+            {
+                sbb.in( Scopes.SINGLETON );
             }
         }
     }
