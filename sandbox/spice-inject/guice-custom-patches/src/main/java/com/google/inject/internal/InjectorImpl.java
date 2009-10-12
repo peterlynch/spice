@@ -831,7 +831,7 @@ final class InjectorImpl implements Injector, Lookups {
   }
 
   public <T> T convertConstant(String value, TypeLiteral<T> toType) {
-    if (toType.getRawType().equals(String.class)) {
+    if (toType.getRawType().isAssignableFrom(String.class)) {
       return (T)value;
     }
     Errors errors = new Errors();
