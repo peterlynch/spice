@@ -12,8 +12,6 @@ public class ComponentListCreatingAnnotationListener
     {
         String className = event.getClassName();
         
-        className = className.replaceAll( "/", "." );
-        
         this.componentClassNames.add( className );
     }
 

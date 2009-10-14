@@ -14,7 +14,7 @@ public interface AnnotationProcessor
      *            be ignored, otherwise reported as error
      * @throws GleanerException
      */
-    void processClass( String className, ClassLoader classLoader, Map<Class<?>, AnnotationListener> listeners,
+    void processClass( String className, String binaryName, ClassLoader classLoader, Map<Class<?>, AnnotationListener> listeners,
                        boolean ignoreNotFoundInterfaces )
         throws GleanerException;
 }

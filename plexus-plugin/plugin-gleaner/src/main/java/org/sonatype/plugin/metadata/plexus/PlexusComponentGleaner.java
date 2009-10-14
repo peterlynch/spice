@@ -52,7 +52,7 @@ public class PlexusComponentGleaner
         try
         {
             annClass =
-                readClassAnnotation( request.getClassName().replace( '.', '/' ) + ".class", request.getClassRealm() );
+                readClassAnnotation( request.getClassBinaryName(), request.getClassRealm() );
         }
         catch ( IOException e )
         {
@@ -80,7 +80,7 @@ public class PlexusComponentGleaner
             listenerMap.put( annotationClass, listener );
         }
 
-        annotationProcessor.processClass( request.getClassName(), request.getClassRealm(), listenerMap, request
+        annotationProcessor.processClass( request.getClassName(), request.getClassBinaryName(), request.getClassRealm(), listenerMap, request
             .isIgnoreNotFoundImplementedInterfaces() );
 
         if ( listener.getComponentClassNames().isEmpty() )

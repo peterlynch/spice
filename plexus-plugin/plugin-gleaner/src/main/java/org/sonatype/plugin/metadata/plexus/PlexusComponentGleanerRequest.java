@@ -11,7 +11,9 @@ import org.sonatype.plugin.Managed;
 
 public class PlexusComponentGleanerRequest
 {
-    private String className;
+    private String classCanonicalName;
+
+    private String classBinaryName;
 
     private ClassLoader classRealm;
 
@@ -23,21 +25,86 @@ public class PlexusComponentGleanerRequest
 
     private boolean ignoreNotFoundImplementedInterfaces;
 
-    public PlexusComponentGleanerRequest( String className, ClassLoader classRealm )
+    /**
+     * For backward compatibility. The canonical->binary name transalation is not possible.
+     * 
+     * @param classCanonicalName
+     * @param classRealm
+     * @deprecated use the full constructor
+     */
+    public PlexusComponentGleanerRequest( String classCanonicalName, ClassLoader classRealm )
     {
-        this.className = className;
+        this( classCanonicalName, classCanonicalName, classRealm );
+    }
+
+    public PlexusComponentGleanerRequest( String classCanonicalName, String classBinaryName, ClassLoader classRealm )
+    {
+        this.classCanonicalName = classCanonicalName;
+
+        this.classBinaryName = classBinaryName;
 
         this.classRealm = classRealm;
     }
 
     public String getClassName()
     {
-        return className;
+        return classCanonicalName;
     }
 
+    /**
+     * This is here for backward compatibility only. Use the setClassBinaryName() instead!
+     * 
+     * @param className
+     * @deprecated use setClassBinaryName()
+     */
     public void setClassName( String className )
     {
-        this.className = className;
+        if ( className.contains( "/" ) || className.endsWith( ".class" ) )
+        {
+            setClassBinaryName( className );
+        }
+        else
+        {
+            this.classCanonicalName = className;
+
+            // best effort, but is wrong since no inner classes will work
+            this.classBinaryName = className.replace( '.', '/' ) + ".class";
+        }
+    }
+
+    public String getClassBinaryName()
+    {
+        return classBinaryName;
+    }
+
+    public void setClassBinaryName( String binaryName )
+    {
+        // convert binary to canonical
+
+        // sanity check
+        if ( binaryName == null || binaryName.trim().length() == 0 )
+        {
+            throw new IllegalArgumentException( "Class binary name cannot be null!" );
+        }
+
+        if ( binaryName.endsWith( ".class" ) )
+        {
+            int startIdx = 0;
+
+            if ( binaryName.startsWith( "/" ) )
+            {
+                startIdx = 1;
+            }
+
+            this.classBinaryName = binaryName;
+
+            this.classCanonicalName =
+                binaryName.substring( startIdx, binaryName.length() - 6 ).replace( "/", "." ).replace( "$", "." );
+        }
+        else
+        {
+            throw new IllegalArgumentException( "This is not a binary class name: \"" + binaryName + "\"!" );
+        }
     }
 
     public ClassLoader getClassRealm()

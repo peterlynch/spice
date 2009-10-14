@@ -14,20 +14,17 @@ import org.sonatype.reflect.AnnReader;
 public class DefaultAnnotationProcessor
     implements AnnotationProcessor
 {
-    public void processClass( String className, ClassLoader classLoader, Map<Class<?>, AnnotationListener> listenerMap,
+    public void processClass( String className, String resourceName, ClassLoader classLoader, Map<Class<?>, AnnotationListener> listenerMap,
                               boolean ignoreNotFoundInterfaces )
         throws GleanerException
     {
-        // fix the classname
-        String resourceName = this.classNameToResourceName( className );
-
         try
         {
             AnnClass annClass = readClassAnnotations( resourceName, classLoader );
 
             if ( annClass == null )
             {
-                throw new GleanerException( "Failed to fine class: " + resourceName );
+                throw new GleanerException( "Failed to find class: " + resourceName );
             }
 
             // do not process any abstract classes
@@ -101,7 +98,7 @@ public class DefaultAnnotationProcessor
                         + annotation.getName() );
                 }
 
-                AnnotationListernEvent event = new AnnotationListernEvent( annotationInstance, annClass.getName() );
+                AnnotationListernEvent event = new AnnotationListernEvent( annotationInstance, className );
 
                 listener.processEvent( event );
             }
