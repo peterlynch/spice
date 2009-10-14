@@ -99,7 +99,7 @@ public class PlexusComponentGleanerRequest
             this.classBinaryName = binaryName;
 
             this.classCanonicalName =
-                binaryName.substring( startIdx, binaryName.length() - 6 ).replace( "/", "." ).replace( "$", "." );
+                binaryName.substring( startIdx, binaryName.length() - 6 ).replace( "/", "." );
         }
         else
         {
