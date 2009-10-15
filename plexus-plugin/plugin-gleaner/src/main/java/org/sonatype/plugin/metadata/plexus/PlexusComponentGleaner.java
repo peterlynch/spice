@@ -22,6 +22,7 @@ import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.component.repository.ComponentDescriptor;
 import org.codehaus.plexus.component.repository.ComponentRequirement;
 import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.ReflectionUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.plugin.metadata.gleaner.AnnotationListener;
 import org.sonatype.plugin.metadata.gleaner.AnnotationProcessor;
@@ -276,7 +277,7 @@ public class PlexusComponentGleaner
         try
         {
             final Class<?> clazz = cl.loadClass( className );
-            final Field fieldToBeInjected = clazz.getDeclaredField( fieldName );
+            final Field fieldToBeInjected = ReflectionUtils.getFieldByNameIncludingSuperclasses( fieldName, clazz );
             if ( fieldToBeInjected != null )
             {
                 final Type type = fieldToBeInjected.getGenericType();
@@ -317,7 +318,7 @@ public class PlexusComponentGleaner
         try
         {
             final Class<?> clazz = cl.loadClass( className );
-            final Field fieldToBeInjected = clazz.getDeclaredField( fieldName );
+            final Field fieldToBeInjected = ReflectionUtils.getFieldByNameIncludingSuperclasses( fieldName, clazz );
             if ( fieldToBeInjected != null )
             {
                 final Type type = fieldToBeInjected.getGenericType();
