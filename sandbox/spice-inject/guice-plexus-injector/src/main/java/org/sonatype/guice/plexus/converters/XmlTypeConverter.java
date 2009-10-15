@@ -46,7 +46,7 @@ final class XmlTypeConverter
                     buf.append( parser.getText() );
                 }
 
-                items.add( injector.convertConstant( buf.toString(), elementType ) );
+                items.add( null );//injector.convertConstant( buf.toString(), elementType ) );
             }
         }
         catch ( final XmlPullParserException e )

@@ -15,11 +15,25 @@
   <name>Spice - Dependency Injection</name>
 
   <modules>
-    <module>guice-custom-patches</module>
     <module>guice-plexus-bindings</module>
     <module>guice-plexus-injector</module>
     <module>guice-plexus-shim</module>
     <module>guice-plexus-test</module>
   </modules>
+
+<!-- TEMPORARY -->
+  <repositories>
+    <repository>
+      <id>ops4j.snapshots</id>
+      <url>http://repository.ops4j.org/mvn-snapshots/</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+<!-- TEMPORARY -->
 
 </project>
