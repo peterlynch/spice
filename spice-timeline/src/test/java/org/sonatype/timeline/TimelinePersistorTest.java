@@ -142,4 +142,90 @@ public class TimelinePersistorTest
 
         assertEquals( 1, persistor.readAll().size() );
     }
+    
+    public void testDataKeyNull()
+        throws Exception
+    {
+        Map<String, String> data = new HashMap<String, String>();
+        data.put( null, "v1" );
+        TimelineRecord record = new TimelineRecord( System.currentTimeMillis(), "type", "subType", data );
+
+        try
+        {
+            persistor.persist( record );
+
+            fail( "key is null, should throw TimelineException." );
+        }
+        catch ( TimelineException e )
+        {
+            // expected
+        }
+    }
+
+    public void testDataValueNull()
+        throws Exception
+    {
+        Map<String, String> data = new HashMap<String, String>();
+        data.put( "k1", null );
+        TimelineRecord record = new TimelineRecord( System.currentTimeMillis(), "type", "subType", data );
+
+        try
+        {
+            persistor.persist( record );
+
+            fail( "value is null, should throw TimelineException." );
+        }
+        catch ( TimelineException e )
+        {
+            // expected
+        }
+    }
+    
+    public void testDataKeyEmpty()
+        throws Exception
+    {
+        Map<String, String> data = new HashMap<String, String>();
+        data.put( "", "v1" );
+        TimelineRecord record = new TimelineRecord( System.currentTimeMillis(), "type", "subType", data );
+
+        persistor.persist( record );
+    }
+
+    public void testDataValueEmpty()
+        throws Exception
+    {
+        Map<String, String> data = new HashMap<String, String>();
+        data.put( "k1", "" );
+        TimelineRecord record = new TimelineRecord( System.currentTimeMillis(), "type", "subType", data );
+
+        persistor.persist( record );
+    }
+    
+    public void testSubTypeNull()
+        throws Exception
+    {
+        Map<String, String> data = new HashMap<String, String>();
+        data.put( "k1", "v1" );
+        TimelineRecord record = new TimelineRecord( System.currentTimeMillis(), "type", null, data );
+
+        persistor.persist( record );
+    }
+    
+    public void testTypeNull()
+        throws Exception
+    {
+        Map<String, String> data = new HashMap<String, String>();
+        data.put( "k1", "v1" );
+        TimelineRecord record = new TimelineRecord( System.currentTimeMillis(), null, "subType", data );
+
+        persistor.persist( record );
+    }
+    
+    public void testDataNull()
+        throws Exception
+    {
+        TimelineRecord record = new TimelineRecord( System.currentTimeMillis(), "type", "subType", null );
+
+        persistor.persist( record );
+    }
 }

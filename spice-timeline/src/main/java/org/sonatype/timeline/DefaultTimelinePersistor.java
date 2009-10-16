@@ -65,6 +65,8 @@ public class DefaultTimelinePersistor
     public void persist( TimelineRecord record )
         throws TimelineException
     {
+        verify( record );
+        
         OutputStream out = null;
 
         synchronized ( this )
@@ -220,5 +222,28 @@ public class DefaultTimelinePersistor
         }
 
         return new TimelineRecord( rec.getTimestamp(), rec.getType(), rec.getSubType(), dataMap );
+    }
+    
+    private void verify( TimelineRecord record )
+        throws TimelineException
+    {
+        Map<String, String> data = record.getData();
+
+        if ( data == null )
+        {
+            return;
+        }
+
+        for ( Map.Entry<String, String> entry : data.entrySet() )
+        {
+            if ( entry.getKey() == null )
+            {
+                throw new TimelineException( "Timeline record contains invalid data: key is null." );
+            }
+            if ( entry.getValue() == null )
+            {
+                throw new TimelineException( "Timeline record contains invalid data: value is null." );
+            }
+        }
     }
 }
