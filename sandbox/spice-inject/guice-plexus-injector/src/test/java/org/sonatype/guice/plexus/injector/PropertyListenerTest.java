@@ -14,65 +14,92 @@ package org.sonatype.guice.plexus.injector;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
-import java.lang.reflect.Member;
 
 import junit.framework.TestCase;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.Matchers;
 import com.google.inject.spi.TypeEncounter;
 
 public class PropertyListenerTest
     extends TestCase
 {
+    static class Base
+    {
+        // empty base class
+    }
+
     static class Component
+        extends Base
     {
         String a;
 
         String b;
 
         String c;
+
+        String last;
+    }
+
+    static class NamedPropertyBinder
+        implements PropertyBinder
+    {
+        public PropertyBinding bindProperty( final AnnotatedElement element )
+        {
+            if ( element instanceof Field )
+            {
+                final Field f = (Field) element;
+                final String name = f.getName();
+
+                return "last".equals( name ) ? PropertyBinder.LAST_BINDING : new PropertyBinding()
+                {
+                    public void injectProperty( final Object o )
+                    {
+                        try
+                        {
+                            f.set( o, f.getName() + "Value" );
+                        }
+                        catch ( final IllegalAccessException e )
+                        {
+                        }
+                    }
+                };
+            }
+
+            return null;
+        }
     }
 
     public void testPropertyListener()
     {
-        final Component component = Guice.createInjector( new AbstractModule()
+        final Injector injector = Guice.createInjector( new AbstractModule()
         {
             @Override
             protected void configure()
             {
-                bindListener( Matchers.any(), new PropertyListener( new PropertyBinder()
+                bindListener( Matchers.any(), new ComponentListener( new ComponentBinder()
                 {
-                    public PropertyBinding bindProperty( final TypeEncounter<?> encounter,
-                                                         final AnnotatedElement element )
+                    public <T> PropertyBinder bindComponent( final TypeEncounter<T> encounter, final TypeLiteral<T> type )
                     {
-                        if ( Component.class == ( (Member) element ).getDeclaringClass() && element instanceof Field )
-                        {
-                            return new PropertyBinding()
-                            {
-                                public void apply( final Object o )
-                                {
-                                    final Field f = (Field) element;
-                                    try
-                                    {
-                                        f.set( o, f.getName() );
-                                    }
-                                    catch ( final IllegalAccessException e )
-                                    {
-                                        throw new RuntimeException( e );
-                                    }
-                                }
-                            };
-                        }
-                        return null;
+                        return Base.class.isAssignableFrom( type.getRawType() ) ? new NamedPropertyBinder() : null;
                     }
                 } ) );
             }
-        } ).getInstance( Component.class );
+        } );
 
-        assertEquals( "a", component.a );
-        assertEquals( "b", component.b );
-        assertEquals( "c", component.c );
+        injector.getInstance( Base.class );
+
+        final Component component = injector.getInstance( Component.class );
+
+        assertEquals( "aValue", component.a );
+        assertEquals( "bValue", component.b );
+        assertEquals( "cValue", component.c );
+
+        assertNull( component.last );
+        PropertyBinder.LAST_BINDING.injectProperty( component );
+        assertNull( component.last );
     }
 }

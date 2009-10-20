@@ -19,7 +19,7 @@ import java.util.NoSuchElementException;
 /**
  * {@link Iterable} that iterates over declared members of a class hierarchy: constructors > methods > fields.
  */
-public final class AnnotatedElements
+final class AnnotatedElements
     implements Iterable<AnnotatedElement>
 {
     // ----------------------------------------------------------------------
@@ -37,7 +37,7 @@ public final class AnnotatedElements
      * 
      * @param clazz The leaf class
      */
-    public AnnotatedElements( final Class<?> clazz )
+    AnnotatedElements( final Class<?> clazz )
     {
         this.clazz = clazz;
     }

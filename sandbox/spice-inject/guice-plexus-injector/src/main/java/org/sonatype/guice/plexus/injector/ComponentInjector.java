@@ -19,7 +19,7 @@ import com.google.inject.MembersInjector;
 /**
  * {@link MembersInjector} that takes {@link PropertyBinding}s and applies them to components.
  */
-public final class ComponentInjector<T>
+final class ComponentInjector<T>
     implements MembersInjector<T>
 {
     // ----------------------------------------------------------------------
@@ -32,7 +32,7 @@ public final class ComponentInjector<T>
     // Constructors
     // ----------------------------------------------------------------------
 
-    public ComponentInjector( final Collection<PropertyBinding> bindings )
+    ComponentInjector( final Collection<PropertyBinding> bindings )
     {
         // cache using a fixed-sized binding array for small performance boost
         this.bindings = bindings.toArray( new PropertyBinding[bindings.size()] );
@@ -46,7 +46,7 @@ public final class ComponentInjector<T>
     {
         for ( final PropertyBinding b : bindings )
         {
-            b.apply( component );
+            b.injectProperty( component );
         }
     }
 }

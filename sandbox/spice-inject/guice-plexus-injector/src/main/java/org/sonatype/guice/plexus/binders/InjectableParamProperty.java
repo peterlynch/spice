@@ -16,6 +16,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.sonatype.guice.plexus.injector.PropertyBinding;
 
@@ -29,6 +31,12 @@ import com.google.inject.TypeLiteral;
 final class InjectableParamProperty
     implements InjectableProperty, PrivilegedAction<Void>, PropertyBinding
 {
+    // ----------------------------------------------------------------------
+    // Constants
+    // ----------------------------------------------------------------------
+
+    private static final Pattern SETTER_PATTERN = Pattern.compile( "^set(\\p{javaUpperCase})(.*)" );
+
     // ----------------------------------------------------------------------
     // Implementation fields
     // ----------------------------------------------------------------------
@@ -62,8 +70,15 @@ final class InjectableParamProperty
 
     public String getName()
     {
-        final String name = method.getName().replaceFirst( "^set(\\p{javaUpperCase})", "$1" );
-        return method.getDeclaringClass().getName() + '.' + name;
+        final String name = method.getName();
+
+        final Matcher matcher = SETTER_PATTERN.matcher( name );
+        if ( matcher.matches() )
+        {
+            return matcher.group( 1 ).toLowerCase() + matcher.group( 2 );
+        }
+
+        return name;
     }
 
     public PropertyBinding bind( final Provider<?> toProvider )
@@ -93,7 +108,7 @@ final class InjectableParamProperty
     // PropertyBinding methods
     // ----------------------------------------------------------------------
 
-    public void apply( final Object component )
+    public void injectProperty( final Object component )
     {
         try
         {

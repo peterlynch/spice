@@ -12,9 +12,9 @@
  */
 package org.sonatype.guice.plexus.binders;
 
-import static org.sonatype.guice.plexus.utils.PlexusConstants.NO_HINTS;
-import static org.sonatype.guice.plexus.utils.PlexusConstants.getCanonicalHint;
-import static org.sonatype.guice.plexus.utils.PlexusConstants.isDefaultHint;
+import static org.sonatype.guice.plexus.utils.Hints.NO_HINTS;
+import static org.sonatype.guice.plexus.utils.Hints.getCanonicalHint;
+import static org.sonatype.guice.plexus.utils.Hints.isDefaultHint;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -34,29 +34,18 @@ import com.google.inject.util.Types;
 /**
  * Creates {@link Provider}s for property elements annotated with @{@link Requirement}.
  */
-final class PlexusRequirement
+final class PlexusRequirementFactory
+    implements PropertyProviderFactory<Requirement>
 {
-    // ----------------------------------------------------------------------
-    // Constructors
-    // ----------------------------------------------------------------------
+    private final TypeEncounter<?> encounter;
 
-    private PlexusRequirement()
+    PlexusRequirementFactory( final TypeEncounter<?> encounter )
     {
-        // static utility class, not allowed to create instances
+        this.encounter = encounter;
     }
-
-    static
-    {
-        new PlexusRequirement(); // keep Cobertura coverage happy
-    }
-
-    // ----------------------------------------------------------------------
-    // Main provider method
-    // ----------------------------------------------------------------------
 
     @SuppressWarnings( "unchecked" )
-    static Provider<?> getProvider( final TypeEncounter<?> encounter, final Requirement requirement,
-                                    final InjectableProperty property )
+    public Provider<?> lookup( final Requirement requirement, final InjectableProperty property )
     {
         // extract the various requirement parameters
         final TypeLiteral expectedType = property.getType();

@@ -10,33 +10,23 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
-package org.sonatype.guice.plexus.binders;
+package org.sonatype.guice.plexus.configuration;
 
-import org.sonatype.guice.plexus.injector.PropertyBinding;
+import org.codehaus.plexus.component.annotations.Configuration;
 
-import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
 
 /**
- * Represents a property element (such as a field or setter method) that can be injected.
+ * Configures instances of various types for a particular Plexus component.
  */
-interface InjectableProperty
+public interface Configurator
 {
     /**
-     * @return The property's reified generic type
-     */
-    TypeLiteral<?> getType();
-
-    /**
-     * @return The property's name (excluding name-space)
-     */
-    String getName();
-
-    /**
-     * Creates a {@link PropertyBinding} between the current element and the given provider.
+     * Returns an instance of the given type using the given configuration key.
      * 
-     * @param provider A provider of values for the property
-     * @return Property binding that uses the given provider
+     * @param type The target type
+     * @param configuration The configuration key
+     * @return Instance of the given type, configured accordingly
      */
-    PropertyBinding bind( Provider<?> provider );
+    <T> T configure( TypeLiteral<T> type, Configuration key );
 }

@@ -16,44 +16,36 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import org.codehaus.plexus.component.annotations.Requirement;
+import org.codehaus.plexus.component.annotations.Component;
+import org.sonatype.guice.plexus.injector.ComponentBinder;
 import org.sonatype.guice.plexus.injector.PropertyBinder;
-import org.sonatype.guice.plexus.injector.PropertyBinding;
 
+import com.google.inject.TypeLiteral;
 import com.google.inject.spi.TypeEncounter;
 
 /**
- * {@link PropertyBinder} that auto-binds properties according to Plexus annotations.
+ * {@link ComponentBinder} that .
  */
-public final class PlexusPropertyBinder
-    implements PropertyBinder
+public final class PlexusComponentBinder
+    implements ComponentBinder
 {
     // ----------------------------------------------------------------------
     // Public methods
     // ----------------------------------------------------------------------
 
-    public PropertyBinding bindProperty( final TypeEncounter<?> encounter, final AnnotatedElement element )
+    public <T> PropertyBinder bindComponent( final TypeEncounter<T> encounter, final TypeLiteral<T> type )
     {
-        try
+        final Component component = type.getRawType().getAnnotation( Component.class );
+        if ( null != component )
         {
-            // @Requirement binding
-            final Requirement req = element.getAnnotation( Requirement.class );
-            if ( null != req )
-            {
-                final InjectableProperty property = newInjectableProperty( element );
-                return property.bind( PlexusRequirement.getProvider( encounter, req, property ) );
-            }
-        }
-        catch ( final RuntimeException e )
-        {
-            encounter.addError( e.toString() );
+            return new PlexusAnnotatedPropertyBinder( encounter, component );
         }
 
         return null;
     }
 
     // ----------------------------------------------------------------------
-    // Implementation methods
+    // Shared package-private methods
     // ----------------------------------------------------------------------
 
     /**
@@ -62,7 +54,7 @@ public final class PlexusPropertyBinder
      * @param element The annotated element
      * @return Injectable property for the given element
      */
-    private static InjectableProperty newInjectableProperty( final AnnotatedElement element )
+    static InjectableProperty newInjectableProperty( final AnnotatedElement element )
     {
         if ( element instanceof Field )
         {

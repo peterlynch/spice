@@ -39,7 +39,6 @@ public class ComponentTest
 
                 addComponent( components, ComponentB.class );
                 addComponent( components, ComponentC.class );
-                addComponent( components, ComponentE.class );
 
                 install( new StaticPlexusBindingModule( components ) );
             }
@@ -75,11 +74,6 @@ public class ComponentTest
 
     @Component( role = I.class )
     private static class ComponentD
-        implements I
-    {
-    }
-
-    private static class ComponentE
         implements I
     {
     }

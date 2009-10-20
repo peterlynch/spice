@@ -19,12 +19,18 @@ import com.google.inject.Injector;
 import com.google.inject.ProvisionException;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
+import com.google.inject.spi.TypeConverterBinding;
 
 @Singleton
 final class XmlTypeConverter
 {
+    private final List<TypeConverterBinding> converterBindings;
+
     @Inject
-    private Injector injector;
+    public XmlTypeConverter( final Injector injector )
+    {
+        converterBindings = injector.getTypeConverterBindings();
+    }
 
     public Collection<?> parseItems( final String value, final TypeLiteral<?> elementType )
     {
@@ -46,14 +52,7 @@ final class XmlTypeConverter
                     buf.append( parser.getText() );
                 }
 
-                if ( Object.class.equals( elementType.getRawType() ) )
-                {
-                    items.add( injector.convertConstant( buf.toString(), TypeLiteral.get( String.class ) ) );
-                }
-                else
-                {
-                    items.add( injector.convertConstant( buf.toString(), elementType ) );
-                }
+                items.add( convertConstant( buf.toString(), elementType ) );
             }
         }
         catch ( final XmlPullParserException e )
@@ -90,5 +89,24 @@ final class XmlTypeConverter
             return TypeLiteral.get( rawType.getComponentType() );
         }
         return TypeLiteral.get( Object.class );
+    }
+
+    @SuppressWarnings( "unchecked" )
+    private <T> T convertConstant( final String value, final TypeLiteral<T> toType )
+    {
+        for ( final TypeConverterBinding b : converterBindings )
+        {
+            if ( b.getTypeMatcher().matches( toType ) )
+            {
+                return (T) b.getTypeConverter().convert( value, toType );
+            }
+        }
+
+        if ( toType.getRawType().isAssignableFrom( String.class ) )
+        {
+            return (T) value;
+        }
+
+        throw new IllegalArgumentException( "Cannot convert \"" + value + "\" to " + toType );
     }
 }

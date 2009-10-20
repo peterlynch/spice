@@ -14,19 +14,27 @@ package org.sonatype.guice.plexus.injector;
 
 import java.lang.reflect.AnnotatedElement;
 
-import com.google.inject.spi.TypeEncounter;
-
 /**
  * Auto-binds property elements such as fields or setter methods.
  */
 public interface PropertyBinder
 {
     /**
-     * Returns the appropriate {@link PropertyBinding} for the given {@link AnnotatedElement}.
+     * Returns the appropriate {@link PropertyBinding} for the given property element.
      * 
-     * @param encounter The Guice type encounter
-     * @param element The annotated element
+     * @param element The property element
      * @return Property binding for the given element; {@code null} if no binding is applicable
      */
-    PropertyBinding bindProperty( TypeEncounter<?> encounter, AnnotatedElement element );
+    PropertyBinding bindProperty( AnnotatedElement element );
+
+    /**
+     * Indicates the property binder has no more bindings for the current component type.
+     */
+    PropertyBinding LAST_BINDING = new PropertyBinding()
+    {
+        public void injectProperty( final Object component )
+        {
+            // nothing to do, for marking purposes only
+        }
+    };
 }

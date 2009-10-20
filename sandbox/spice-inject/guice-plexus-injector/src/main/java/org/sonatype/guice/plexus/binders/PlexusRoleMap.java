@@ -12,8 +12,9 @@
  */
 package org.sonatype.guice.plexus.binders;
 
-import static org.sonatype.guice.plexus.utils.PlexusConstants.DEFAULT_HINT;
-import static org.sonatype.guice.plexus.utils.PlexusConstants.isDefaultHint;
+import static org.sonatype.guice.plexus.utils.Hints.DEFAULT_HINT;
+import static org.sonatype.guice.plexus.utils.Hints.getCanonicalHint;
+import static org.sonatype.guice.plexus.utils.Hints.isDefaultHint;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -81,7 +82,7 @@ final class PlexusRoleMap<T>
             final Annotation a = b.getKey().getAnnotation();
             if ( a instanceof Named )
             {
-                final String hint = ( (Named) a ).value();
+                final String hint = getCanonicalHint( ( (Named) a ).value() );
                 if ( !isDefaultHint( hint ) )
                 {
                     roleMap.put( hint, b.getProvider() );
@@ -96,9 +97,9 @@ final class PlexusRoleMap<T>
     // Package-private methods
     // ----------------------------------------------------------------------
 
-    Map<String, T> getRoleHintMap( final String... selectedHints )
+    Map<String, T> getRoleHintMap( final String... canonicalHints )
     {
-        final String[] hints = selectedHints.length > 0 ? selectedHints : allHints;
+        final String[] hints = canonicalHints.length > 0 ? canonicalHints : allHints;
         final Map<String, T> roleHintMap = new LinkedHashMap<String, T>();
         for ( final String h : hints )
         {
@@ -112,8 +113,8 @@ final class PlexusRoleMap<T>
         return Collections.unmodifiableMap( roleHintMap );
     }
 
-    List<T> getRoleHintList( final String... selectedHints )
+    List<T> getRoleHintList( final String... canonicalHints )
     {
-        return Collections.unmodifiableList( new ArrayList<T>( getRoleHintMap( selectedHints ).values() ) );
+        return Collections.unmodifiableList( new ArrayList<T>( getRoleHintMap( canonicalHints ).values() ) );
     }
 }

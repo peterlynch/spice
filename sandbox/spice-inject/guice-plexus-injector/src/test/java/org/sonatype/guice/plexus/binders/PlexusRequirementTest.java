@@ -18,8 +18,9 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
+import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.sonatype.guice.plexus.injector.PropertyListener;
+import org.sonatype.guice.plexus.injector.ComponentListener;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.ConfigurationException;
@@ -30,7 +31,6 @@ import com.google.inject.Injector;
 import com.google.inject.ProvisionException;
 import com.google.inject.matcher.Matchers;
 import com.google.inject.name.Names;
-import com.google.inject.spi.TypeListener;
 
 /**
  * Test various Plexus @{@link Requirement} use-cases.
@@ -39,7 +39,7 @@ public class PlexusRequirementTest
     extends TestCase
 {
     @Inject
-    Component component;
+    Component1 component;
 
     @Inject
     Injector injector;
@@ -61,9 +61,7 @@ public class PlexusRequirementTest
 
                 bind( D.class ).annotatedWith( Names.named( "" ) ).to( DImpl.class );
 
-                final TypeListener listener = new PropertyListener( new PlexusPropertyBinder() );
-
-                bindListener( Matchers.any(), listener );
+                bindListener( Matchers.any(), new ComponentListener( new PlexusComponentBinder() ) );
             }
         } ).injectMembers( this );
     }
@@ -115,7 +113,8 @@ public class PlexusRequirementTest
     {
     }
 
-    static class Component
+    @Component( role = Object.class )
+    static class Component1
     {
         @Requirement
         A testField;
@@ -153,6 +152,7 @@ public class PlexusRequirementTest
         List<C> testEmptyList;
     }
 
+    @Component( role = Object.class )
     static class Component2
     {
         @Requirement
@@ -161,6 +161,7 @@ public class PlexusRequirementTest
         }
     }
 
+    @Component( role = Object.class )
     static class Component3
     {
         @Requirement
@@ -170,30 +171,35 @@ public class PlexusRequirementTest
         }
     }
 
+    @Component( role = Object.class )
     static class Component4
     {
         @Requirement
         C testMissingRequirement;
     }
 
+    @Component( role = Object.class )
     static class Component5
     {
         @Requirement( hint = "B!" )
         B testNoSuchHint;
     }
 
+    @Component( role = Object.class )
     static class Component6
     {
         @Requirement( hints = { "AA", "AZ", "A!" } )
         Map<String, B> testNoSuchHint;
     }
 
+    @Component( role = Object.class )
     static class Component7
     {
         @Requirement( hints = { "AA", "AZ", "A!" } )
         List<C> testNoSuchHint;
     }
 
+    @Component( role = Object.class )
     static class Component8
     {
         @Requirement( hints = { "" } )

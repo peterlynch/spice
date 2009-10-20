@@ -56,7 +56,7 @@ final class InjectableFieldProperty
 
     public String getName()
     {
-        return field.getDeclaringClass().getName() + '.' + field.getName();
+        return field.getName();
     }
 
     public PropertyBinding bind( final Provider<?> toProvider )
@@ -87,7 +87,7 @@ final class InjectableFieldProperty
     // PropertyBinding methods
     // ----------------------------------------------------------------------
 
-    public void apply( final Object component )
+    public void injectProperty( final Object component )
     {
         try
         {

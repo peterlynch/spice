@@ -10,33 +10,22 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
-package org.sonatype.guice.plexus.binders;
+package org.sonatype.guice.plexus.injector;
 
-import org.sonatype.guice.plexus.injector.PropertyBinding;
-
-import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
+import com.google.inject.spi.TypeEncounter;
 
 /**
- * Represents a property element (such as a field or setter method) that can be injected.
+ * Auto-binds components that contain one or more property elements.
  */
-interface InjectableProperty
+public interface ComponentBinder
 {
     /**
-     * @return The property's reified generic type
-     */
-    TypeLiteral<?> getType();
-
-    /**
-     * @return The property's name (excluding name-space)
-     */
-    String getName();
-
-    /**
-     * Creates a {@link PropertyBinding} between the current element and the given provider.
+     * Returns the appropriate {@link PropertyBinder} for the given component type.
      * 
-     * @param provider A provider of values for the property
-     * @return Property binding that uses the given provider
+     * @param encounter The Guice type encounter
+     * @param type The component type
+     * @return Property binder for the given type; {@code null} if no binder is applicable
      */
-    PropertyBinding bind( Provider<?> provider );
+    <T> PropertyBinder bindComponent( TypeEncounter<T> encounter, TypeLiteral<T> type );
 }

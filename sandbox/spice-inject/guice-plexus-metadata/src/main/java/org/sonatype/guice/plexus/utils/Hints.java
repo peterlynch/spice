@@ -51,7 +51,7 @@ public final class Hints
      */
     public static String getCanonicalHint( final String hint )
     {
-        // use interning because most hint constants should already be interned
+        // interning saves space because most hints are already string constants
         return null == hint || hint.length() == 0 ? DEFAULT_HINT : hint.intern();
     }
 
@@ -63,6 +63,6 @@ public final class Hints
      */
     public static boolean isDefaultHint( final String hint )
     {
-        return DEFAULT_HINT == getCanonicalHint( hint );
+        return DEFAULT_HINT == getCanonicalHint( hint ); // FindBugs ES_COMPARING_STRINGS_WITH_EQ false-positive
     }
 }

@@ -12,6 +12,8 @@
  */
 package org.sonatype.guice.plexus.injector;
 
+import static org.sonatype.guice.plexus.injector.PropertyBinder.LAST_BINDING;
+
 import java.lang.reflect.AnnotatedElement;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,38 +23,46 @@ import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
 
 /**
- * {@link TypeListener} that listens for component types and uses a {@link PropertyBinder} to auto-bind properties.
+ * {@link TypeListener} that listens for component types and arranges for their properties to be injected.
  */
-public final class PropertyListener
+public final class ComponentListener
     implements TypeListener
 {
     // ----------------------------------------------------------------------
     // Implementation fields
     // ----------------------------------------------------------------------
 
-    private final PropertyBinder binder;
+    private final ComponentBinder componentBinder;
 
     // ----------------------------------------------------------------------
     // Constructors
     // ----------------------------------------------------------------------
 
-    public PropertyListener( final PropertyBinder binder )
+    public ComponentListener( final ComponentBinder componentBinder )
     {
-        this.binder = binder;
+        this.componentBinder = componentBinder;
     }
 
     // ----------------------------------------------------------------------
     // Public methods
     // ----------------------------------------------------------------------
 
-    public <T> void hear( final TypeLiteral<T> literal, final TypeEncounter<T> encounter )
+    public <T> void hear( final TypeLiteral<T> type, final TypeEncounter<T> encounter )
     {
-        final Collection<PropertyBinding> bindings = new ArrayList<PropertyBinding>();
-
-        // iterate over declared members in class hierarchy: constructors > methods > fields
-        for ( final AnnotatedElement element : new AnnotatedElements( literal.getRawType() ) )
+        final PropertyBinder propertyBinder = componentBinder.bindComponent( encounter, type );
+        if ( null == propertyBinder )
         {
-            final PropertyBinding binding = binder.bindProperty( encounter, element );
+            return; // no properties to bind
+        }
+
+        final Collection<PropertyBinding> bindings = new ArrayList<PropertyBinding>();
+        for ( final AnnotatedElement element : new AnnotatedElements( type.getRawType() ) )
+        {
+            final PropertyBinding binding = propertyBinder.bindProperty( element );
+            if ( binding == LAST_BINDING )
+            {
+                break; // no more bindings
+            }
             if ( binding != null )
             {
                 bindings.add( binding );

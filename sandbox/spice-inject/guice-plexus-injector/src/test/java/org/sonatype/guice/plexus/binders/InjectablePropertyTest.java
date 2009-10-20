@@ -51,7 +51,7 @@ public class InjectablePropertyTest
         assertEquals( List.class, ip.getType().getRawType() );
         assertEquals( Types.newParameterizedType( List.class, String.class ), ip.getType().getType() );
 
-        assertEquals( "org.sonatype.guice.plexus.binders.example.anexampleproperty", ip.getName().toLowerCase() );
+        assertEquals( "anExampleProperty", ip.getName() );
 
         final Field providerField = ip.getClass().getDeclaredField( "provider" );
         providerField.setAccessible( true );
@@ -60,7 +60,7 @@ public class InjectablePropertyTest
         {
             // bypass bind() to get access exception
             providerField.set( ip, Providers.of( null ) );
-            ( (PropertyBinding) ip ).apply( new Example() );
+            ( (PropertyBinding) ip ).injectProperty( new Example() );
             fail( "Expected ProvisionException" );
         }
         catch ( final ProvisionException e )
@@ -70,12 +70,12 @@ public class InjectablePropertyTest
         // now check normally with bind()
         final Example example = new Example();
 
-        ip.bind( Providers.of( Arrays.asList( "This", "is", "a", "test" ) ) ).apply( example );
+        ip.bind( Providers.of( Arrays.asList( "This", "is", "a", "test" ) ) ).injectProperty( example );
         assertEquals( "is", example.getAnExampleProperty().get( 1 ) );
 
         try
         {
-            ip.bind( Providers.of( null ) ).apply( example );
+            ip.bind( Providers.of( null ) ).injectProperty( example );
             if ( ip instanceof InjectableParamProperty )
             {
                 fail( "Expected ProvisionException" );
@@ -85,7 +85,7 @@ public class InjectablePropertyTest
         {
         }
 
-        ip.bind( Providers.of( Collections.singletonList( "Hello" ) ) ).apply( example );
+        ip.bind( Providers.of( Collections.singletonList( "Hello" ) ) ).injectProperty( example );
         assertEquals( "Hello", example.getAnExampleProperty().get( 0 ) );
     }
 
@@ -93,7 +93,7 @@ public class InjectablePropertyTest
         throws NoSuchMethodException, IllegalAccessException
     {
         final Method propertyFactoryMethod =
-            PlexusPropertyBinder.class.getDeclaredMethod( "newInjectableProperty", AnnotatedElement.class );
+            PlexusComponentBinder.class.getDeclaredMethod( "newInjectableProperty", AnnotatedElement.class );
 
         try
         {

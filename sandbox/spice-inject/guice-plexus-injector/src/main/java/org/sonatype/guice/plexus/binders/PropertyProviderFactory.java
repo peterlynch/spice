@@ -12,31 +12,21 @@
  */
 package org.sonatype.guice.plexus.binders;
 
-import org.sonatype.guice.plexus.injector.PropertyBinding;
+import java.lang.annotation.Annotation;
 
 import com.google.inject.Provider;
-import com.google.inject.TypeLiteral;
 
 /**
- * Represents a property element (such as a field or setter method) that can be injected.
+ * Factory that supplies {@link Provider}s for properties with particular annotations.
  */
-interface InjectableProperty
+interface PropertyProviderFactory<A extends Annotation>
 {
     /**
-     * @return The property's reified generic type
-     */
-    TypeLiteral<?> getType();
-
-    /**
-     * @return The property's name (excluding name-space)
-     */
-    String getName();
-
-    /**
-     * Creates a {@link PropertyBinding} between the current element and the given provider.
+     * Returns a {@link Provider} based on the given annotation for the given property.
      * 
-     * @param provider A provider of values for the property
-     * @return Property binding that uses the given provider
+     * @param annotation The property annotation
+     * @param property The injectable property
+     * @return Provider that can provide values for the given property
      */
-    PropertyBinding bind( Provider<?> provider );
+    Provider<?> lookup( A annotation, InjectableProperty property );
 }
