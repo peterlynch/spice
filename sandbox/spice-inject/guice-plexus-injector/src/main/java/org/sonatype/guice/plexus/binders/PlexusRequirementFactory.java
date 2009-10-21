@@ -38,6 +38,12 @@ final class PlexusRequirementFactory
     implements PropertyProviderFactory<Requirement>
 {
     // ----------------------------------------------------------------------
+    // Constants
+    // ----------------------------------------------------------------------
+
+    private static final TypeLiteral<Object> OBJECT_TYPE_LITERAL = TypeLiteral.get( Object.class );
+
+    // ----------------------------------------------------------------------
     // Implementation fields
     // ----------------------------------------------------------------------
 
@@ -116,12 +122,13 @@ final class PlexusRequirementFactory
         {
             return TypeLiteral.get( role );
         }
-        if ( Map.class == expectedType.getRawType() )
+        final Class<?> rawType = expectedType.getRawType();
+        if ( Map.class == rawType )
         {
             // Map<String, T> --> T
             return getTypeArgument( expectedType, 1 );
         }
-        if ( List.class == expectedType.getRawType() )
+        if ( List.class == rawType )
         {
             // List<T> --> T
             return getTypeArgument( expectedType, 0 );
@@ -138,8 +145,13 @@ final class PlexusRequirementFactory
      */
     private static TypeLiteral<?> getTypeArgument( final TypeLiteral<?> genericType, final int index )
     {
-        final Type t = ( (ParameterizedType) genericType.getType() ).getActualTypeArguments()[index];
-        return TypeLiteral.get( t instanceof WildcardType ? ( (WildcardType) t ).getUpperBounds()[0] : t );
+        final Type type = genericType.getType();
+        if ( type instanceof ParameterizedType )
+        {
+            final Type arg = ( (ParameterizedType) type ).getActualTypeArguments()[index];
+            return TypeLiteral.get( arg instanceof WildcardType ? ( (WildcardType) arg ).getUpperBounds()[0] : arg );
+        }
+        return OBJECT_TYPE_LITERAL;
     }
 
     /**
