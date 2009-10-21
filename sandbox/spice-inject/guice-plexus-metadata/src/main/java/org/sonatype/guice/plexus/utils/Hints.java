@@ -51,7 +51,7 @@ public final class Hints
      */
     public static String getCanonicalHint( final String hint )
     {
-        // interning saves space because most hints are already string constants
+        // interning hints is a good idea because most will be string constants
         return null == hint || hint.length() == 0 ? DEFAULT_HINT : hint.intern();
     }
 
@@ -63,6 +63,18 @@ public final class Hints
      */
     public static boolean isDefaultHint( final String hint )
     {
-        return DEFAULT_HINT == getCanonicalHint( hint ); // FindBugs ES_COMPARING_STRINGS_WITH_EQ false-positive
+        return DEFAULT_HINT.equals( hint ) || null == hint || hint.length() == 0;
+    }
+
+    /**
+     * Returns the canonical key for the given Plexus role-hint combination.
+     * 
+     * @param role The Plexus role
+     * @param hint The Plexus hint
+     * @return Canonical key denoting the given role-hint combination
+     */
+    public static String getRoleHintKey( final Class<?> role, final String hint )
+    {
+        return isDefaultHint( hint ) ? role.getName() : role.getName() + '-' + hint;
     }
 }

@@ -20,12 +20,12 @@ import com.google.inject.TypeLiteral;
 /**
  * Represents a property element (such as a field or setter method) that can be injected.
  */
-interface InjectableProperty
+interface InjectableProperty<T>
 {
     /**
      * @return The property's reified generic type
      */
-    TypeLiteral<?> getType();
+    TypeLiteral<T> getType();
 
     /**
      * @return The property's name (excluding name-space)
@@ -38,5 +38,5 @@ interface InjectableProperty
      * @param provider A provider of values for the property
      * @return Property binding that uses the given provider
      */
-    PropertyBinding bind( Provider<?> provider );
+    PropertyBinding bind( Provider<T> provider );
 }

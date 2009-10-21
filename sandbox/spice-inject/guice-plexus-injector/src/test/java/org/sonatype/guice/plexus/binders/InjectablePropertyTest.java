@@ -35,17 +35,24 @@ public class InjectablePropertyTest
         throws NoSuchFieldException, IllegalAccessException
     {
         final Field field = Example.class.getDeclaredField( "anExampleProperty" );
-        checkInjectableProperty( new InjectableFieldProperty( field ) );
+        checkInjectableProperty( new InjectableFieldProperty<List<String>>( field ) );
     }
 
     public void testInjectableParamProperty()
         throws NoSuchMethodException, IllegalAccessException, NoSuchFieldException
     {
-        final Method method = Example.class.getDeclaredMethod( "setAnExampleProperty", List.class );
-        checkInjectableProperty( new InjectableParamProperty( method ) );
+        final Method method = Example.class.getDeclaredMethod( "anExampleProperty", List.class );
+        checkInjectableProperty( new InjectableParamProperty<List<String>>( method ) );
     }
 
-    private void checkInjectableProperty( final InjectableProperty ip )
+    public void testInjectableParamPropertySetter()
+        throws NoSuchMethodException, IllegalAccessException, NoSuchFieldException
+    {
+        final Method method = Example.class.getDeclaredMethod( "setAnExampleProperty", List.class );
+        checkInjectableProperty( new InjectableParamProperty<List<String>>( method ) );
+    }
+
+    private void checkInjectableProperty( final InjectableProperty<List<String>> ip )
         throws IllegalAccessException, NoSuchFieldException
     {
         assertEquals( List.class, ip.getType().getRawType() );
@@ -75,8 +82,8 @@ public class InjectablePropertyTest
 
         try
         {
-            ip.bind( Providers.of( null ) ).injectProperty( example );
-            if ( ip instanceof InjectableParamProperty )
+            ip.bind( Providers.of( (List<String>) null ) ).injectProperty( example );
+            if ( ip instanceof InjectableParamProperty<?> )
             {
                 fail( "Expected ProvisionException" );
             }
@@ -111,6 +118,11 @@ public class InjectablePropertyTest
 class Example
 {
     private List<String> anExampleProperty;
+
+    private void anExampleProperty( final List<String> value )
+    {
+        anExampleProperty = Collections.unmodifiableList( value );
+    }
 
     private void setAnExampleProperty( final List<String> value )
     {

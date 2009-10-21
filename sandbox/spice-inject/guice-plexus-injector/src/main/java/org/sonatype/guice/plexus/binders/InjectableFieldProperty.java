@@ -25,8 +25,8 @@ import com.google.inject.TypeLiteral;
 /**
  * {@link InjectableProperty} backed by a {@link Field}.
  */
-final class InjectableFieldProperty
-    implements InjectableProperty, PrivilegedAction<Void>, PropertyBinding
+final class InjectableFieldProperty<T>
+    implements InjectableProperty<T>, PrivilegedAction<Void>, PropertyBinding
 {
     // ----------------------------------------------------------------------
     // Implementation fields
@@ -34,7 +34,7 @@ final class InjectableFieldProperty
 
     private final Field field;
 
-    private Provider<?> provider;
+    private Provider<T> provider;
 
     // ----------------------------------------------------------------------
     // Constructors
@@ -49,9 +49,10 @@ final class InjectableFieldProperty
     // InjectableProperty methods
     // ----------------------------------------------------------------------
 
-    public TypeLiteral<?> getType()
+    @SuppressWarnings( "unchecked" )
+    public TypeLiteral<T> getType()
     {
-        return TypeLiteral.get( field.getGenericType() );
+        return (TypeLiteral) TypeLiteral.get( field.getGenericType() );
     }
 
     public String getName()
@@ -59,7 +60,7 @@ final class InjectableFieldProperty
         return field.getName();
     }
 
-    public PropertyBinding bind( final Provider<?> toProvider )
+    public PropertyBinding bind( final Provider<T> toProvider )
     {
         provider = toProvider;
 

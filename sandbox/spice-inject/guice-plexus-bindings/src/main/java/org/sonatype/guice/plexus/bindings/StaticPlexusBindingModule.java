@@ -1,6 +1,7 @@
 package org.sonatype.guice.plexus.bindings;
 
 import static com.google.inject.name.Names.named;
+import static org.sonatype.guice.plexus.utils.Hints.getCanonicalHint;
 import static org.sonatype.guice.plexus.utils.Hints.isDefaultHint;
 
 import java.util.Map;
@@ -49,10 +50,10 @@ public final class StaticPlexusBindingModule
         {
             final Class<?> clazz = e.getKey();
             final Component spec = e.getValue();
-            final String hint = spec.hint();
 
             // bind role + optional hint -> implementation
             final AnnotatedBindingBuilder abb = bind( spec.role() );
+            final String hint = getCanonicalHint( spec.hint() );
             final LinkedBindingBuilder lbb = isDefaultHint( hint ) ? abb : abb.annotatedWith( named( hint ) );
             final ScopedBindingBuilder sbb = lbb.to( clazz );
 

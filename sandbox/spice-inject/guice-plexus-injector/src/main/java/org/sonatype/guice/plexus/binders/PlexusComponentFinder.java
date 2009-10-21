@@ -18,7 +18,7 @@ import static org.sonatype.guice.plexus.utils.Hints.isDefaultHint;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,9 +34,16 @@ import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 
+/**
+ * Supplies filtered maps/lists of registered Plexus components.
+ */
 @Singleton
-final class PlexusRoleMap<T>
+final class PlexusComponentFinder<T>
 {
+    // ----------------------------------------------------------------------
+    // Constants
+    // ----------------------------------------------------------------------
+
     private static final String MISSING_BINDING_ERROR =
         "No implementation for %s annotated with @com.google.inject.name.Named(value=%s) was bound.";
 
@@ -44,7 +51,7 @@ final class PlexusRoleMap<T>
     // Implementation fields
     // ----------------------------------------------------------------------
 
-    private final TypeLiteral<T> roleType;
+    private final String roleName;
 
     private final Map<String, Provider<T>> roleMap;
 
@@ -55,20 +62,20 @@ final class PlexusRoleMap<T>
     // ----------------------------------------------------------------------
 
     @Inject
-    PlexusRoleMap( final Injector injector, final TypeLiteral<T> roleType )
+    PlexusComponentFinder( final Injector injector, final TypeLiteral<T> roleType )
     {
-        this.roleType = roleType;
+        this.roleName = roleType.toString();
 
         // find all known bindings for the role, note: excludes Just-In-Time bindings!
         final List<Binding<T>> typeBindings = injector.findBindingsByType( roleType );
         final int numBindings = typeBindings.size();
 
-        roleMap = new LinkedHashMap<String, Provider<T>>();
+        final Map<String, Provider<T>> tempMap = new LinkedHashMap<String, Provider<T>>( 2 * numBindings );
 
         try
         {
             // use explicit query for default, in case it's a Just-In-Time binding
-            roleMap.put( DEFAULT_HINT, injector.getProvider( Key.get( roleType ) ) );
+            tempMap.put( DEFAULT_HINT, injector.getProvider( Key.get( roleType ) ) );
         }
         catch ( final ConfigurationException e ) // NOPMD
         {
@@ -85,36 +92,50 @@ final class PlexusRoleMap<T>
                 final String hint = getCanonicalHint( ( (Named) a ).value() );
                 if ( !isDefaultHint( hint ) )
                 {
-                    roleMap.put( hint, b.getProvider() );
+                    tempMap.put( hint, b.getProvider() );
                 }
             }
         }
 
-        allHints = roleMap.keySet().toArray( new String[roleMap.size()] );
+        // ordering is recorded in hint array, so can use simpler hash map
+        allHints = tempMap.keySet().toArray( new String[tempMap.size()] );
+        roleMap = new HashMap<String, Provider<T>>( tempMap );
     }
 
     // ----------------------------------------------------------------------
-    // Package-private methods
+    // Shared package-private methods
     // ----------------------------------------------------------------------
 
-    Map<String, T> getRoleHintMap( final String... canonicalHints )
+    /**
+     * Returns a map of Plexus components for the current role, filtered by the given hints.
+     * 
+     * @param canonicalHints The Plexus hints
+     * @return Map of Plexus components with the given hints
+     */
+    Map<String, T> getComponentMap( final String... canonicalHints )
     {
         final String[] hints = canonicalHints.length > 0 ? canonicalHints : allHints;
-        final Map<String, T> roleHintMap = new LinkedHashMap<String, T>();
+        final Map<String, T> roleHintMap = new LinkedHashMap<String, T>( 2 * hints.length );
         for ( final String h : hints )
         {
             final Provider<T> provider = roleMap.get( h );
             if ( null == provider )
             {
-                throw new ProvisionException( String.format( MISSING_BINDING_ERROR, roleType, h ) );
+                throw new ProvisionException( String.format( MISSING_BINDING_ERROR, roleName, h ) );
             }
             roleHintMap.put( h, provider.get() );
         }
-        return Collections.unmodifiableMap( roleHintMap );
+        return roleHintMap;
     }
 
-    List<T> getRoleHintList( final String... canonicalHints )
+    /**
+     * Returns a list of Plexus components for the current role, filtered by the given hints.
+     * 
+     * @param canonicalHints The Plexus hints
+     * @return List of Plexus components with the given hints
+     */
+    List<T> getComponentList( final String... canonicalHints )
     {
-        return Collections.unmodifiableList( new ArrayList<T>( getRoleHintMap( canonicalHints ).values() ) );
+        return new ArrayList<T>( getComponentMap( canonicalHints ).values() );
     }
 }

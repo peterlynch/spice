@@ -58,14 +58,21 @@ public final class ComponentListener
         final Collection<PropertyBinding> bindings = new ArrayList<PropertyBinding>();
         for ( final AnnotatedElement element : new AnnotatedElements( type.getRawType() ) )
         {
-            final PropertyBinding binding = propertyBinder.bindProperty( element );
-            if ( binding == LAST_BINDING )
+            try
             {
-                break; // no more bindings
+                final PropertyBinding binding = propertyBinder.bindProperty( element );
+                if ( binding == LAST_BINDING )
+                {
+                    break; // no more bindings
+                }
+                if ( binding != null )
+                {
+                    bindings.add( binding );
+                }
             }
-            if ( binding != null )
+            catch ( final RuntimeException e )
             {
-                bindings.add( binding );
+                encounter.addError( e );
             }
         }
 

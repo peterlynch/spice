@@ -39,4 +39,12 @@ public class HintsTest
         assertTrue( Hints.isDefaultHint( new String( "default" ) ) );
         assertFalse( Hints.isDefaultHint( "foo" ) );
     }
+
+    public void testRoleHintKey()
+    {
+        assertEquals( "java.lang.String", Hints.getRoleHintKey( String.class, null ) );
+        assertEquals( "java.lang.String", Hints.getRoleHintKey( String.class, "" ) );
+        assertEquals( "java.lang.String", Hints.getRoleHintKey( String.class, new String( "default" ) ) );
+        assertEquals( "java.lang.String-foo", Hints.getRoleHintKey( String.class, "foo" ) );
+    }
 }

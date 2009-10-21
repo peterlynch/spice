@@ -12,15 +12,16 @@
  */
 package org.sonatype.guice.plexus.binders;
 
+import static com.google.inject.name.Names.named;
+import static org.sonatype.guice.plexus.utils.Hints.getRoleHintKey;
+
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Configuration;
 import org.sonatype.guice.plexus.annotations.ConfigurationImpl;
 import org.sonatype.guice.plexus.configuration.Configurator;
-import org.sonatype.guice.plexus.utils.Hints;
 
 import com.google.inject.Key;
 import com.google.inject.Provider;
-import com.google.inject.name.Names;
 import com.google.inject.spi.TypeEncounter;
 
 /**
@@ -29,27 +30,38 @@ import com.google.inject.spi.TypeEncounter;
 final class PlexusConfigurationFactory
     implements PropertyProviderFactory<Configuration>
 {
+    // ----------------------------------------------------------------------
+    // Implementation fields
+    // ----------------------------------------------------------------------
+
     private final TypeEncounter<?> encounter;
 
-    private final Key<Configurator> componentConfiguratorKey;
+    private final Key<Configurator> configuratorKey;
+
+    // ----------------------------------------------------------------------
+    // Constructors
+    // ----------------------------------------------------------------------
 
     PlexusConfigurationFactory( final TypeEncounter<?> encounter, final Component component )
     {
         this.encounter = encounter;
 
-        final String role = component.role().getName();
-        final String hint = component.hint();
-
-        final String id = Hints.isDefaultHint( hint ) ? role : role + '/' + hint;
-
-        componentConfiguratorKey = Key.get( Configurator.class, Names.named( id ) );
+        // each Plexus component should have some sort of configurator registered under the appropriate role-hint ID
+        configuratorKey = Key.get( Configurator.class, named( getRoleHintKey( component.role(), component.hint() ) ) );
     }
 
-    public Provider<?> lookup( final Configuration configuration, final InjectableProperty property )
+    // ----------------------------------------------------------------------
+    // Public methods
+    // ----------------------------------------------------------------------
+
+    public <T> Provider<T> lookup( final Configuration configuration, final InjectableProperty<T> property )
     {
+        final Provider<Configurator> configurator = getComponentConfigurator();
+
         final Configuration key;
         if ( configuration.name().length() == 0 )
         {
+            // provided configuration doesn't have a name, so use the property name
             key = new ConfigurationImpl( property.getName(), configuration.value() );
         }
         else
@@ -57,14 +69,31 @@ final class PlexusConfigurationFactory
             key = configuration;
         }
 
-        final Provider<Configurator> configuratorProvider = encounter.getProvider( componentConfiguratorKey );
-
-        return new Provider<Object>()
+        return new Provider<T>()
         {
-            public Object get()
+            public T get()
             {
-                return configuratorProvider.get().configure( property.getType(), key );
+                return configurator.get().configure( property.getType(), key );
             }
         };
+    }
+
+    /**
+     * Returns a {@link Provider} that can provide a {@link Configurator} for the current component.
+     * 
+     * @return Provider that provides a configurator for the current component
+     */
+    private Provider<Configurator> getComponentConfigurator()
+    {
+        try
+        {
+            // first look for customized local configurator
+            return encounter.getProvider( configuratorKey );
+        }
+        catch ( final RuntimeException e )
+        {
+            // fall-back to the globally defined configurator
+            return encounter.getProvider( Configurator.class );
+        }
     }
 }

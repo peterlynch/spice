@@ -12,6 +12,7 @@
  */
 package org.sonatype.guice.plexus.binders;
 
+import static com.google.inject.name.Names.named;
 import static org.sonatype.guice.plexus.utils.Hints.NO_HINTS;
 import static org.sonatype.guice.plexus.utils.Hints.getCanonicalHint;
 import static org.sonatype.guice.plexus.utils.Hints.isDefaultHint;
@@ -27,7 +28,6 @@ import org.codehaus.plexus.component.annotations.Requirement;
 import com.google.inject.Key;
 import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
-import com.google.inject.name.Names;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.util.Types;
 
@@ -37,51 +37,65 @@ import com.google.inject.util.Types;
 final class PlexusRequirementFactory
     implements PropertyProviderFactory<Requirement>
 {
+    // ----------------------------------------------------------------------
+    // Implementation fields
+    // ----------------------------------------------------------------------
+
     private final TypeEncounter<?> encounter;
+
+    // ----------------------------------------------------------------------
+    // Constructors
+    // ----------------------------------------------------------------------
 
     PlexusRequirementFactory( final TypeEncounter<?> encounter )
     {
         this.encounter = encounter;
     }
 
+    // ----------------------------------------------------------------------
+    // Public methods
+    // ----------------------------------------------------------------------
+
     @SuppressWarnings( "unchecked" )
-    public Provider<?> lookup( final Requirement requirement, final InjectableProperty property )
+    public <T> Provider<T> lookup( final Requirement requirement, final InjectableProperty<T> property )
     {
         // extract the various requirement parameters
         final TypeLiteral expectedType = property.getType();
         final TypeLiteral roleType = getRole( requirement, expectedType );
-        final String[] hints = getHints( requirement );
+        final String[] canonicalHints = getCanonicalHints( requirement );
 
         if ( Map.class == expectedType.getRawType() )
         {
-            final Provider roleMapProvider = getRoleMapProvider( encounter, roleType );
+            // build map of Plexus components
+            final Provider<PlexusComponentFinder<?>> componentFinder = getComponentFinder( roleType );
             return new Provider()
             {
                 public Map get()
                 {
-                    return ( (PlexusRoleMap) roleMapProvider.get() ).getRoleHintMap( hints );
+                    return componentFinder.get().getComponentMap( canonicalHints );
                 }
             };
         }
 
         if ( List.class == expectedType.getRawType() )
         {
-            final Provider roleMapProvider = getRoleMapProvider( encounter, roleType );
+            // build list of Plexus components
+            final Provider<PlexusComponentFinder<?>> componentFinder = getComponentFinder( roleType );
             return new Provider()
             {
                 public List get()
                 {
-                    return ( (PlexusRoleMap) roleMapProvider.get() ).getRoleHintList( hints );
+                    return componentFinder.get().getComponentList( canonicalHints );
                 }
             };
         }
 
-        if ( hints.length == 0 || isDefaultHint( hints[0] ) )
+        if ( canonicalHints.length == 0 || isDefaultHint( canonicalHints[0] ) )
         {
             return encounter.getProvider( Key.get( roleType ) );
         }
 
-        return encounter.getProvider( Key.get( roleType, Names.named( hints[0] ) ) );
+        return encounter.getProvider( Key.get( roleType, named( canonicalHints[0] ) ) );
     }
 
     // ----------------------------------------------------------------------
@@ -112,7 +126,6 @@ final class PlexusRequirementFactory
             // List<T> --> T
             return getTypeArgument( expectedType, 0 );
         }
-
         return expectedType;
     }
 
@@ -135,7 +148,7 @@ final class PlexusRequirementFactory
      * @param requirement The Plexus requirement
      * @return Array of hints
      */
-    private static String[] getHints( final Requirement requirement )
+    private static String[] getCanonicalHints( final Requirement requirement )
     {
         final String[] hints = requirement.hints();
         if ( hints.length > 0 )
@@ -155,17 +168,15 @@ final class PlexusRequirementFactory
     }
 
     /**
-     * Returns a {@link Provider} that can provide a {@link PlexusRoleMap} for the given role type.
+     * Returns a {@link Provider} that can provide a {@link PlexusComponentFinder} for the given role type.
      * 
-     * @param encounter The Guice type encounter
      * @param roleType The Plexus role type
-     * @return Provider that provides a role map for the given role type
+     * @return Provider that provides a component finder for the given role type
      */
     @SuppressWarnings( "unchecked" )
-    private static <T> Provider<PlexusRoleMap<T>> getRoleMapProvider( final TypeEncounter<?> encounter,
-                                                                      final TypeLiteral<T> roleType )
+    private <T> Provider<PlexusComponentFinder<T>> getComponentFinder( final TypeLiteral<T> roleType )
     {
-        final Type roleMapType = Types.newParameterizedType( PlexusRoleMap.class, roleType.getType() );
-        return (Provider) encounter.getProvider( Key.get( roleMapType ) );
+        final Type finderType = Types.newParameterizedType( PlexusComponentFinder.class, roleType.getType() );
+        return (Provider) encounter.getProvider( Key.get( finderType ) );
     }
 }

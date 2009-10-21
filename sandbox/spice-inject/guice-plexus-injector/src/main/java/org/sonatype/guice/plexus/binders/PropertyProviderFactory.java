@@ -28,5 +28,5 @@ interface PropertyProviderFactory<A extends Annotation>
      * @param property The injectable property
      * @return Provider that can provide values for the given property
      */
-    Provider<?> lookup( A annotation, InjectableProperty property );
+    <T> Provider<T> lookup( A annotation, InjectableProperty<T> property );
 }

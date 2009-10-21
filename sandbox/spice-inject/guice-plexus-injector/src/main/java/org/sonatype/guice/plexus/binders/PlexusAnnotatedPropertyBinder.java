@@ -30,9 +30,17 @@ import com.google.inject.spi.TypeEncounter;
 final class PlexusAnnotatedPropertyBinder
     implements PropertyBinder
 {
+    // ----------------------------------------------------------------------
+    // Implementation fields
+    // ----------------------------------------------------------------------
+
     private final PlexusRequirementFactory requirementFactory;
 
     private final PlexusConfigurationFactory configurationFactory;
+
+    // ----------------------------------------------------------------------
+    // Constructors
+    // ----------------------------------------------------------------------
 
     PlexusAnnotatedPropertyBinder( final TypeEncounter<?> encounter, final Component component )
     {
@@ -52,7 +60,7 @@ final class PlexusAnnotatedPropertyBinder
         final Requirement requirement = element.getAnnotation( Requirement.class );
         if ( null != requirement )
         {
-            final InjectableProperty property = newInjectableProperty( element );
+            final InjectableProperty<Object> property = newInjectableProperty( element );
             return property.bind( requirementFactory.lookup( requirement, property ) );
         }
 
@@ -62,7 +70,7 @@ final class PlexusAnnotatedPropertyBinder
         final Configuration configuration = element.getAnnotation( Configuration.class );
         if ( null != configuration )
         {
-            final InjectableProperty property = newInjectableProperty( element );
+            final InjectableProperty<Object> property = newInjectableProperty( element );
             return property.bind( configurationFactory.lookup( configuration, property ) );
         }
 

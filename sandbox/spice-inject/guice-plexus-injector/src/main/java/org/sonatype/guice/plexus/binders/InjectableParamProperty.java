@@ -28,8 +28,8 @@ import com.google.inject.TypeLiteral;
 /**
  * {@link InjectableProperty} backed by a single-parameter setter {@link Method}.
  */
-final class InjectableParamProperty
-    implements InjectableProperty, PrivilegedAction<Void>, PropertyBinding
+final class InjectableParamProperty<T>
+    implements InjectableProperty<T>, PrivilegedAction<Void>, PropertyBinding
 {
     // ----------------------------------------------------------------------
     // Constants
@@ -43,7 +43,7 @@ final class InjectableParamProperty
 
     private final Method method;
 
-    private Provider<?> provider;
+    private Provider<T> provider;
 
     // ----------------------------------------------------------------------
     // Constructors
@@ -63,9 +63,10 @@ final class InjectableParamProperty
     // InjectableProperty methods
     // ----------------------------------------------------------------------
 
-    public TypeLiteral<?> getType()
+    @SuppressWarnings( "unchecked" )
+    public TypeLiteral<T> getType()
     {
-        return TypeLiteral.get( method.getGenericParameterTypes()[0] );
+        return (TypeLiteral) TypeLiteral.get( method.getGenericParameterTypes()[0] );
     }
 
     public String getName()
@@ -81,7 +82,7 @@ final class InjectableParamProperty
         return name;
     }
 
-    public PropertyBinding bind( final Provider<?> toProvider )
+    public PropertyBinding bind( final Provider<T> toProvider )
     {
         provider = toProvider;
 

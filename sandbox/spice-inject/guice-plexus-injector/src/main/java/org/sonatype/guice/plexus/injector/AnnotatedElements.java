@@ -182,10 +182,12 @@ final class AnnotatedElements
 
         abstract AnnotatedElement[] elements( final Class<?> clazz );
 
+        private static final View[] VIEWS = View.values();
+
         final View next()
         {
-            // keep rolling through the same elements of the enumeration
-            return View.values()[( ordinal() + 1 ) % View.values().length];
+            // keep cycling through the different elements
+            return VIEWS[( ordinal() + 1 ) % VIEWS.length];
         }
     }
 }

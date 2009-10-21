@@ -24,7 +24,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.spi.TypeEncounter;
 
 /**
- * {@link ComponentBinder} that .
+ * {@link ComponentBinder} that binds Plexus properties using annotations or other metadata.
  */
 public final class PlexusComponentBinder
     implements ComponentBinder
@@ -38,8 +38,11 @@ public final class PlexusComponentBinder
         final Component component = type.getRawType().getAnnotation( Component.class );
         if ( null != component )
         {
+            // assume all other properties are marked with Plexus annotations
             return new PlexusAnnotatedPropertyBinder( encounter, component );
         }
+
+        // TODO: PlexusMappedPropertyBinder
 
         return null;
     }
@@ -54,15 +57,15 @@ public final class PlexusComponentBinder
      * @param element The annotated element
      * @return Injectable property for the given element
      */
-    static InjectableProperty newInjectableProperty( final AnnotatedElement element )
+    static InjectableProperty<Object> newInjectableProperty( final AnnotatedElement element )
     {
         if ( element instanceof Field )
         {
-            return new InjectableFieldProperty( (Field) element );
+            return new InjectableFieldProperty<Object>( (Field) element );
         }
         if ( element instanceof Method )
         {
-            return new InjectableParamProperty( (Method) element );
+            return new InjectableParamProperty<Object>( (Method) element );
         }
         throw new IllegalArgumentException( "Unexpected Plexus property type " + element );
     }
