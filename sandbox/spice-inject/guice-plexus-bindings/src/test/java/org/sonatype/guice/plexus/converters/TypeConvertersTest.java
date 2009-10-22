@@ -31,9 +31,7 @@ import com.google.inject.name.Names;
 public class TypeConvertersTest
     extends TestCase
 {
-    Module[] converterModules =
-        { new DateTypeConverter(), new ArrayTypeConverter(), new CollectionTypeConverter(), new MapTypeConverter(),
-            new BeanTypeConverter() };
+    Module[] converterModules = { new DateTypeConverter(), new XmlTypeConverter(), new BeanTypeConverter() };
 
     @Override
     protected void setUp()

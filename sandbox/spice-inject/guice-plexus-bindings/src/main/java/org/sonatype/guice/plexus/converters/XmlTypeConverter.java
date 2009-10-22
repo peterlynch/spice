@@ -1,6 +1,7 @@
 package org.sonatype.guice.plexus.converters;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.lang.reflect.Array;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
@@ -12,31 +13,70 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.codehaus.plexus.util.xml.pull.MXParser;
 import org.codehaus.plexus.util.xml.pull.XmlPullParser;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
+import com.google.inject.Binder;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import com.google.inject.Singleton;
+import com.google.inject.Module;
+import com.google.inject.ProvisionException;
 import com.google.inject.TypeLiteral;
+import com.google.inject.matcher.AbstractMatcher;
+import com.google.inject.spi.TypeConverter;
 import com.google.inject.spi.TypeConverterBinding;
 
-@Singleton
-final class XmlTypeConverter
+public final class XmlTypeConverter
+    implements TypeConverter, Module
 {
     private static final TypeLiteral<Object> OBJECT_TYPE_LITERAL = TypeLiteral.get( Object.class );
 
-    private final TypeConverterBinding[] converterBindings;
+    private TypeConverterBinding[] converterBindings;
 
     @Inject
-    XmlTypeConverter( final Injector injector )
+    @SuppressWarnings( "unused" )
+    private void setInjector( final Injector injector )
     {
         final List<TypeConverterBinding> bindings = injector.getTypeConverterBindings();
         converterBindings = bindings.toArray( new TypeConverterBinding[bindings.size()] );
     }
 
+    public Object convert( String value, TypeLiteral<?> toType )
+    {
+        try
+        {
+            final XmlPullParser parser = new MXParser();
+            parser.setInput( new StringReader( value ) );
+            return parse( parser, toType );
+        }
+        catch ( final XmlPullParserException e )
+        {
+            throw new IllegalArgumentException( "Cannot parse \"" + value + "\" as " + toType, e );
+        }
+        catch ( final IOException e )
+        {
+            throw new ProvisionException( "I/O error converting \"" + value + "\" to " + toType, e );
+        }
+    }
+
+    public void configure( final Binder binder )
+    {
+        binder.convertToTypes( new AbstractMatcher<TypeLiteral<?>>()
+        {
+            public boolean matches( final TypeLiteral<?> type )
+            {
+                final Class<?> rawType = type.getRawType();
+                return Map.class.isAssignableFrom( rawType ) || Collection.class.isAssignableFrom( rawType )
+                    || rawType.isArray();
+            }
+        }, this );
+
+        binder.requestInjection( this );
+    }
+
     @SuppressWarnings( "unchecked" )
-    public <T> T parse( final XmlPullParser parser, final TypeLiteral<T> toType )
+    private <T> T parse( final XmlPullParser parser, final TypeLiteral<T> toType )
         throws XmlPullParserException, IOException
     {
         if ( parser.next() == XmlPullParser.START_TAG )
@@ -44,15 +84,15 @@ final class XmlTypeConverter
             final Class<?> rawType = toType.getRawType();
             if ( Map.class.isAssignableFrom( rawType ) )
             {
-                return (T) parseMap( parser, toType );
+                return (T) parseMap( parser, getTypeArgument( toType, 1 ) );
             }
             if ( Collection.class.isAssignableFrom( rawType ) )
             {
-                return (T) parseCollection( parser, toType );
+                return (T) parseCollection( parser, getTypeArgument( toType, 0 ) );
             }
             if ( rawType.isArray() )
             {
-                return (T) parseArray( parser, toType );
+                return (T) parseArray( parser, getComponentType( toType ) );
             }
         }
 
@@ -115,32 +155,34 @@ final class XmlTypeConverter
         throw new IllegalArgumentException( "Cannot convert \"" + value + "\" to " + toType );
     }
 
-    private static TypeLiteral<?> getMapComponentType( final Type mapType )
+    /**
+     * Extracts a type argument from a generic type, for example {@code String} from {@code List<String>}.
+     * 
+     * @param genericType The generic type
+     * @param index The type argument index
+     * @return Selected type argument
+     */
+    private static TypeLiteral<?> getTypeArgument( final TypeLiteral<?> genericType, final int index )
     {
-        return mapType instanceof ParameterizedType ? getTypeArgument( mapType, 1 ) : OBJECT_TYPE_LITERAL;
-    }
-
-    private static TypeLiteral<?> getCollectionComponentType( final Type collectionType )
-    {
-        return collectionType instanceof ParameterizedType ? getTypeArgument( collectionType, 0 ) : OBJECT_TYPE_LITERAL;
-    }
-
-    private static TypeLiteral<?> getArrayComponentType( final TypeLiteral<?> arrayType )
-    {
-        final Type refType = arrayType.getType();
-        if ( refType instanceof GenericArrayType )
+        final Type type = genericType.getType();
+        if ( type instanceof ParameterizedType )
         {
-            return expandType( ( (GenericArrayType) refType ).getGenericComponentType() );
+            return flattenType( ( (ParameterizedType) type ).getActualTypeArguments()[index] );
         }
-        return TypeLiteral.get( arrayType.getRawType().getComponentType() );
+        return OBJECT_TYPE_LITERAL;
     }
 
-    private static TypeLiteral<?> getParamType( final Type type, final int index )
+    private static TypeLiteral<?> getComponentType( final TypeLiteral<?> genericType )
     {
-        return type instanceof ParameterizedType ? expandType( ( (ParameterizedType) type ).getActualTypeArguments()[index] ) : OBJECT_TYPE_LITERAL;
+        final Type type = genericType.getType();
+        if ( type instanceof GenericArrayType )
+        {
+            return flattenType( ( (GenericArrayType) type ).getGenericComponentType() );
+        }
+        return TypeLiteral.get( genericType.getRawType().getComponentType() );
     }
 
-    private static TypeLiteral<?> expandType( final Type type )
+    private static TypeLiteral<?> flattenType( final Type type )
     {
         return TypeLiteral.get( type instanceof WildcardType ? ( (WildcardType) type ).getUpperBounds()[0] : type );
     }
