@@ -57,7 +57,7 @@ public final class XmlTypeConverter
         try
         {
             final XmlPullParser parser = new MXParser();
-            parser.setInput( new StringReader( value ) );
+            parser.setInput( new StringReader( value.indexOf( '<' ) >= 0 ? value : "<_>" + value + "</_>" ) );
             return parse( parser, toType );
         }
         catch ( final XmlPullParserException e )

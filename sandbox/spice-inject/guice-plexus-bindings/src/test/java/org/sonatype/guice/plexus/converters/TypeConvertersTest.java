@@ -12,6 +12,7 @@
  */
 package org.sonatype.guice.plexus.converters;
 
+import java.io.File;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -126,6 +127,14 @@ public class TypeConvertersTest
     @Named( "Properties" )
     Properties properties;
 
+    @Inject
+    @Named( "File" )
+    File file;
+
+    @Inject
+    @Named( "URL" )
+    URL url;
+
     static class Person1
     {
         public String firstName;
@@ -160,7 +169,7 @@ public class TypeConvertersTest
 
     @Inject
     @Named( "UrlBean" )
-    URL url;
+    URL urlBean;
 
     @SuppressWarnings( { "boxing", "unchecked" } )
     public void testTypeConversions()
@@ -184,12 +193,15 @@ public class TypeConvertersTest
         assertEquals( testMap, map );
         assertEquals( testMap, properties );
 
+        assertEquals( "temp/readme.txt", file.getPath().replace( '\\', '/' ) );
+        assertEquals( "www.sonatype.org", url.getHost() );
+
         assertEquals( "John", person1.firstName );
         assertEquals( "Smith", person1.lastName );
 
         assertEquals( "John", person2.m_firstName );
         assertEquals( "Smith", person2.m_lastName );
 
-        assertEquals( "www.sonatype.org", url.getHost() );
+        assertEquals( "www.sonatype.org", urlBean.getHost() );
     }
 }

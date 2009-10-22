@@ -40,7 +40,7 @@ public final class DateTypeConverter
         {
             public boolean matches( final TypeLiteral<?> type )
             {
-                return Date.class.isAssignableFrom( type.getRawType() );
+                return Date.class == type.getRawType();
             }
         }, this );
     }
