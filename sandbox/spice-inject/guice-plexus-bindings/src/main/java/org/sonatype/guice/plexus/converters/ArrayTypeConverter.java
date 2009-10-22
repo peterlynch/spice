@@ -1,7 +1,9 @@
 package org.sonatype.guice.plexus.converters;
 
-import java.lang.reflect.Array;
-import java.util.Collection;
+import java.io.StringReader;
+
+import org.codehaus.plexus.util.xml.pull.MXParser;
+import org.codehaus.plexus.util.xml.pull.XmlPullParser;
 
 import com.google.inject.Binder;
 import com.google.inject.Inject;
@@ -18,13 +20,16 @@ public final class ArrayTypeConverter
 
     public Object convert( final String value, final TypeLiteral<?> toType )
     {
-        final TypeLiteral<?> elementType = xmlTypeConverter.getElementType( toType );
-        final Collection<?> items = xmlTypeConverter.parseItems( value, elementType );
-        final Object array = Array.newInstance( elementType.getRawType(), items.size() );
-
-        System.arraycopy( items.toArray(), 0, array, 0, items.size() );
-
-        return array;
+        try
+        {
+            final XmlPullParser parser = new MXParser();
+            parser.setInput( new StringReader( value ) );
+            return xmlTypeConverter.parse( parser, toType );
+        }
+        catch ( final Exception e )
+        {
+            throw new RuntimeException( e );
+        }
     }
 
     public void configure( final Binder binder )

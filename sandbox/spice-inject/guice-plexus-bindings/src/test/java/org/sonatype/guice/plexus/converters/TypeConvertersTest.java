@@ -16,6 +16,8 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import junit.framework.TestCase;
 
@@ -114,6 +116,10 @@ public class TypeConvertersTest
     @Named( "Collection2" )
     Collection<Collection<Integer>> collection2;
 
+    @Inject
+    @Named( "Map" )
+    Map<?, ?> map;
+
     @SuppressWarnings( { "boxing", "unchecked" } )
     public void testTypeConversions()
     {
@@ -128,5 +134,10 @@ public class TypeConvertersTest
         assertEquals( Arrays.asList( "cat", "dog", "aardvark" ), collection1 );
 
         assertEquals( Arrays.asList( Arrays.asList( 1, 2 ), Arrays.asList( 3, 4 ), Arrays.asList( 5, 6 ) ), collection2 );
+
+        final HashMap<String, String> testMap = new HashMap<String, String>();
+        testMap.put( "key1", "value1" );
+        testMap.put( "key2", "value2" );
+        assertEquals( testMap, map );
     }
 }
