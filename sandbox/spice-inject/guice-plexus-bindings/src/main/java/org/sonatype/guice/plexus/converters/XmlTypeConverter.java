@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.codehaus.plexus.util.xml.pull.MXParser;
 import org.codehaus.plexus.util.xml.pull.XmlPullParser;
@@ -68,7 +69,7 @@ public final class XmlTypeConverter
             {
                 final Class<?> rawType = type.getRawType();
                 return Map.class.isAssignableFrom( rawType ) || Collection.class.isAssignableFrom( rawType )
-                    || rawType.isArray();
+                    || Properties.class.isAssignableFrom( rawType ) || rawType.isArray();
             }
         }, this );
 
@@ -82,6 +83,10 @@ public final class XmlTypeConverter
         if ( parser.next() == XmlPullParser.START_TAG )
         {
             final Class<?> rawType = toType.getRawType();
+            if ( Properties.class.isAssignableFrom( rawType ) )
+            {
+                return (T) parseProperties( parser );
+            }
             if ( Map.class.isAssignableFrom( rawType ) )
             {
                 return (T) parseMap( parser, getTypeArgument( toType, 1 ) );
@@ -98,6 +103,30 @@ public final class XmlTypeConverter
 
         parser.require( XmlPullParser.TEXT, null, null );
         return convertText( parser.getText(), toType );
+    }
+
+    private <T> Properties parseProperties( final XmlPullParser parser )
+        throws XmlPullParserException, IOException
+    {
+        final Properties properties = new Properties();
+        while ( parser.nextTag() != XmlPullParser.END_TAG )
+        {
+            parser.nextTag();
+            if ( "name".equals( parser.getName() ) )
+            {
+                final String name = parser.nextText();
+                parser.nextTag();
+                properties.put( name, parser.nextText() );
+            }
+            else
+            {
+                final String value = parser.nextText();
+                parser.nextTag();
+                properties.put( parser.nextText(), value );
+            }
+            parser.nextTag();
+        }
+        return properties;
     }
 
     private <T> Map<String, T> parseMap( final XmlPullParser parser, final TypeLiteral<T> toType )

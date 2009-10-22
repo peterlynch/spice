@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import junit.framework.TestCase;
 
@@ -63,7 +64,7 @@ public class TypeConvertersTest
                 bindConfig( "Map", "<entries><key1>value1</key1><key2>value2</key2></entries>" );
 
                 bindConfig( "Properties", "<properties><property><name>key1</name><value>value1</value></property>"
-                    + "<property><name>key2</name><value>value2</value></property></properties>" );
+                    + "<property><value>value2</value><name>key2</name></property></properties>" );
 
                 bindConfig( "File", "temp/readme.txt" );
                 bindConfig( "URL", "http://www.sonatype.org" );
@@ -118,6 +119,10 @@ public class TypeConvertersTest
     @Named( "Map" )
     Map<?, ?> map;
 
+    @Inject
+    @Named( "Properties" )
+    Properties properties;
+
     @SuppressWarnings( { "boxing", "unchecked" } )
     public void testTypeConversions()
     {
@@ -136,6 +141,9 @@ public class TypeConvertersTest
         final HashMap<String, String> testMap = new HashMap<String, String>();
         testMap.put( "key1", "value1" );
         testMap.put( "key2", "value2" );
+
         assertEquals( testMap, map );
+
+        assertEquals( testMap, properties );
     }
 }
