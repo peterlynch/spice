@@ -3,7 +3,10 @@ package org.sonatype.guice.plexus.converters;
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
@@ -33,14 +36,20 @@ public final class XmlTypeConverter
 {
     private static final TypeLiteral<Object> OBJECT_TYPE_LITERAL = TypeLiteral.get( Object.class );
 
-    private TypeConverterBinding[] converterBindings;
+    List<TypeConverterBinding> converterBindings;
 
     @Inject
     @SuppressWarnings( "unused" )
-    private void setInjector( final Injector injector )
+    private void recordConverterBindings( final Injector injector )
     {
-        final List<TypeConverterBinding> bindings = injector.getTypeConverterBindings();
-        converterBindings = bindings.toArray( new TypeConverterBinding[bindings.size()] );
+        converterBindings = new ArrayList<TypeConverterBinding>();
+        for ( TypeConverterBinding b : injector.getTypeConverterBindings() )
+        {
+            if ( !( b.getTypeConverter() instanceof XmlTypeConverter ) )
+            {
+                converterBindings.add( b );
+            }
+        }
     }
 
     public Object convert( String value, TypeLiteral<?> toType )
@@ -67,9 +76,14 @@ public final class XmlTypeConverter
         {
             public boolean matches( final TypeLiteral<?> type )
             {
-                final Class<?> rawType = type.getRawType();
-                return Map.class.isAssignableFrom( rawType ) || Collection.class.isAssignableFrom( rawType )
-                    || Properties.class.isAssignableFrom( rawType ) || rawType.isArray();
+                for ( final TypeConverterBinding b : converterBindings )
+                {
+                    if ( b.getTypeMatcher().matches( type ) )
+                    {
+                        return false;
+                    }
+                }
+                return true;
             }
         }, this );
 
@@ -99,13 +113,21 @@ public final class XmlTypeConverter
             {
                 return (T) parseArray( parser, getComponentType( toType ) );
             }
+            try
+            {
+                return parseBean( parser, toType );
+            }
+            catch ( Exception e )
+            {
+                throw new ProvisionException( "Error parsing bean type " + toType, e );
+            }
         }
 
         parser.require( XmlPullParser.TEXT, null, null );
         return convertText( parser.getText(), toType );
     }
 
-    private <T> Properties parseProperties( final XmlPullParser parser )
+    private Properties parseProperties( final XmlPullParser parser )
         throws XmlPullParserException, IOException
     {
         final Properties properties = new Properties();
@@ -163,6 +185,40 @@ public final class XmlTypeConverter
         collection.toArray( array );
 
         return array;
+    }
+
+    private <T> T parseBean( final XmlPullParser parser, final TypeLiteral<T> toType )
+        throws Exception
+    {
+        final Class<?> rawType = toType.getRawType();
+        if ( parser.next() == XmlPullParser.TEXT )
+        {
+            @SuppressWarnings( "unchecked" )
+            final Constructor<T> ctor = (Constructor<T>) rawType.getConstructor( String.class );
+            return ctor.newInstance( parser.getText() );
+        }
+
+        @SuppressWarnings( "unchecked" )
+        final T bean = (T) rawType.newInstance();
+        while ( parser.getEventType() != XmlPullParser.END_TAG )
+        {
+            final String name = parser.getName();
+            try
+            {
+                final Field f = rawType.getField( name );
+                f.set( bean, parse( parser, TypeLiteral.get( f.getGenericType() ) ) );
+            }
+            catch ( final NoSuchFieldException e )
+            {
+                final Method m =
+                    rawType.getMethod( "set" + Character.toUpperCase( name.charAt( 0 ) ) + name.substring( 1 ),
+                                       String.class );
+                m.invoke( bean, parse( parser, TypeLiteral.get( m.getGenericParameterTypes()[0] ) ) );
+            }
+            parser.nextTag();
+            parser.nextTag();
+        }
+        return bean;
     }
 
     @SuppressWarnings( "unchecked" )

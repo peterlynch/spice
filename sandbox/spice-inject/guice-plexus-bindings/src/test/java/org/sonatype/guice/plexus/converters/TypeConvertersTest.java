@@ -12,6 +12,7 @@
  */
 package org.sonatype.guice.plexus.converters;
 
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,7 +33,7 @@ import com.google.inject.name.Names;
 public class TypeConvertersTest
     extends TestCase
 {
-    Module[] converterModules = { new DateTypeConverter(), new XmlTypeConverter(), new BeanTypeConverter() };
+    Module[] converterModules = { new DateTypeConverter(), new XmlTypeConverter() };
 
     @Override
     protected void setUp()
@@ -69,7 +70,9 @@ public class TypeConvertersTest
                 bindConfig( "File", "temp/readme.txt" );
                 bindConfig( "URL", "http://www.sonatype.org" );
 
-                bindConfig( "Bean", "<person><firstname>John<firstname><lastname>Smith</lastname></person>" );
+                bindConfig( "PersonBean", "<person><firstName>John</firstName><lastName>Smith</lastName></person>" );
+
+                bindConfig( "UrlBean", "<url>http://www.sonatype.org/</url>" );
 
                 for ( final Module m : converterModules )
                 {
@@ -123,6 +126,42 @@ public class TypeConvertersTest
     @Named( "Properties" )
     Properties properties;
 
+    static class Person1
+    {
+        public String firstName;
+
+        public String lastName;
+    }
+
+    static class Person2
+    {
+        String m_firstName;
+
+        String m_lastName;
+
+        public void setFirstName( String firstName )
+        {
+            m_firstName = firstName;
+        }
+
+        public void setLastName( String lastName )
+        {
+            m_lastName = lastName;
+        }
+    }
+
+    @Inject
+    @Named( "PersonBean" )
+    Person1 person1;
+
+    @Inject
+    @Named( "PersonBean" )
+    Person2 person2;
+
+    @Inject
+    @Named( "UrlBean" )
+    URL url;
+
     @SuppressWarnings( { "boxing", "unchecked" } )
     public void testTypeConversions()
     {
@@ -143,7 +182,14 @@ public class TypeConvertersTest
         testMap.put( "key2", "value2" );
 
         assertEquals( testMap, map );
-
         assertEquals( testMap, properties );
+
+        assertEquals( "John", person1.firstName );
+        assertEquals( "Smith", person1.lastName );
+
+        assertEquals( "John", person2.m_firstName );
+        assertEquals( "Smith", person2.m_lastName );
+
+        assertEquals( "www.sonatype.org", url.getHost() );
     }
 }
