@@ -13,12 +13,12 @@
 package org.sonatype.guice.plexus.binders;
 
 import static com.google.inject.name.Names.named;
-import static org.sonatype.guice.plexus.utils.Hints.getRoleHintKey;
+import static org.sonatype.guice.plexus.config.Hints.getRoleHintKey;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Configuration;
 import org.sonatype.guice.plexus.annotations.ConfigurationImpl;
-import org.sonatype.guice.plexus.configuration.Configurator;
+import org.sonatype.guice.plexus.config.Configurator;
 
 import com.google.inject.Key;
 import com.google.inject.Provider;

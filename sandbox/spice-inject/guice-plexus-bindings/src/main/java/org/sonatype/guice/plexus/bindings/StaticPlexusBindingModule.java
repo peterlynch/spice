@@ -1,8 +1,8 @@
 package org.sonatype.guice.plexus.bindings;
 
 import static com.google.inject.name.Names.named;
-import static org.sonatype.guice.plexus.utils.Hints.getCanonicalHint;
-import static org.sonatype.guice.plexus.utils.Hints.isDefaultHint;
+import static org.sonatype.guice.plexus.config.Hints.getCanonicalHint;
+import static org.sonatype.guice.plexus.config.Hints.isDefaultHint;
 
 import java.util.Map;
 import java.util.Map.Entry;

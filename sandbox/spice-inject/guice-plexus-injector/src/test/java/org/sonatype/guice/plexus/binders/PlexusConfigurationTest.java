@@ -16,9 +16,9 @@ import junit.framework.TestCase;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Configuration;
-import org.sonatype.guice.plexus.configuration.Configurator;
+import org.sonatype.guice.plexus.config.Configurator;
+import org.sonatype.guice.plexus.config.Hints;
 import org.sonatype.guice.plexus.injector.ComponentListener;
-import org.sonatype.guice.plexus.utils.Hints;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -47,7 +47,7 @@ public class PlexusConfigurationTest
         implements Configurator
     {
         @SuppressWarnings( "unchecked" )
-        public <T> T configure( TypeLiteral<T> type, Configuration key )
+        public <T> T configure( final TypeLiteral<T> type, final Configuration key )
         {
             return (T) ( "GLOBAL-" + key.name() + '-' + key.value() );
         }
@@ -57,7 +57,7 @@ public class PlexusConfigurationTest
         implements Configurator
     {
         @SuppressWarnings( "unchecked" )
-        public <T> T configure( TypeLiteral<T> type, Configuration key )
+        public <T> T configure( final TypeLiteral<T> type, final Configuration key )
         {
             return (T) ( "LOCAL-" + key.name() + '-' + key.value() );
         }

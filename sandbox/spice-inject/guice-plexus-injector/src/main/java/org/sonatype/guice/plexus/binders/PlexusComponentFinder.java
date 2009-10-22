@@ -12,9 +12,9 @@
  */
 package org.sonatype.guice.plexus.binders;
 
-import static org.sonatype.guice.plexus.utils.Hints.DEFAULT_HINT;
-import static org.sonatype.guice.plexus.utils.Hints.getCanonicalHint;
-import static org.sonatype.guice.plexus.utils.Hints.isDefaultHint;
+import static org.sonatype.guice.plexus.config.Hints.DEFAULT_HINT;
+import static org.sonatype.guice.plexus.config.Hints.getCanonicalHint;
+import static org.sonatype.guice.plexus.config.Hints.isDefaultHint;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;

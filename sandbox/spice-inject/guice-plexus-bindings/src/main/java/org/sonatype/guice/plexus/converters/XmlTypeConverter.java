@@ -43,7 +43,7 @@ public final class XmlTypeConverter
     private void recordConverterBindings( final Injector injector )
     {
         converterBindings = new ArrayList<TypeConverterBinding>();
-        for ( TypeConverterBinding b : injector.getTypeConverterBindings() )
+        for ( final TypeConverterBinding b : injector.getTypeConverterBindings() )
         {
             if ( !( b.getTypeConverter() instanceof XmlTypeConverter ) )
             {
@@ -52,7 +52,7 @@ public final class XmlTypeConverter
         }
     }
 
-    public Object convert( String value, TypeLiteral<?> toType )
+    public Object convert( final String value, final TypeLiteral<?> toType )
     {
         try
         {
@@ -117,7 +117,7 @@ public final class XmlTypeConverter
             {
                 return parseBean( parser, toType );
             }
-            catch ( Exception e )
+            catch ( final Exception e )
             {
                 throw new ProvisionException( "Error parsing bean type " + toType, e );
             }

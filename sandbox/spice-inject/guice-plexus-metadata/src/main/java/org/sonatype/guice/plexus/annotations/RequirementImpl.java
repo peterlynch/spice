@@ -12,7 +12,7 @@
  */
 package org.sonatype.guice.plexus.annotations;
 
-import static org.sonatype.guice.plexus.utils.Hints.NO_HINTS;
+import static org.sonatype.guice.plexus.config.Hints.NO_HINTS;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;

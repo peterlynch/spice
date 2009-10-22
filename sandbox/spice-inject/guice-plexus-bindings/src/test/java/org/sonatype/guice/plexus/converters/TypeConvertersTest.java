@@ -148,12 +148,12 @@ public class TypeConvertersTest
 
         String m_lastName;
 
-        public void setFirstName( String firstName )
+        public void setFirstName( final String firstName )
         {
             m_firstName = firstName;
         }
 
-        public void setLastName( String lastName )
+        public void setLastName( final String lastName )
         {
             m_lastName = lastName;
         }
