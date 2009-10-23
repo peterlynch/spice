@@ -25,11 +25,19 @@ import java.util.NoSuchElementException;
 public final class BeanProperties
     implements Iterable<BeanProperty<?>>
 {
+    // ----------------------------------------------------------------------
+    // Implementation fields
+    // ----------------------------------------------------------------------
+
     final Iterable<Member> members;
+
+    // ----------------------------------------------------------------------
+    // Constructors
+    // ----------------------------------------------------------------------
 
     public BeanProperties( final Class<?> clazz )
     {
-        this( new ClassMembers( clazz ) );
+        this( new DeclaredMembers( clazz ) );
     }
 
     public BeanProperties( final Iterable<Member> members )
@@ -37,43 +45,74 @@ public final class BeanProperties
         this.members = members;
     }
 
+    // ----------------------------------------------------------------------
+    // Standard iterable behaviour
+    // ----------------------------------------------------------------------
+
     public Iterator<BeanProperty<?>> iterator()
     {
         return new BeanPropertyIterator();
     }
 
+    // ----------------------------------------------------------------------
+    // Helper classes
+    // ----------------------------------------------------------------------
+
+    /**
+     * Read-only {@link Iterator} that picks out potential bean properties from members.
+     */
     private class BeanPropertyIterator
         implements Iterator<BeanProperty<?>>
     {
+        // ----------------------------------------------------------------------
+        // Implementation fields
+        // ----------------------------------------------------------------------
+
         private final Iterator<Member> i;
 
         private BeanProperty<?> nextProperty;
 
-        public BeanPropertyIterator()
+        // ----------------------------------------------------------------------
+        // Constructors
+        // ----------------------------------------------------------------------
+
+        BeanPropertyIterator()
         {
             i = members.iterator();
         }
+
+        // ----------------------------------------------------------------------
+        // Public methods
+        // ----------------------------------------------------------------------
 
         public boolean hasNext()
         {
             while ( i.hasNext() )
             {
-                final Member m = i.next();
-                if ( Modifier.isStatic( m.getModifiers() ) || m.isSynthetic() )
+                final Member member = i.next();
+                final int modifiers = member.getModifiers();
+
+                // statics can't be properties and synthetics are just noise
+                if ( Modifier.isStatic( modifiers ) || member.isSynthetic() )
                 {
                     continue;
                 }
-                if ( m instanceof Field )
+
+                // ignore any final fields, as they should not be updated
+                if ( member instanceof Field && !Modifier.isFinal( modifiers ) )
                 {
-                    nextProperty = new BeanPropertyField<Object>( (Field) m );
+                    nextProperty = new BeanPropertyField<Object>( (Field) member );
                     return true;
                 }
-                else if ( m instanceof Method && ( (Method) m ).getParameterTypes().length == 1 )
+
+                // ignore zero/multi-argument methods, as they can't be setters
+                if ( member instanceof Method && ( (Method) member ).getParameterTypes().length == 1 )
                 {
-                    nextProperty = new BeanPropertySetter<Object>( (Method) m );
+                    nextProperty = new BeanPropertySetter<Object>( (Method) member );
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -81,7 +120,7 @@ public final class BeanProperties
         {
             if ( hasNext() )
             {
-                return nextProperty;
+                return nextProperty; // initialized by hasNext()
             }
             throw new NoSuchElementException();
         }

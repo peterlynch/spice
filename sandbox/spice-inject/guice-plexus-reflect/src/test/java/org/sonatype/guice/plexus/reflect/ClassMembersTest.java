@@ -68,7 +68,7 @@ public class ClassMembersTest
 
     public void testNullClass()
     {
-        final Iterator<Member> i = new ClassMembers( null ).iterator();
+        final Iterator<Member> i = new DeclaredMembers( null ).iterator();
 
         assertFalse( i.hasNext() );
 
@@ -84,7 +84,7 @@ public class ClassMembersTest
 
     public void testJavaClass()
     {
-        final Iterator<Member> i = new ClassMembers( List.class ).iterator();
+        final Iterator<Member> i = new DeclaredMembers( List.class ).iterator();
 
         assertFalse( i.hasNext() );
 
@@ -100,7 +100,7 @@ public class ClassMembersTest
 
     public void testReadOnlyIterator()
     {
-        final Iterator<Member> i = new ClassMembers( D.class ).iterator();
+        final Iterator<Member> i = new DeclaredMembers( D.class ).iterator();
 
         try
         {
@@ -118,7 +118,7 @@ public class ClassMembersTest
         final Member[] elements = { C.class.getDeclaredMethod( "c" ), C.class.getDeclaredField( "c" ) };
 
         int i = 0;
-        for ( final Member e : new ClassMembers( C.class ) )
+        for ( final Member e : new DeclaredMembers( C.class ) )
         {
             assertEquals( elements[i++], e );
         }
@@ -133,7 +133,7 @@ public class ClassMembersTest
             /* B.class.getDeclaredConstructor(), */B.class.getDeclaredMethod( "a" ), B.class.getDeclaredField( "b" ) };
 
         int i = 0;
-        for ( final Member e : new ClassMembers( D.class ) )
+        for ( final Member e : new DeclaredMembers( D.class ) )
         {
             assertEquals( elements[i++], e );
         }

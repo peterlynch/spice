@@ -19,7 +19,7 @@ import java.util.NoSuchElementException;
 /**
  * {@link Iterable} that iterates over declared members of a class hierarchy.
  */
-public final class ClassMembers
+public final class DeclaredMembers
     implements Iterable<Member>
 {
     // ----------------------------------------------------------------------
@@ -32,12 +32,7 @@ public final class ClassMembers
     // Constructors
     // ----------------------------------------------------------------------
 
-    /**
-     * Create an iterable view of members from the given class hierarchy.
-     * 
-     * @param clazz The leaf class
-     */
-    public ClassMembers( final Class<?> clazz )
+    public DeclaredMembers( final Class<?> clazz )
     {
         this.clazz = clazz;
     }
@@ -61,7 +56,7 @@ public final class ClassMembers
     private static abstract class ReadOnlyIterator<T>
         implements Iterator<T>
     {
-        public ReadOnlyIterator()
+        ReadOnlyIterator()
         {
         }
 
@@ -103,18 +98,36 @@ public final class ClassMembers
     private static final class MemberIterator
         extends ReadOnlyIterator<Member>
     {
+        // ----------------------------------------------------------------------
+        // Constants
+        // ----------------------------------------------------------------------
+
         private static final Iterator<Member> EMPTY_ITERATOR = new ArrayIterator<Member>( new Member[0] );
+
+        private static final View FIRST_VIEW = View.values()[0];
+
+        // ----------------------------------------------------------------------
+        // Implementation fields
+        // ----------------------------------------------------------------------
 
         private Class<?> clazz;
 
-        private View view = View.VIEWS[0];
-
         private Iterator<Member> e = EMPTY_ITERATOR;
+
+        private View view = FIRST_VIEW;
+
+        // ----------------------------------------------------------------------
+        // Constructors
+        // ----------------------------------------------------------------------
 
         MemberIterator( final Class<?> clazz )
         {
             this.clazz = clazz;
         }
+
+        // ----------------------------------------------------------------------
+        // Public methods
+        // ----------------------------------------------------------------------
 
         public boolean hasNext()
         {
@@ -132,9 +145,9 @@ public final class ClassMembers
 
                 // prepare next view
                 view = view.next();
-                if ( view == View.VIEWS[0] )
+                if ( FIRST_VIEW == view )
                 {
-                    clazz = clazz.getSuperclass(); // time to move onto the parent
+                    clazz = clazz.getSuperclass(); // looped => move onto parent
                 }
             }
 
@@ -157,6 +170,8 @@ public final class ClassMembers
      */
     private static enum View
     {
+        // ignore constructors for the moment...
+        //
         // CONSTRUCTORS
         // {
         // @Override
@@ -165,6 +180,7 @@ public final class ClassMembers
         // return clazz.getDeclaredConstructors();
         // }
         // },
+        //
         METHODS
         {
             @Override
@@ -184,7 +200,7 @@ public final class ClassMembers
 
         abstract Member[] elements( final Class<?> clazz );
 
-        static final View[] VIEWS = View.values();
+        private static final View[] VIEWS = View.values();
 
         final View next()
         {

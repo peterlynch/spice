@@ -37,13 +37,15 @@ public class BeanPropertiesTest
 
     static class B
     {
-        static void setName( String name )
+        static void setName( final String name )
         {
         }
     }
 
     static class C
     {
+        final String id = "name";
+
         String name;
     }
 
@@ -58,7 +60,7 @@ public class BeanPropertiesTest
         {
         }
 
-        private void setName( String name )
+        private void setName( final String name )
         {
         }
     }
@@ -69,14 +71,14 @@ public class BeanPropertiesTest
         {
         }
 
-        void setName( String firstName, String lastName )
+        void setName( final String firstName, final String lastName )
         {
         }
     }
 
     static class G
     {
-        void setName( String name )
+        void setName( final String name )
         {
         }
 
@@ -86,11 +88,11 @@ public class BeanPropertiesTest
 
         String name;
 
-        void setName( String firstName, String lastName )
+        void setName( final String firstName, final String lastName )
         {
         }
 
-        void name( String _name )
+        void name( final String _name )
         {
         }
     }
@@ -99,7 +101,7 @@ public class BeanPropertiesTest
     {
         List<String> names;
 
-        void setMap( Map<BigDecimal, Float> map )
+        void setMap( final Map<BigDecimal, Float> map )
         {
         }
     }
@@ -113,7 +115,7 @@ public class BeanPropertiesTest
     static class I
         extends IBase<String>
     {
-        private String id = "test";
+        private volatile String id = "test";
 
         private static Internal internal = new Internal();
 
@@ -123,7 +125,7 @@ public class BeanPropertiesTest
         }
 
         @Override
-        public void setId( String _id )
+        public void setId( final String _id )
         {
             internal.m_id = _id;
         }
@@ -137,7 +139,7 @@ public class BeanPropertiesTest
 
     public void testInterface()
     {
-        for ( BeanProperty<?> bp : new BeanProperties( A.class ) )
+        for ( final BeanProperty<?> bp : new BeanProperties( A.class ) )
         {
             fail( "Expected no bean properties" );
         }
@@ -145,7 +147,7 @@ public class BeanPropertiesTest
 
     public void testEmptyClass()
     {
-        for ( BeanProperty<?> bp : new BeanProperties( B.class ) )
+        for ( final BeanProperty<?> bp : new BeanProperties( B.class ) )
         {
             fail( "Expected no bean properties" );
         }
@@ -153,28 +155,28 @@ public class BeanPropertiesTest
 
     public void testPropertyField()
     {
-        Iterator<BeanProperty<?>> i = new BeanProperties( C.class ).iterator();
+        final Iterator<BeanProperty<?>> i = new BeanProperties( C.class ).iterator();
         assertEquals( "name", i.next().getName() );
         assertFalse( i.hasNext() );
     }
 
     public void testPropertyParam()
     {
-        Iterator<BeanProperty<?>> i = new BeanProperties( D.class ).iterator();
+        final Iterator<BeanProperty<?>> i = new BeanProperties( D.class ).iterator();
         assertEquals( "name", i.next().getName() );
         assertFalse( i.hasNext() );
     }
 
     public void testPropertySetter()
     {
-        Iterator<BeanProperty<?>> i = new BeanProperties( E.class ).iterator();
+        final Iterator<BeanProperty<?>> i = new BeanProperties( E.class ).iterator();
         assertEquals( "name", i.next().getName() );
         assertFalse( i.hasNext() );
     }
 
     public void testSkipInvalidSetters()
     {
-        for ( BeanProperty<?> bp : new BeanProperties( F.class ) )
+        for ( final BeanProperty<?> bp : new BeanProperties( F.class ) )
         {
             fail( "Expected no bean properties" );
         }
@@ -182,7 +184,7 @@ public class BeanPropertiesTest
 
     public void testPropertyCombination()
     {
-        Iterator<BeanProperty<?>> i = new BeanProperties( G.class ).iterator();
+        final Iterator<BeanProperty<?>> i = new BeanProperties( G.class ).iterator();
         assertEquals( "name", i.next().getName() );
         assertEquals( "name", i.next().getName() );
         assertEquals( "name", i.next().getName() );
@@ -193,7 +195,7 @@ public class BeanPropertiesTest
             i.next();
             fail( "Expected NoSuchElementException" );
         }
-        catch ( NoSuchElementException e )
+        catch ( final NoSuchElementException e )
         {
         }
 
@@ -202,7 +204,7 @@ public class BeanPropertiesTest
             i.remove();
             fail( "Expected UnsupportedOperationException" );
         }
-        catch ( UnsupportedOperationException e )
+        catch ( final UnsupportedOperationException e )
         {
         }
     }
@@ -210,14 +212,14 @@ public class BeanPropertiesTest
     public void testConstructor()
         throws NoSuchMethodException
     {
-        Iterable<Member> members = Collections.singleton( (Member) String.class.getConstructor() );
-        Iterator<BeanProperty<?>> i = new BeanProperties( members ).iterator();
+        final Iterable<Member> members = Collections.singleton( (Member) String.class.getConstructor() );
+        final Iterator<BeanProperty<?>> i = new BeanProperties( members ).iterator();
         assertFalse( i.hasNext() );
     }
 
     public void testPropertyType()
     {
-        Iterator<BeanProperty<?>> i = new BeanProperties( H.class ).iterator();
+        final Iterator<BeanProperty<?>> i = new BeanProperties( H.class ).iterator();
         assertEquals( TypeLiteral.get( Types.mapOf( BigDecimal.class, Float.class ) ), i.next().getType() );
         assertEquals( TypeLiteral.get( Types.listOf( String.class ) ), i.next().getType() );
     }
@@ -225,13 +227,13 @@ public class BeanPropertiesTest
     @SuppressWarnings( "unchecked" )
     public void testPropertyUpdate()
     {
-        Iterator<BeanProperty> i = (Iterator) new BeanProperties( I.class ).iterator();
-        BeanProperty<String> a = i.next();
-        BeanProperty<String> b = i.next();
-        BeanProperty<String> c = i.next();
+        final Iterator<BeanProperty> i = (Iterator) new BeanProperties( I.class ).iterator();
+        final BeanProperty<String> a = i.next();
+        final BeanProperty<String> b = i.next();
+        final BeanProperty<String> c = i.next();
         assertFalse( i.hasNext() );
 
-        I component = new I();
+        final I component = new I();
 
         a.set( component, "---" );
         b.set( component, "foo" );
@@ -250,29 +252,30 @@ public class BeanPropertiesTest
     {
         try
         {
-            BeanProperty<Object> p = new BeanPropertyField<Object>( A.class.getDeclaredField( "name" ) );
+            final BeanProperty<Object> p = new BeanPropertyField<Object>( A.class.getDeclaredField( "name" ) );
             p.set( new Object(), "test" );
             fail( "Expected ProvisionException" );
         }
-        catch ( NoSuchFieldException e )
+        catch ( final NoSuchFieldException e )
         {
             fail( "Expected ProvisionException" );
         }
-        catch ( ProvisionException e )
+        catch ( final ProvisionException e )
         {
         }
 
         try
         {
-            BeanProperty<Object> p = new BeanPropertySetter<Object>( D.class.getDeclaredMethod( "name", String.class ) );
+            final BeanProperty<Object> p =
+                new BeanPropertySetter<Object>( D.class.getDeclaredMethod( "name", String.class ) );
             p.set( new Object(), "test" );
             fail( "Expected ProvisionException" );
         }
-        catch ( NoSuchMethodException e )
+        catch ( final NoSuchMethodException e )
         {
             fail( "Expected ProvisionException" );
         }
-        catch ( ProvisionException e )
+        catch ( final ProvisionException e )
         {
         }
     }

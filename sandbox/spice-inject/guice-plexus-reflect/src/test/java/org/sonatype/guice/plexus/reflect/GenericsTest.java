@@ -126,7 +126,7 @@ public class GenericsTest
         {
             fail( "Test assumes TypeLiteral has a field named \"type\"" );
         }
-        catch ( IllegalAccessException e )
+        catch ( final IllegalAccessException e )
         {
             fail( "Test wasn't able to update \"type\" field in TypeLiteral" );
         }
@@ -138,7 +138,7 @@ public class GenericsTest
         {
             return TypeLiteral.get( GenericsTest.class.getDeclaredField( name ).getGenericType() );
         }
-        catch ( NoSuchFieldException e )
+        catch ( final NoSuchFieldException e )
         {
             throw new IllegalArgumentException( "Unknown test field " + name );
         }
