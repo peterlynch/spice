@@ -12,6 +12,8 @@
  */
 package org.sonatype.guice.plexus.config;
 
+import org.codehaus.plexus.component.annotations.Requirement;
+
 /**
  * Constants and utility methods for dealing with Plexus hints.
  */
@@ -67,14 +69,27 @@ public final class Hints
     }
 
     /**
-     * Returns the canonical key for the given Plexus role-hint combination.
+     * Returns the Plexus hints contained in the given @{@link Requirement}.
      * 
-     * @param role The Plexus role
-     * @param hint The Plexus hint
-     * @return Canonical key denoting the given role-hint combination
+     * @param requirement The Plexus requirement
+     * @return Array of canonical hints
      */
-    public static String getRoleHintKey( final Class<?> role, final String hint )
+    public static String[] getCanonicalHints( final Requirement requirement )
     {
-        return isDefaultHint( hint ) ? role.getName() : role.getName() + '-' + hint;
+        final String[] hints = requirement.hints();
+        if ( hints.length > 0 )
+        {
+            for ( int i = 0; i < hints.length; i++ )
+            {
+                hints[i] = getCanonicalHint( hints[i] );
+            }
+            return hints;
+        }
+        final String hint = requirement.hint();
+        if ( hint.length() > 0 )
+        {
+            return new String[] { getCanonicalHint( hint ) };
+        }
+        return NO_HINTS;
     }
 }

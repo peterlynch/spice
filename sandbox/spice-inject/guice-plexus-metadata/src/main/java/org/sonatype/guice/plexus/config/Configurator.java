@@ -17,16 +17,16 @@ import org.codehaus.plexus.component.annotations.Configuration;
 import com.google.inject.TypeLiteral;
 
 /**
- * Configures instances of various types for a particular Plexus component.
+ * Configures instances of various types, scoped to a particular Plexus component.
  */
 public interface Configurator
 {
     /**
-     * Returns an instance of the given type using the given configuration key.
+     * Returns an instance of the given type using the given configuration.
      * 
-     * @param type The target type
-     * @param configuration The configuration key
+     * @param configuration The configuration
+     * @param expectedType The expected type
      * @return Instance of the given type, configured accordingly
      */
-    <T> T configure( TypeLiteral<T> type, Configuration key );
+    <T> T configure( Configuration configuration, TypeLiteral<T> expectedType );
 }

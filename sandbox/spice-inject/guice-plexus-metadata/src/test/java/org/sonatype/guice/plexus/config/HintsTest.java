@@ -12,7 +12,12 @@
  */
 package org.sonatype.guice.plexus.config;
 
+import java.util.Arrays;
+
 import junit.framework.TestCase;
+
+import org.codehaus.plexus.component.annotations.Requirement;
+import org.sonatype.guice.plexus.annotations.RequirementImpl;
 
 public class HintsTest
     extends TestCase
@@ -25,9 +30,23 @@ public class HintsTest
         assertEquals( "foo", Hints.getCanonicalHint( "foo" ) );
     }
 
+    public void testCanonicalHints()
+    {
+        assertArrayEquals( new String[0], Hints.getCanonicalHints( requirement() ) );
+        assertArrayEquals( new String[0], Hints.getCanonicalHints( requirement( "" ) ) );
+        assertArrayEquals( new String[] { "default" }, Hints.getCanonicalHints( requirement( "default" ) ) );
+        assertArrayEquals( new String[] { "foo" }, Hints.getCanonicalHints( requirement( "foo" ) ) );
+        assertArrayEquals( new String[] { "default", "foo" }, Hints.getCanonicalHints( requirement( "", "foo" ) ) );
+        assertArrayEquals( new String[] { "foo", "default" }, Hints.getCanonicalHints( requirement( "foo", "" ) ) );
+    }
+
     public void testHintsAreInterned()
     {
         assertSame( "hint", Hints.getCanonicalHint( new String( "hint" ) ) );
+        assertSame( "hint", Hints.getCanonicalHints( requirement( new String( "hint" ) ) )[0] );
+        final Requirement requirement = requirement( new String( "foo" ), new String( "bar" ) );
+        assertSame( "foo", Hints.getCanonicalHints( requirement )[0] );
+        assertSame( "bar", Hints.getCanonicalHints( requirement )[1] );
         assertNotSame( new String( "hint" ), Hints.getCanonicalHint( "hint" ) );
         assertEquals( new String( "hint" ), Hints.getCanonicalHint( "hint" ) );
     }
@@ -40,11 +59,13 @@ public class HintsTest
         assertFalse( Hints.isDefaultHint( "foo" ) );
     }
 
-    public void testRoleHintKey()
+    private static <T> void assertArrayEquals( final T[] a, final T[] b )
     {
-        assertEquals( "java.lang.String", Hints.getRoleHintKey( String.class, null ) );
-        assertEquals( "java.lang.String", Hints.getRoleHintKey( String.class, "" ) );
-        assertEquals( "java.lang.String", Hints.getRoleHintKey( String.class, new String( "default" ) ) );
-        assertEquals( "java.lang.String-foo", Hints.getRoleHintKey( String.class, "foo" ) );
+        assertTrue( "Expected: " + Arrays.toString( a ) + "but was: " + Arrays.toString( b ), Arrays.equals( a, b ) );
+    }
+
+    private static Requirement requirement( final String... hints )
+    {
+        return new RequirementImpl( Object.class, true, hints );
     }
 }
