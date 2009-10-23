@@ -12,6 +12,8 @@
  */
 package org.sonatype.guice.plexus.reflect;
 
+import java.lang.annotation.Annotation;
+
 import com.google.inject.TypeLiteral;
 
 /**
@@ -19,6 +21,14 @@ import com.google.inject.TypeLiteral;
  */
 public interface BeanProperty<T>
 {
+    /**
+     * Returns the property annotation that has the specified type.
+     * 
+     * @param annotationType The annotation type
+     * @return The property's annotation if it exists; otherwise {@code null}
+     */
+    <A extends Annotation> A getAnnotation( Class<A> annotationType );
+
     /**
      * @return The property's reified generic type
      */

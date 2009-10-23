@@ -12,6 +12,7 @@
  */
 package org.sonatype.guice.plexus.reflect;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -43,6 +44,11 @@ public final class BeanPropertyField<T>
     // ----------------------------------------------------------------------
     // InjectableProperty methods
     // ----------------------------------------------------------------------
+
+    public <A extends Annotation> A getAnnotation( final Class<A> annotationType )
+    {
+        return field.getAnnotation( annotationType );
+    }
 
     @SuppressWarnings( "unchecked" )
     public TypeLiteral<T> getType()

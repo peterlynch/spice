@@ -20,10 +20,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import javax.inject.Singleton;
+
 import junit.framework.TestCase;
 
 import com.google.inject.ProvisionException;
 import com.google.inject.TypeLiteral;
+import com.google.inject.name.Named;
 import com.google.inject.util.Types;
 
 @SuppressWarnings( "unused" )
@@ -134,6 +137,19 @@ public class BeanPropertiesTest
         public String toString()
         {
             return id + "@" + internal.m_id;
+        }
+    }
+
+    static class J
+    {
+        @Singleton
+        @Named( "bar" )
+        String name;
+
+        @Singleton
+        @Named( "foo" )
+        void setName( final String name )
+        {
         }
     }
 
@@ -278,5 +294,13 @@ public class BeanPropertiesTest
         catch ( final ProvisionException e )
         {
         }
+    }
+
+    public void testPropertyAnnotations()
+    {
+        final Iterator<BeanProperty<?>> i = new BeanProperties( J.class ).iterator();
+        assertEquals( "foo", i.next().getAnnotation( Named.class ).value() );
+        assertEquals( "bar", i.next().getAnnotation( Named.class ).value() );
+        assertFalse( i.hasNext() );
     }
 }
