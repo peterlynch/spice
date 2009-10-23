@@ -153,6 +153,15 @@ public class BeanPropertiesTest
         }
     }
 
+    static class K
+    {
+        String a;
+
+        String b;
+
+        String c;
+    }
+
     public void testInterface()
     {
         for ( final BeanProperty<?> bp : new BeanProperties( A.class ) )
@@ -171,21 +180,21 @@ public class BeanPropertiesTest
 
     public void testPropertyField()
     {
-        final Iterator<BeanProperty<?>> i = new BeanProperties( C.class ).iterator();
+        final Iterator<BeanProperty<Object>> i = new BeanProperties( C.class ).iterator();
         assertEquals( "name", i.next().getName() );
         assertFalse( i.hasNext() );
     }
 
     public void testPropertyParam()
     {
-        final Iterator<BeanProperty<?>> i = new BeanProperties( D.class ).iterator();
+        final Iterator<BeanProperty<Object>> i = new BeanProperties( D.class ).iterator();
         assertEquals( "name", i.next().getName() );
         assertFalse( i.hasNext() );
     }
 
     public void testPropertySetter()
     {
-        final Iterator<BeanProperty<?>> i = new BeanProperties( E.class ).iterator();
+        final Iterator<BeanProperty<Object>> i = new BeanProperties( E.class ).iterator();
         assertEquals( "name", i.next().getName() );
         assertFalse( i.hasNext() );
     }
@@ -200,7 +209,7 @@ public class BeanPropertiesTest
 
     public void testPropertyCombination()
     {
-        final Iterator<BeanProperty<?>> i = new BeanProperties( G.class ).iterator();
+        final Iterator<BeanProperty<Object>> i = new BeanProperties( G.class ).iterator();
         assertEquals( "name", i.next().getName() );
         assertEquals( "name", i.next().getName() );
         assertEquals( "name", i.next().getName() );
@@ -229,24 +238,23 @@ public class BeanPropertiesTest
         throws NoSuchMethodException
     {
         final Iterable<Member> members = Collections.singleton( (Member) String.class.getConstructor() );
-        final Iterator<BeanProperty<?>> i = new BeanProperties( members ).iterator();
+        final Iterator<BeanProperty<Object>> i = new BeanProperties( members ).iterator();
         assertFalse( i.hasNext() );
     }
 
     public void testPropertyType()
     {
-        final Iterator<BeanProperty<?>> i = new BeanProperties( H.class ).iterator();
+        final Iterator<BeanProperty<Object>> i = new BeanProperties( H.class ).iterator();
         assertEquals( TypeLiteral.get( Types.mapOf( BigDecimal.class, Float.class ) ), i.next().getType() );
         assertEquals( TypeLiteral.get( Types.listOf( String.class ) ), i.next().getType() );
     }
 
-    @SuppressWarnings( "unchecked" )
     public void testPropertyUpdate()
     {
-        final Iterator<BeanProperty> i = (Iterator) new BeanProperties( I.class ).iterator();
-        final BeanProperty<String> a = i.next();
-        final BeanProperty<String> b = i.next();
-        final BeanProperty<String> c = i.next();
+        final Iterator<BeanProperty<Object>> i = new BeanProperties( I.class ).iterator();
+        final BeanProperty<Object> a = i.next();
+        final BeanProperty<Object> b = i.next();
+        final BeanProperty<Object> c = i.next();
         assertFalse( i.hasNext() );
 
         final I component = new I();
@@ -298,9 +306,25 @@ public class BeanPropertiesTest
 
     public void testPropertyAnnotations()
     {
-        final Iterator<BeanProperty<?>> i = new BeanProperties( J.class ).iterator();
+        final Iterator<BeanProperty<Object>> i = new BeanProperties( J.class ).iterator();
         assertEquals( "foo", i.next().getAnnotation( Named.class ).value() );
         assertEquals( "bar", i.next().getAnnotation( Named.class ).value() );
+        assertFalse( i.hasNext() );
+    }
+
+    public void testPropertyIteration()
+    {
+        final Iterator<BeanProperty<Object>> i = new BeanProperties( K.class ).iterator();
+        assertTrue( i.hasNext() );
+        assertTrue( i.hasNext() );
+        assertEquals( "a", i.next().getName() );
+        assertTrue( i.hasNext() );
+        assertTrue( i.hasNext() );
+        assertEquals( "b", i.next().getName() );
+        assertTrue( i.hasNext() );
+        assertTrue( i.hasNext() );
+        assertEquals( "c", i.next().getName() );
+        assertFalse( i.hasNext() );
         assertFalse( i.hasNext() );
     }
 }

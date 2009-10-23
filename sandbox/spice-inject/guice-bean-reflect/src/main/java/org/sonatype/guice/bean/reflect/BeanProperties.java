@@ -23,7 +23,7 @@ import java.util.NoSuchElementException;
  * {@link Iterable} that iterates over potential bean properties in a class hierarchy.
  */
 public final class BeanProperties
-    implements Iterable<BeanProperty<?>>
+    implements Iterable<BeanProperty<Object>>
 {
     // ----------------------------------------------------------------------
     // Implementation fields
@@ -49,9 +49,9 @@ public final class BeanProperties
     // Standard iterable behaviour
     // ----------------------------------------------------------------------
 
-    public Iterator<BeanProperty<?>> iterator()
+    public Iterator<BeanProperty<Object>> iterator()
     {
-        return new BeanPropertyIterator();
+        return new BeanPropertyIterator<Object>();
     }
 
     // ----------------------------------------------------------------------
@@ -61,8 +61,8 @@ public final class BeanProperties
     /**
      * Read-only {@link Iterator} that picks out potential bean properties from members.
      */
-    private class BeanPropertyIterator
-        implements Iterator<BeanProperty<?>>
+    private class BeanPropertyIterator<T>
+        implements Iterator<BeanProperty<T>>
     {
         // ----------------------------------------------------------------------
         // Implementation fields
@@ -70,7 +70,8 @@ public final class BeanProperties
 
         private final Iterator<Member> i;
 
-        private BeanProperty<?> nextProperty;
+        // look-ahead, maintained by hasNext()
+        private BeanProperty<T> nextProperty;
 
         // ----------------------------------------------------------------------
         // Constructors
@@ -87,6 +88,11 @@ public final class BeanProperties
 
         public boolean hasNext()
         {
+            if ( null != nextProperty )
+            {
+                return true; // no need to check again
+            }
+
             while ( i.hasNext() )
             {
                 final Member member = i.next();
@@ -101,14 +107,14 @@ public final class BeanProperties
                 // ignore any final fields, as they should not be updated
                 if ( member instanceof Field && !Modifier.isFinal( modifiers ) )
                 {
-                    nextProperty = new BeanPropertyField<Object>( (Field) member );
+                    nextProperty = new BeanPropertyField<T>( (Field) member );
                     return true;
                 }
 
                 // ignore zero/multi-argument methods, as they can't be setters
                 if ( member instanceof Method && ( (Method) member ).getParameterTypes().length == 1 )
                 {
-                    nextProperty = new BeanPropertySetter<Object>( (Method) member );
+                    nextProperty = new BeanPropertySetter<T>( (Method) member );
                     return true;
                 }
             }
@@ -116,11 +122,14 @@ public final class BeanProperties
             return false;
         }
 
-        public BeanProperty<?> next()
+        public BeanProperty<T> next()
         {
             if ( hasNext() )
             {
-                return nextProperty; // initialized by hasNext()
+                // look-ahead from hasNext(), remember to reset it
+                final BeanProperty<T> tempProperty = nextProperty;
+                nextProperty = null;
+                return tempProperty;
             }
             throw new NoSuchElementException();
         }
