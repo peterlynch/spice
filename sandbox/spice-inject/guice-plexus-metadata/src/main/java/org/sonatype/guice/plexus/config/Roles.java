@@ -19,7 +19,7 @@ import java.util.Map;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.sonatype.guice.plexus.reflect.Generics;
+import org.sonatype.guice.bean.reflect.Generics;
 
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;

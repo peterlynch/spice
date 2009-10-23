@@ -22,7 +22,7 @@
     </dependency>
     <dependency>
       <groupId>org.sonatype.spice.inject</groupId>
-      <artifactId>guice-plexus-reflect</artifactId>
+      <artifactId>guice-bean-reflect</artifactId>
       <version>0.0.1-SNAPSHOT</version>
     </dependency>
   </dependencies>
