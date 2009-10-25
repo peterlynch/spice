@@ -22,19 +22,19 @@ public interface PropertyBinder
     /**
      * Returns the appropriate {@link PropertyBinding} for the given bean property.
      * 
-     * @param property The property
+     * @param property The bean property
      * @return Binding for the given property; {@code null} if no binding is applicable
      */
     <T> PropertyBinding bindProperty( BeanProperty<T> property );
 
     /**
-     * Special binding that indicates the binder is not able to provide any more bindings.
+     * Binders may return {@code LAST_BINDING} to indicate they are done binding a bean.
      */
     PropertyBinding LAST_BINDING = new PropertyBinding()
     {
-        public void injectProperty( final Object bean )
+        public <B> void injectProperty( final B bean )
         {
-            // nothing to do, for marking purposes only
+            // this instance is for marking purposes only
         }
     };
 }

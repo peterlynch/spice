@@ -19,8 +19,8 @@ import com.google.inject.MembersInjector;
 /**
  * {@link MembersInjector} that takes {@link PropertyBinding}s and applies them to beans.
  */
-final class BeanInjector<T>
-    implements MembersInjector<T>
+final class BeanInjector<B>
+    implements MembersInjector<B>
 {
     // ----------------------------------------------------------------------
     // Implementation fields
@@ -42,7 +42,7 @@ final class BeanInjector<T>
     // Public methods
     // ----------------------------------------------------------------------
 
-    public void injectMembers( final T bean )
+    public void injectMembers( final B bean )
     {
         for ( final PropertyBinding b : bindings )
         {

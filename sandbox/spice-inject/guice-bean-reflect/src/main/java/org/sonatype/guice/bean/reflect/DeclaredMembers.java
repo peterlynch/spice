@@ -88,7 +88,7 @@ public final class DeclaredMembers
 
         public T next()
         {
-            return items[i++]; // FindBugs IT_NO_SUCH_ELEMENT false-positive
+            return items[i++]; // safe because we always check hasNext() first
         }
     }
 

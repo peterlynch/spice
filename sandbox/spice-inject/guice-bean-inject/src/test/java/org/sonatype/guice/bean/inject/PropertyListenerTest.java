@@ -17,6 +17,7 @@ import junit.framework.TestCase;
 import org.sonatype.guice.bean.reflect.BeanProperty;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.ConfigurationException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.TypeLiteral;
@@ -28,19 +29,43 @@ public class PropertyListenerTest
 {
     static class Base
     {
-        // empty base class
+        String a;
     }
 
-    static class Bean
+    static class Bean0
         extends Base
     {
-        String a;
+        String last;
+    }
 
+    static class Bean1
+        extends Base
+    {
         String b;
+    }
+
+    static class Bean2
+        extends Base
+    {
+        String b;
+
+        String ignore;
 
         String c;
 
         String last;
+
+        String d;
+    }
+
+    static class Bean3
+        extends Base
+    {
+        String b;
+
+        String error;
+
+        String c;
     }
 
     static class NamedPropertyBinder
@@ -48,7 +73,19 @@ public class PropertyListenerTest
     {
         public <T> PropertyBinding bindProperty( final BeanProperty<T> property )
         {
-            return "last".equals( property.getName() ) ? PropertyBinder.LAST_BINDING : new PropertyBinding()
+            if ( "last".equals( property.getName() ) )
+            {
+                return PropertyBinder.LAST_BINDING;
+            }
+            if ( "ignore".equals( property.getName() ) )
+            {
+                return null;
+            }
+            if ( "error".equals( property.getName() ) )
+            {
+                throw new RuntimeException( "Broken binding" );
+            }
+            return new PropertyBinding()
             {
                 @SuppressWarnings( "unchecked" )
                 public void injectProperty( final Object bean )
@@ -59,10 +96,14 @@ public class PropertyListenerTest
         }
     }
 
-    public void testPropertyListener()
+    static final PropertyBinder namedPropertyBinder = new NamedPropertyBinder();
+
+    Injector injector;
+
+    @Override
+    public void setUp()
     {
-        final PropertyBinder namedPropertyBinder = new NamedPropertyBinder();
-        final Injector injector = Guice.createInjector( new AbstractModule()
+        injector = Guice.createInjector( new AbstractModule()
         {
             @Override
             protected void configure()
@@ -75,24 +116,56 @@ public class PropertyListenerTest
                     }
                 }, new BeanListener( new BeanBinder()
                 {
-                    public <T> PropertyBinder bindBean( final TypeEncounter<T> encounter, final TypeLiteral<T> type )
+                    public <T> PropertyBinder bindBean( final TypeLiteral<T> type, final TypeEncounter<T> encounter )
                     {
-                        return namedPropertyBinder;
+                        return type.getRawType().getName().contains( "Bean" ) ? namedPropertyBinder : null;
                     }
                 } ) );
             }
         } );
+    }
 
-        injector.getInstance( Base.class );
+    public void testNoBean()
+    {
+        final Base base = injector.getInstance( Base.class );
+        assertNull( base.a );
+    }
 
-        final Bean bean = injector.getInstance( Bean.class );
+    public void testNoBindings()
+    {
+        final Bean0 bean0 = injector.getInstance( Bean0.class );
+        assertNull( bean0.a );
+    }
 
-        assertEquals( "aValue", bean.a );
-        assertEquals( "bValue", bean.b );
-        assertEquals( "cValue", bean.c );
+    public void testPropertyBindings()
+    {
+        final Bean1 bean1 = injector.getInstance( Bean1.class );
+        assertEquals( "aValue", bean1.a );
+        assertEquals( "bValue", bean1.b );
+    }
 
-        assertNull( bean.last );
-        PropertyBinder.LAST_BINDING.injectProperty( bean );
-        assertNull( bean.last );
+    public void testSpecialProperties()
+    {
+        final Bean2 bean2 = injector.getInstance( Bean2.class );
+        assertNull( bean2.a );
+        assertEquals( "bValue", bean2.b );
+        assertEquals( "cValue", bean2.c );
+        assertNull( bean2.d );
+
+        assertNull( bean2.last );
+        PropertyBinder.LAST_BINDING.injectProperty( bean2 );
+        assertNull( bean2.last );
+    }
+
+    public void testBrokenBinding()
+    {
+        try
+        {
+            injector.getInstance( Bean3.class );
+            fail( "Expected ConfigurationException" );
+        }
+        catch ( ConfigurationException e )
+        {
+        }
     }
 }

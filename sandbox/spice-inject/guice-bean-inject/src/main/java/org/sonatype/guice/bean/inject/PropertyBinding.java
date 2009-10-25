@@ -22,5 +22,5 @@ public interface PropertyBinding
      * 
      * @param bean The bean to inject
      */
-    void injectProperty( Object bean );
+    <B> void injectProperty( B bean );
 }

@@ -17,12 +17,23 @@ import java.lang.annotation.Annotation;
 import com.google.inject.TypeLiteral;
 
 /**
- * Represents a bean property (such as a field or setter method).
+ * Represents a bean property such as a field or setter method.
+ * 
+ * <pre>
+ * &#064;SomeAnnotation
+ * SomeType name;
+ * 
+ * &#064;SomeAnnotation
+ * void setName( SomeType _name )
+ * {
+ *     //...
+ * }
+ * </pre>
  */
 public interface BeanProperty<T>
 {
     /**
-     * Returns the property annotation that has the specified type.
+     * Returns the property annotation with the specified type.
      * 
      * @param annotationType The annotation type
      * @return The property's annotation if it exists; otherwise {@code null}

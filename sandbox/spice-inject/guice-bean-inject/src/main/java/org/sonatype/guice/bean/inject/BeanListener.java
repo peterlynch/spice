@@ -49,16 +49,16 @@ public final class BeanListener
     // Public methods
     // ----------------------------------------------------------------------
 
-    public <T> void hear( final TypeLiteral<T> type, final TypeEncounter<T> encounter )
+    public <B> void hear( final TypeLiteral<B> type, final TypeEncounter<B> encounter )
     {
-        final PropertyBinder propertyBinder = beanBinder.bindBean( encounter, type );
+        final PropertyBinder propertyBinder = beanBinder.bindBean( type, encounter );
         if ( null == propertyBinder )
         {
             return; // no properties to bind
         }
 
         final Collection<PropertyBinding> bindings = new ArrayList<PropertyBinding>();
-        for ( final BeanProperty<Object> property : new BeanProperties( type.getRawType() ) )
+        for ( final BeanProperty<?> property : new BeanProperties( type.getRawType() ) )
         {
             try
             {
@@ -80,7 +80,7 @@ public final class BeanListener
 
         if ( !bindings.isEmpty() )
         {
-            encounter.register( new BeanInjector<Object>( bindings ) );
+            encounter.register( new BeanInjector<B>( bindings ) );
         }
     }
 }

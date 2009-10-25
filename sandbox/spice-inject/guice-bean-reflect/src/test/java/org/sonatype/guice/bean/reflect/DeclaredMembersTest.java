@@ -19,7 +19,7 @@ import java.util.NoSuchElementException;
 
 import junit.framework.TestCase;
 
-public class ClassMembersTest
+public class DeclaredMembersTest
     extends TestCase
 {
     interface A

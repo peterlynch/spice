@@ -23,9 +23,9 @@ public interface BeanBinder
     /**
      * Returns the appropriate {@link PropertyBinder} for the given bean type.
      * 
-     * @param encounter The Guice type encounter
      * @param type The bean type
+     * @param encounter The Guice type encounter
      * @return Property binder for the given type; {@code null} if no binder is applicable
      */
-    <T> PropertyBinder bindBean( TypeEncounter<T> encounter, TypeLiteral<T> type );
+    <B> PropertyBinder bindBean( TypeLiteral<B> type, TypeEncounter<B> encounter );
 }
