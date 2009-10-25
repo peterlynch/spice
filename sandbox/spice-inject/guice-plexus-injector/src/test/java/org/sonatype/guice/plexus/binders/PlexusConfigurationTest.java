@@ -16,9 +16,9 @@ import junit.framework.TestCase;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Configuration;
+import org.sonatype.guice.bean.injector.BeanListener;
 import org.sonatype.guice.plexus.config.Configurator;
-import org.sonatype.guice.plexus.config.Hints;
-import org.sonatype.guice.plexus.injector.ComponentListener;
+import org.sonatype.guice.plexus.config.Roles;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -71,12 +71,12 @@ public class PlexusConfigurationTest
             @Override
             protected void configure()
             {
-                final String roleHintKey = Hints.getRoleHintKey( Object.class, "" );
+                final String roleHintKey = Roles.getRoleHintKey( Object.class.getName(), "" );
 
                 bind( Configurator.class ).to( GlobalConfigurator.class );
                 bind( Configurator.class ).annotatedWith( Names.named( roleHintKey ) ).to( LocalConfigurator.class );
 
-                bindListener( Matchers.any(), new ComponentListener( new PlexusComponentBinder() ) );
+                bindListener( Matchers.any(), new BeanListener( new PlexusComponentBinder() ) );
             }
         } ).injectMembers( this );
     }

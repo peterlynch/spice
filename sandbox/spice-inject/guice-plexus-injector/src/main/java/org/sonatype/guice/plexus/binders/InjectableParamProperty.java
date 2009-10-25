@@ -19,7 +19,7 @@ import java.security.PrivilegedAction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.sonatype.guice.plexus.injector.PropertyBinding;
+import org.sonatype.guice.bean.injector.BeanPropertyBinding;
 
 import com.google.inject.Provider;
 import com.google.inject.ProvisionException;
@@ -29,7 +29,7 @@ import com.google.inject.TypeLiteral;
  * {@link InjectableProperty} backed by a single-parameter setter {@link Method}.
  */
 final class InjectableParamProperty<T>
-    implements InjectableProperty<T>, PrivilegedAction<Void>, PropertyBinding
+    implements InjectableProperty<T>, PrivilegedAction<Void>, BeanPropertyBinding
 {
     // ----------------------------------------------------------------------
     // Constants
@@ -82,7 +82,7 @@ final class InjectableParamProperty<T>
         return name;
     }
 
-    public PropertyBinding bind( final Provider<T> toProvider )
+    public BeanPropertyBinding bind( final Provider<T> toProvider )
     {
         provider = toProvider;
 

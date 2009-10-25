@@ -12,22 +12,18 @@
  */
 package org.sonatype.guice.plexus.binders;
 
-import static com.google.inject.name.Names.named;
-import static org.sonatype.guice.plexus.config.Hints.NO_HINTS;
-import static org.sonatype.guice.plexus.config.Hints.getCanonicalHint;
-import static org.sonatype.guice.plexus.config.Hints.isDefaultHint;
-
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.lang.reflect.WildcardType;
 import java.util.List;
 import java.util.Map;
 
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.sonatype.guice.plexus.config.Hints;
+import org.sonatype.guice.plexus.config.Roles;
 
 import com.google.inject.Key;
 import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
+import com.google.inject.name.Names;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.util.Types;
 
@@ -37,12 +33,6 @@ import com.google.inject.util.Types;
 final class PlexusRequirementFactory
     implements PropertyProviderFactory<Requirement>
 {
-    // ----------------------------------------------------------------------
-    // Constants
-    // ----------------------------------------------------------------------
-
-    private static final TypeLiteral<Object> OBJECT_TYPE_LITERAL = TypeLiteral.get( Object.class );
-
     // ----------------------------------------------------------------------
     // Implementation fields
     // ----------------------------------------------------------------------
@@ -67,8 +57,8 @@ final class PlexusRequirementFactory
     {
         // extract the various requirement parameters
         final TypeLiteral expectedType = property.getType();
-        final TypeLiteral roleType = getRole( requirement, expectedType );
-        final String[] canonicalHints = getCanonicalHints( requirement );
+        final TypeLiteral roleType = Roles.getRole( requirement, expectedType );
+        final String[] canonicalHints = Hints.getCanonicalHints( requirement );
 
         if ( Map.class == expectedType.getRawType() )
         {
@@ -96,88 +86,17 @@ final class PlexusRequirementFactory
             };
         }
 
-        if ( canonicalHints.length == 0 || isDefaultHint( canonicalHints[0] ) )
+        if ( canonicalHints.length == 0 || Hints.isDefaultHint( canonicalHints[0] ) )
         {
             return encounter.getProvider( Key.get( roleType ) );
         }
 
-        return encounter.getProvider( Key.get( roleType, named( canonicalHints[0] ) ) );
+        return encounter.getProvider( Key.get( roleType, Names.named( canonicalHints[0] ) ) );
     }
 
     // ----------------------------------------------------------------------
     // Implementation methods
     // ----------------------------------------------------------------------
-
-    /**
-     * Extracts the role type from the given @{@link Requirement} and expected property type.
-     * 
-     * @param requirement The Plexus requirement
-     * @param expectedType The expected property type
-     * @return The appropriate role type
-     */
-    private static TypeLiteral<?> getRole( final Requirement requirement, final TypeLiteral<?> expectedType )
-    {
-        final Type role = requirement.role();
-        if ( role != Object.class )
-        {
-            return TypeLiteral.get( role );
-        }
-        final Class<?> rawType = expectedType.getRawType();
-        if ( Map.class == rawType )
-        {
-            // Map<String, T> --> T
-            return getTypeArgument( expectedType, 1 );
-        }
-        if ( List.class == rawType )
-        {
-            // List<T> --> T
-            return getTypeArgument( expectedType, 0 );
-        }
-        return expectedType;
-    }
-
-    /**
-     * Extracts a type argument from a generic type, for example {@code String} from {@code List<String>}.
-     * 
-     * @param genericType The generic type
-     * @param index The type argument index
-     * @return Selected type argument
-     */
-    private static TypeLiteral<?> getTypeArgument( final TypeLiteral<?> genericType, final int index )
-    {
-        final Type type = genericType.getType();
-        if ( type instanceof ParameterizedType )
-        {
-            final Type arg = ( (ParameterizedType) type ).getActualTypeArguments()[index];
-            return TypeLiteral.get( arg instanceof WildcardType ? ( (WildcardType) arg ).getUpperBounds()[0] : arg );
-        }
-        return OBJECT_TYPE_LITERAL;
-    }
-
-    /**
-     * Extracts an array of Plexus hints from the given @{@link Requirement}.
-     * 
-     * @param requirement The Plexus requirement
-     * @return Array of hints
-     */
-    private static String[] getCanonicalHints( final Requirement requirement )
-    {
-        final String[] hints = requirement.hints();
-        if ( hints.length > 0 )
-        {
-            for ( int i = 0; i < hints.length; i++ )
-            {
-                hints[i] = getCanonicalHint( hints[i] );
-            }
-            return hints;
-        }
-        final String hint = requirement.hint();
-        if ( hint.length() > 0 )
-        {
-            return new String[] { hint };
-        }
-        return NO_HINTS;
-    }
 
     /**
      * Returns a {@link Provider} that can provide a {@link PlexusComponentFinder} for the given role type.

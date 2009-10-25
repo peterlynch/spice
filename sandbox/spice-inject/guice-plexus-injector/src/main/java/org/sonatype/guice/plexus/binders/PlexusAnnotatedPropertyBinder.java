@@ -15,20 +15,21 @@ package org.sonatype.guice.plexus.binders;
 import static org.sonatype.guice.plexus.binders.PlexusComponentBinder.newInjectableProperty;
 
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Member;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Configuration;
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.sonatype.guice.plexus.injector.PropertyBinder;
-import org.sonatype.guice.plexus.injector.PropertyBinding;
+import org.sonatype.guice.bean.injector.BeanPropertyBinder;
+import org.sonatype.guice.bean.injector.BeanPropertyBinding;
 
 import com.google.inject.spi.TypeEncounter;
 
 /**
- * {@link PropertyBinder} that auto-binds properties according to Plexus annotations.
+ * {@link BeanPropertyBinder} that auto-binds properties according to Plexus annotations.
  */
 final class PlexusAnnotatedPropertyBinder
-    implements PropertyBinder
+    implements BeanPropertyBinder
 {
     // ----------------------------------------------------------------------
     // Implementation fields
@@ -52,8 +53,10 @@ final class PlexusAnnotatedPropertyBinder
     // Public methods
     // ----------------------------------------------------------------------
 
-    public PropertyBinding bindProperty( final AnnotatedElement element )
+    public BeanPropertyBinding bindProperty( final Member member )
     {
+        final AnnotatedElement element = (AnnotatedElement) member;
+
         /*
          * @Requirement binding
          */

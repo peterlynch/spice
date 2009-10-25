@@ -15,13 +15,23 @@
   <name>Spice - Dependency Injection</name>
 
   <modules>
-    <module>guice-plexus-reflect</module>
+    <module>guice-bean-reflect</module>
+    <module>guice-bean-convert</module>
+    <module>guice-bean-inject</module>
     <module>guice-plexus-metadata</module>
     <module>guice-plexus-bindings</module>
     <module>guice-plexus-injector</module>
     <module>guice-plexus-shim</module>
     <module>guice-plexus-tck</module>
   </modules>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
 <!-- TEMPORARY -->
   <repositories>

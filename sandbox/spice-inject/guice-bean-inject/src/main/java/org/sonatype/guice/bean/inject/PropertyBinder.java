@@ -12,15 +12,29 @@
  */
 package org.sonatype.guice.bean.inject;
 
+import org.sonatype.guice.bean.reflect.BeanProperty;
+
 /**
- * Represents a bean property that has been bound by a {@link BeanPropertyBinder}.
+ * Auto-binds bean properties such as fields or setter methods.
  */
-public interface BeanPropertyBinding
+public interface PropertyBinder
 {
     /**
-     * Injects the current bound value into the property of the given bean.
+     * Returns the appropriate {@link PropertyBinding} for the given bean property.
      * 
-     * @param bean The bean to inject
+     * @param property The property
+     * @return Binding for the given property; {@code null} if no binding is applicable
      */
-    void injectProperty( Object bean );
+    <T> PropertyBinding bindProperty( BeanProperty<T> property );
+
+    /**
+     * Special binding that indicates the binder is not able to provide any more bindings.
+     */
+    PropertyBinding LAST_BINDING = new PropertyBinding()
+    {
+        public void injectProperty( final Object bean )
+        {
+            // nothing to do, for marking purposes only
+        }
+    };
 }

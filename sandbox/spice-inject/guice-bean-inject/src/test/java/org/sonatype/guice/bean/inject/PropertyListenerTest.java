@@ -44,11 +44,11 @@ public class PropertyListenerTest
     }
 
     static class NamedPropertyBinder
-        implements BeanPropertyBinder
+        implements PropertyBinder
     {
-        public <T> BeanPropertyBinding bindProperty( final BeanProperty<T> property )
+        public <T> PropertyBinding bindProperty( final BeanProperty<T> property )
         {
-            return "last".equals( property.getName() ) ? BeanPropertyBinder.LAST_BINDING : new BeanPropertyBinding()
+            return "last".equals( property.getName() ) ? PropertyBinder.LAST_BINDING : new PropertyBinding()
             {
                 @SuppressWarnings( "unchecked" )
                 public void injectProperty( final Object bean )
@@ -61,7 +61,7 @@ public class PropertyListenerTest
 
     public void testPropertyListener()
     {
-        final BeanPropertyBinder namedPropertyBinder = new NamedPropertyBinder();
+        final PropertyBinder namedPropertyBinder = new NamedPropertyBinder();
         final Injector injector = Guice.createInjector( new AbstractModule()
         {
             @Override
@@ -75,7 +75,7 @@ public class PropertyListenerTest
                     }
                 }, new BeanListener( new BeanBinder()
                 {
-                    public <T> BeanPropertyBinder bindBean( final TypeEncounter<T> encounter, final TypeLiteral<T> type )
+                    public <T> PropertyBinder bindBean( final TypeEncounter<T> encounter, final TypeLiteral<T> type )
                     {
                         return namedPropertyBinder;
                     }
@@ -92,7 +92,7 @@ public class PropertyListenerTest
         assertEquals( "cValue", bean.c );
 
         assertNull( bean.last );
-        BeanPropertyBinder.LAST_BINDING.injectProperty( bean );
+        PropertyBinder.LAST_BINDING.injectProperty( bean );
         assertNull( bean.last );
     }
 }

@@ -21,11 +21,11 @@ import com.google.inject.spi.TypeEncounter;
 public interface BeanBinder
 {
     /**
-     * Returns the appropriate {@link BeanPropertyBinder} for the given bean type.
+     * Returns the appropriate {@link PropertyBinder} for the given bean type.
      * 
      * @param encounter The Guice type encounter
      * @param type The bean type
      * @return Property binder for the given type; {@code null} if no binder is applicable
      */
-    <T> BeanPropertyBinder bindBean( TypeEncounter<T> encounter, TypeLiteral<T> type );
+    <T> PropertyBinder bindBean( TypeEncounter<T> encounter, TypeLiteral<T> type );
 }

@@ -17,23 +17,23 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 import org.codehaus.plexus.component.annotations.Component;
-import org.sonatype.guice.plexus.injector.ComponentBinder;
-import org.sonatype.guice.plexus.injector.PropertyBinder;
+import org.sonatype.guice.bean.injector.BeanBinder;
+import org.sonatype.guice.bean.injector.BeanPropertyBinder;
 
 import com.google.inject.TypeLiteral;
 import com.google.inject.spi.TypeEncounter;
 
 /**
- * {@link ComponentBinder} that binds Plexus properties using annotations or other metadata.
+ * {@link BeanBinder} that binds Plexus properties using annotations or other metadata.
  */
 public final class PlexusComponentBinder
-    implements ComponentBinder
+    implements BeanBinder
 {
     // ----------------------------------------------------------------------
     // Public methods
     // ----------------------------------------------------------------------
 
-    public <T> PropertyBinder bindComponent( final TypeEncounter<T> encounter, final TypeLiteral<T> type )
+    public <T> BeanPropertyBinder bindComponent( final TypeEncounter<T> encounter, final TypeLiteral<T> type )
     {
         final Component component = type.getRawType().getAnnotation( Component.class );
         if ( null != component )

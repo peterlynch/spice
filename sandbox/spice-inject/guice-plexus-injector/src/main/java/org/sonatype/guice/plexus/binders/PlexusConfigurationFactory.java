@@ -12,13 +12,11 @@
  */
 package org.sonatype.guice.plexus.binders;
 
-import static com.google.inject.name.Names.named;
-import static org.sonatype.guice.plexus.config.Hints.getRoleHintKey;
-
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Configuration;
 import org.sonatype.guice.plexus.annotations.ConfigurationImpl;
 import org.sonatype.guice.plexus.config.Configurator;
+import org.sonatype.guice.plexus.config.Roles;
 
 import com.google.inject.Key;
 import com.google.inject.Provider;
@@ -46,8 +44,8 @@ final class PlexusConfigurationFactory
     {
         this.encounter = encounter;
 
-        // each Plexus component should have some sort of configurator registered under the appropriate role-hint ID
-        configuratorKey = Key.get( Configurator.class, named( getRoleHintKey( component.role(), component.hint() ) ) );
+        // each Plexus component can have its own configurator bound to its role-hint
+        configuratorKey = Key.get( Configurator.class, Roles.roleHint( component ) );
     }
 
     // ----------------------------------------------------------------------
@@ -58,22 +56,22 @@ final class PlexusConfigurationFactory
     {
         final Provider<Configurator> configurator = getComponentConfigurator();
 
-        final Configuration key;
+        final Configuration namedConfig;
         if ( configuration.name().length() == 0 )
         {
             // provided configuration doesn't have a name, so use the property name
-            key = new ConfigurationImpl( property.getName(), configuration.value() );
+            namedConfig = new ConfigurationImpl( property.getName(), configuration.value() );
         }
         else
         {
-            key = configuration;
+            namedConfig = configuration;
         }
 
         return new Provider<T>()
         {
             public T get()
             {
-                return configurator.get().configure( property.getType(), key );
+                return configurator.get().configure( namedConfig, property.getType() );
             }
         };
     }

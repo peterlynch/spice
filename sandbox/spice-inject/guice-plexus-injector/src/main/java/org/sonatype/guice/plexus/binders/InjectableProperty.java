@@ -12,7 +12,7 @@
  */
 package org.sonatype.guice.plexus.binders;
 
-import org.sonatype.guice.plexus.injector.PropertyBinding;
+import org.sonatype.guice.bean.injector.BeanPropertyBinding;
 
 import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
@@ -33,10 +33,10 @@ interface InjectableProperty<T>
     String getName();
 
     /**
-     * Creates a {@link PropertyBinding} between the current element and the given provider.
+     * Creates a {@link BeanPropertyBinding} between the current element and the given provider.
      * 
      * @param provider A provider of values for the property
      * @return Property binding that uses the given provider
      */
-    PropertyBinding bind( Provider<T> provider );
+    BeanPropertyBinding bind( Provider<T> provider );
 }

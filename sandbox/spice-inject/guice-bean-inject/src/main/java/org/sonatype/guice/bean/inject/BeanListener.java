@@ -12,7 +12,7 @@
  */
 package org.sonatype.guice.bean.inject;
 
-import static org.sonatype.guice.bean.inject.BeanPropertyBinder.LAST_BINDING;
+import static org.sonatype.guice.bean.inject.PropertyBinder.LAST_BINDING;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,18 +51,18 @@ public final class BeanListener
 
     public <T> void hear( final TypeLiteral<T> type, final TypeEncounter<T> encounter )
     {
-        final BeanPropertyBinder propertyBinder = beanBinder.bindBean( encounter, type );
+        final PropertyBinder propertyBinder = beanBinder.bindBean( encounter, type );
         if ( null == propertyBinder )
         {
             return; // no properties to bind
         }
 
-        final Collection<BeanPropertyBinding> bindings = new ArrayList<BeanPropertyBinding>();
+        final Collection<PropertyBinding> bindings = new ArrayList<PropertyBinding>();
         for ( final BeanProperty<Object> property : new BeanProperties( type.getRawType() ) )
         {
             try
             {
-                final BeanPropertyBinding binding = propertyBinder.bindProperty( property );
+                final PropertyBinding binding = propertyBinder.bindProperty( property );
                 if ( binding == LAST_BINDING )
                 {
                     break; // no more bindings

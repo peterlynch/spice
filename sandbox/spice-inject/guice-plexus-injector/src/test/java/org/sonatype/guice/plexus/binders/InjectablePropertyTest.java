@@ -22,7 +22,7 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.sonatype.guice.plexus.injector.PropertyBinding;
+import org.sonatype.guice.bean.injector.BeanPropertyBinding;
 
 import com.google.inject.ProvisionException;
 import com.google.inject.util.Providers;
@@ -67,7 +67,7 @@ public class InjectablePropertyTest
         {
             // bypass bind() to get access exception
             providerField.set( ip, Providers.of( null ) );
-            ( (PropertyBinding) ip ).injectProperty( new Example() );
+            ( (BeanPropertyBinding) ip ).injectProperty( new Example() );
             fail( "Expected ProvisionException" );
         }
         catch ( final ProvisionException e )

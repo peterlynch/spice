@@ -17,7 +17,7 @@ import java.util.Collection;
 import com.google.inject.MembersInjector;
 
 /**
- * {@link MembersInjector} that takes {@link BeanPropertyBinding}s and applies them to beans.
+ * {@link MembersInjector} that takes {@link PropertyBinding}s and applies them to beans.
  */
 final class BeanInjector<T>
     implements MembersInjector<T>
@@ -26,16 +26,16 @@ final class BeanInjector<T>
     // Implementation fields
     // ----------------------------------------------------------------------
 
-    private final BeanPropertyBinding[] bindings;
+    private final PropertyBinding[] bindings;
 
     // ----------------------------------------------------------------------
     // Constructors
     // ----------------------------------------------------------------------
 
-    BeanInjector( final Collection<BeanPropertyBinding> bindings )
+    BeanInjector( final Collection<PropertyBinding> bindings )
     {
         // cache using a fixed-sized binding array for small performance boost
-        this.bindings = bindings.toArray( new BeanPropertyBinding[bindings.size()] );
+        this.bindings = bindings.toArray( new PropertyBinding[bindings.size()] );
     }
 
     // ----------------------------------------------------------------------
@@ -44,7 +44,7 @@ final class BeanInjector<T>
 
     public void injectMembers( final T bean )
     {
-        for ( final BeanPropertyBinding b : bindings )
+        for ( final PropertyBinding b : bindings )
         {
             b.injectProperty( bean );
         }

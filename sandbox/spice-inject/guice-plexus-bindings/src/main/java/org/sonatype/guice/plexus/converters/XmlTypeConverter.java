@@ -5,11 +5,7 @@ import java.io.StringReader;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -20,6 +16,7 @@ import java.util.Properties;
 import org.codehaus.plexus.util.xml.pull.MXParser;
 import org.codehaus.plexus.util.xml.pull.XmlPullParser;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.sonatype.guice.bean.reflect.Generics;
 
 import com.google.inject.Binder;
 import com.google.inject.Inject;
@@ -34,8 +31,6 @@ import com.google.inject.spi.TypeConverterBinding;
 public final class XmlTypeConverter
     implements TypeConverter, Module
 {
-    private static final TypeLiteral<Object> OBJECT_TYPE_LITERAL = TypeLiteral.get( Object.class );
-
     List<TypeConverterBinding> converterBindings;
 
     @Inject
@@ -103,15 +98,15 @@ public final class XmlTypeConverter
             }
             if ( Map.class.isAssignableFrom( rawType ) )
             {
-                return (T) parseMap( parser, getTypeArgument( toType, 1 ) );
+                return (T) parseMap( parser, Generics.getTypeArgument( toType, 1 ) );
             }
             if ( Collection.class.isAssignableFrom( rawType ) )
             {
-                return (T) parseCollection( parser, getTypeArgument( toType, 0 ) );
+                return (T) parseCollection( parser, Generics.getTypeArgument( toType, 0 ) );
             }
             if ( rawType.isArray() )
             {
-                return (T) parseArray( parser, getComponentType( toType ) );
+                return (T) parseArray( parser, Generics.getComponentType( toType ) );
             }
             try
             {
@@ -238,37 +233,5 @@ public final class XmlTypeConverter
         }
 
         throw new IllegalArgumentException( "Cannot convert \"" + value + "\" to " + toType );
-    }
-
-    /**
-     * Extracts a type argument from a generic type, for example {@code String} from {@code List<String>}.
-     * 
-     * @param genericType The generic type
-     * @param index The type argument index
-     * @return Selected type argument
-     */
-    private static TypeLiteral<?> getTypeArgument( final TypeLiteral<?> genericType, final int index )
-    {
-        final Type type = genericType.getType();
-        if ( type instanceof ParameterizedType )
-        {
-            return flattenType( ( (ParameterizedType) type ).getActualTypeArguments()[index] );
-        }
-        return OBJECT_TYPE_LITERAL;
-    }
-
-    private static TypeLiteral<?> getComponentType( final TypeLiteral<?> genericType )
-    {
-        final Type type = genericType.getType();
-        if ( type instanceof GenericArrayType )
-        {
-            return flattenType( ( (GenericArrayType) type ).getGenericComponentType() );
-        }
-        return TypeLiteral.get( genericType.getRawType().getComponentType() );
-    }
-
-    private static TypeLiteral<?> flattenType( final Type type )
-    {
-        return TypeLiteral.get( type instanceof WildcardType ? ( (WildcardType) type ).getUpperBounds()[0] : type );
     }
 }

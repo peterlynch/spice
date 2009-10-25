@@ -16,7 +16,7 @@ import java.lang.reflect.Field;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
-import org.sonatype.guice.plexus.injector.PropertyBinding;
+import org.sonatype.guice.bean.injector.BeanPropertyBinding;
 
 import com.google.inject.Provider;
 import com.google.inject.ProvisionException;
@@ -26,7 +26,7 @@ import com.google.inject.TypeLiteral;
  * {@link InjectableProperty} backed by a {@link Field}.
  */
 final class InjectableFieldProperty<T>
-    implements InjectableProperty<T>, PrivilegedAction<Void>, PropertyBinding
+    implements InjectableProperty<T>, PrivilegedAction<Void>, BeanPropertyBinding
 {
     // ----------------------------------------------------------------------
     // Implementation fields
@@ -60,7 +60,7 @@ final class InjectableFieldProperty<T>
         return field.getName();
     }
 
-    public PropertyBinding bind( final Provider<T> toProvider )
+    public BeanPropertyBinding bind( final Provider<T> toProvider )
     {
         provider = toProvider;
 
