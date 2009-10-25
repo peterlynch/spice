@@ -24,7 +24,6 @@ import javax.inject.Singleton;
 
 import junit.framework.TestCase;
 
-import com.google.inject.ProvisionException;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 import com.google.inject.util.Types;
@@ -276,30 +275,31 @@ public class BeanPropertiesTest
     {
         try
         {
-            final BeanProperty<Object> p = new BeanPropertyField<Object>( A.class.getDeclaredField( "name" ) );
+            @SuppressWarnings( "unchecked" )
+            final BeanProperty<Object> p = new BeanPropertyField( A.class.getDeclaredField( "name" ) );
             p.set( new Object(), "test" );
-            fail( "Expected ProvisionException" );
+            fail( "Expected RuntimeException" );
         }
         catch ( final NoSuchFieldException e )
         {
-            fail( "Expected ProvisionException" );
+            fail( "Expected RuntimeException" );
         }
-        catch ( final ProvisionException e )
+        catch ( final RuntimeException e )
         {
         }
 
         try
         {
-            final BeanProperty<Object> p =
-                new BeanPropertySetter<Object>( D.class.getDeclaredMethod( "name", String.class ) );
+            @SuppressWarnings( "unchecked" )
+            final BeanProperty<Object> p = new BeanPropertySetter( D.class.getDeclaredMethod( "name", String.class ) );
             p.set( new Object(), "test" );
-            fail( "Expected ProvisionException" );
+            fail( "Expected RuntimeException" );
         }
         catch ( final NoSuchMethodException e )
         {
-            fail( "Expected ProvisionException" );
+            fail( "Expected RuntimeException" );
         }
-        catch ( final ProvisionException e )
+        catch ( final RuntimeException e )
         {
         }
     }

@@ -60,7 +60,7 @@ public final class BeanPropertyField<T>
         return field.getName();
     }
 
-    public void set( final Object component, final T value )
+    public void set( final Object bean, final T value )
     {
         if ( !field.isAccessible() )
         {
@@ -70,7 +70,7 @@ public final class BeanPropertyField<T>
 
         try
         {
-            field.set( component, value );
+            field.set( bean, value );
         }
         catch ( final Exception e )
         {

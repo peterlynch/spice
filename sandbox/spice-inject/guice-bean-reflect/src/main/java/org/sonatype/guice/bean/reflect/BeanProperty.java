@@ -51,10 +51,10 @@ public interface BeanProperty<T>
     String getName();
 
     /**
-     * Set the property in the given component to the given value.
+     * Set the property in the given bean to the given value.
      * 
-     * @param component The component
+     * @param bean The bean to update
      * @param value The value to set
      */
-    void set( Object component, T value );
+    void set( Object bean, T value );
 }

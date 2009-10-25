@@ -76,7 +76,7 @@ public final class BeanPropertySetter<T>
         return name;
     }
 
-    public void set( final Object component, final T value )
+    public void set( final Object bean, final T value )
     {
         if ( !method.isAccessible() )
         {
@@ -86,7 +86,7 @@ public final class BeanPropertySetter<T>
 
         try
         {
-            method.invoke( component, value );
+            method.invoke( bean, value );
         }
         catch ( final Exception e )
         {

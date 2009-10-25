@@ -18,9 +18,9 @@
     <module>guice-bean-reflect</module>
     <module>guice-bean-inject</module>
     <module>guice-plexus-metadata</module>
+    <module>guice-plexus-autobinders</module>
     <module>guice-plexus-converters</module>
     <module>guice-plexus-bindings</module>
-    <module>guice-plexus-injector</module>
     <module>guice-plexus-shim</module>
     <module>guice-plexus-tck</module>
   </modules>
