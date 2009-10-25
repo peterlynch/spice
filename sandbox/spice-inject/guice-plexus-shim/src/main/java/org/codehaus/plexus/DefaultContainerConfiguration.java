@@ -18,14 +18,24 @@ import org.codehaus.plexus.lifecycle.LifecycleHandlerManager;
 public class DefaultContainerConfiguration
     implements ContainerConfiguration
 {
+    private String name;
+
+    private Map<Object, Object> context;
+
+    private String containerConfiguration;
+
     public ContainerConfiguration setName( String name )
     {
-        throw new UnsupportedOperationException();
+        this.name = name;
+
+        return this;
     }
 
     public ContainerConfiguration setContext( Map<Object, Object> context )
     {
-        throw new UnsupportedOperationException();
+        this.context = context;
+
+        return this;
     }
 
     public ContainerConfiguration setClassWorld( ClassWorld classWorld )
@@ -40,12 +50,14 @@ public class DefaultContainerConfiguration
 
     public ContainerConfiguration setContainerConfiguration( String containerConfiguration )
     {
-        throw new UnsupportedOperationException();
+        this.containerConfiguration = containerConfiguration;
+
+        return this;
     }
 
     public String getContainerConfiguration()
     {
-        throw new UnsupportedOperationException();
+        return containerConfiguration;
     }
 
     public ContainerConfiguration setContainerConfigurationURL( URL containerConfiguration )
@@ -60,12 +72,12 @@ public class DefaultContainerConfiguration
 
     public String getName()
     {
-        throw new UnsupportedOperationException();
+        return name;
     }
 
     public Map<Object, Object> getContext()
     {
-        throw new UnsupportedOperationException();
+        return context;
     }
 
     public ClassWorld getClassWorld()
@@ -78,6 +90,7 @@ public class DefaultContainerConfiguration
         throw new UnsupportedOperationException();
     }
 
+    @SuppressWarnings( "unused" )
     public ContainerConfiguration setInitializationPhases( ContainerInitializationPhase[] initializationPhases )
     {
         throw new UnsupportedOperationException();
@@ -153,11 +166,13 @@ public class DefaultContainerConfiguration
         throw new UnsupportedOperationException();
     }
 
+    @SuppressWarnings( "unchecked" )
     public List<Class> getComponentDiscoverers()
     {
         throw new UnsupportedOperationException();
     }
 
+    @SuppressWarnings( "unchecked" )
     public List<Class> getComponentDiscoveryListeners()
     {
         throw new UnsupportedOperationException();

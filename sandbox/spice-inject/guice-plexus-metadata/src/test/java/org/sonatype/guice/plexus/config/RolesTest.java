@@ -12,8 +12,6 @@
  */
 package org.sonatype.guice.plexus.config;
 
-import java.lang.annotation.Annotation;
-
 import junit.framework.TestCase;
 
 import org.codehaus.plexus.component.annotations.Component;
@@ -21,6 +19,7 @@ import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.guice.plexus.annotations.ComponentImpl;
 import org.sonatype.guice.plexus.annotations.RequirementImpl;
 
+import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 import com.google.inject.util.Types;
@@ -32,23 +31,44 @@ public class RolesTest
 
     private static final TypeLiteral<String> STRING_LITERAL = TypeLiteral.get( String.class );
 
-    private static final Annotation OBJECT_ROLE_HINT = Names.named( "java.lang.Object" );
+    private static final Key<Object> OBJECT_COMPONENT_KEY = Key.get( Object.class );
 
-    private static final Annotation OBJECT_FOO_ROLE_HINT = Names.named( "java.lang.Object-foo" );
+    private static final Key<Object> OBJECT_FOO_COMPONENT_KEY = Key.get( Object.class, Names.named( "foo" ) );
 
-    public void testDefaultRoleHintKeys()
+    private static final Key<Configurator> OBJECT_CONFIGURATOR_KEY =
+        Key.get( Configurator.class, Names.named( Object.class.getName() ) );
+
+    private static final Key<Configurator> OBJECT_FOO_CONFIGURATOR_KEY =
+        Key.get( Configurator.class, Names.named( Object.class.getName() + "-foo" ) );
+
+    public void testDefaultComponentKeys()
     {
-        assertEquals( OBJECT_ROLE_HINT, Roles.roleHint( Object.class, null ) );
-        assertEquals( OBJECT_ROLE_HINT, Roles.roleHint( Object.class, "" ) );
-        assertEquals( OBJECT_ROLE_HINT, Roles.roleHint( Object.class, "default" ) );
-        assertEquals( OBJECT_ROLE_HINT, Roles.roleHint( component( "" ) ) );
-        assertEquals( OBJECT_ROLE_HINT, Roles.roleHint( component( "default" ) ) );
+        assertEquals( OBJECT_COMPONENT_KEY, Roles.componentKey( Object.class, null ) );
+        assertEquals( OBJECT_COMPONENT_KEY, Roles.componentKey( Object.class, "" ) );
+        assertEquals( OBJECT_COMPONENT_KEY, Roles.componentKey( Object.class, "default" ) );
+        assertEquals( OBJECT_COMPONENT_KEY, Roles.componentKey( component( "" ) ) );
+        assertEquals( OBJECT_COMPONENT_KEY, Roles.componentKey( component( "default" ) ) );
     }
 
-    public void testRoleHintKeys()
+    public void testComponentKeys()
     {
-        assertEquals( OBJECT_FOO_ROLE_HINT, Roles.roleHint( Object.class, "foo" ) );
-        assertEquals( OBJECT_FOO_ROLE_HINT, Roles.roleHint( component( "foo" ) ) );
+        assertEquals( OBJECT_FOO_COMPONENT_KEY, Roles.componentKey( Object.class, "foo" ) );
+        assertEquals( OBJECT_FOO_COMPONENT_KEY, Roles.componentKey( component( "foo" ) ) );
+    }
+
+    public void testDefaultConfiguratorKeys()
+    {
+        assertEquals( OBJECT_CONFIGURATOR_KEY, Roles.configuratorKey( Object.class, null ) );
+        assertEquals( OBJECT_CONFIGURATOR_KEY, Roles.configuratorKey( Object.class, "" ) );
+        assertEquals( OBJECT_CONFIGURATOR_KEY, Roles.configuratorKey( Object.class, "default" ) );
+        assertEquals( OBJECT_CONFIGURATOR_KEY, Roles.configuratorKey( component( "" ) ) );
+        assertEquals( OBJECT_CONFIGURATOR_KEY, Roles.configuratorKey( component( "default" ) ) );
+    }
+
+    public void testConfiguratorKeys()
+    {
+        assertEquals( OBJECT_FOO_CONFIGURATOR_KEY, Roles.configuratorKey( Object.class, "foo" ) );
+        assertEquals( OBJECT_FOO_CONFIGURATOR_KEY, Roles.configuratorKey( component( "foo" ) ) );
     }
 
     public void testRoleAnalysis()

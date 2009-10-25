@@ -76,7 +76,7 @@ public final class BeanPropertySetter<T>
         return name;
     }
 
-    public void set( final Object bean, final T value )
+    public <B> void set( final B bean, final T value )
     {
         if ( !method.isAccessible() )
         {

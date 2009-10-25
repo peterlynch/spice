@@ -12,8 +12,6 @@
  */
 package org.sonatype.guice.plexus.binders;
 
-import java.lang.annotation.Annotation;
-
 import junit.framework.TestCase;
 
 import org.codehaus.plexus.component.annotations.Component;
@@ -72,11 +70,8 @@ public class PlexusConfigurationTest
             @Override
             protected void configure()
             {
-                final Annotation roleHint = Roles.roleHint( Object.class, "" );
-
                 bind( Configurator.class ).to( GlobalConfigurator.class );
-                bind( Configurator.class ).annotatedWith( roleHint ).to( LocalConfigurator.class );
-
+                bind( Roles.configuratorKey( Object.class, "" ) ).to( LocalConfigurator.class );
                 bindListener( Matchers.any(), new BeanListener( new PlexusComponentBinder() ) );
             }
         } ).injectMembers( this );

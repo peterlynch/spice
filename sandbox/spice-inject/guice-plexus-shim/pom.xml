@@ -20,6 +20,11 @@
       <artifactId>plexus-classworlds</artifactId>
       <version>2.2.1</version>
     </dependency>
+    <dependency>
+      <groupId>org.sonatype.spice.inject</groupId>
+      <artifactId>guice-plexus-autobinders</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
   </dependencies>
 
 </project>

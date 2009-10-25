@@ -56,5 +56,5 @@ public interface BeanProperty<T>
      * @param bean The bean to update
      * @param value The value to set
      */
-    void set( Object bean, T value );
+    <B> void set( B bean, T value );
 }

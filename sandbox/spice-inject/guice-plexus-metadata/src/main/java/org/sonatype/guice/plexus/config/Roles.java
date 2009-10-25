@@ -12,7 +12,6 @@
  */
 package org.sonatype.guice.plexus.config;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +20,7 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.guice.bean.reflect.Generics;
 
+import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 
@@ -76,25 +76,54 @@ public final class Roles
     }
 
     /**
-     * Returns the role-hint binding annotation for the given Plexus component.
+     * Returns the component binding {@link Key} for the given Plexus component.
      * 
      * @param component The Plexus component
-     * @return Role-hint binding annotation denoting the given component
+     * @return Component binding key denoting the given component
      */
-    public static Annotation roleHint( final Component component )
+    public static Key<?> componentKey( final Component component )
     {
-        return roleHint( component.role(), component.hint() );
+        return componentKey( component.role(), component.hint() );
     }
 
     /**
-     * Returns the canonical binding annotation for the given Plexus role-hint.
+     * Returns the component binding {@link Key} for the given Plexus role-hint.
      * 
      * @param role The Plexus role
      * @param hint The Plexus hint
-     * @return Canonical binding annotation denoting the given role-hint
+     * @return Component binding key denoting the given role-hint
      */
-    public static Annotation roleHint( final Class<?> role, final String hint )
+    public static <T> Key<T> componentKey( final Class<T> role, final String hint )
     {
-        return Names.named( Hints.isDefaultHint( hint ) ? role.getName() : role.getName() + '-' + hint );
+        if ( Hints.isDefaultHint( hint ) )
+        {
+            return Key.get( role );
+        }
+        return Key.get( role, Names.named( Hints.getCanonicalHint( hint ) ) );
+    }
+
+    /**
+     * Returns the {@link Configurator} binding {@link Key} for the given Plexus component.
+     * 
+     * @param component The Plexus component
+     * @return Configurator binding key for the given component
+     */
+    public static Key<Configurator> configuratorKey( final Component component )
+    {
+        return configuratorKey( component.role(), component.hint() );
+    }
+
+    /**
+     * Returns the {@link Configurator} binding {@link Key} for the given Plexus role-hint.
+     * 
+     * @param role The Plexus role
+     * @param hint The Plexus hint
+     * @return Configurator binding key for the given role-hint
+     */
+    public static Key<Configurator> configuratorKey( final Class<?> role, final String hint )
+    {
+        final String roleName = role.getName();
+        final String roleHint = Hints.isDefaultHint( hint ) ? roleName : roleName + '-' + hint;
+        return Key.get( Configurator.class, Names.named( roleHint ) );
     }
 }

@@ -60,7 +60,7 @@ public final class BeanPropertyField<T>
         return field.getName();
     }
 
-    public void set( final Object bean, final T value )
+    public <B> void set( final B bean, final T value )
     {
         if ( !field.isAccessible() )
         {

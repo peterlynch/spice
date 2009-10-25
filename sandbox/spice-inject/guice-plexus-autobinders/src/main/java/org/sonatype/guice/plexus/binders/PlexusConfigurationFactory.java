@@ -45,8 +45,8 @@ final class PlexusConfigurationFactory
     {
         this.encounter = encounter;
 
-        // each Plexus component can have its own configurator bound to its role-hint
-        configuratorKey = Key.get( Configurator.class, Roles.roleHint( component ) );
+        // each Plexus component can have its own configurator
+        configuratorKey = Roles.configuratorKey( component );
     }
 
     // ----------------------------------------------------------------------

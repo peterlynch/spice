@@ -19,16 +19,24 @@ import org.codehaus.plexus.configuration.source.ConfigurationSource;
 import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.logging.LoggerManager;
+import org.sonatype.guice.plexus.config.Hints;
+import org.sonatype.guice.plexus.config.Roles;
+
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 public class DefaultPlexusContainer
     implements MutablePlexusContainer
 {
+    private final Injector injector;
+
     public void addComponent( Object component, String role )
         throws ComponentRepositoryException
     {
         throw new UnsupportedOperationException();
     }
 
+    @SuppressWarnings( "unused" )
     public <T> void addComponent( T component, Class<?> type, String roleHint, ClassRealm classRealm )
         throws ComponentRepositoryException
     {
@@ -48,13 +56,14 @@ public class DefaultPlexusContainer
     public DefaultPlexusContainer()
         throws PlexusContainerException
     {
-        throw new UnsupportedOperationException();
+        this( new DefaultContainerConfiguration() );
     }
 
+    @SuppressWarnings( "unused" )
     public DefaultPlexusContainer( ContainerConfiguration c )
         throws PlexusContainerException
     {
-        throw new UnsupportedOperationException();
+        injector = Guice.createInjector();
     }
 
     public ClassRealm createChildRealm( String id )
@@ -77,16 +86,24 @@ public class DefaultPlexusContainer
     public <T> T lookup( Class<T> type )
         throws ComponentLookupException
     {
-        throw new UnsupportedOperationException();
+        return lookup( type, Hints.DEFAULT_HINT );
     }
 
     public <T> T lookup( Class<T> type, String roleHint )
         throws ComponentLookupException
     {
-        throw new UnsupportedOperationException();
+        try
+        {
+            return injector.getInstance( Roles.componentKey( type, roleHint ) );
+        }
+        catch ( final RuntimeException e )
+        {
+            throw new ComponentLookupException( e.getMessage(), type, roleHint );
+        }
     }
 
     @Deprecated
+    @SuppressWarnings( "deprecation" )
     public <T> T lookup( Class<T> type, String role, String roleHint )
         throws ComponentLookupException
     {
@@ -193,6 +210,7 @@ public class DefaultPlexusContainer
     }
 
     @Deprecated
+    @SuppressWarnings( "deprecation" )
     public <T> Map<String, ComponentDescriptor<T>> getComponentDescriptorMap( Class<T> type, String role )
     {
         throw new UnsupportedOperationException();
@@ -247,6 +265,7 @@ public class DefaultPlexusContainer
         throw new UnsupportedOperationException();
     }
 
+    @SuppressWarnings( "unused" )
     public void setClassWorld( ClassWorld classWorld )
     {
         throw new UnsupportedOperationException();
@@ -257,6 +276,7 @@ public class DefaultPlexusContainer
         throw new UnsupportedOperationException();
     }
 
+    @SuppressWarnings( "unused" )
     public void setContainerRealm( ClassRealm containerRealm )
     {
         throw new UnsupportedOperationException();
