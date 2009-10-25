@@ -17,7 +17,6 @@ import java.lang.reflect.Field;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
-import com.google.inject.ProvisionException;
 import com.google.inject.TypeLiteral;
 
 /**
@@ -75,7 +74,7 @@ public final class BeanPropertyField<T>
         }
         catch ( final Exception e )
         {
-            throw new ProvisionException( "Error updating bean field: " + field + " reason: " + e );
+            throw new RuntimeException( "Error updating bean field: " + field + " reason: " + e );
         }
     }
 

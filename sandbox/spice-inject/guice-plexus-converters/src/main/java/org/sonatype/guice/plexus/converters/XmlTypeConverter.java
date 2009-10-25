@@ -1,3 +1,15 @@
+/**
+ * Copyright (c) 2009 Sonatype, Inc. All rights reserved.
+ *
+ * This program is licensed to you under the Apache License Version 2.0,
+ * and you may not use this file except in compliance with the Apache License Version 2.0.
+ * You may obtain a copy of the Apache License Version 2.0 at http://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the Apache License Version 2.0 is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
+ */
 package org.sonatype.guice.plexus.converters;
 
 import java.io.IOException;
@@ -22,29 +34,74 @@ import com.google.inject.Binder;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Module;
-import com.google.inject.ProvisionException;
 import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.AbstractMatcher;
 import com.google.inject.spi.TypeConverter;
 import com.google.inject.spi.TypeConverterBinding;
 
+/**
+ * {@link TypeConverter} {@link Module} that converts Plexus formatted XML into the appropriate instances.
+ */
 public final class XmlTypeConverter
-    implements TypeConverter, Module
+    extends AbstractMatcher<TypeLiteral<?>>
+    implements Module, TypeConverter
 {
-    List<TypeConverterBinding> converterBindings;
+    // ----------------------------------------------------------------------
+    // Implementation fields
+    // ----------------------------------------------------------------------
 
-    @Inject
-    @SuppressWarnings( "unused" )
-    private void recordConverterBindings( final Injector injector )
+    private TypeConverterBinding[] otherConverterBindings;
+
+    // ----------------------------------------------------------------------
+    // Guice binding
+    // ----------------------------------------------------------------------
+
+    public void configure( final Binder binder )
     {
-        converterBindings = new ArrayList<TypeConverterBinding>();
+        // we're both matcher and converter
+        binder.convertToTypes( this, this );
+        binder.requestInjection( this );
+    }
+
+    // ----------------------------------------------------------------------
+    // Guice setter
+    // ----------------------------------------------------------------------
+
+    /**
+     * Records all the other {@link TypeConverterBinding}s registered with the {@link Injector}.
+     * 
+     * @param injector The injector
+     */
+    @Inject
+    void recordOtherConverterBindings( final Injector injector )
+    {
+        List<TypeConverterBinding> tempBindings = new ArrayList<TypeConverterBinding>();
         for ( final TypeConverterBinding b : injector.getTypeConverterBindings() )
         {
+            // play safe: don't want to get into any sort of recursion!
             if ( !( b.getTypeConverter() instanceof XmlTypeConverter ) )
             {
-                converterBindings.add( b );
+                tempBindings.add( b );
             }
         }
+        otherConverterBindings = tempBindings.toArray( new TypeConverterBinding[tempBindings.size()] );
+    }
+
+    // ----------------------------------------------------------------------
+    // Public methods
+    // ----------------------------------------------------------------------
+
+    public boolean matches( final TypeLiteral<?> type )
+    {
+        // basic idea: we handle any conversion that the others don't
+        for ( final TypeConverterBinding b : otherConverterBindings )
+        {
+            if ( b.getTypeMatcher().matches( type ) )
+            {
+                return false; // another converter can handle this
+            }
+        }
+        return true;
     }
 
     public Object convert( final String value, final TypeLiteral<?> toType )
@@ -61,29 +118,13 @@ public final class XmlTypeConverter
         }
         catch ( final IOException e )
         {
-            throw new ProvisionException( "I/O error converting \"" + value + "\" to " + toType, e );
+            throw new RuntimeException( "I/O error converting \"" + value + "\" to " + toType, e );
         }
     }
 
-    public void configure( final Binder binder )
-    {
-        binder.convertToTypes( new AbstractMatcher<TypeLiteral<?>>()
-        {
-            public boolean matches( final TypeLiteral<?> type )
-            {
-                for ( final TypeConverterBinding b : converterBindings )
-                {
-                    if ( b.getTypeMatcher().matches( type ) )
-                    {
-                        return false;
-                    }
-                }
-                return true;
-            }
-        }, this );
-
-        binder.requestInjection( this );
-    }
+    // ----------------------------------------------------------------------
+    // Implementation methods
+    // ----------------------------------------------------------------------
 
     @SuppressWarnings( "unchecked" )
     private <T> T parse( final XmlPullParser parser, final TypeLiteral<T> toType )
@@ -114,7 +155,7 @@ public final class XmlTypeConverter
             }
             catch ( final Exception e )
             {
-                throw new ProvisionException( "Error parsing bean type " + toType, e );
+                throw new RuntimeException( "Error parsing bean type " + toType, e );
             }
         }
 
@@ -189,13 +230,13 @@ public final class XmlTypeConverter
         if ( parser.next() == XmlPullParser.TEXT )
         {
             @SuppressWarnings( "unchecked" )
-            final Constructor<T> ctor = (Constructor<T>) rawType.getConstructor( String.class );
+            final Constructor<T> ctor = (Constructor) rawType.getConstructor( String.class ); // TODO: other types?
             return ctor.newInstance( parser.getText() );
         }
 
         @SuppressWarnings( "unchecked" )
         final T bean = (T) rawType.newInstance();
-        while ( parser.getEventType() != XmlPullParser.END_TAG )
+        while ( parser.getEventType() != XmlPullParser.END_TAG ) // TODO: re-use BeanProperties class?
         {
             final String name = parser.getName();
             try
@@ -205,9 +246,8 @@ public final class XmlTypeConverter
             }
             catch ( final NoSuchFieldException e )
             {
-                final Method m =
-                    rawType.getMethod( "set" + Character.toUpperCase( name.charAt( 0 ) ) + name.substring( 1 ),
-                                       String.class );
+                final String setter = "set" + Character.toUpperCase( name.charAt( 0 ) ) + name.substring( 1 );
+                final Method m = rawType.getMethod( setter, String.class ); // TODO: other styles and types?
                 m.invoke( bean, parse( parser, TypeLiteral.get( m.getGenericParameterTypes()[0] ) ) );
             }
             parser.nextTag();
@@ -221,10 +261,10 @@ public final class XmlTypeConverter
     {
         if ( toType.getRawType().isAssignableFrom( String.class ) )
         {
-            return (T) value;
+            return (T) value; // no need for any conversion
         }
 
-        for ( final TypeConverterBinding b : converterBindings )
+        for ( final TypeConverterBinding b : otherConverterBindings )
         {
             if ( b.getTypeMatcher().matches( toType ) )
             {

@@ -25,8 +25,11 @@ import java.util.Properties;
 import junit.framework.TestCase;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.ConfigurationException;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
@@ -52,6 +55,7 @@ public class TypeConvertersTest
             {
                 bindConfig( "Date1", "2005-10-06 2:22:55.1 PM" );
                 bindConfig( "Date2", "2005-10-06 2:22:55PM" );
+                bindConfig( "Date3", "2005-10-06" );
 
                 bindConfig( "Array1", "<items><item>1</item><item>2</item><item>3</item></items>" );
                 bindConfig( "Array2", "<items><item>4</item><item>5</item><item>6</item></items>" );
@@ -135,6 +139,9 @@ public class TypeConvertersTest
     @Named( "URL" )
     URL url;
 
+    @Inject
+    Injector injector;
+
     static class Person1
     {
         public String firstName;
@@ -176,6 +183,15 @@ public class TypeConvertersTest
     {
         assertEquals( dateString1, new SimpleDateFormat( "yyyy-MM-dd h:mm:ss.S a" ).format( date1 ) );
         assertEquals( dateString2, new SimpleDateFormat( "yyyy-MM-dd h:mm:ssa" ).format( date2 ) );
+
+        try
+        {
+            injector.getInstance( Key.get( Date.class, Names.named( "Date3" ) ) );
+            fail( "Expected ConfigurationException" );
+        }
+        catch ( final ConfigurationException e )
+        {
+        }
 
         assertTrue( Arrays.equals( new String[] { "1", "2", "3" }, array1 ) );
         assertTrue( Arrays.equals( new Integer[] { 4, 5, 6 }, array2 ) );

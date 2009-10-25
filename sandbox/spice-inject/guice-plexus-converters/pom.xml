@@ -9,16 +9,21 @@
 
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.sonatype.spice.inject</groupId>
-  <artifactId>guice-bean-convert</artifactId>
+  <artifactId>guice-plexus-converters</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
-  <name>Guice - Bean converters</name>
+  <name>Guice - Plexus converters</name>
 
   <dependencies>
     <dependency>
-      <groupId>org.ops4j.peaberry.dependencies</groupId>
-      <artifactId>guice</artifactId>
-      <version>2.1-SNAPSHOT</version>
+      <groupId>org.sonatype.spice.inject</groupId>
+      <artifactId>guice-bean-reflect</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
+      <version>2.0.1</version>
     </dependency>
   </dependencies>
 

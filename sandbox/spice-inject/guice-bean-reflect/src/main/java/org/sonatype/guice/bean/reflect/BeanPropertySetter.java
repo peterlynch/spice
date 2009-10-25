@@ -19,7 +19,6 @@ import java.security.PrivilegedAction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.inject.ProvisionException;
 import com.google.inject.TypeLiteral;
 
 /**
@@ -91,7 +90,7 @@ public final class BeanPropertySetter<T>
         }
         catch ( final Exception e )
         {
-            throw new ProvisionException( "Error calling bean setter: " + method + " reason: " + e );
+            throw new RuntimeException( "Error calling bean setter: " + method + " reason: " + e );
         }
     }
 
