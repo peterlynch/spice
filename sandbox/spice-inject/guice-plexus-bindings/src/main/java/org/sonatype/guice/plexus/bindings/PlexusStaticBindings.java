@@ -32,7 +32,7 @@ import com.google.inject.name.Named;
 /**
  * Guice {@link Module} that converts Plexus components into {@link Named} bindings.
  */
-public final class StaticPlexusBindingModule
+public final class PlexusStaticBindings
     extends AbstractModule
 {
     // ----------------------------------------------------------------------
@@ -45,7 +45,7 @@ public final class StaticPlexusBindingModule
     // Constructors
     // ----------------------------------------------------------------------
 
-    public StaticPlexusBindingModule( final Map<Class<?>, Component> componentMap )
+    public PlexusStaticBindings( final Map<Class<?>, Component> componentMap )
     {
         this.componentMap = componentMap;
     }

@@ -45,14 +45,14 @@ public class ComponentTest
                 addComponent( components, ComponentA.class );
                 addComponent( components, ComponentD.class );
 
-                install( new StaticPlexusBindingModule( components ) );
+                install( new PlexusStaticBindings( components ) );
 
                 components.clear();
 
                 addComponent( components, ComponentB.class );
                 addComponent( components, ComponentC.class );
 
-                install( new StaticPlexusBindingModule( components ) );
+                install( new PlexusStaticBindings( components ) );
             }
         } ).injectMembers( this );
     }
