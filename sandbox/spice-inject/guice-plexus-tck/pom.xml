@@ -26,6 +26,11 @@
       <version>3.8.2</version>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>ch.ethz.iks.concierge</groupId>
+      <artifactId>concierge</artifactId>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 
 </project>

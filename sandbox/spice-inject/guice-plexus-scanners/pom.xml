@@ -7,6 +7,8 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
 
+  <packaging>bundle</packaging>
+
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.sonatype.spice.inject</groupId>
   <artifactId>guice-plexus-scanners</artifactId>
@@ -19,6 +21,10 @@
       <groupId>org.sonatype.spice.inject</groupId>
       <artifactId>guice-plexus-metadata</artifactId>
       <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
     </dependency>
   </dependencies>
 
