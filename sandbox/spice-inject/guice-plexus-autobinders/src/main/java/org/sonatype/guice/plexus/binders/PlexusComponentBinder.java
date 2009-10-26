@@ -12,9 +12,16 @@
  */
 package org.sonatype.guice.plexus.binders;
 
+import java.util.Collections;
+
 import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Configuration;
+import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.guice.bean.inject.BeanBinder;
 import org.sonatype.guice.bean.inject.PropertyBinder;
+import org.sonatype.guice.bean.reflect.BeanProperty;
+import org.sonatype.guice.plexus.config.PlexusAnnotations;
+import org.sonatype.guice.plexus.config.PlexusComponents;
 
 import com.google.inject.TypeLiteral;
 import com.google.inject.spi.TypeEncounter;
@@ -25,21 +32,65 @@ import com.google.inject.spi.TypeEncounter;
 public final class PlexusComponentBinder
     implements BeanBinder
 {
+    private final PlexusComponents components;
+
+    public PlexusComponentBinder()
+    {
+        components = new AnnotatedPlexusComponents();
+    }
+
+    public PlexusComponentBinder( final PlexusComponents components )
+    {
+        this.components = components;
+    }
+
     // ----------------------------------------------------------------------
     // Public methods
     // ----------------------------------------------------------------------
 
     public <B> PropertyBinder bindBean( final TypeLiteral<B> type, final TypeEncounter<B> encounter )
     {
-        final Component component = type.getRawType().getAnnotation( Component.class );
-        if ( null != component )
+        final PlexusAnnotations annotations = components.getAnnotations( type.getRawType() );
+        if ( null != annotations )
         {
             // assume all other properties are marked with Plexus annotations
-            return new PlexusAnnotatedPropertyBinder( encounter, component );
+            return new PlexusAnnotatedPropertyBinder( encounter, annotations );
+        }
+        return null;
+    }
+
+    static class AnnotatedPlexusComponents
+        implements PlexusComponents
+    {
+        public Iterable<Class<?>> getComponents()
+        {
+            return Collections.emptyList();
         }
 
-        // TODO: PlexusMappedPropertyBinder
+        public PlexusAnnotations getAnnotations( final Class<?> implementation )
+        {
+            if ( implementation.isAnnotationPresent( Component.class ) )
+            {
+                return new PlexusAnnotations()
+                {
+                    public Component getComponent()
+                    {
+                        return implementation.getAnnotation( Component.class );
+                    }
 
-        return null;
+                    public Configuration getConfiguration( BeanProperty<?> property )
+                    {
+                        return property.getAnnotation( Configuration.class );
+                    }
+
+                    public Requirement getRequirement( BeanProperty<?> property )
+                    {
+                        return property.getAnnotation( Requirement.class );
+                    }
+                };
+            }
+
+            return null;
+        }
     }
 }

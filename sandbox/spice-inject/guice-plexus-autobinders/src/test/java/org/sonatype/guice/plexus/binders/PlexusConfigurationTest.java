@@ -17,7 +17,7 @@ import junit.framework.TestCase;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Configuration;
 import org.sonatype.guice.bean.inject.BeanListener;
-import org.sonatype.guice.plexus.config.Configurator;
+import org.sonatype.guice.plexus.config.PlexusConfigurator;
 import org.sonatype.guice.plexus.config.Roles;
 
 import com.google.inject.AbstractModule;
@@ -43,7 +43,7 @@ public class PlexusConfigurationTest
     Injector injector;
 
     static class GlobalConfigurator
-        implements Configurator
+        implements PlexusConfigurator
     {
         @SuppressWarnings( "unchecked" )
         public <T> T configure( final Configuration config, final TypeLiteral<T> type )
@@ -53,7 +53,7 @@ public class PlexusConfigurationTest
     }
 
     static class LocalConfigurator
-        implements Configurator
+        implements PlexusConfigurator
     {
         @SuppressWarnings( "unchecked" )
         public <T> T configure( final Configuration config, final TypeLiteral<T> type )
@@ -70,7 +70,7 @@ public class PlexusConfigurationTest
             @Override
             protected void configure()
             {
-                bind( Configurator.class ).to( GlobalConfigurator.class );
+                bind( PlexusConfigurator.class ).to( GlobalConfigurator.class );
                 bind( Roles.configuratorKey( Object.class, "" ) ).to( LocalConfigurator.class );
                 bindListener( Matchers.any(), new BeanListener( new PlexusComponentBinder() ) );
             }

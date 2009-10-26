@@ -35,11 +35,11 @@ public class RolesTest
 
     private static final Key<Object> OBJECT_FOO_COMPONENT_KEY = Key.get( Object.class, Names.named( "foo" ) );
 
-    private static final Key<Configurator> OBJECT_CONFIGURATOR_KEY =
-        Key.get( Configurator.class, Names.named( Object.class.getName() ) );
+    private static final Key<PlexusConfigurator> OBJECT_CONFIGURATOR_KEY =
+        Key.get( PlexusConfigurator.class, Names.named( Object.class.getName() ) );
 
-    private static final Key<Configurator> OBJECT_FOO_CONFIGURATOR_KEY =
-        Key.get( Configurator.class, Names.named( Object.class.getName() + "-foo" ) );
+    private static final Key<PlexusConfigurator> OBJECT_FOO_CONFIGURATOR_KEY =
+        Key.get( PlexusConfigurator.class, Names.named( Object.class.getName() + "-foo" ) );
 
     public void testDefaultComponentKeys()
     {

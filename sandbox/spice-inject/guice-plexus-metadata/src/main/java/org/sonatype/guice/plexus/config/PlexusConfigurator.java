@@ -19,7 +19,7 @@ import com.google.inject.TypeLiteral;
 /**
  * Configures instances of various types, scoped to a particular Plexus component.
  */
-public interface Configurator
+public interface PlexusConfigurator
 {
     /**
      * Returns an instance of the given type using the given configuration.

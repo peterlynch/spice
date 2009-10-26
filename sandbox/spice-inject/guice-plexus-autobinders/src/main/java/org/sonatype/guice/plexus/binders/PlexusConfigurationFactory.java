@@ -16,7 +16,7 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Configuration;
 import org.sonatype.guice.bean.reflect.BeanProperty;
 import org.sonatype.guice.plexus.annotations.ConfigurationImpl;
-import org.sonatype.guice.plexus.config.Configurator;
+import org.sonatype.guice.plexus.config.PlexusConfigurator;
 import org.sonatype.guice.plexus.config.Roles;
 
 import com.google.inject.Key;
@@ -35,7 +35,7 @@ final class PlexusConfigurationFactory
 
     private final TypeEncounter<?> encounter;
 
-    private final Key<Configurator> configuratorKey;
+    private final Key<PlexusConfigurator> configuratorKey;
 
     // ----------------------------------------------------------------------
     // Constructors
@@ -55,7 +55,7 @@ final class PlexusConfigurationFactory
 
     public <T> Provider<T> lookup( final Configuration configuration, final BeanProperty<T> property )
     {
-        final Provider<Configurator> configurator = getComponentConfigurator();
+        final Provider<PlexusConfigurator> configurator = getComponentConfigurator();
 
         final Configuration namedConfig;
         if ( configuration.name().length() == 0 )
@@ -78,11 +78,11 @@ final class PlexusConfigurationFactory
     }
 
     /**
-     * Returns a {@link Provider} that can provide a {@link Configurator} for the current component.
+     * Returns a {@link Provider} that can provide a {@link PlexusConfigurator} for the current component.
      * 
      * @return Provider that provides a configurator for the current component
      */
-    private Provider<Configurator> getComponentConfigurator()
+    private Provider<PlexusConfigurator> getComponentConfigurator()
     {
         try
         {
@@ -92,7 +92,7 @@ final class PlexusConfigurationFactory
         catch ( final RuntimeException e )
         {
             // fall-back to the globally defined configurator
-            return encounter.getProvider( Configurator.class );
+            return encounter.getProvider( PlexusConfigurator.class );
         }
     }
 }

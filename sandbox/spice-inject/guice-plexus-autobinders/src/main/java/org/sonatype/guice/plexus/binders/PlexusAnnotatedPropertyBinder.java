@@ -12,12 +12,12 @@
  */
 package org.sonatype.guice.plexus.binders;
 
-import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Configuration;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.guice.bean.inject.PropertyBinder;
 import org.sonatype.guice.bean.inject.PropertyBinding;
 import org.sonatype.guice.bean.reflect.BeanProperty;
+import org.sonatype.guice.plexus.config.PlexusAnnotations;
 
 import com.google.inject.spi.TypeEncounter;
 
@@ -31,18 +31,21 @@ final class PlexusAnnotatedPropertyBinder
     // Implementation fields
     // ----------------------------------------------------------------------
 
-    private final PlexusRequirementFactory requirementFactory;
+    private final PlexusAnnotations annotations;
 
     private final PlexusConfigurationFactory configurationFactory;
+
+    private final PlexusRequirementFactory requirementFactory;
 
     // ----------------------------------------------------------------------
     // Constructors
     // ----------------------------------------------------------------------
 
-    PlexusAnnotatedPropertyBinder( final TypeEncounter<?> encounter, final Component component )
+    PlexusAnnotatedPropertyBinder( final TypeEncounter<?> encounter, final PlexusAnnotations annotations )
     {
-        requirementFactory = new PlexusRequirementFactory( encounter /* , component */);
-        configurationFactory = new PlexusConfigurationFactory( encounter, component );
+        this.annotations = annotations;
+        configurationFactory = new PlexusConfigurationFactory( encounter, annotations.getComponent() );
+        requirementFactory = new PlexusRequirementFactory( encounter );
     }
 
     // ----------------------------------------------------------------------
@@ -54,7 +57,7 @@ final class PlexusAnnotatedPropertyBinder
         /*
          * @Requirement binding
          */
-        final Requirement requirement = property.getAnnotation( Requirement.class );
+        final Requirement requirement = annotations.getRequirement( property );
         if ( null != requirement )
         {
             return new ProviderPropertyBinding<T>( property, requirementFactory.lookup( requirement, property ) );
@@ -63,7 +66,7 @@ final class PlexusAnnotatedPropertyBinder
         /*
          * @Configuration binding
          */
-        final Configuration configuration = property.getAnnotation( Configuration.class );
+        final Configuration configuration = annotations.getConfiguration( property );
         if ( null != configuration )
         {
             return new ProviderPropertyBinding<T>( property, configurationFactory.lookup( configuration, property ) );

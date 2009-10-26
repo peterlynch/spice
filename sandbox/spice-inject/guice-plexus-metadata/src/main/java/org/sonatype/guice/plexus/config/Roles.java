@@ -103,27 +103,27 @@ public final class Roles
     }
 
     /**
-     * Returns the {@link Configurator} binding {@link Key} for the given Plexus component.
+     * Returns the {@link PlexusConfigurator} binding {@link Key} for the given Plexus component.
      * 
      * @param component The Plexus component
      * @return Configurator binding key for the given component
      */
-    public static Key<Configurator> configuratorKey( final Component component )
+    public static Key<PlexusConfigurator> configuratorKey( final Component component )
     {
         return configuratorKey( component.role(), component.hint() );
     }
 
     /**
-     * Returns the {@link Configurator} binding {@link Key} for the given Plexus role-hint.
+     * Returns the {@link PlexusConfigurator} binding {@link Key} for the given Plexus role-hint.
      * 
      * @param role The Plexus role
      * @param hint The Plexus hint
      * @return Configurator binding key for the given role-hint
      */
-    public static Key<Configurator> configuratorKey( final Class<?> role, final String hint )
+    public static Key<PlexusConfigurator> configuratorKey( final Class<?> role, final String hint )
     {
         final String roleName = role.getName();
         final String roleHint = Hints.isDefaultHint( hint ) ? roleName : roleName + '-' + hint;
-        return Key.get( Configurator.class, Names.named( roleHint ) );
+        return Key.get( PlexusConfigurator.class, Names.named( roleHint ) );
     }
 }
