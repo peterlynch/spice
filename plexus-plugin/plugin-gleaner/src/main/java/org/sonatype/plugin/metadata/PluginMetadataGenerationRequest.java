@@ -36,6 +36,8 @@ public class PluginMetadataGenerationRequest
     private String applicationMinVersion;
 
     private String applicationMaxVersion;
+    
+    private String scmVersion;
 
     private final List<Class<?>> annotationClasses = new ArrayList<Class<?>>();
 
@@ -265,5 +267,15 @@ public class PluginMetadataGenerationRequest
     public void setOutputFile( File outputFile )
     {
         this.outputFile = outputFile;
+    }
+
+    public String getScmVersion()
+    {
+        return scmVersion;
+    }
+
+    public void setScmVersion( String scmVersion )
+    {
+        this.scmVersion = scmVersion;
     }
 }

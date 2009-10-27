@@ -114,6 +114,13 @@
           <required>true</required>
         </field>
         <field>
+          <name>scmVersion</name>
+          <version>1.0.0+</version>
+          <description>The scm version of this plugin.</description>
+          <type>String</type>
+          <required>false</required>
+        </field>     
+        <field>
           <name>licenses</name>
           <version>1.0.0+</version>
           <description>The list of licenses this plugin is distributed under.</description>

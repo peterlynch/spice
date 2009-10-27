@@ -49,6 +49,8 @@ public class DefaultPluginMetadataGenerator
         pluginMetadata.setApplicationEdition( request.getApplicationEdition() );
         pluginMetadata.setApplicationMinVersion( request.getApplicationMinVersion() );
         pluginMetadata.setApplicationMaxVersion( request.getApplicationMaxVersion() );
+        
+        pluginMetadata.setScmVersion( request.getScmVersion() );
 
         // set the licenses
         if ( request.getLicenses() != null )
