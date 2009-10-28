@@ -38,6 +38,8 @@ public class PluginMetadataGenerationRequest
     private String applicationMaxVersion;
     
     private String scmVersion;
+    
+    private String scmTimestamp;
 
     private final List<Class<?>> annotationClasses = new ArrayList<Class<?>>();
 
@@ -277,5 +279,15 @@ public class PluginMetadataGenerationRequest
     public void setScmVersion( String scmVersion )
     {
         this.scmVersion = scmVersion;
+    }
+
+    public String getScmTimestamp()
+    {
+        return scmTimestamp;
+    }
+
+    public void setScmTimestamp( String scmTimestamp )
+    {
+        this.scmTimestamp = scmTimestamp;
     }
 }

@@ -51,6 +51,7 @@ public class DefaultPluginMetadataGenerator
         pluginMetadata.setApplicationMaxVersion( request.getApplicationMaxVersion() );
         
         pluginMetadata.setScmVersion( request.getScmVersion() );
+        pluginMetadata.setScmTimestamp( request.getScmTimestamp() );
 
         // set the licenses
         if ( request.getLicenses() != null )

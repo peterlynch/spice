@@ -116,7 +116,14 @@
         <field>
           <name>scmVersion</name>
           <version>1.0.0+</version>
-          <description>The scm version of this plugin.</description>
+          <description>The SCM last changed version of this plugin.</description>
+          <type>String</type>
+          <required>false</required>
+        </field>
+        <field>
+          <name>scmTimestamp</name>
+          <version>1.0.0+</version>
+          <description>The SCM last changed timestamp of this plugin.</description>
           <type>String</type>
           <required>false</required>
         </field>     
