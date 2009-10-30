@@ -59,6 +59,11 @@ public class ControllerClient
         this.port = port;
     }
 
+    public boolean isStopped()
+    {
+        return state == STOPPED;
+    }
+
     public boolean isShutdown()
     {
         return state == SHUTDOWN;
@@ -212,7 +217,7 @@ public class ControllerClient
             }
             catch ( IOException e )
             {
-                throw new ControlConnectionException( e );
+                throw new ControlConnectionException( "Failed to connect to " + address + ":" + port, e );
             }
         }
 
@@ -220,5 +225,19 @@ public class ControllerClient
         response = (byte) socket.getInputStream().read();
 
         return response;
+    }
+
+    public boolean ping()
+    {
+        try
+        {
+            byte response = sendControlMessage( ControllerVocabulary.PING );
+            return response == ControllerVocabulary.PONG;
+        }
+        catch ( IOException e )
+        {
+            return false;
+        }
+
     }
 }

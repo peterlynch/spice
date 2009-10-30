@@ -353,6 +353,11 @@ public class OutOfProcessController
                                 doShutdown = false;
                                 break;
                             }
+                            case ( ControllerVocabulary.PING ):
+                            {
+                                System.out.println( "PONG" );
+                                command = ControllerVocabulary.PONG;
+                            }
                             default:
                             {
                                 System.out.println( "Unknown command: 0x" + Integer.toHexString( command & 0xf ) );

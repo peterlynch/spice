@@ -41,6 +41,7 @@ import org.sonatype.appbooter.ctl.Service;
  * @since 1.0
  * @deprecated Use PlexusAppBooter or PlexusAppBooterService, depending on your needs.
  */
+@Deprecated
 public class PlexusContainerHost
     implements Service
 {
@@ -198,7 +199,16 @@ public class PlexusContainerHost
          * Iterate through plexus.properties, insert all items into a map add into plexus context using a
          * RegexBasedInterpolator.
          */
-        File containerPropertiesFile = new File( configuration.getParentFile(), "plexus.properties" );
+        File containerPropertiesFile;
+        String plexusCfg = System.getProperty( "plexus.container.properties.file" );
+        if ( plexusCfg != null )
+        {
+            containerPropertiesFile = new File( plexusCfg );
+        }
+        else
+        {
+            containerPropertiesFile = new File( configuration.getParentFile(), "plexus.properties" );
+        }
 
         Properties containerProperties = new Properties();
 
@@ -251,7 +261,7 @@ public class PlexusContainerHost
 
             if ( System.getProperty( sysPropKey ) == null )
             {
-                System.setProperty( sysPropKey, (String) value );
+                System.setProperty( sysPropKey, value );
             }
 
             // dump it to System.out
@@ -269,9 +279,10 @@ public class PlexusContainerHost
     public void startContainer()
         throws Exception
     {
-        ContainerConfiguration cc = new DefaultContainerConfiguration()
-            .setClassWorld( world ).setContainerConfiguration( configuration.getAbsolutePath() ).setContext(
-                createContainerContext() );
+        ContainerConfiguration cc =
+            new DefaultContainerConfiguration().setClassWorld( world ).setContainerConfiguration(
+                                                                                                  configuration.getAbsolutePath() ).setContext(
+                                                                                                                                                createContainerContext() );
 
         container = new DefaultPlexusContainer( cc );
 

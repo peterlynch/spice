@@ -28,4 +28,10 @@ public class ControlConnectionException
     {
         initCause( embedded );
     }
+
+    public ControlConnectionException( String msg, IOException embedded )
+    {
+        super( msg );
+        initCause( embedded );
+    }
 }

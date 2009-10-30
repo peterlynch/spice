@@ -27,6 +27,10 @@ public final class ControllerVocabulary
 
     public static final byte DETACH_ON_CLOSE = 0x5;
 
+    public static final byte PING = 0x6;
+
+    public static final byte PONG = 0x7;
+
     private ControllerVocabulary()
     {
     }

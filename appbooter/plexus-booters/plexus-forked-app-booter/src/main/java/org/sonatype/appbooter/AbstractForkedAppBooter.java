@@ -151,6 +151,11 @@ public abstract class AbstractForkedAppBooter
     StreamPumper errPumper = null;
 
     /**
+     * @plexus.configuration
+     */
+    private File containerProperties;
+
+    /**
      * Returns the location of the plexus platform jar, i.e. plexus-platform-base.jar
      * 
      * @return
@@ -305,14 +310,20 @@ public abstract class AbstractForkedAppBooter
         {
             cli.createArg().setLine( "-Dbasedir=\'" + basedir.getAbsolutePath() + "\'" );
 
-            cli.createArg()
-                .setLine(
-                          "-D" + PlexusAppBooterService.DEFAULT_NAME + PlexusAppBooterService.ENABLE_CONTROL_SOCKET
-                              + "=" + Boolean.TRUE.toString() );
+            cli.createArg().setLine(
+                                     "-D" + PlexusAppBooterService.DEFAULT_NAME
+                                         + PlexusAppBooterService.ENABLE_CONTROL_SOCKET + "=" + Boolean.TRUE.toString() );
 
             if ( classworldsConf != null )
             {
                 cli.createArg().setLine( "-Dclassworlds.conf=\'" + classworldsConf.getAbsolutePath() + "\'" );
+            }
+
+            if ( containerProperties != null )
+            {
+                cli.createArg().setLine(
+                                         "-Dplexus.container.properties.file='" + containerProperties.getAbsolutePath()
+                                             + "\'" );
             }
 
             cli.createArg().setLine( "-cp" );
@@ -407,8 +418,8 @@ public abstract class AbstractForkedAppBooter
 
         sysProps.put( PlexusAppBooterService.DEFAULT_NAME + PlexusAppBooterService.CONFIGURATION_FILE_PROPERTY_KEY,
                       configuration.getAbsolutePath() );
-        sysProps.put( PlexusAppBooterService.DEFAULT_NAME + PlexusAppBooterService.ENABLE_CONTROL_SOCKET, Boolean.TRUE
-            .toString() );
+        sysProps.put( PlexusAppBooterService.DEFAULT_NAME + PlexusAppBooterService.ENABLE_CONTROL_SOCKET,
+                      Boolean.TRUE.toString() );
 
         // cli wins
         for ( Map.Entry<Object, Object> e : System.getProperties().entrySet() )
@@ -632,7 +643,7 @@ public abstract class AbstractForkedAppBooter
     {
         this.controlClient = controlClient;
     }
-    
+
     public ControllerClient getControllerClient()
     {
         return this.controlClient;

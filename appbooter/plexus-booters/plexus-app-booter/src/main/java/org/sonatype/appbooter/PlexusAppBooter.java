@@ -23,7 +23,7 @@ import org.codehaus.plexus.util.StringUtils;
 
 /**
  * The simplest class needed to bring up a Plexus Application. No hokus-pokus, just real stuff.
- *
+ * 
  * @author cstamas
  * @since 2.0
  */
@@ -229,7 +229,16 @@ public class PlexusAppBooter
          * A standard source: plexus.properties next to plexus.xml (config file) Iterate through plexus.properties,
          * insert all items into a map add into plexus context using a RegexBasedInterpolator.
          */
-        File containerPropertiesFile = new File( getConfiguration().getParentFile(), "plexus.properties" );
+        File containerPropertiesFile;
+        String plexusCfg = System.getProperty( "plexus.container.properties.file" );
+        if ( plexusCfg != null )
+        {
+            containerPropertiesFile = new File( plexusCfg );
+        }
+        else
+        {
+            containerPropertiesFile = new File( getConfiguration().getParentFile(), "plexus.properties" );
+        }
 
         Properties containerProperties = new Properties();
 
@@ -325,9 +334,9 @@ public class PlexusAppBooter
             customizeContext( context );
 
             ContainerConfiguration configuration =
-                new DefaultContainerConfiguration().setClassWorld( getWorld() )
-                    .setContainerConfiguration( getConfiguration().getAbsolutePath() )
-                    .setContext( context.getContextData() );
+                new DefaultContainerConfiguration().setClassWorld( getWorld() ).setContainerConfiguration(
+                                                                                                           getConfiguration().getAbsolutePath() ).setContext(
+                                                                                                                                                              context.getContextData() );
 
             customizeContainerConfiguration( configuration );
 
@@ -335,7 +344,7 @@ public class PlexusAppBooter
 
             customizeContainer( container );
 
-            started=true;
+            started = true;
         }
     }
 
@@ -442,7 +451,8 @@ public class PlexusAppBooter
         main( args, null );
     }
 
-    public boolean isStarted() {
-        return started ;
+    public boolean isStarted()
+    {
+        return started;
     }
 }
