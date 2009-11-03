@@ -19,8 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.Disposable;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.CommandLineException;
@@ -45,7 +45,7 @@ import org.sonatype.plexus.classworlds.validator.ClassworldsValidationResult;
  */
 public abstract class AbstractForkedAppBooter
     extends AbstractLogEnabled
-    implements ForkedAppBooter
+    implements ForkedAppBooter, Disposable
 {
 
     /**
@@ -154,6 +154,12 @@ public abstract class AbstractForkedAppBooter
      * @plexus.configuration
      */
     private File containerProperties;
+
+    private StreamConsumer streamConsumer;
+
+    private boolean stopped;
+
+    private boolean shutdown;
 
     /**
      * Returns the location of the plexus platform jar, i.e. plexus-platform-base.jar
@@ -477,22 +483,25 @@ public abstract class AbstractForkedAppBooter
     private void executeCommandLine( Commandline cli )
         throws AppBooterServiceException
     {
-        StreamConsumer out = new StreamConsumer()
-        {
-            public void consumeLine( String line )
-            {
-                getLogger().info( line );
-            }
-        };
-
         Process p = null;
+
+        if ( streamConsumer == null )
+        {
+            streamConsumer = new StreamConsumer()
+            {
+                public void consumeLine( String line )
+                {
+                    getLogger().info( line );
+                }
+            };
+        }
 
         try
         {
             p = cli.execute();
 
-            outPumper = new StreamPumper( p.getInputStream(), out );
-            errPumper = new StreamPumper( p.getErrorStream(), out );
+            outPumper = new StreamPumper( p.getInputStream(), streamConsumer );
+            errPumper = new StreamPumper( p.getErrorStream(), streamConsumer );
 
             outPumper.setPriority( Thread.MIN_PRIORITY + 1 );
             errPumper.setPriority( Thread.MIN_PRIORITY + 1 );
@@ -513,6 +522,8 @@ public abstract class AbstractForkedAppBooter
     public void stop()
         throws AppBooterServiceException
     {
+        this.stopped = true;
+
         getLogger().info( "Stopping plexus application." );
         ControllerClient client = null;
         try
@@ -544,17 +555,20 @@ public abstract class AbstractForkedAppBooter
 
     public boolean isShutdown()
     {
-        throw new NotImplementedException( "Method 'isShutdown' is not implemented." );
+        // throw new NotImplementedException( "Method 'isShutdown' is not implemented." );
+        return shutdown;
     }
 
     public boolean isStopped()
     {
-        throw new NotImplementedException( "Method 'isStopped' is not implemented." );
+        // throw new NotImplementedException( "Method 'isStopped' is not implemented." );
+        return stopped;
     }
 
     public void shutdown()
         throws AppBooterServiceException
     {
+        shutdown = true;
         this.stop();
         if ( !getLogger().isDebugEnabled() && !debug && tempDir != null && tempDir.exists() )
         {
@@ -647,6 +661,18 @@ public abstract class AbstractForkedAppBooter
     public ControllerClient getControllerClient()
     {
         return this.controlClient;
+    }
+
+    public void dispose()
+    {
+        try
+        {
+            shutdown();
+        }
+        catch ( AppBooterServiceException e )
+        {
+            getLogger().error( e.getMessage(), e );
+        }
     }
 
 }
