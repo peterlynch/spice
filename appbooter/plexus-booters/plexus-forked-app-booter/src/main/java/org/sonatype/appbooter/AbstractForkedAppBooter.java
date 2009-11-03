@@ -238,14 +238,14 @@ public abstract class AbstractForkedAppBooter
         }
         else
         {
-            getLogger().info( "Sleeping " + this.sleepAfterStart / 1000 + " seconds for application to start." );
-            try
-            {
-                Thread.sleep( this.sleepAfterStart );
-            }
-            catch ( InterruptedException e )
-            {
-            }
+            // getLogger().info( "Sleeping " + this.sleepAfterStart / 1000 + " seconds for application to start." );
+            // try
+            // {
+            // Thread.sleep( this.sleepAfterStart );
+            // }
+            // catch ( InterruptedException e )
+            // {
+            // }
         }
 
         if ( !disableBlocking )
@@ -667,7 +667,10 @@ public abstract class AbstractForkedAppBooter
     {
         try
         {
-            shutdown();
+            if ( !isShutdown() )
+            {
+                shutdown();
+            }
         }
         catch ( AppBooterServiceException e )
         {
