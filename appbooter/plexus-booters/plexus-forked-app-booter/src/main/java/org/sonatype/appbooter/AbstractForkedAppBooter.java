@@ -473,7 +473,7 @@ public abstract class AbstractForkedAppBooter
             // If not closed normally...
             if ( controlClient != null && controlClient.isOpen() )
             {
-                getLogger().info( "ShutdownHook is closing the client connection." );
+                getLogger().debug( "ShutdownHook is closing the client connection." );
                 // Do it now
                 controlClient.close();
             }
