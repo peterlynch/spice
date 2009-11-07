@@ -16,12 +16,17 @@ import static com.google.inject.name.Names.named;
 import static org.sonatype.guice.plexus.config.Hints.getCanonicalHint;
 import static org.sonatype.guice.plexus.config.Hints.isDefaultHint;
 
-import java.util.Map;
-import java.util.Map.Entry;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.codehaus.plexus.component.annotations.Component;
+import org.sonatype.guice.plexus.config.PlexusComponents;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.Scopes;
 import com.google.inject.binder.AnnotatedBindingBuilder;
@@ -39,15 +44,15 @@ public final class PlexusStaticBindings
     // Implementation fields
     // ----------------------------------------------------------------------
 
-    private final Map<Class<?>, Component> componentMap;
+    private final PlexusComponents components;
 
     // ----------------------------------------------------------------------
     // Constructors
     // ----------------------------------------------------------------------
 
-    public PlexusStaticBindings( final Map<Class<?>, Component> componentMap )
+    public PlexusStaticBindings( final PlexusComponents components )
     {
-        this.componentMap = componentMap;
+        this.components = components;
     }
 
     // ----------------------------------------------------------------------
@@ -58,21 +63,46 @@ public final class PlexusStaticBindings
     @SuppressWarnings( "unchecked" )
     protected void configure()
     {
-        for ( final Entry<Class<?>, Component> e : componentMap.entrySet() )
+        for ( final Class<?> clazz : components.getComponents() )
         {
-            final Class<?> clazz = e.getKey();
-            final Component spec = e.getValue();
+            final Component spec = components.getAnnotations( clazz ).getComponent();
+
+            final Class<?> role = spec.role();
+            final String hint = getCanonicalHint( spec.hint() );
 
             // bind role + optional hint -> implementation
-            final AnnotatedBindingBuilder abb = bind( spec.role() );
-            final String hint = getCanonicalHint( spec.hint() );
+            final AnnotatedBindingBuilder abb = bind( role );
             final LinkedBindingBuilder lbb = isDefaultHint( hint ) ? abb : abb.annotatedWith( named( hint ) );
-            final ScopedBindingBuilder sbb = lbb.to( clazz );
+            final ScopedBindingBuilder sbb = clazz.equals( role ) ? lbb : lbb.to( clazz );
 
-            // assume anything other than "per-lookup" is a singleton
-            if ( !"per-lookup".equals( spec.instantiationStrategy() ) )
+            if ( "load-on-start".equals( spec.instantiationStrategy() ) )
+            {
+                startingKeys.add( isDefaultHint( hint ) ? Key.get( role ) : Key.get( role, named( hint ) ) );
+            }
+            else if ( !"per-lookup".equals( spec.instantiationStrategy() ) )
             {
                 sbb.in( Scopes.SINGLETON );
+            }
+        }
+
+        requestInjection( this );
+    }
+
+    private final List<Key<?>> startingKeys = new ArrayList<Key<?>>();
+
+    @Inject
+    public void start( final Injector injector )
+    {
+        for ( Key<?> key : startingKeys )
+        {
+            try
+            {
+                Object instance = injector.getInstance( key );
+                Method start = instance.getClass().getMethod( "start" );
+                start.invoke( instance );
+            }
+            catch ( Exception e )
+            {
             }
         }
     }

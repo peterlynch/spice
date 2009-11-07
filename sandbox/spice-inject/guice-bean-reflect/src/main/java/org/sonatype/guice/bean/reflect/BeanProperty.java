@@ -20,13 +20,15 @@ import com.google.inject.TypeLiteral;
  * Represents a bean property such as a field or setter method.
  * 
  * <pre>
+ * // like...
  * &#064;SomeAnnotation
  * SomeType name;
  * 
+ * // ...or...
  * &#064;SomeAnnotation
  * void setName( SomeType _name )
  * {
- *     //...
+ *     //...etc...
  * }
  * </pre>
  */
@@ -51,7 +53,7 @@ public interface BeanProperty<T>
     String getName();
 
     /**
-     * Set the property in the given bean to the given value.
+     * Sets the property in the given bean to the given value.
      * 
      * @param bean The bean to update
      * @param value The value to set

@@ -21,6 +21,7 @@ import org.sonatype.guice.plexus.config.Roles;
 
 import com.google.inject.Key;
 import com.google.inject.Provider;
+import com.google.inject.TypeLiteral;
 import com.google.inject.spi.TypeEncounter;
 
 /**
@@ -56,6 +57,7 @@ final class PlexusConfigurationFactory
     public <T> Provider<T> lookup( final Configuration configuration, final BeanProperty<T> property )
     {
         final Provider<PlexusConfigurator> configurator = getComponentConfigurator();
+        final TypeLiteral<T> expectedType = property.getType();
 
         final Configuration namedConfig;
         if ( configuration.name().length() == 0 )
@@ -72,7 +74,7 @@ final class PlexusConfigurationFactory
         {
             public T get()
             {
-                return configurator.get().configure( namedConfig, property.getType() );
+                return configurator.get().configure( namedConfig, expectedType );
             }
         };
     }

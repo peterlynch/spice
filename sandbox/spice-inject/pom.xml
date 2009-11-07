@@ -7,12 +7,17 @@
     <version>14-SNAPSHOT</version>
   </parent>
 
+  <packaging>pom</packaging>
+
   <modelVersion>4.0.0</modelVersion>
   <artifactId>spice-inject</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <packaging>pom</packaging>
 
   <name>Spice - Dependency Injection</name>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
 
   <modules>
     <module>guice-bean-reflect</module>
@@ -25,6 +30,34 @@
     <module>guice-plexus-shim</module>
     <module>guice-plexus-tck</module>
   </modules>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>2.4.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.felix</groupId>
+          <artifactId>maven-bundle-plugin</artifactId>
+          <version>2.0.1</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <extensions>true</extensions>
+        <configuration>
+          <instructions>
+            <_nouses>true</_nouses>
+          </instructions>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
   <dependencies>
     <dependency>
@@ -49,7 +82,7 @@
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-component-annotations</artifactId>
-        <version>1.4.0</version>
+        <version>1.5.0</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
@@ -63,22 +96,6 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
-        <version>2.0.1</version>
-        <extensions>true</extensions>
-        <configuration>
-          <instructions>
-            <_nouses>true</_nouses>
-          </instructions>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 
 <!-- TEMPORARY -->
   <repositories>

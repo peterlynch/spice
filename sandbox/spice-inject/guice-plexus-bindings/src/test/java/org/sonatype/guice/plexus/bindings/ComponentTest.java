@@ -12,12 +12,16 @@
  */
 package org.sonatype.guice.plexus.bindings;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
 
 import junit.framework.TestCase;
 
 import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Configuration;
+import org.codehaus.plexus.component.annotations.Requirement;
+import org.sonatype.guice.bean.reflect.BeanProperty;
+import org.sonatype.guice.plexus.config.PlexusAnnotations;
+import org.sonatype.guice.plexus.config.PlexusComponents;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -32,6 +36,43 @@ public class ComponentTest
     @Inject
     Injector injector;
 
+    static class BasicComponentMap
+        implements PlexusComponents
+    {
+        private final Iterable<Class<?>> components;
+
+        public BasicComponentMap( Class<?>... components )
+        {
+            this.components = Arrays.asList( components );
+        }
+
+        public Iterable<Class<?>> getComponents()
+        {
+            return components;
+        }
+
+        public PlexusAnnotations getAnnotations( final Class<?> implementation )
+        {
+            return new PlexusAnnotations()
+            {
+                public Component getComponent()
+                {
+                    return implementation.getAnnotation( Component.class );
+                }
+
+                public Configuration getConfiguration( BeanProperty<?> property )
+                {
+                    return property.getAnnotation( Configuration.class );
+                }
+
+                public Requirement getRequirement( BeanProperty<?> property )
+                {
+                    return property.getAnnotation( Requirement.class );
+                }
+            };
+        }
+    }
+
     @Override
     protected void setUp()
     {
@@ -40,26 +81,10 @@ public class ComponentTest
             @Override
             protected void configure()
             {
-                final Map<Class<?>, Component> components = new HashMap<Class<?>, Component>();
-
-                addComponent( components, ComponentA.class );
-                addComponent( components, ComponentD.class );
-
-                install( new PlexusStaticBindings( components ) );
-
-                components.clear();
-
-                addComponent( components, ComponentB.class );
-                addComponent( components, ComponentC.class );
-
-                install( new PlexusStaticBindings( components ) );
+                install( new PlexusStaticBindings( new BasicComponentMap( ComponentA.class, ComponentD.class,
+                                                                          ComponentB.class, ComponentC.class ) ) );
             }
         } ).injectMembers( this );
-    }
-
-    static void addComponent( final Map<Class<?>, Component> components, final Class<?> clazz )
-    {
-        components.put( clazz, clazz.getAnnotation( Component.class ) );
     }
 
     private static interface I

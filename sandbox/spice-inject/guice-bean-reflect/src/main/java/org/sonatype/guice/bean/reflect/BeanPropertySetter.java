@@ -70,7 +70,7 @@ public final class BeanPropertySetter<T>
         final Matcher matcher = SETTER_PATTERN.matcher( name );
         if ( matcher.matches() )
         {
-            return matcher.group( 1 ).toLowerCase() + matcher.group( 2 );
+            return Character.toLowerCase( matcher.group( 1 ).charAt( 0 ) ) + matcher.group( 2 );
         }
 
         return name;

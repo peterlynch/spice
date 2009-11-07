@@ -51,60 +51,16 @@ public final class DeclaredMembers
     // ----------------------------------------------------------------------
 
     /**
-     * Useful base for all ready-only {@link Iterator}s.
-     */
-    private static abstract class ReadOnlyIterator<T>
-        implements Iterator<T>
-    {
-        ReadOnlyIterator()
-        {
-        }
-
-        public final void remove()
-        {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    /**
-     * {@link Iterator} that iterates over a cached array.
-     */
-    private static final class ArrayIterator<T>
-        extends ReadOnlyIterator<T>
-    {
-        private final T[] items;
-
-        private int i;
-
-        ArrayIterator( final T[] items )
-        {
-            this.items = items;
-        }
-
-        public boolean hasNext()
-        {
-            return i < items.length;
-        }
-
-        public T next()
-        {
-            return items[i++]; // safe because we always check hasNext() first
-        }
-    }
-
-    /**
      * Read-only {@link Iterator} that uses rolling {@link View}s to traverse the different members.
      */
     private static final class MemberIterator
-        extends ReadOnlyIterator<Member>
+        implements Iterator<Member>
     {
         // ----------------------------------------------------------------------
         // Constants
         // ----------------------------------------------------------------------
 
-        private static final Iterator<Member> EMPTY_ITERATOR = new ArrayIterator<Member>( new Member[0] );
-
-        private static final View FIRST_VIEW = View.values()[0];
+        private static final View[] VIEWS = View.values();
 
         // ----------------------------------------------------------------------
         // Implementation fields
@@ -112,9 +68,11 @@ public final class DeclaredMembers
 
         private Class<?> clazz;
 
-        private Iterator<Member> e = EMPTY_ITERATOR;
+        private int viewIndex;
 
-        private View view = FIRST_VIEW;
+        private Member[] members = {};
+
+        private int memberIndex;
 
         // ----------------------------------------------------------------------
         // Constructors
@@ -122,7 +80,7 @@ public final class DeclaredMembers
 
         MemberIterator( final Class<?> clazz )
         {
-            this.clazz = clazz;
+            this.clazz = filterClass( clazz );
         }
 
         // ----------------------------------------------------------------------
@@ -131,24 +89,23 @@ public final class DeclaredMembers
 
         public boolean hasNext()
         {
-            // check iterator cache
-            while ( !e.hasNext() )
+            while ( memberIndex >= members.length )
             {
-                // stop when we reach the top (or the standard Java classes)
-                if ( null == clazz || clazz.getName().startsWith( "java." ) )
+                if ( viewIndex >= VIEWS.length )
+                {
+                    // no more views, time to move up hierarchy
+                    clazz = filterClass( clazz.getSuperclass() );
+                    viewIndex = 0;
+                }
+
+                if ( null == clazz )
                 {
                     return false;
                 }
 
-                // reload cache
-                e = new ArrayIterator<Member>( view.elements( clazz ) );
-
-                // prepare next view
-                view = view.next();
-                if ( FIRST_VIEW == view )
-                {
-                    clazz = clazz.getSuperclass(); // looped => move onto parent
-                }
+                // load each view in turn to get next members
+                members = VIEWS[viewIndex++].elements( clazz );
+                memberIndex = 0;
             }
 
             return true;
@@ -158,10 +115,24 @@ public final class DeclaredMembers
         {
             if ( hasNext() )
             {
-                // cache is valid
-                return e.next();
+                // initialized by hasNext()
+                return members[memberIndex++];
             }
             throw new NoSuchElementException();
+        }
+
+        public void remove()
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        // ----------------------------------------------------------------------
+        // Implementation methods
+        // ----------------------------------------------------------------------
+
+        private static Class<?> filterClass( final Class<?> clazz )
+        {
+            return null == clazz || clazz.getName().startsWith( "java." ) ? null : clazz;
         }
     }
 
@@ -199,13 +170,5 @@ public final class DeclaredMembers
         };
 
         abstract Member[] elements( final Class<?> clazz );
-
-        private static final View[] VIEWS = View.values();
-
-        final View next()
-        {
-            // keep cycling through the different elements
-            return VIEWS[( ordinal() + 1 ) % VIEWS.length];
-        }
     }
 }
