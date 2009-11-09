@@ -20,8 +20,8 @@ import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.guice.bean.inject.BeanBinder;
 import org.sonatype.guice.bean.inject.PropertyBinder;
 import org.sonatype.guice.bean.reflect.BeanProperty;
-import org.sonatype.guice.plexus.config.PlexusAnnotations;
-import org.sonatype.guice.plexus.config.PlexusComponents;
+import org.sonatype.guice.plexus.config.PlexusBeanMetadata;
+import org.sonatype.guice.plexus.config.PlexusBeanSource;
 
 import com.google.inject.TypeLiteral;
 import com.google.inject.spi.TypeEncounter;
@@ -32,16 +32,16 @@ import com.google.inject.spi.TypeEncounter;
 public final class PlexusComponentBinder
     implements BeanBinder
 {
-    private final PlexusComponents components;
+    private final PlexusBeanSource beanSource;
 
     public PlexusComponentBinder()
     {
-        components = new AnnotatedPlexusComponents();
+        beanSource = new AnnotatedPlexusComponents();
     }
 
-    public PlexusComponentBinder( final PlexusComponents components )
+    public PlexusComponentBinder( final PlexusBeanSource beanSource )
     {
-        this.components = components;
+        this.beanSource = beanSource;
     }
 
     // ----------------------------------------------------------------------
@@ -50,28 +50,28 @@ public final class PlexusComponentBinder
 
     public <B> PropertyBinder bindBean( final TypeLiteral<B> type, final TypeEncounter<B> encounter )
     {
-        final PlexusAnnotations annotations = components.getAnnotations( type.getRawType() );
-        if ( null != annotations )
+        final PlexusBeanMetadata beanMetadata = beanSource.getBeanMetadata( type.getRawType() );
+        if ( null != beanMetadata )
         {
             // assume all other properties are marked with Plexus annotations
-            return new PlexusAnnotatedPropertyBinder( encounter, annotations );
+            return new PlexusAnnotatedPropertyBinder( encounter, beanMetadata );
         }
         return null;
     }
 
     static class AnnotatedPlexusComponents
-        implements PlexusComponents
+        implements PlexusBeanSource
     {
-        public Iterable<Class<?>> getComponents()
+        public Iterable<Class<?>> findPlexusBeans()
         {
             return Collections.emptyList();
         }
 
-        public PlexusAnnotations getAnnotations( final Class<?> implementation )
+        public PlexusBeanMetadata getBeanMetadata( final Class<?> implementation )
         {
             if ( implementation.isAnnotationPresent( Component.class ) )
             {
-                return new PlexusAnnotations()
+                return new PlexusBeanMetadata()
                 {
                     public Component getComponent()
                     {

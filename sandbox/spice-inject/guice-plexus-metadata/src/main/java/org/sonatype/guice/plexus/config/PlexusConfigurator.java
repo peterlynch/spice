@@ -17,7 +17,7 @@ import org.codehaus.plexus.component.annotations.Configuration;
 import com.google.inject.TypeLiteral;
 
 /**
- * Configures instances of various types, scoped to a particular Plexus component.
+ * Configures instances of various types for one or more Plexus beans.
  */
 public interface PlexusConfigurator
 {

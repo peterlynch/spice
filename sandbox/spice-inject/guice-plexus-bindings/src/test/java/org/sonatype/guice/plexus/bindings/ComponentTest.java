@@ -20,8 +20,8 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Configuration;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.guice.bean.reflect.BeanProperty;
-import org.sonatype.guice.plexus.config.PlexusAnnotations;
-import org.sonatype.guice.plexus.config.PlexusComponents;
+import org.sonatype.guice.plexus.config.PlexusBeanMetadata;
+import org.sonatype.guice.plexus.config.PlexusBeanSource;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -36,24 +36,24 @@ public class ComponentTest
     @Inject
     Injector injector;
 
-    static class BasicComponentMap
-        implements PlexusComponents
+    static class StaticBeanSource
+        implements PlexusBeanSource
     {
-        private final Iterable<Class<?>> components;
+        private final Iterable<Class<?>> beans;
 
-        public BasicComponentMap( Class<?>... components )
+        public StaticBeanSource( Class<?>... beans )
         {
-            this.components = Arrays.asList( components );
+            this.beans = Arrays.asList( beans );
         }
 
-        public Iterable<Class<?>> getComponents()
+        public Iterable<Class<?>> findPlexusBeans()
         {
-            return components;
+            return beans;
         }
 
-        public PlexusAnnotations getAnnotations( final Class<?> implementation )
+        public PlexusBeanMetadata getBeanMetadata( final Class<?> implementation )
         {
-            return new PlexusAnnotations()
+            return new PlexusBeanMetadata()
             {
                 public Component getComponent()
                 {
@@ -81,8 +81,8 @@ public class ComponentTest
             @Override
             protected void configure()
             {
-                install( new PlexusStaticBindings( new BasicComponentMap( ComponentA.class, ComponentD.class,
-                                                                          ComponentB.class, ComponentC.class ) ) );
+                install( new PlexusStaticBindings( new StaticBeanSource( ComponentA.class, ComponentD.class,
+                                                                         ComponentB.class, ComponentC.class ) ) );
             }
         } ).injectMembers( this );
     }

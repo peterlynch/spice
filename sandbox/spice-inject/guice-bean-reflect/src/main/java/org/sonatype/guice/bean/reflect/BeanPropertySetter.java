@@ -24,7 +24,7 @@ import com.google.inject.TypeLiteral;
 /**
  * {@link BeanProperty} backed by a single-parameter setter {@link Method}.
  */
-public final class BeanPropertySetter<T>
+final class BeanPropertySetter<T>
     implements BeanProperty<T>, PrivilegedAction<Void>
 {
     // ----------------------------------------------------------------------
@@ -43,7 +43,7 @@ public final class BeanPropertySetter<T>
     // Constructors
     // ----------------------------------------------------------------------
 
-    public BeanPropertySetter( final Method method )
+    BeanPropertySetter( final Method method )
     {
         this.method = method;
     }

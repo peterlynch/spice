@@ -13,7 +13,7 @@
 package org.sonatype.guice.plexus.binders;
 
 import org.sonatype.guice.bean.inject.BeanListener;
-import org.sonatype.guice.plexus.config.PlexusComponents;
+import org.sonatype.guice.plexus.config.PlexusBeanSource;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.matcher.Matcher;
@@ -24,16 +24,16 @@ public final class PlexusAutoBinders
 {
     private final Matcher<Object> matcher = Matchers.any();
 
-    private final PlexusComponents components;
+    private final PlexusBeanSource beanSource;
 
-    public PlexusAutoBinders( final PlexusComponents components )
+    public PlexusAutoBinders( final PlexusBeanSource beanSource )
     {
-        this.components = components;
+        this.beanSource = beanSource;
     }
 
     @Override
     protected void configure()
     {
-        bindListener( matcher, new BeanListener( new PlexusComponentBinder( components ) ) );
+        bindListener( matcher, new BeanListener( new PlexusComponentBinder( beanSource ) ) );
     }
 }

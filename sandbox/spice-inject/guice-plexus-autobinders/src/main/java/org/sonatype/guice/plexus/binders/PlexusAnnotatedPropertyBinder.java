@@ -17,7 +17,7 @@ import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.guice.bean.inject.PropertyBinder;
 import org.sonatype.guice.bean.inject.PropertyBinding;
 import org.sonatype.guice.bean.reflect.BeanProperty;
-import org.sonatype.guice.plexus.config.PlexusAnnotations;
+import org.sonatype.guice.plexus.config.PlexusBeanMetadata;
 
 import com.google.inject.spi.TypeEncounter;
 
@@ -31,7 +31,7 @@ final class PlexusAnnotatedPropertyBinder
     // Implementation fields
     // ----------------------------------------------------------------------
 
-    private final PlexusAnnotations annotations;
+    private final PlexusBeanMetadata beanMetadata;
 
     private final PlexusConfigurationFactory configurationFactory;
 
@@ -41,10 +41,10 @@ final class PlexusAnnotatedPropertyBinder
     // Constructors
     // ----------------------------------------------------------------------
 
-    PlexusAnnotatedPropertyBinder( final TypeEncounter<?> encounter, final PlexusAnnotations annotations )
+    PlexusAnnotatedPropertyBinder( final TypeEncounter<?> encounter, final PlexusBeanMetadata beanMetadata )
     {
-        this.annotations = annotations;
-        configurationFactory = new PlexusConfigurationFactory( encounter, annotations.getComponent() );
+        this.beanMetadata = beanMetadata;
+        configurationFactory = new PlexusConfigurationFactory( encounter, beanMetadata.getComponent() );
         requirementFactory = new PlexusRequirementFactory( encounter );
     }
 
@@ -57,7 +57,7 @@ final class PlexusAnnotatedPropertyBinder
         /*
          * @Requirement binding
          */
-        final Requirement requirement = annotations.getRequirement( property );
+        final Requirement requirement = beanMetadata.getRequirement( property );
         if ( null != requirement )
         {
             return new ProviderPropertyBinding<T>( property, requirementFactory.lookup( requirement, property ) );
@@ -66,7 +66,7 @@ final class PlexusAnnotatedPropertyBinder
         /*
          * @Configuration binding
          */
-        final Configuration configuration = annotations.getConfiguration( property );
+        final Configuration configuration = beanMetadata.getConfiguration( property );
         if ( null != configuration )
         {
             return new ProviderPropertyBinding<T>( property, configurationFactory.lookup( configuration, property ) );

@@ -53,7 +53,7 @@ public final class Hints
      */
     public static String getCanonicalHint( final String hint )
     {
-        // interning hints is a good idea because most will be string constants
+        // interning hints is a good idea because there's a lot of duplication
         return null == hint || hint.length() == 0 ? DEFAULT_HINT : hint.intern();
     }
 

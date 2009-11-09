@@ -22,7 +22,7 @@ import com.google.inject.TypeLiteral;
 /**
  * {@link BeanProperty} backed by a {@link Field}.
  */
-public final class BeanPropertyField<T>
+final class BeanPropertyField<T>
     implements BeanProperty<T>, PrivilegedAction<Void>
 {
     // ----------------------------------------------------------------------
@@ -35,7 +35,7 @@ public final class BeanPropertyField<T>
     // Constructors
     // ----------------------------------------------------------------------
 
-    public BeanPropertyField( final Field field )
+    BeanPropertyField( final Field field )
     {
         this.field = field;
     }

@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.codehaus.plexus.component.annotations.Component;
-import org.sonatype.guice.plexus.config.PlexusComponents;
+import org.sonatype.guice.plexus.config.PlexusBeanSource;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
@@ -44,15 +44,15 @@ public final class PlexusStaticBindings
     // Implementation fields
     // ----------------------------------------------------------------------
 
-    private final PlexusComponents components;
+    private final PlexusBeanSource beanSource;
 
     // ----------------------------------------------------------------------
     // Constructors
     // ----------------------------------------------------------------------
 
-    public PlexusStaticBindings( final PlexusComponents components )
+    public PlexusStaticBindings( final PlexusBeanSource beanSource )
     {
-        this.components = components;
+        this.beanSource = beanSource;
     }
 
     // ----------------------------------------------------------------------
@@ -63,9 +63,9 @@ public final class PlexusStaticBindings
     @SuppressWarnings( "unchecked" )
     protected void configure()
     {
-        for ( final Class<?> clazz : components.getComponents() )
+        for ( final Class<?> clazz : beanSource.findPlexusBeans() )
         {
-            final Component spec = components.getAnnotations( clazz ).getComponent();
+            final Component spec = beanSource.getBeanMetadata( clazz ).getComponent();
 
             final Class<?> role = spec.role();
             final String hint = getCanonicalHint( spec.hint() );

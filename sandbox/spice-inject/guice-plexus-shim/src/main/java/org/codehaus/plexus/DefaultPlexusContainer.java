@@ -1,6 +1,5 @@
 package org.codehaus.plexus;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -20,22 +19,10 @@ import org.codehaus.plexus.configuration.source.ConfigurationSource;
 import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.logging.LoggerManager;
-import org.sonatype.guice.plexus.binders.PlexusAutoBinders;
-import org.sonatype.guice.plexus.bindings.PlexusStaticBindings;
-import org.sonatype.guice.plexus.config.Hints;
-import org.sonatype.guice.plexus.config.Roles;
-import org.sonatype.guice.plexus.converters.DateTypeConverter;
-import org.sonatype.guice.plexus.converters.XmlTypeConverter;
-
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Module;
 
 public class DefaultPlexusContainer
     implements MutablePlexusContainer
 {
-    private final Injector injector;
-
     public void addComponent( Object component, String role )
         throws ComponentRepositoryException
     {
@@ -69,11 +56,7 @@ public class DefaultPlexusContainer
     public DefaultPlexusContainer( ContainerConfiguration c )
         throws PlexusContainerException
     {
-        final Module[] guicePlexusModules =
-            { new PlexusStaticBindings( Collections.EMPTY_MAP /* TODO: scan components.xml */),
-                new PlexusAutoBinders(), new DateTypeConverter(), new XmlTypeConverter() };
-
-        injector = Guice.createInjector( guicePlexusModules );
+        throw new UnsupportedOperationException();
     }
 
     public ClassRealm createChildRealm( String id )
@@ -96,20 +79,13 @@ public class DefaultPlexusContainer
     public <T> T lookup( Class<T> type )
         throws ComponentLookupException
     {
-        return lookup( type, Hints.DEFAULT_HINT );
+        throw new UnsupportedOperationException();
     }
 
     public <T> T lookup( Class<T> type, String roleHint )
         throws ComponentLookupException
     {
-        try
-        {
-            return injector.getInstance( Roles.componentKey( type, roleHint ) );
-        }
-        catch ( final RuntimeException e )
-        {
-            throw new ComponentLookupException( e.getMessage(), type, roleHint );
-        }
+        throw new UnsupportedOperationException();
     }
 
     @Deprecated

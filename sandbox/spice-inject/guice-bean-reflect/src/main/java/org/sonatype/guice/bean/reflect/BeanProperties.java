@@ -40,7 +40,7 @@ public final class BeanProperties
         this( new DeclaredMembers( clazz ) );
     }
 
-    public BeanProperties( final Iterable<Member> members )
+    BeanProperties( final Iterable<Member> members )
     {
         this.members = members;
     }
@@ -61,7 +61,7 @@ public final class BeanProperties
     /**
      * Read-only {@link Iterator} that picks out potential bean properties from members.
      */
-    private class BeanPropertyIterator<T>
+    private final class BeanPropertyIterator<T>
         implements Iterator<BeanProperty<T>>
     {
         // ----------------------------------------------------------------------

@@ -53,6 +53,7 @@
         <configuration>
           <instructions>
             <_nouses>true</_nouses>
+            <_failok>true</_failok>
           </instructions>
         </configuration>
       </plugin>
