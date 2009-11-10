@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -134,7 +135,7 @@ public class LdapServer
      * server.
      * 
      * @param verifyEntries whether or not all entry additions are checked to see if they were in fact correctly added
-     *            to the server
+     *        to the server
      * @return a list of entries added to the server in the order they were added
      * @throws NamingException of the load fails
      */
@@ -150,7 +151,7 @@ public class LdapServer
      * 
      * @param in the input stream containing the LDIF entries to load
      * @param verifyEntries whether or not all entry additions are checked to see if they were in fact correctly added
-     *            to the server
+     *        to the server
      * @return a list of entries added to the server in the order they were added
      * @throws NamingException of the load fails
      */
@@ -325,8 +326,8 @@ public class LdapServer
         // alreadying being in the ldap server, i don't know if thats an issue or not.
 
         // dirty hack
-        PartitionSchemaLoader schemaLoader =
-            SchemaPartitionAccessor.getSchemaLoader( (DefaultRegistries) directoryService.getRegistries() );
+        PartitionSchemaLoader schemaLoader = SchemaPartitionAccessor
+            .getSchemaLoader( (DefaultRegistries) directoryService.getRegistries() );
 
         if ( additionalSchemas != null && !additionalSchemas.isEmpty() )
         {
@@ -412,6 +413,31 @@ public class LdapServer
     public void initialize()
         throws InitializationException
     {
+
+        if ( this.port == 0 )
+        {
+            ServerSocket socket = null;
+            try
+            {
+                socket = new ServerSocket( 0 );
+                this.port = socket.getLocalPort();
+            }
+            catch ( IOException e )
+            {
+                throw new InitializationException( "Failed to find free port.", e );
+            }
+            finally
+            {
+                try
+                {
+                    socket.close();
+                }
+                catch ( IOException e )
+                {
+                    throw new InitializationException( "Failed to close port.", e );
+                }
+            }
+        }
 
         directoryService = new DefaultDirectoryService();
         directoryService.setShutdownHookEnabled( false );
@@ -518,8 +544,8 @@ public class LdapServer
             catch ( StoppingException e1 )
             {
                 this.logger.error(
-                                   "Trying to stop the LDAP Server after a startup exception failed: " + e.getMessage(),
-                                   e1 );
+                    "Trying to stop the LDAP Server after a startup exception failed: " + e.getMessage(),
+                    e1 );
             }
 
             throw new StartingException( "Error starting embedded ApacheDS server.", e );
@@ -579,7 +605,7 @@ public class LdapServer
      * imported and will blow chunks.
      * 
      * @throws NamingException if there are problems reading the ldif file and adding those entries to the system
-     *             partition
+     *         partition
      * @param in the input stream with the ldif
      */
     protected void importLdif( InputStream in )
@@ -589,8 +615,8 @@ public class LdapServer
         {
             for ( LdifEntry ldifEntry : new LdifReader( in ) )
             {
-                rootDSE.add( new DefaultServerEntry( rootDSE.getDirectoryService().getRegistries(),
-                                                     ldifEntry.getEntry() ) );
+                rootDSE.add( new DefaultServerEntry( rootDSE.getDirectoryService().getRegistries(), ldifEntry
+                    .getEntry() ) );
             }
         }
         catch ( Exception e )
@@ -643,4 +669,9 @@ public class LdapServer
         }
     }
 
+    public int getPort()
+    {
+        return this.port;
+    }
+    
 }
