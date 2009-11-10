@@ -12,7 +12,6 @@
  */
 package org.sonatype.guice.plexus.binders;
 
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
@@ -31,8 +30,7 @@ import com.google.inject.util.Types;
 /**
  * Creates {@link Provider}s for property elements annotated with @{@link Requirement}.
  */
-final class PlexusRequirementFactory
-    implements PropertyProviderFactory<Requirement>
+final class PlexusRequirements
 {
     // ----------------------------------------------------------------------
     // Implementation fields
@@ -44,7 +42,7 @@ final class PlexusRequirementFactory
     // Constructors
     // ----------------------------------------------------------------------
 
-    PlexusRequirementFactory( final TypeEncounter<?> encounter )
+    PlexusRequirements( final TypeEncounter<?> encounter )
     {
         this.encounter = encounter;
     }
@@ -56,33 +54,30 @@ final class PlexusRequirementFactory
     @SuppressWarnings( "unchecked" )
     public <T> Provider<T> lookup( final Requirement requirement, final BeanProperty<T> property )
     {
-        // extract the various requirement parameters
         final TypeLiteral expectedType = property.getType();
         final TypeLiteral roleType = Roles.getRole( requirement, expectedType );
         final String[] canonicalHints = Hints.getCanonicalHints( requirement );
 
         if ( Map.class == expectedType.getRawType() )
         {
-            // build map of Plexus components
-            final Provider<PlexusComponentFinder<?>> componentFinder = getComponentFinder( roleType );
+            final Provider<PlexusComponents<?>> components = getComponentsForRole( roleType );
             return new Provider()
             {
                 public Map get()
                 {
-                    return componentFinder.get().getComponentMap( canonicalHints );
+                    return components.get().lookupMap( canonicalHints );
                 }
             };
         }
 
         if ( List.class == expectedType.getRawType() )
         {
-            // build list of Plexus components
-            final Provider<PlexusComponentFinder<?>> componentFinder = getComponentFinder( roleType );
+            final Provider<PlexusComponents<?>> components = getComponentsForRole( roleType );
             return new Provider()
             {
                 public List get()
                 {
-                    return componentFinder.get().getComponentList( canonicalHints );
+                    return components.get().lookupList( canonicalHints );
                 }
             };
         }
@@ -100,15 +95,13 @@ final class PlexusRequirementFactory
     // ----------------------------------------------------------------------
 
     /**
-     * Returns a {@link Provider} that can provide a {@link PlexusComponentFinder} for the given role type.
+     * Returns a {@link Provider} that can provide a {@link PlexusComponents} for the given role type.
      * 
-     * @param roleType The Plexus role type
-     * @return Provider that provides a component finder for the given role type
+     * @param roleType The reified Plexus role
+     * @return Provider that provides components for the given role
      */
-    @SuppressWarnings( "unchecked" )
-    private <T> Provider<PlexusComponentFinder<T>> getComponentFinder( final TypeLiteral<T> roleType )
+    private <T> Provider<?> getComponentsForRole( final TypeLiteral<T> roleType )
     {
-        final Type finderType = Types.newParameterizedType( PlexusComponentFinder.class, roleType.getType() );
-        return (Provider) encounter.getProvider( Key.get( finderType ) );
+        return encounter.getProvider( Key.get( Types.newParameterizedType( PlexusComponents.class, roleType.getType() ) ) );
     }
 }

@@ -19,35 +19,35 @@ import org.sonatype.guice.plexus.annotations.ConfigurationImpl;
 import org.sonatype.guice.plexus.config.PlexusConfigurator;
 import org.sonatype.guice.plexus.config.Roles;
 
-import com.google.inject.Key;
+import com.google.inject.ConfigurationException;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.google.inject.Provider;
+import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.spi.TypeEncounter;
 
 /**
  * Creates {@link Provider}s for property elements annotated with @{@link Configuration}.
  */
-final class PlexusConfigurationFactory
-    implements PropertyProviderFactory<Configuration>
+final class PlexusConfigurations
 {
     // ----------------------------------------------------------------------
     // Implementation fields
     // ----------------------------------------------------------------------
 
-    private final TypeEncounter<?> encounter;
+    final Provider<RoleConfigurator> configurator;
 
-    private final Key<PlexusConfigurator> configuratorKey;
+    final Component component;
 
     // ----------------------------------------------------------------------
     // Constructors
     // ----------------------------------------------------------------------
 
-    PlexusConfigurationFactory( final TypeEncounter<?> encounter, final Component component )
+    PlexusConfigurations( final TypeEncounter<?> encounter, final Component component )
     {
-        this.encounter = encounter;
-
-        // each Plexus component can have its own configurator
-        configuratorKey = Roles.configuratorKey( component );
+        configurator = encounter.getProvider( RoleConfigurator.class );
+        this.component = component;
     }
 
     // ----------------------------------------------------------------------
@@ -56,7 +56,6 @@ final class PlexusConfigurationFactory
 
     public <T> Provider<T> lookup( final Configuration configuration, final BeanProperty<T> property )
     {
-        final Provider<PlexusConfigurator> configurator = getComponentConfigurator();
         final TypeLiteral<T> expectedType = property.getType();
 
         final Configuration namedConfig;
@@ -74,27 +73,34 @@ final class PlexusConfigurationFactory
         {
             public T get()
             {
-                return configurator.get().configure( namedConfig, expectedType );
+                return configurator.get().forRole( component ).configure( namedConfig, expectedType );
             }
         };
     }
 
-    /**
-     * Returns a {@link Provider} that can provide a {@link PlexusConfigurator} for the current component.
-     * 
-     * @return Provider that provides a configurator for the current component
-     */
-    private Provider<PlexusConfigurator> getComponentConfigurator()
+    @Singleton
+    private static class RoleConfigurator
     {
-        try
+        @Inject
+        Injector injector;
+
+        @Inject( optional = true )
+        PlexusConfigurator globalConfigurator;
+
+        PlexusConfigurator forRole( final Component component )
         {
-            // first look for customized local configurator
-            return encounter.getProvider( configuratorKey );
-        }
-        catch ( final RuntimeException e )
-        {
-            // fall-back to the globally defined configurator
-            return encounter.getProvider( PlexusConfigurator.class );
+            try
+            {
+                return injector.getInstance( Roles.configuratorKey( component ) );
+            }
+            catch ( ConfigurationException e )
+            {
+                if ( globalConfigurator != null )
+                {
+                    return globalConfigurator;
+                }
+                throw e;
+            }
         }
     }
 }

@@ -16,7 +16,6 @@ import junit.framework.TestCase;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Configuration;
-import org.sonatype.guice.bean.inject.BeanListener;
 import org.sonatype.guice.plexus.config.PlexusConfigurator;
 import org.sonatype.guice.plexus.config.Roles;
 
@@ -25,7 +24,6 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.TypeLiteral;
-import com.google.inject.matcher.Matchers;
 
 /**
  * Test various Plexus @{@link Configuration} use-cases.
@@ -72,7 +70,7 @@ public class PlexusConfigurationTest
             {
                 bind( PlexusConfigurator.class ).to( GlobalConfigurator.class );
                 bind( Roles.configuratorKey( Object.class, "" ) ).to( LocalConfigurator.class );
-                bindListener( Matchers.any(), new BeanListener( new PlexusComponentBinder() ) );
+                install( new PlexusBindingModule() );
             }
         } ).injectMembers( this );
     }

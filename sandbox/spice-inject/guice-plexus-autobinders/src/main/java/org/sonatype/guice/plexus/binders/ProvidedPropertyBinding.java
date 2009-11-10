@@ -17,20 +17,35 @@ import org.sonatype.guice.bean.reflect.BeanProperty;
 
 import com.google.inject.Provider;
 
-final class ProviderPropertyBinding<T>
+/**
+ * Represents a {@link BeanProperty} bound to a {@link Provider}.
+ */
+final class ProvidedPropertyBinding<T>
     implements PropertyBinding
 {
+    // ----------------------------------------------------------------------
+    // Implementation fields
+    // ----------------------------------------------------------------------
+
     private final BeanProperty<T> property;
 
     private final Provider<T> provider;
 
-    ProviderPropertyBinding( BeanProperty<T> property, Provider<T> provider )
+    // ----------------------------------------------------------------------
+    // Constructors
+    // ----------------------------------------------------------------------
+
+    ProvidedPropertyBinding( final BeanProperty<T> property, final Provider<T> provider )
     {
         this.property = property;
         this.provider = provider;
     }
 
-    public <B> void injectProperty( B bean )
+    // ----------------------------------------------------------------------
+    // Public methods
+    // ----------------------------------------------------------------------
+
+    public <B> void injectProperty( final B bean )
     {
         property.set( bean, provider.get() );
     }

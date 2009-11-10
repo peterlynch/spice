@@ -20,7 +20,6 @@ import junit.framework.TestCase;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.sonatype.guice.bean.inject.BeanListener;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.ConfigurationException;
@@ -29,7 +28,6 @@ import com.google.inject.ImplementedBy;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.ProvisionException;
-import com.google.inject.matcher.Matchers;
 import com.google.inject.name.Names;
 
 /**
@@ -61,7 +59,7 @@ public class PlexusRequirementTest
 
                 bind( D.class ).annotatedWith( Names.named( "" ) ).to( DImpl.class );
 
-                bindListener( Matchers.any(), new BeanListener( new PlexusComponentBinder() ) );
+                install( new PlexusBindingModule() );
             }
         } ).injectMembers( this );
     }

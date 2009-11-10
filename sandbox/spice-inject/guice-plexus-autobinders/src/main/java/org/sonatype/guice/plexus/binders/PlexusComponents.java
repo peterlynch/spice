@@ -38,7 +38,7 @@ import com.google.inject.name.Named;
  * Supplies filtered maps/lists of registered Plexus components.
  */
 @Singleton
-final class PlexusComponentFinder<T>
+final class PlexusComponents<T>
 {
     // ----------------------------------------------------------------------
     // Constants
@@ -62,7 +62,7 @@ final class PlexusComponentFinder<T>
     // ----------------------------------------------------------------------
 
     @Inject
-    PlexusComponentFinder( final Injector injector, final TypeLiteral<T> roleType )
+    PlexusComponents( final Injector injector, final TypeLiteral<T> roleType )
     {
         this.roleName = roleType.toString();
 
@@ -112,7 +112,7 @@ final class PlexusComponentFinder<T>
      * @param canonicalHints The Plexus hints
      * @return Map of Plexus components with the given hints
      */
-    Map<String, T> getComponentMap( final String... canonicalHints )
+    Map<String, T> lookupMap( final String... canonicalHints )
     {
         final String[] hints = canonicalHints.length > 0 ? canonicalHints : allHints;
         final Map<String, T> roleHintMap = new LinkedHashMap<String, T>( 2 * hints.length );
@@ -134,8 +134,8 @@ final class PlexusComponentFinder<T>
      * @param canonicalHints The Plexus hints
      * @return List of Plexus components with the given hints
      */
-    List<T> getComponentList( final String... canonicalHints )
+    List<T> lookupList( final String... canonicalHints )
     {
-        return new ArrayList<T>( getComponentMap( canonicalHints ).values() );
+        return new ArrayList<T>( lookupMap( canonicalHints ).values() );
     }
 }

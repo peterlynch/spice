@@ -22,30 +22,31 @@ import org.sonatype.guice.plexus.config.PlexusBeanMetadata;
 import com.google.inject.spi.TypeEncounter;
 
 /**
- * {@link BeanPropertyBinder} that auto-binds properties according to Plexus annotations.
+ * {@link BeanPropertyBinder} that auto-binds properties according to Plexus metadata.
  */
-final class PlexusAnnotatedPropertyBinder
+final class PlexusPropertyBinder
     implements PropertyBinder
 {
     // ----------------------------------------------------------------------
     // Implementation fields
     // ----------------------------------------------------------------------
 
-    private final PlexusBeanMetadata beanMetadata;
+    private final PlexusBeanMetadata metadata;
 
-    private final PlexusConfigurationFactory configurationFactory;
+    private final PlexusConfigurations configurations;
 
-    private final PlexusRequirementFactory requirementFactory;
+    private final PlexusRequirements requirements;
 
     // ----------------------------------------------------------------------
     // Constructors
     // ----------------------------------------------------------------------
 
-    PlexusAnnotatedPropertyBinder( final TypeEncounter<?> encounter, final PlexusBeanMetadata beanMetadata )
+    PlexusPropertyBinder( final TypeEncounter<?> encounter, final PlexusBeanMetadata metadata )
     {
-        this.beanMetadata = beanMetadata;
-        configurationFactory = new PlexusConfigurationFactory( encounter, beanMetadata.getComponent() );
-        requirementFactory = new PlexusRequirementFactory( encounter );
+        this.metadata = metadata;
+
+        configurations = new PlexusConfigurations( encounter, metadata.getComponent() );
+        requirements = new PlexusRequirements( encounter );
     }
 
     // ----------------------------------------------------------------------
@@ -57,19 +58,19 @@ final class PlexusAnnotatedPropertyBinder
         /*
          * @Requirement binding
          */
-        final Requirement requirement = beanMetadata.getRequirement( property );
+        final Requirement requirement = metadata.getRequirement( property );
         if ( null != requirement )
         {
-            return new ProviderPropertyBinding<T>( property, requirementFactory.lookup( requirement, property ) );
+            return new ProvidedPropertyBinding<T>( property, requirements.lookup( requirement, property ) );
         }
 
         /*
          * @Configuration binding
          */
-        final Configuration configuration = beanMetadata.getConfiguration( property );
+        final Configuration configuration = metadata.getConfiguration( property );
         if ( null != configuration )
         {
-            return new ProviderPropertyBinding<T>( property, configurationFactory.lookup( configuration, property ) );
+            return new ProvidedPropertyBinding<T>( property, configurations.lookup( configuration, property ) );
         }
 
         return null; // nothing to bind

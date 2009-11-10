@@ -13,16 +13,16 @@
 package org.sonatype.guice.plexus.config;
 
 /**
- * Discovers Plexus bean implementations along with any associated metadata.
+ * Source of Plexus bean implementations and associated metadata.
  */
 public interface PlexusBeanSource
 {
     /**
-     * Finds Plexus beans by scanning, configuration, or other similar methods.
+     * Finds bean implementations by scanning, lookup, or other such methods.
      * 
      * @return Sequence of bean implementations
      */
-    Iterable<Class<?>> findPlexusBeans();
+    Iterable<Class<?>> findBeanImplementations();
 
     /**
      * Returns metadata associated with the given Plexus bean implementation.
