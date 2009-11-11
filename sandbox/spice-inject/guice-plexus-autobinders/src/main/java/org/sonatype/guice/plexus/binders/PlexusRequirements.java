@@ -22,6 +22,7 @@ import org.sonatype.guice.plexus.config.Roles;
 
 import com.google.inject.Key;
 import com.google.inject.Provider;
+import com.google.inject.ProvisionException;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 import com.google.inject.spi.TypeEncounter;
@@ -32,6 +33,12 @@ import com.google.inject.util.Types;
  */
 final class PlexusRequirements
 {
+    // ----------------------------------------------------------------------
+    // Constants
+    // ----------------------------------------------------------------------
+
+    private static final String MISSING_REQUIREMENT_ERROR = "No implementation for %s was bound.";
+
     // ----------------------------------------------------------------------
     // Implementation fields
     // ----------------------------------------------------------------------
@@ -82,7 +89,24 @@ final class PlexusRequirements
             };
         }
 
-        if ( canonicalHints.length == 0 || Hints.isDefaultHint( canonicalHints[0] ) )
+        if ( canonicalHints.length == 0 )
+        {
+            final Provider<PlexusComponents<?>> components = getComponentsForRole( roleType );
+            return new Provider()
+            {
+                public Object get()
+                {
+                    final List list = components.get().lookupList();
+                    if ( list.isEmpty() )
+                    {
+                        throw new ProvisionException( String.format( MISSING_REQUIREMENT_ERROR, roleType ) );
+                    }
+                    return list.get( 0 );
+                }
+            };
+        }
+
+        if ( Hints.isDefaultHint( canonicalHints[0] ) )
         {
             return encounter.getProvider( Key.get( roleType ) );
         }

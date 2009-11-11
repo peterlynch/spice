@@ -148,6 +148,9 @@ public class PlexusRequirementTest
 
         @Requirement
         List<C> testEmptyList;
+
+        @Requirement
+        B testWildcard;
     }
 
     @Component( role = Object.class )
@@ -206,12 +209,20 @@ public class PlexusRequirementTest
         List<D> testBadName;
     }
 
+    @Component( role = Object.class )
+    static class Component9
+    {
+        @Requirement( hint = "default" )
+        B testNoDefault;
+    }
+
     public void testSingleRequirement()
     {
         assertEquals( AImpl.class, component.testField.getClass() );
         assertEquals( AImpl.class, component.testSetter.getClass() );
         assertEquals( AImpl.class, component.testRole.getClass() );
         assertEquals( ABImpl.class, component.testHint.getClass() );
+        assertEquals( BImpl.class, component.testWildcard.getClass() );
     }
 
     public void testRequirementMap()
@@ -289,7 +300,7 @@ public class PlexusRequirementTest
             injector.getInstance( Component4.class );
             fail( "Expected error for missing requirement" );
         }
-        catch ( final ConfigurationException e )
+        catch ( final ProvisionException e )
         {
             System.out.println( e );
         }
@@ -342,6 +353,19 @@ public class PlexusRequirementTest
             fail( "Expected error for bad name" );
         }
         catch ( final ProvisionException e )
+        {
+            System.out.println( e );
+        }
+    }
+
+    public void testNoDefault()
+    {
+        try
+        {
+            injector.getInstance( Component9.class );
+            fail( "Expected error for missing default requirement" );
+        }
+        catch ( final ConfigurationException e )
         {
             System.out.println( e );
         }

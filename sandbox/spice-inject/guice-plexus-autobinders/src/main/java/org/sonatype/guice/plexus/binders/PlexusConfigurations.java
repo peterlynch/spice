@@ -93,7 +93,7 @@ final class PlexusConfigurations
             {
                 return injector.getInstance( Roles.configuratorKey( component ) );
             }
-            catch ( ConfigurationException e )
+            catch ( final ConfigurationException e )
             {
                 if ( globalConfigurator != null )
                 {

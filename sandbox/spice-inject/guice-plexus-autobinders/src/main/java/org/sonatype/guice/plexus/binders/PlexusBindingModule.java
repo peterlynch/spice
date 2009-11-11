@@ -16,18 +16,10 @@ import static com.google.inject.name.Names.named;
 import static org.sonatype.guice.plexus.config.Hints.getCanonicalHint;
 import static org.sonatype.guice.plexus.config.Hints.isDefaultHint;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import org.codehaus.plexus.component.annotations.Component;
-import org.codehaus.plexus.component.annotations.Configuration;
-import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.guice.bean.inject.BeanBinder;
 import org.sonatype.guice.bean.inject.BeanListener;
 import org.sonatype.guice.bean.inject.PropertyBinder;
-import org.sonatype.guice.bean.reflect.BeanProperty;
 import org.sonatype.guice.plexus.config.PlexusBeanMetadata;
 import org.sonatype.guice.plexus.config.PlexusBeanSource;
 
@@ -51,29 +43,20 @@ public final class PlexusBindingModule
     // Implementation fields
     // ----------------------------------------------------------------------
 
-    final Map<Class<?>, PlexusBeanMetadata> beanMap;
+    final PlexusBeanSource[] sources;
 
     // ----------------------------------------------------------------------
     // Constructors
     // ----------------------------------------------------------------------
 
-    /**
-     * Create a new {@link Module} that binds Plexus beans using the given sources.
-     * 
-     * @param sources The bean sources
-     */
+    public PlexusBindingModule()
+    {
+        sources = new PlexusBeanSource[] { new AnnotatedBeanSource() };
+    }
+
     public PlexusBindingModule( final PlexusBeanSource... sources )
     {
-        final Map<Class<?>, PlexusBeanMetadata> tempMap = new HashMap<Class<?>, PlexusBeanMetadata>();
-        for ( final PlexusBeanSource source : sources )
-        {
-            for ( final Class<?> clazz : source.findBeanImplementations() )
-            {
-                tempMap.put( clazz, source.getBeanMetadata( clazz ) );
-            }
-        }
-
-        beanMap = Collections.unmodifiableMap( tempMap );
+        this.sources = sources;
     }
 
     // ----------------------------------------------------------------------
@@ -83,9 +66,12 @@ public final class PlexusBindingModule
     @Override
     protected void configure()
     {
-        for ( Entry<Class<?>, PlexusBeanMetadata> entry : beanMap.entrySet() )
+        for ( final PlexusBeanSource source : sources )
         {
-            bindPlexusBean( entry.getKey(), entry.getValue().getComponent() );
+            for ( final Class<?> clazz : source.findBeanImplementations() )
+            {
+                bindPlexusBean( clazz, source.getBeanMetadata( clazz ).getComponent() );
+            }
         }
 
         bindListener( new PlexusBeanMatcher(), new BeanListener( new PlexusBeanBinder() ) );
@@ -113,7 +99,7 @@ public final class PlexusBindingModule
         final String strategy = component.instantiationStrategy();
         if ( "load-on-start".equals( strategy ) )
         {
-            // NOPMD TODO: rework startup beans
+            sbb.asEagerSingleton();
         }
         else if ( !"per-lookup".equals( strategy ) )
         {
@@ -124,54 +110,35 @@ public final class PlexusBindingModule
     final class PlexusBeanMatcher
         extends AbstractMatcher<TypeLiteral<?>>
     {
-        public boolean matches( TypeLiteral<?> type )
+        public boolean matches( final TypeLiteral<?> type )
         {
             final Class<?> clazz = type.getRawType();
-
-            return beanMap.containsKey( clazz ) || clazz.isAnnotationPresent( Component.class );
+            for ( final PlexusBeanSource source : sources )
+            {
+                if ( source.getBeanMetadata( clazz ) != null )
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
     final class PlexusBeanBinder
         implements BeanBinder
     {
-        public <B> PropertyBinder bindBean( TypeLiteral<B> type, TypeEncounter<B> encounter )
+        public <B> PropertyBinder bindBean( final TypeLiteral<B> type, final TypeEncounter<B> encounter )
         {
             final Class<?> clazz = type.getRawType();
-
-            final PlexusBeanMetadata metadata = beanMap.get( clazz );
-            if ( metadata != null )
+            for ( final PlexusBeanSource source : sources )
             {
-                return new PlexusPropertyBinder( encounter, metadata );
+                final PlexusBeanMetadata metadata = source.getBeanMetadata( clazz );
+                if ( metadata != null )
+                {
+                    return new PlexusPropertyBinder( encounter, metadata );
+                }
             }
-
-            return new PlexusPropertyBinder( encounter, new JitMetadata( clazz ) );
-        }
-    }
-
-    private static final class JitMetadata
-        implements PlexusBeanMetadata
-    {
-        private final Component component;
-
-        JitMetadata( Class<?> clazz )
-        {
-            component = clazz.getAnnotation( Component.class );
-        }
-
-        public Component getComponent()
-        {
-            return component;
-        }
-
-        public Configuration getConfiguration( BeanProperty<?> property )
-        {
-            return property.getAnnotation( Configuration.class );
-        }
-
-        public Requirement getRequirement( BeanProperty<?> property )
-        {
-            return property.getAnnotation( Requirement.class );
+            return null;
         }
     }
 }

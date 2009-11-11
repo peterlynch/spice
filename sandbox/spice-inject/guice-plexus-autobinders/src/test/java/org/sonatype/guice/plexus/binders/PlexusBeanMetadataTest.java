@@ -82,7 +82,7 @@ public class PlexusBeanMetadataTest
             return testMetadata;
         }
 
-        public void setExtraMetadata( Object metadata )
+        public void setExtraMetadata( final Object metadata )
         {
             testMetadata = metadata;
         }
@@ -99,7 +99,7 @@ public class PlexusBeanMetadataTest
         @Inject
         Injector injector;
 
-        public <T> T configure( Configuration configuration, TypeLiteral<T> expectedType )
+        public <T> T configure( final Configuration configuration, final TypeLiteral<T> expectedType )
         {
             return injector.getInstance( Key.get( expectedType, Names.named( configuration.name() ) ) );
         }
@@ -113,7 +113,7 @@ public class PlexusBeanMetadataTest
             return Arrays.<Class<?>> asList( DefaultBean1.class, DefaultBean2.class );
         }
 
-        public PlexusBeanMetadata getBeanMetadata( Class<?> implementation )
+        public PlexusBeanMetadata getBeanMetadata( final Class<?> implementation )
         {
             if ( DefaultBean1.class.equals( implementation ) )
             {
@@ -124,7 +124,7 @@ public class PlexusBeanMetadataTest
                         return new ComponentImpl( Bean.class, "2", "singleton" );
                     }
 
-                    public Requirement getRequirement( BeanProperty<?> property )
+                    public Requirement getRequirement( final BeanProperty<?> property )
                     {
                         if ( "extraMetadata".equals( property.getName() ) )
                         {
@@ -133,7 +133,7 @@ public class PlexusBeanMetadataTest
                         return null;
                     }
 
-                    public Configuration getConfiguration( BeanProperty<?> property )
+                    public Configuration getConfiguration( final BeanProperty<?> property )
                     {
                         return null;
                     }
@@ -148,12 +148,12 @@ public class PlexusBeanMetadataTest
                         return new ComponentImpl( DefaultBean2.class, "", "per-lookup" );
                     }
 
-                    public Requirement getRequirement( BeanProperty<?> property )
+                    public Requirement getRequirement( final BeanProperty<?> property )
                     {
                         return null;
                     }
 
-                    public Configuration getConfiguration( BeanProperty<?> property )
+                    public Configuration getConfiguration( final BeanProperty<?> property )
                     {
                         if ( "extraMetadata".equals( property.getName() ) )
                         {
