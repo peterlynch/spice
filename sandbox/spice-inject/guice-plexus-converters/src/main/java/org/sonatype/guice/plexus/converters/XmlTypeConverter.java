@@ -15,7 +15,6 @@ package org.sonatype.guice.plexus.converters;
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -75,7 +74,7 @@ public final class XmlTypeConverter
     @Inject
     void recordOtherConverterBindings( final Injector injector )
     {
-        List<TypeConverterBinding> tempBindings = new ArrayList<TypeConverterBinding>();
+        final List<TypeConverterBinding> tempBindings = new ArrayList<TypeConverterBinding>();
         for ( final TypeConverterBinding b : injector.getTypeConverterBindings() )
         {
             // play safe: don't want to get into any sort of recursion!
@@ -166,23 +165,24 @@ public final class XmlTypeConverter
     private Properties parseProperties( final XmlPullParser parser )
         throws XmlPullParserException, IOException
     {
-        final Properties properties = new Properties();
-        while ( parser.nextTag() != XmlPullParser.END_TAG )
+        final Properties properties = createImplementation( parser, Properties.class );
+        while ( parser.getEventType() != XmlPullParser.END_TAG )
         {
-            parser.nextTag();
+            parser.next();
             if ( "name".equals( parser.getName() ) )
             {
                 final String name = parser.nextText();
-                parser.nextTag();
+                parser.next();
                 properties.put( name, parser.nextText() );
             }
             else
             {
                 final String value = parser.nextText();
-                parser.nextTag();
+                parser.next();
                 properties.put( parser.nextText(), value );
             }
-            parser.nextTag();
+            parser.next();
+            parser.next();
         }
         return properties;
     }
@@ -190,11 +190,13 @@ public final class XmlTypeConverter
     private <T> Map<String, T> parseMap( final XmlPullParser parser, final TypeLiteral<T> toType )
         throws XmlPullParserException, IOException
     {
-        final Map<String, T> map = new HashMap<String, T>();
-        while ( parser.nextTag() != XmlPullParser.END_TAG )
+        @SuppressWarnings( "unchecked" )
+        final Map<String, T> map = createImplementation( parser, HashMap.class );
+        while ( parser.getEventType() != XmlPullParser.END_TAG )
         {
             map.put( parser.getName(), parse( parser, toType ) );
-            parser.nextTag();
+            parser.next();
+            parser.next();
         }
         return map;
     }
@@ -202,11 +204,13 @@ public final class XmlTypeConverter
     private <T> Collection<T> parseCollection( final XmlPullParser parser, final TypeLiteral<T> toType )
         throws XmlPullParserException, IOException
     {
-        final List<T> collection = new ArrayList<T>();
-        while ( parser.nextTag() != XmlPullParser.END_TAG )
+        @SuppressWarnings( "unchecked" )
+        final List<T> collection = createImplementation( parser, ArrayList.class );
+        while ( parser.getEventType() != XmlPullParser.END_TAG )
         {
             collection.add( parse( parser, toType ) );
-            parser.nextTag();
+            parser.next();
+            parser.next();
         }
         return collection;
     }
@@ -226,16 +230,10 @@ public final class XmlTypeConverter
     private <T> T parseBean( final XmlPullParser parser, final TypeLiteral<T> toType )
         throws Exception
     {
-        final Class<?> rawType = toType.getRawType();
-        if ( parser.next() == XmlPullParser.TEXT )
-        {
-            @SuppressWarnings( "unchecked" )
-            final Constructor<T> ctor = (Constructor) rawType.getConstructor( String.class ); // TODO: other types?
-            return ctor.newInstance( parser.getText() );
-        }
-
         @SuppressWarnings( "unchecked" )
-        final T bean = (T) rawType.newInstance();
+        final Class<T> rawType = (Class) toType.getRawType();
+        final T bean = createImplementation( parser, rawType );
+
         while ( parser.getEventType() != XmlPullParser.END_TAG ) // TODO: re-use BeanProperties class?
         {
             final String name = parser.getName();
@@ -250,10 +248,45 @@ public final class XmlTypeConverter
                 final Method m = rawType.getMethod( setter, String.class ); // TODO: other styles and types?
                 m.invoke( bean, parse( parser, TypeLiteral.get( m.getGenericParameterTypes()[0] ) ) );
             }
-            parser.nextTag();
-            parser.nextTag();
+            parser.next();
+            parser.next();
         }
         return bean;
+    }
+
+    @SuppressWarnings( "unchecked" )
+    private <T> T createImplementation( final XmlPullParser parser, final Class<T> defaultImplementation )
+    {
+        Class<T> clazz = defaultImplementation;
+        try
+        {
+            final String implementationName = parser.getAttributeValue( null, "implementation" );
+            if ( implementationName != null )
+            {
+                ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+                if ( null == tccl )
+                {
+                    tccl = clazz.getClassLoader();
+                }
+                clazz = (Class) tccl.loadClass( implementationName );
+            }
+
+            if ( parser.next() == XmlPullParser.TEXT )
+            {
+                final String text = parser.getText();
+                parser.next();
+                if ( text.length() > 0 )
+                {
+                    return clazz.getDeclaredConstructor( String.class ).newInstance( text );
+                }
+            }
+
+            return clazz.newInstance();
+        }
+        catch ( final Exception e )
+        {
+            throw new RuntimeException( e.toString() );
+        }
     }
 
     @SuppressWarnings( "unchecked" )
