@@ -110,7 +110,7 @@ public class PropertyListenerTest
             {
                 bindListener( new AbstractMatcher<TypeLiteral<?>>()
                 {
-                    public boolean matches( TypeLiteral<?> type )
+                    public boolean matches( final TypeLiteral<?> type )
                     {
                         return Base.class.isAssignableFrom( type.getRawType() );
                     }
@@ -164,7 +164,7 @@ public class PropertyListenerTest
             injector.getInstance( Bean3.class );
             fail( "Expected ConfigurationException" );
         }
-        catch ( ConfigurationException e )
+        catch ( final ConfigurationException e )
         {
         }
     }

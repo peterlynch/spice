@@ -83,7 +83,7 @@ public final class Roles
      */
     public static Key<?> componentKey( final Component component )
     {
-        return componentKey( component.role(), component.hint() );
+        return componentKey( TypeLiteral.get( component.role() ), component.hint() );
     }
 
     /**
@@ -93,7 +93,7 @@ public final class Roles
      * @param hint The Plexus hint
      * @return Component binding key denoting the given role-hint
      */
-    public static <T> Key<T> componentKey( final Class<T> role, final String hint )
+    public static <T> Key<T> componentKey( final TypeLiteral<T> role, final String hint )
     {
         if ( Hints.isDefaultHint( hint ) )
         {
@@ -110,7 +110,7 @@ public final class Roles
      */
     public static Key<PlexusConfigurator> configuratorKey( final Component component )
     {
-        return configuratorKey( component.role(), component.hint() );
+        return configuratorKey( TypeLiteral.get( component.role() ), component.hint() );
     }
 
     /**
@@ -120,9 +120,9 @@ public final class Roles
      * @param hint The Plexus hint
      * @return Configurator binding key for the given role-hint
      */
-    public static Key<PlexusConfigurator> configuratorKey( final Class<?> role, final String hint )
+    public static Key<PlexusConfigurator> configuratorKey( final TypeLiteral<?> role, final String hint )
     {
-        final String roleName = role.getName();
+        final String roleName = role.toString();
         final String roleHint = Hints.isDefaultHint( hint ) ? roleName : roleName + '-' + hint;
         return Key.get( PlexusConfigurator.class, Names.named( roleHint ) );
     }

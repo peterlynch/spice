@@ -12,24 +12,21 @@
  */
 package org.sonatype.guice.plexus.binders;
 
-import static com.google.inject.name.Names.named;
-import static org.sonatype.guice.plexus.config.Hints.getCanonicalHint;
-import static org.sonatype.guice.plexus.config.Hints.isDefaultHint;
-
 import org.codehaus.plexus.component.annotations.Component;
 import org.sonatype.guice.bean.inject.BeanBinder;
 import org.sonatype.guice.bean.inject.BeanListener;
 import org.sonatype.guice.bean.inject.PropertyBinder;
 import org.sonatype.guice.plexus.config.PlexusBeanMetadata;
 import org.sonatype.guice.plexus.config.PlexusBeanSource;
+import org.sonatype.guice.plexus.config.Roles;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.Scopes;
 import com.google.inject.TypeLiteral;
-import com.google.inject.binder.AnnotatedBindingBuilder;
 import com.google.inject.binder.ScopedBindingBuilder;
-import com.google.inject.matcher.AbstractMatcher;
+import com.google.inject.matcher.Matchers;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
 
@@ -39,6 +36,12 @@ import com.google.inject.spi.TypeListener;
 public final class PlexusBindingModule
     extends AbstractModule
 {
+    // ----------------------------------------------------------------------
+    // Constants
+    // ----------------------------------------------------------------------
+
+    private static final String MISSING_METADATA_ERROR = "Component %s has no Plexus metadata.";
+
     // ----------------------------------------------------------------------
     // Implementation fields
     // ----------------------------------------------------------------------
@@ -51,12 +54,13 @@ public final class PlexusBindingModule
 
     public PlexusBindingModule()
     {
+        // default to use "just-in-time" runtime annotation metadata
         sources = new PlexusBeanSource[] { new AnnotatedBeanSource() };
     }
 
     public PlexusBindingModule( final PlexusBeanSource... sources )
     {
-        this.sources = sources;
+        this.sources = sources.clone();
     }
 
     // ----------------------------------------------------------------------
@@ -66,36 +70,42 @@ public final class PlexusBindingModule
     @Override
     protected void configure()
     {
+        // explicitly bind all known bean implementations
         for ( final PlexusBeanSource source : sources )
         {
             for ( final Class<?> clazz : source.findBeanImplementations() )
             {
-                bindPlexusBean( clazz, source.getBeanMetadata( clazz ).getComponent() );
+                final PlexusBeanMetadata metadata = source.getBeanMetadata( clazz );
+                if ( metadata != null )
+                {
+                    bindPlexusBean( clazz, metadata );
+                }
+                else
+                {
+                    addError( MISSING_METADATA_ERROR, clazz );
+                }
             }
         }
 
-        bindListener( new PlexusBeanMatcher(), new BeanListener( new PlexusBeanBinder() ) );
+        // mechanism to inject Plexus requirements and configurations into beans
+        bindListener( Matchers.any(), new BeanListener( new PlexusBeanBinder() ) );
     }
 
+    // ----------------------------------------------------------------------
+    // Implementation methods
+    // ----------------------------------------------------------------------
+
     @SuppressWarnings( "unchecked" )
-    private void bindPlexusBean( final Class<?> clazz, final Component component )
+    private void bindPlexusBean( final Class clazz, final PlexusBeanMetadata metadata )
     {
-        final Class<?> role = component.role();
-        final String hint = getCanonicalHint( component.hint() );
+        // we want to bind the role to the implementation
+        final Component component = metadata.getComponent();
+        final Key roleKey = Roles.componentKey( component );
+        final Key beanKey = Key.get( clazz );
 
-        final ScopedBindingBuilder sbb;
+        final ScopedBindingBuilder sbb = roleKey.equals( beanKey ) ? bind( beanKey ) : bind( roleKey ).to( beanKey );
 
-        // bind role + optional hint -> implementation
-        final AnnotatedBindingBuilder abb = bind( role );
-        if ( !isDefaultHint( hint ) )
-        {
-            sbb = abb.annotatedWith( named( hint ) ).to( clazz );
-        }
-        else
-        {
-            sbb = clazz.equals( role ) ? abb : abb.to( clazz );
-        }
-
+        // singleton is the default strategy for Plexus beans
         final String strategy = component.instantiationStrategy();
         if ( "load-on-start".equals( strategy ) )
         {
@@ -107,23 +117,13 @@ public final class PlexusBindingModule
         }
     }
 
-    final class PlexusBeanMatcher
-        extends AbstractMatcher<TypeLiteral<?>>
-    {
-        public boolean matches( final TypeLiteral<?> type )
-        {
-            final Class<?> clazz = type.getRawType();
-            for ( final PlexusBeanSource source : sources )
-            {
-                if ( source.getBeanMetadata( clazz ) != null )
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
+    // ----------------------------------------------------------------------
+    // Implementation helpers
+    // ----------------------------------------------------------------------
 
+    /**
+     * {@link BeanBinder} that auto-binds beans according to Plexus metadata.
+     */
     final class PlexusBeanBinder
         implements BeanBinder
     {
@@ -138,7 +138,7 @@ public final class PlexusBindingModule
                     return new PlexusPropertyBinder( encounter, metadata );
                 }
             }
-            return null;
+            return null; // no need to auto-bind
         }
     }
 }

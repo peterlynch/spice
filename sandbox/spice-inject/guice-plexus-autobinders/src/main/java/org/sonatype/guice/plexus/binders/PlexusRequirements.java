@@ -12,6 +12,7 @@
  */
 package org.sonatype.guice.plexus.binders;
 
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
@@ -22,23 +23,15 @@ import org.sonatype.guice.plexus.config.Roles;
 
 import com.google.inject.Key;
 import com.google.inject.Provider;
-import com.google.inject.ProvisionException;
 import com.google.inject.TypeLiteral;
-import com.google.inject.name.Names;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.util.Types;
 
 /**
- * Creates {@link Provider}s for property elements annotated with @{@link Requirement}.
+ * Creates {@link Provider}s for properties with @{@link Requirement} metadata.
  */
 final class PlexusRequirements
 {
-    // ----------------------------------------------------------------------
-    // Constants
-    // ----------------------------------------------------------------------
-
-    private static final String MISSING_REQUIREMENT_ERROR = "No implementation for %s was bound.";
-
     // ----------------------------------------------------------------------
     // Implementation fields
     // ----------------------------------------------------------------------
@@ -61,57 +54,46 @@ final class PlexusRequirements
     @SuppressWarnings( "unchecked" )
     public <T> Provider<T> lookup( final Requirement requirement, final BeanProperty<T> property )
     {
+        // deduce requirement from metadata + property details
         final TypeLiteral expectedType = property.getType();
         final TypeLiteral roleType = Roles.getRole( requirement, expectedType );
         final String[] canonicalHints = Hints.getCanonicalHints( requirement );
 
         if ( Map.class == expectedType.getRawType() )
         {
-            final Provider<PlexusComponents<?>> components = getComponentsForRole( roleType );
+            final Provider<PlexusComponents> components = getComponentsForRole( roleType );
             return new Provider()
             {
-                public Map get()
+                public Map<String, T> get()
                 {
                     return components.get().lookupMap( canonicalHints );
                 }
             };
         }
-
-        if ( List.class == expectedType.getRawType() )
+        else if ( List.class == expectedType.getRawType() )
         {
-            final Provider<PlexusComponents<?>> components = getComponentsForRole( roleType );
+            final Provider<PlexusComponents> components = getComponentsForRole( roleType );
             return new Provider()
             {
-                public List get()
+                public List<T> get()
                 {
                     return components.get().lookupList( canonicalHints );
                 }
             };
         }
-
-        if ( canonicalHints.length == 0 )
+        else if ( canonicalHints.length == 0 )
         {
-            final Provider<PlexusComponents<?>> components = getComponentsForRole( roleType );
+            final Provider<PlexusComponents> components = getComponentsForRole( roleType );
             return new Provider()
             {
                 public Object get()
                 {
-                    final List list = components.get().lookupList();
-                    if ( list.isEmpty() )
-                    {
-                        throw new ProvisionException( String.format( MISSING_REQUIREMENT_ERROR, roleType ) );
-                    }
-                    return list.get( 0 );
+                    return components.get().lookupWildcard();
                 }
             };
         }
 
-        if ( Hints.isDefaultHint( canonicalHints[0] ) )
-        {
-            return encounter.getProvider( Key.get( roleType ) );
-        }
-
-        return encounter.getProvider( Key.get( roleType, Names.named( canonicalHints[0] ) ) );
+        return encounter.getProvider( Roles.componentKey( roleType, canonicalHints[0] ) );
     }
 
     // ----------------------------------------------------------------------
@@ -124,8 +106,10 @@ final class PlexusRequirements
      * @param roleType The reified Plexus role
      * @return Provider that provides components for the given role
      */
-    private <T> Provider<?> getComponentsForRole( final TypeLiteral<T> roleType )
+    @SuppressWarnings( "unchecked" )
+    private Provider<PlexusComponents> getComponentsForRole( final TypeLiteral roleType )
     {
-        return encounter.getProvider( Key.get( Types.newParameterizedType( PlexusComponents.class, roleType.getType() ) ) );
+        final Type providerType = Types.newParameterizedType( PlexusComponents.class, roleType.getType() );
+        return (Provider) encounter.getProvider( Key.get( providerType ) );
     }
 }

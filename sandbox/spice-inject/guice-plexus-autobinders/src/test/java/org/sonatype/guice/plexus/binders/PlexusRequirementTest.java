@@ -12,6 +12,7 @@
  */
 package org.sonatype.guice.plexus.binders;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -59,7 +60,14 @@ public class PlexusRequirementTest
 
                 bind( D.class ).annotatedWith( Names.named( "" ) ).to( DImpl.class );
 
-                install( new PlexusBindingModule() );
+                install( new PlexusBindingModule( new AnnotatedBeanSource()
+                {
+                    @Override
+                    public Iterable<Class<?>> findBeanImplementations()
+                    {
+                        return Arrays.<Class<?>> asList( ComponentLoadOnStart.class, ComponentDontLoadOnStart.class );
+                    }
+                } ) );
             }
         } ).injectMembers( this );
     }
@@ -111,7 +119,7 @@ public class PlexusRequirementTest
     {
     }
 
-    @Component( role = Object.class )
+    @Component( role = Component1.class )
     static class Component1
     {
         @Requirement
@@ -153,7 +161,7 @@ public class PlexusRequirementTest
         B testWildcard;
     }
 
-    @Component( role = Object.class )
+    @Component( role = Component2.class )
     static class Component2
     {
         @Requirement
@@ -163,7 +171,7 @@ public class PlexusRequirementTest
         }
     }
 
-    @Component( role = Object.class )
+    @Component( role = Component3.class )
     static class Component3
     {
         @Requirement
@@ -174,46 +182,68 @@ public class PlexusRequirementTest
         }
     }
 
-    @Component( role = Object.class )
+    @Component( role = Component4.class )
     static class Component4
     {
         @Requirement
         C testMissingRequirement;
     }
 
-    @Component( role = Object.class )
+    @Component( role = Component5.class )
     static class Component5
     {
         @Requirement( hint = "B!" )
         B testNoSuchHint;
     }
 
-    @Component( role = Object.class )
+    @Component( role = Component6.class )
     static class Component6
     {
         @Requirement( hints = { "AA", "AZ", "A!" } )
         Map<String, B> testNoSuchHint;
     }
 
-    @Component( role = Object.class )
+    @Component( role = Component7.class )
     static class Component7
     {
         @Requirement( hints = { "AA", "AZ", "A!" } )
         List<C> testNoSuchHint;
     }
 
-    @Component( role = Object.class )
+    @Component( role = Component8.class )
     static class Component8
     {
         @Requirement( hints = { "" } )
         List<D> testBadName;
     }
 
-    @Component( role = Object.class )
+    @Component( role = Component9.class )
     static class Component9
     {
         @Requirement( hint = "default" )
         B testNoDefault;
+    }
+
+    @Component( role = ComponentLoadOnStart.class, instantiationStrategy = "load-on-start" )
+    static class ComponentLoadOnStart
+    {
+        static String STATE;
+
+        ComponentLoadOnStart()
+        {
+            STATE = "LOADED";
+        }
+    }
+
+    @Component( role = ComponentDontLoadOnStart.class, instantiationStrategy = "dont-load-on-start" )
+    static class ComponentDontLoadOnStart
+    {
+        static String STATE;
+
+        ComponentDontLoadOnStart()
+        {
+            STATE = "LOADED";
+        }
     }
 
     public void testSingleRequirement()
@@ -369,5 +399,11 @@ public class PlexusRequirementTest
         {
             System.out.println( e );
         }
+    }
+
+    public void testLoadOnStart()
+    {
+        assertEquals( "LOADED", ComponentLoadOnStart.STATE );
+        assertNull( ComponentDontLoadOnStart.STATE );
     }
 }

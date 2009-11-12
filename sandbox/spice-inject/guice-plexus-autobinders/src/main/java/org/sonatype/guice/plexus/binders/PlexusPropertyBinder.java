@@ -44,7 +44,6 @@ final class PlexusPropertyBinder
     PlexusPropertyBinder( final TypeEncounter<?> encounter, final PlexusBeanMetadata metadata )
     {
         this.metadata = metadata;
-
         configurations = new PlexusConfigurations( encounter, metadata.getComponent() );
         requirements = new PlexusRequirements( encounter );
     }

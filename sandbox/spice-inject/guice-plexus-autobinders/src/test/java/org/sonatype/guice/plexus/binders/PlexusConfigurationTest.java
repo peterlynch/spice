@@ -23,6 +23,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
+import com.google.inject.ProvisionException;
 import com.google.inject.TypeLiteral;
 
 /**
@@ -69,7 +70,7 @@ public class PlexusConfigurationTest
             protected void configure()
             {
                 bind( PlexusConfigurator.class ).to( GlobalConfigurator.class );
-                bind( Roles.configuratorKey( Object.class, "" ) ).to( LocalConfigurator.class );
+                bind( Roles.configuratorKey( TypeLiteral.get( Object.class ), "" ) ).to( LocalConfigurator.class );
                 install( new PlexusBindingModule() );
             }
         } ).injectMembers( this );
@@ -105,5 +106,26 @@ public class PlexusConfigurationTest
     {
         assertEquals( "GLOBAL-a-unamed", component2.a );
         assertEquals( "GLOBAL-b-named", component2.field );
+    }
+
+    public void testMissingConfiguration()
+    {
+        try
+        {
+            Guice.createInjector( new AbstractModule()
+            {
+                @Override
+                protected void configure()
+                {
+                    install( new PlexusBindingModule() );
+                }
+            } ).getInstance( Component1.class );
+
+            fail( "Expected error for missing configuration" );
+        }
+        catch ( final ProvisionException e )
+        {
+            System.out.println( e );
+        }
     }
 }

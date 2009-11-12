@@ -23,15 +23,22 @@ import com.google.inject.ConfigurationException;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Provider;
+import com.google.inject.ProvisionException;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.spi.TypeEncounter;
 
 /**
- * Creates {@link Provider}s for property elements annotated with @{@link Configuration}.
+ * Creates {@link Provider}s for properties with @{@link Configuration} metadata.
  */
 final class PlexusConfigurations
 {
+    // ----------------------------------------------------------------------
+    // Constants
+    // ----------------------------------------------------------------------
+
+    private static final String MISSING_CONFIGURATOR_ERROR = "No implementation for PlexusConfigurator was bound.";
+
     // ----------------------------------------------------------------------
     // Implementation fields
     // ----------------------------------------------------------------------
@@ -78,6 +85,13 @@ final class PlexusConfigurations
         };
     }
 
+    // ----------------------------------------------------------------------
+    // Implementation helpers
+    // ----------------------------------------------------------------------
+
+    /**
+     * Redirects configuration requests to the relevant {@link PlexusConfigurator}.
+     */
     @Singleton
     private static class RoleConfigurator
     {
@@ -99,7 +113,7 @@ final class PlexusConfigurations
                 {
                     return globalConfigurator;
                 }
-                throw e;
+                throw new ProvisionException( MISSING_CONFIGURATOR_ERROR );
             }
         }
     }

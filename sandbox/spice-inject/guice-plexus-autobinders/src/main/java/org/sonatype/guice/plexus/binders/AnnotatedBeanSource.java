@@ -21,20 +21,27 @@ import org.sonatype.guice.bean.reflect.BeanProperty;
 import org.sonatype.guice.plexus.config.PlexusBeanMetadata;
 import org.sonatype.guice.plexus.config.PlexusBeanSource;
 
-final class AnnotatedBeanSource
+/**
+ * {@link PlexusBeanSource} that provides Plexus metadata based on runtime annotations.
+ */
+public class AnnotatedBeanSource
     implements PlexusBeanSource
 {
+    // ----------------------------------------------------------------------
+    // Public methods
+    // ----------------------------------------------------------------------
+
     public Iterable<Class<?>> findBeanImplementations()
     {
-        return Collections.emptyList();
+        return Collections.emptyList(); // this source doesn't do any scanning
     }
 
-    public PlexusBeanMetadata getBeanMetadata( final Class<?> implementation )
+    public final PlexusBeanMetadata getBeanMetadata( final Class<?> implementation )
     {
         final Component component = implementation.getAnnotation( Component.class );
         if ( null == component )
         {
-            return null;
+            return null; // don't provide metadata for beans without @Component
         }
 
         return new PlexusBeanMetadata()

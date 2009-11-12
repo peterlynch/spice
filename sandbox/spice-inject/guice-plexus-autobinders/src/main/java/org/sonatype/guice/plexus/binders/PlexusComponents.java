@@ -35,7 +35,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 
 /**
- * Supplies filtered maps/lists of registered Plexus components.
+ * Supplies filtered maps/lists/wildcards of registered Plexus components.
  */
 @Singleton
 final class PlexusComponents<T>
@@ -44,7 +44,9 @@ final class PlexusComponents<T>
     // Constants
     // ----------------------------------------------------------------------
 
-    private static final String MISSING_BINDING_ERROR =
+    private static final String MISSING_ROLE_ERROR = "No implementation for %s was bound.";
+
+    private static final String MISSING_ROLE_HINT_ERROR =
         "No implementation for %s annotated with @com.google.inject.name.Named(value=%s) was bound.";
 
     // ----------------------------------------------------------------------
@@ -89,6 +91,7 @@ final class PlexusComponents<T>
             final Annotation a = b.getKey().getAnnotation();
             if ( a instanceof Named )
             {
+                // ignore default bindings as we already captured that above
                 final String hint = getCanonicalHint( ( (Named) a ).value() );
                 if ( !isDefaultHint( hint ) )
                 {
@@ -121,7 +124,7 @@ final class PlexusComponents<T>
             final Provider<T> provider = roleMap.get( h );
             if ( null == provider )
             {
-                throw new ProvisionException( String.format( MISSING_BINDING_ERROR, roleName, h ) );
+                throw new ProvisionException( String.format( MISSING_ROLE_HINT_ERROR, roleName, h ) );
             }
             roleHintMap.put( h, provider.get() );
         }
@@ -136,6 +139,31 @@ final class PlexusComponents<T>
      */
     List<T> lookupList( final String... canonicalHints )
     {
-        return new ArrayList<T>( lookupMap( canonicalHints ).values() );
+        final String[] hints = canonicalHints.length > 0 ? canonicalHints : allHints;
+        final List<T> roleHintList = new ArrayList<T>( hints.length );
+        for ( final String h : hints )
+        {
+            final Provider<T> provider = roleMap.get( h );
+            if ( null == provider )
+            {
+                throw new ProvisionException( String.format( MISSING_ROLE_HINT_ERROR, roleName, h ) );
+            }
+            roleHintList.add( provider.get() );
+        }
+        return roleHintList;
+    }
+
+    /**
+     * Returns the first component registered for the current role, regardless of hints.
+     * 
+     * @return Single Plexus component
+     */
+    T lookupWildcard()
+    {
+        if ( allHints.length == 0 )
+        {
+            throw new ProvisionException( String.format( MISSING_ROLE_ERROR, roleName ) );
+        }
+        return roleMap.get( allHints[0] ).get();
     }
 }

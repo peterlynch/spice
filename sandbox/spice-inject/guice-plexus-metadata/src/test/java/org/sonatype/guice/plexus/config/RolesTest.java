@@ -43,31 +43,31 @@ public class RolesTest
 
     public void testDefaultComponentKeys()
     {
-        assertEquals( OBJECT_COMPONENT_KEY, Roles.componentKey( Object.class, null ) );
-        assertEquals( OBJECT_COMPONENT_KEY, Roles.componentKey( Object.class, "" ) );
-        assertEquals( OBJECT_COMPONENT_KEY, Roles.componentKey( Object.class, "default" ) );
+        assertEquals( OBJECT_COMPONENT_KEY, Roles.componentKey( OBJECT_LITERAL, null ) );
+        assertEquals( OBJECT_COMPONENT_KEY, Roles.componentKey( OBJECT_LITERAL, "" ) );
+        assertEquals( OBJECT_COMPONENT_KEY, Roles.componentKey( OBJECT_LITERAL, "default" ) );
         assertEquals( OBJECT_COMPONENT_KEY, Roles.componentKey( component( "" ) ) );
         assertEquals( OBJECT_COMPONENT_KEY, Roles.componentKey( component( "default" ) ) );
     }
 
     public void testComponentKeys()
     {
-        assertEquals( OBJECT_FOO_COMPONENT_KEY, Roles.componentKey( Object.class, "foo" ) );
+        assertEquals( OBJECT_FOO_COMPONENT_KEY, Roles.componentKey( OBJECT_LITERAL, "foo" ) );
         assertEquals( OBJECT_FOO_COMPONENT_KEY, Roles.componentKey( component( "foo" ) ) );
     }
 
     public void testDefaultConfiguratorKeys()
     {
-        assertEquals( OBJECT_CONFIGURATOR_KEY, Roles.configuratorKey( Object.class, null ) );
-        assertEquals( OBJECT_CONFIGURATOR_KEY, Roles.configuratorKey( Object.class, "" ) );
-        assertEquals( OBJECT_CONFIGURATOR_KEY, Roles.configuratorKey( Object.class, "default" ) );
+        assertEquals( OBJECT_CONFIGURATOR_KEY, Roles.configuratorKey( OBJECT_LITERAL, null ) );
+        assertEquals( OBJECT_CONFIGURATOR_KEY, Roles.configuratorKey( OBJECT_LITERAL, "" ) );
+        assertEquals( OBJECT_CONFIGURATOR_KEY, Roles.configuratorKey( OBJECT_LITERAL, "default" ) );
         assertEquals( OBJECT_CONFIGURATOR_KEY, Roles.configuratorKey( component( "" ) ) );
         assertEquals( OBJECT_CONFIGURATOR_KEY, Roles.configuratorKey( component( "default" ) ) );
     }
 
     public void testConfiguratorKeys()
     {
-        assertEquals( OBJECT_FOO_CONFIGURATOR_KEY, Roles.configuratorKey( Object.class, "foo" ) );
+        assertEquals( OBJECT_FOO_CONFIGURATOR_KEY, Roles.configuratorKey( OBJECT_LITERAL, "foo" ) );
         assertEquals( OBJECT_FOO_CONFIGURATOR_KEY, Roles.configuratorKey( component( "foo" ) ) );
     }
 

@@ -13,6 +13,7 @@
 package org.sonatype.guice.plexus.binders;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import junit.framework.TestCase;
 
@@ -28,6 +29,7 @@ import org.sonatype.guice.plexus.config.PlexusBeanSource;
 import org.sonatype.guice.plexus.config.PlexusConfigurator;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.CreationException;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -174,5 +176,37 @@ public class PlexusBeanMetadataTest
         assertEquals( "REQUIREMENT", bean.getExtraMetadata() );
 
         assertEquals( "CONFIGURATION", injector.getInstance( DefaultBean2.class ).extraMetadata );
+    }
+
+    public void testMissingMetadata()
+    {
+        try
+        {
+            Guice.createInjector( new AbstractModule()
+            {
+                @Override
+                protected void configure()
+                {
+                    install( new PlexusBindingModule( new PlexusBeanSource()
+                    {
+                        public Iterable<Class<?>> findBeanImplementations()
+                        {
+                            return Collections.<Class<?>> singleton( DefaultBean1.class );
+                        }
+
+                        public PlexusBeanMetadata getBeanMetadata( final Class<?> implementation )
+                        {
+                            return null; // have implementations, but no metadata
+                        }
+                    } ) );
+                }
+            } );
+
+            fail( "Expected error for missing metadata" );
+        }
+        catch ( final CreationException e )
+        {
+            System.out.println( e );
+        }
     }
 }
