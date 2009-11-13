@@ -15,8 +15,7 @@ package org.sonatype.guice.plexus.converters;
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -27,11 +26,14 @@ import java.util.Properties;
 import org.codehaus.plexus.util.xml.pull.MXParser;
 import org.codehaus.plexus.util.xml.pull.XmlPullParser;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.sonatype.guice.bean.reflect.BeanProperties;
+import org.sonatype.guice.bean.reflect.BeanProperty;
 import org.sonatype.guice.bean.reflect.Generics;
 
 import com.google.inject.Binder;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.AbstractMatcher;
@@ -148,14 +150,7 @@ public final class XmlTypeConverter
             {
                 return (T) parseArray( parser, Generics.getComponentType( toType ) );
             }
-            try
-            {
-                return parseBean( parser, toType );
-            }
-            catch ( final Exception e )
-            {
-                throw new RuntimeException( "Error parsing bean type " + toType, e );
-            }
+            return parseBean( parser, toType );
         }
 
         parser.require( XmlPullParser.TEXT, null, null );
@@ -215,77 +210,115 @@ public final class XmlTypeConverter
         return collection;
     }
 
-    private <T> T[] parseArray( final XmlPullParser parser, final TypeLiteral<T> toType )
+    private Object parseArray( final XmlPullParser parser, final TypeLiteral<?> toType )
         throws XmlPullParserException, IOException
     {
-        final Collection<T> collection = parseCollection( parser, toType );
+        final Class<?> componentType = toType.getRawType();
+        final TypeLiteral<?> boxedType = componentType.isPrimitive() ? Key.get( toType ).getTypeLiteral() : toType;
+        final Collection<?> collection = parseCollection( parser, boxedType );
 
-        @SuppressWarnings( "unchecked" )
-        final T[] array = (T[]) Array.newInstance( toType.getRawType(), collection.size() );
-        collection.toArray( array );
+        int i = 0;
+        final Object array = Array.newInstance( componentType, collection.size() );
+        for ( Object element : collection )
+        {
+            Array.set( array, i++, element );
+        }
 
         return array;
     }
 
     private <T> T parseBean( final XmlPullParser parser, final TypeLiteral<T> toType )
-        throws Exception
+        throws XmlPullParserException, IOException
     {
         @SuppressWarnings( "unchecked" )
-        final Class<T> rawType = (Class) toType.getRawType();
-        final T bean = createImplementation( parser, rawType );
+        final T bean = createImplementation( parser, (Class<T>) toType.getRawType() );
 
-        while ( parser.getEventType() != XmlPullParser.END_TAG ) // TODO: re-use BeanProperties class?
+        final Map<String, BeanProperty<Object>> propertyMap = new HashMap<String, BeanProperty<Object>>();
+        for ( final BeanProperty<Object> property : new BeanProperties( bean.getClass() ) )
         {
-            final String name = parser.getName();
-            try
+            final String name = property.getName();
+            if ( !propertyMap.containsKey( name ) )
             {
-                final Field f = rawType.getField( name );
-                f.set( bean, parse( parser, TypeLiteral.get( f.getGenericType() ) ) );
+                propertyMap.put( name, property );
             }
-            catch ( final NoSuchFieldException e )
+        }
+
+        while ( parser.getEventType() != XmlPullParser.END_TAG )
+        {
+            final BeanProperty<Object> property = propertyMap.get( parser.getName() );
+            if ( property != null )
             {
-                final String setter = "set" + Character.toUpperCase( name.charAt( 0 ) ) + name.substring( 1 );
-                final Method m = rawType.getMethod( setter, String.class ); // TODO: other styles and types?
-                m.invoke( bean, parse( parser, TypeLiteral.get( m.getGenericParameterTypes()[0] ) ) );
+                property.set( bean, parse( parser, property.getType() ) );
+                parser.next();
+                parser.next();
             }
-            parser.next();
-            parser.next();
+            else
+            {
+                throw new XmlPullParserException( "Unknown bean property: " + parser.getName(), parser, null );
+            }
         }
         return bean;
     }
 
     @SuppressWarnings( "unchecked" )
     private <T> T createImplementation( final XmlPullParser parser, final Class<T> defaultImplementation )
+        throws XmlPullParserException, IOException
     {
-        Class<T> clazz = defaultImplementation;
-        try
+        final Class<T> clazz;
+
+        final String implementationName = parser.getAttributeValue( null, "implementation" );
+        if ( null == implementationName )
         {
-            final String implementationName = parser.getAttributeValue( null, "implementation" );
-            if ( implementationName != null )
+            clazz = defaultImplementation;
+        }
+        else
+        {
+            try
             {
                 ClassLoader tccl = Thread.currentThread().getContextClassLoader();
                 if ( null == tccl )
                 {
-                    tccl = clazz.getClassLoader();
+                    tccl = defaultImplementation.getClassLoader();
                 }
                 clazz = (Class) tccl.loadClass( implementationName );
             }
+            catch ( final ClassNotFoundException e )
+            {
+                throw new RuntimeException( "Unable to load implementation " + implementationName, e );
+            }
+        }
 
+        try
+        {
             if ( parser.next() == XmlPullParser.TEXT )
             {
                 final String text = parser.getText();
                 parser.next();
                 if ( text.length() > 0 )
                 {
-                    return clazz.getDeclaredConstructor( String.class ).newInstance( text );
+                    try
+                    {
+                        return clazz.getConstructor( String.class ).newInstance( text );
+                    }
+                    catch ( NoSuchMethodException e ) // NOPMD
+                    {
+                        // drop through and try the default constructor
+                    }
                 }
             }
-
             return clazz.newInstance();
         }
-        catch ( final Exception e )
+        catch ( InvocationTargetException e )
         {
-            throw new RuntimeException( e.toString() );
+            throw new RuntimeException( "Unable to create instance of " + clazz, e.getCause() );
+        }
+        catch ( IllegalAccessException e )
+        {
+            throw new RuntimeException( "Unable to create instance of " + clazz, e );
+        }
+        catch ( InstantiationException e )
+        {
+            throw new RuntimeException( "Unable to create instance of " + clazz, e );
         }
     }
 
