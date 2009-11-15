@@ -23,12 +23,7 @@
     </dependency>
     <dependency>
       <groupId>org.sonatype.spice.inject</groupId>
-      <artifactId>guice-plexus-bindings</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.sonatype.spice.inject</groupId>
-      <artifactId>guice-plexus-autobinders</artifactId>
+      <artifactId>guice-plexus-binders</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

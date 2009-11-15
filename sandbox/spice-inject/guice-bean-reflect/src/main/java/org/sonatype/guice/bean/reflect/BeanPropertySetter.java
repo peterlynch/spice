@@ -13,6 +13,7 @@
 package org.sonatype.guice.bean.reflect;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -87,6 +88,10 @@ final class BeanPropertySetter<T>
         try
         {
             method.invoke( bean, value );
+        }
+        catch ( final InvocationTargetException e )
+        {
+            throw new RuntimeException( "Error calling bean setter: " + method + " reason: " + e.getTargetException() );
         }
         catch ( final Exception e )
         {

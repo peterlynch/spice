@@ -161,6 +161,14 @@ public class BeanPropertiesTest
         String c;
     }
 
+    static class L
+    {
+        void setName( final String name )
+        {
+            throw new RuntimeException();
+        }
+    }
+
     public void testInterface()
     {
         for ( final BeanProperty<?> bp : new BeanProperties( A.class ) )
@@ -326,5 +334,18 @@ public class BeanPropertiesTest
         assertEquals( "c", i.next().getName() );
         assertFalse( i.hasNext() );
         assertFalse( i.hasNext() );
+    }
+
+    public void testBadPropertySetter()
+    {
+        try
+        {
+            final Iterator<BeanProperty<Object>> i = new BeanProperties( L.class ).iterator();
+            i.next().set( new L(), "TEST" );
+            fail( "Expected RuntimeException" );
+        }
+        catch ( final RuntimeException e )
+        {
+        }
     }
 }
