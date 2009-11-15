@@ -213,7 +213,7 @@ public final class XmlTypeConverter
         final Object array = Array.newInstance( toType.getRawType(), collection.size() );
 
         int i = 0;
-        for ( Object element : collection )
+        for ( final Object element : collection )
         {
             Array.set( array, i++, element );
         }
@@ -280,7 +280,7 @@ public final class XmlTypeConverter
             return defaultClazz;
         }
 
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        final ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         if ( tccl != null )
         {
             try
@@ -293,7 +293,7 @@ public final class XmlTypeConverter
             }
         }
 
-        ClassLoader peer = defaultClazz.getClassLoader();
+        final ClassLoader peer = defaultClazz.getClassLoader();
         if ( peer != null )
         {
             try
@@ -322,7 +322,7 @@ public final class XmlTypeConverter
         {
             return clazz.newInstance();
         }
-        catch ( Exception e )
+        catch ( final Exception e )
         {
             throw new RuntimeException( "Cannot create instance of " + clazz, e );
         }
@@ -334,11 +334,11 @@ public final class XmlTypeConverter
         {
             return clazz.getConstructor( String.class ).newInstance( value );
         }
-        catch ( InvocationTargetException e )
+        catch ( final InvocationTargetException e )
         {
             throw new IllegalArgumentException( "Cannot convert \"" + value + "\" to " + clazz, e.getTargetException() );
         }
-        catch ( Exception e )
+        catch ( final Exception e )
         {
             throw new IllegalArgumentException( "Cannot convert \"" + value + "\" to " + clazz, e );
         }

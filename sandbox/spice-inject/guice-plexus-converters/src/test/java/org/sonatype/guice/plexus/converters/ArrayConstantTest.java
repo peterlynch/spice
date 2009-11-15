@@ -12,6 +12,7 @@
  */
 package org.sonatype.guice.plexus.converters;
 
+import java.net.URI;
 import java.util.Arrays;
 
 import junit.framework.TestCase;
@@ -40,8 +41,15 @@ public class ArrayConstantTest
             protected void configure()
             {
                 bind( "Empty", "<items/>" );
+
+                bind( "Custom", "<items><item implementation='java.lang.Boolean'>true</item>"
+                    + "<item implementation='java.net.URI'>file:temp</item>"
+                    + "<item implementation='java.lang.Float'>8.1</item></items>" );
+
                 bind( "Text", "<items><item>1</item><item>2</item><item>3</item></items>" );
+
                 bind( "Numbers", "<items><item>4</item><item>5</item><item>6</item></items>" );
+
                 bind( "Multi", "<as><a><bs><b>1</b><b>2</b></bs></a><a><bs><b>3</b><b>4</b></bs></a>"
                     + "<a><bs><b>5</b><b>6</b></bs></a></as>" );
 
@@ -52,31 +60,53 @@ public class ArrayConstantTest
 
     @Inject
     @Named( "Empty" )
-    char[] emptyArray;
+    char[] empty;
+
+    @Inject
+    @Named( "Custom" )
+    Object[] custom;
 
     @Inject
     @Named( "Text" )
-    String[] textArray;
+    String[] text;
 
     @Inject
     @Named( "Numbers" )
-    int[] numbersArray;
+    int[] numbers;
 
     @Inject
     @Named( "Multi" )
-    Integer[][] multiArray1;
+    Integer[][] multi1;
 
     @Inject
     @Named( "Multi" )
-    double[][] multiArray2;
+    double[][] multi2;
+
+    public void testEmptyArray()
+    {
+        assertEquals( 0, empty.length );
+    }
 
     @SuppressWarnings( "boxing" )
-    public void testTypeConversions()
+    public void testCustomArray()
     {
-        assertEquals( 0, emptyArray.length );
-        assertTrue( Arrays.equals( new String[] { "1", "2", "3" }, textArray ) );
-        assertTrue( Arrays.equals( new int[] { 4, 5, 6 }, numbersArray ) );
-        assertTrue( Arrays.deepEquals( new Integer[][] { { 1, 2 }, { 3, 4 }, { 5, 6 } }, multiArray1 ) );
-        assertTrue( Arrays.deepEquals( new double[][] { { 1, 2 }, { 3, 4 }, { 5, 6 } }, multiArray2 ) );
+        assertTrue( Arrays.equals( new Object[] { true, URI.create( "file:temp" ), 8.1f }, custom ) );
+    }
+
+    public void testStringArray()
+    {
+        assertTrue( Arrays.equals( new String[] { "1", "2", "3" }, text ) );
+    }
+
+    public void testPrimitiveArray()
+    {
+        assertTrue( Arrays.equals( new int[] { 4, 5, 6 }, numbers ) );
+    }
+
+    @SuppressWarnings( "boxing" )
+    public void testMultiArrays()
+    {
+        assertTrue( Arrays.deepEquals( new Integer[][] { { 1, 2 }, { 3, 4 }, { 5, 6 } }, multi1 ) );
+        assertTrue( Arrays.deepEquals( new double[][] { { 1, 2 }, { 3, 4 }, { 5, 6 } }, multi2 ) );
     }
 }

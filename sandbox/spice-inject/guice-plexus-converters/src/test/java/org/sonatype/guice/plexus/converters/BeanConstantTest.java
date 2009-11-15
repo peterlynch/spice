@@ -13,6 +13,12 @@
 package org.sonatype.guice.plexus.converters;
 
 import static com.google.inject.name.Names.named;
+
+import java.io.File;
+import java.net.URL;
+import java.util.Calendar;
+import java.util.Date;
+
 import junit.framework.TestCase;
 
 import com.google.inject.AbstractModule;
@@ -51,7 +57,12 @@ public class BeanConstantTest
                 bindBean( "MissingStringConstructor", MissingStringConstructor.class.getName(), "text" );
                 bindBean( "BrokenStringConstructor", BrokenStringConstructor.class.getName(), "text" );
 
+                bindConstant().annotatedWith( named( "README" ) ).to( "some/temp/readme.txt" );
+                bindConstant().annotatedWith( named( "SITE" ) ).to( "http://www.sonatype.org" );
+                bindConstant().annotatedWith( named( "DATE" ) ).to( "2009-11-15 18:02:00" );
+
                 install( new XmlTypeConverter() );
+                install( new DateTypeConverter() );
             }
         } ).injectMembers( this );
     }
@@ -64,7 +75,7 @@ public class BeanConstantTest
     {
         float value;
 
-        void setValue( float _value )
+        void setValue( final float _value )
         {
             value = _value;
         }
@@ -169,6 +180,25 @@ public class BeanConstantTest
         testFailedConversion( "BrokenStringConstructor", Object.class );
     }
 
+    public void testSimpleFileBean()
+    {
+        assertEquals( "readme.txt", injector.getInstance( Key.get( File.class, named( "README" ) ) ).getName() );
+    }
+
+    public void testSimpleUrlBean()
+    {
+        assertEquals( "www.sonatype.org", injector.getInstance( Key.get( URL.class, named( "SITE" ) ) ).getHost() );
+    }
+
+    public void testNonBean()
+    {
+        final Calendar calendar = Calendar.getInstance();
+        calendar.setTime( injector.getInstance( Key.get( Date.class, named( "DATE" ) ) ) );
+        assertEquals( 15, calendar.get( Calendar.DAY_OF_MONTH ) );
+        assertEquals( Calendar.NOVEMBER, calendar.get( Calendar.MONTH ) );
+        assertEquals( 2009, calendar.get( Calendar.YEAR ) );
+    }
+
     private Object getBean( final String bindingName, final Class<?> clazz )
     {
         return injector.getInstance( Key.get( clazz, named( bindingName ) ) );
@@ -181,7 +211,7 @@ public class BeanConstantTest
             getBean( bindingName, clazz );
             fail( "Expected ConfigurationException" );
         }
-        catch ( ConfigurationException e )
+        catch ( final ConfigurationException e )
         {
             System.out.println( e.toString() );
         }

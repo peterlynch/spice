@@ -71,14 +71,21 @@ public class DateConstantTest
     @Inject
     Injector injector;
 
-    public void testTypeConversions()
+    public void testDateFormat1()
     {
         assertEquals( dateText1, new SimpleDateFormat( "yyyy-MM-dd h:mm:ss.S a" ).format( date1 ) );
-        assertEquals( dateText2, new SimpleDateFormat( "yyyy-MM-dd h:mm:ssa" ).format( date2 ) );
+    }
 
+    public void testDateFormat2()
+    {
+        assertEquals( dateText2, new SimpleDateFormat( "yyyy-MM-dd h:mm:ssa" ).format( date2 ) );
+    }
+
+    public void testBadDateFormat()
+    {
         try
         {
-            injector.getInstance( Key.get( Date.class, Names.named( "Date3" ) ) );
+            injector.getInstance( Key.get( Date.class, Names.named( "BadFormat" ) ) );
             fail( "Expected ConfigurationException" );
         }
         catch ( final ConfigurationException e )

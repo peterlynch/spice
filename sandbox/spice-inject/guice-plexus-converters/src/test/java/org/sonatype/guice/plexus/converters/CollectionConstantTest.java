@@ -12,8 +12,10 @@
  */
 package org.sonatype.guice.plexus.converters;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -44,9 +46,12 @@ public class CollectionConstantTest
             protected void configure()
             {
                 bind( "Empty", "<items/>" );
+
                 bind( "Custom", "<items implementation='java.util.LinkedHashSet'>"
-                    + "<item implementation='java.lang.StringBuilder'>TEST</item></items>" );
+                    + "<item implementation='java.io.File'>FOO</item><item>BAR</item></items>" );
+
                 bind( "Animals", "<animals><animal>cat</animal><animal>dog</animal><animal>aardvark</animal></animals>" );
+
                 bind( "Numbers", "<as><a><bs><b>1</b><b>2</b></bs></a>" + "<a><bs><b>3</b><b>4</b></bs></a>"
                     + "<a><bs><b>5</b><b>6</b></bs></a></as>" );
 
@@ -71,13 +76,28 @@ public class CollectionConstantTest
     @Named( "Numbers" )
     Collection<Collection<Integer>> numbers;
 
-    @SuppressWarnings( { "unchecked", "boxing" } )
-    public void testTypeConversions()
+    public void testEmptyCollection()
     {
         assertTrue( empty.isEmpty() );
+    }
+
+    public void testCustomCollections()
+    {
         assertEquals( LinkedHashSet.class, custom.getClass() );
-        assertEquals( StringBuilder.class, custom.iterator().next().getClass() );
+        final Iterator<?> i = custom.iterator();
+        assertEquals( new File( "FOO" ), i.next() );
+        assertEquals( "BAR", i.next() );
+        assertFalse( i.hasNext() );
+    }
+
+    public void testStringCollection()
+    {
         assertEquals( Arrays.asList( "cat", "dog", "aardvark" ), animals );
+    }
+
+    @SuppressWarnings( { "boxing", "unchecked" } )
+    public void testPrimitiveCollection()
+    {
         assertEquals( Arrays.asList( Arrays.asList( 1, 2 ), Arrays.asList( 3, 4 ), Arrays.asList( 5, 6 ) ), numbers );
     }
 }
