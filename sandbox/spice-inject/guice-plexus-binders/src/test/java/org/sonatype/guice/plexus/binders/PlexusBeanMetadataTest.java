@@ -38,9 +38,6 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
-/**
- * Test additional Plexus metadata use-cases.
- */
 public class PlexusBeanMetadataTest
     extends TestCase
 {

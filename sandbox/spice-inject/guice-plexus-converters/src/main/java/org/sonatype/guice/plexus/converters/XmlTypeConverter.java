@@ -114,7 +114,7 @@ public final class XmlTypeConverter
         }
         catch ( final Exception e )
         {
-            throw new IllegalArgumentException( "Cannot parse \"" + value + "\" as " + toType, e );
+            throw new IllegalArgumentException( "Cannot parse: \"" + value + "\" as: " + toType, e );
         }
     }
 
@@ -312,7 +312,7 @@ public final class XmlTypeConverter
         }
         catch ( final ClassNotFoundException e )
         {
-            throw new RuntimeException( "Cannot load implementation " + implementationName, e );
+            throw new IllegalArgumentException( "Cannot load implementation: " + implementationName, e );
         }
     }
 
@@ -324,7 +324,7 @@ public final class XmlTypeConverter
         }
         catch ( final Exception e )
         {
-            throw new RuntimeException( "Cannot create instance of " + clazz, e );
+            throw new IllegalArgumentException( "Cannot create instance of: " + clazz, e );
         }
     }
 
@@ -336,11 +336,12 @@ public final class XmlTypeConverter
         }
         catch ( final InvocationTargetException e )
         {
-            throw new IllegalArgumentException( "Cannot convert \"" + value + "\" to " + clazz, e.getTargetException() );
+            throw new IllegalArgumentException( "Cannot convert: \"" + value + "\" to: " + clazz,
+                                                e.getTargetException() );
         }
         catch ( final Exception e )
         {
-            throw new IllegalArgumentException( "Cannot convert \"" + value + "\" to " + clazz, e );
+            throw new IllegalArgumentException( "Cannot convert: \"" + value + "\" to: " + clazz, e );
         }
     }
 

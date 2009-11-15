@@ -26,9 +26,6 @@ import com.google.inject.Injector;
 import com.google.inject.ProvisionException;
 import com.google.inject.TypeLiteral;
 
-/**
- * Test various Plexus @{@link Configuration} use-cases.
- */
 public class PlexusConfigurationTest
     extends TestCase
 {

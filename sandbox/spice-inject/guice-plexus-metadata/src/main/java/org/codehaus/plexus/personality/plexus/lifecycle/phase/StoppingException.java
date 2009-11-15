@@ -20,23 +20,20 @@ package org.codehaus.plexus.personality.plexus.lifecycle.phase;
  * Error occuring while starting a component.
  *
  * @author <a href="mailto:brett@codehaus.org">Brett Porter</a>
- * @version $Id: StartingException.java 8109 2009-02-11 18:20:25Z dain $
+ * @version $Id: StoppingException.java 6965 2007-10-21 05:32:27Z jvanzyl $
  */
-public class StartingException
+public class StoppingException
     extends Exception
 {
-    public StartingException( String message )
+    private static final long serialVersionUID = 1L;
+
+    public StoppingException( String message )
     {
         super( message );
     }
 
-    public StartingException( String message, Throwable cause )
+    public StoppingException( String message, Throwable cause )
     {
         super( message, cause );
-    }
-
-    public StartingException( Throwable cause )
-    {
-        super( cause );
     }
 }

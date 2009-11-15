@@ -166,6 +166,7 @@ public class PropertyListenerTest
         }
         catch ( final ConfigurationException e )
         {
+            System.out.println( e );
         }
     }
 }

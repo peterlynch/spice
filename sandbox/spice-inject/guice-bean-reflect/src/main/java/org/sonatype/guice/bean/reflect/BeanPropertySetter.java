@@ -105,6 +105,7 @@ final class BeanPropertySetter<T>
 
     public Void run()
     {
+        // enable private injection
         method.setAccessible( true );
         return null;
     }

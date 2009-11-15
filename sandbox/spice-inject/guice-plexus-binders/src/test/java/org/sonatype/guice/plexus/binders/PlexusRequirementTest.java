@@ -31,9 +31,6 @@ import com.google.inject.Injector;
 import com.google.inject.ProvisionException;
 import com.google.inject.name.Names;
 
-/**
- * Test various Plexus @{@link Requirement} use-cases.
- */
 public class PlexusRequirementTest
     extends TestCase
 {

@@ -17,6 +17,19 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-component-annotations</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ops4j.peaberry.dependencies</groupId>
+      <artifactId>guice</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.sonatype.spice.inject</groupId>
+      <artifactId>guice-bean-reflect</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.sonatype.spice.inject</groupId>
       <artifactId>guice-bean-inject</artifactId>
       <version>${project.version}</version>

@@ -17,13 +17,16 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.sonatype.spice.inject</groupId>
-      <artifactId>guice-plexus-scanners</artifactId>
-      <version>${project.version}</version>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-classworlds</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ops4j.peaberry.dependencies</groupId>
+      <artifactId>guice</artifactId>
     </dependency>
     <dependency>
       <groupId>org.sonatype.spice.inject</groupId>
-      <artifactId>guice-plexus-binders</artifactId>
+      <artifactId>guice-plexus-scanners</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -32,8 +35,9 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-classworlds</artifactId>
+      <groupId>org.sonatype.spice.inject</groupId>
+      <artifactId>guice-plexus-binders</artifactId>
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
 

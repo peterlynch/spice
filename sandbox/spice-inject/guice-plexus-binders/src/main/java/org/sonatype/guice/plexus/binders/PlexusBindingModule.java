@@ -13,6 +13,7 @@
 package org.sonatype.guice.plexus.binders;
 
 import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable;
 import org.sonatype.guice.bean.inject.BeanBinder;
 import org.sonatype.guice.bean.inject.BeanListener;
 import org.sonatype.guice.bean.inject.PropertyBinder;
@@ -27,6 +28,7 @@ import com.google.inject.Scopes;
 import com.google.inject.TypeLiteral;
 import com.google.inject.binder.ScopedBindingBuilder;
 import com.google.inject.matcher.Matchers;
+import com.google.inject.spi.InjectionListener;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
 
@@ -48,19 +50,23 @@ public final class PlexusBindingModule
 
     final PlexusBeanSource[] sources;
 
+    final PlexusStartableListener startableListener;
+
     // ----------------------------------------------------------------------
     // Constructors
     // ----------------------------------------------------------------------
 
     public PlexusBindingModule()
     {
-        // default to use "just-in-time" runtime annotation metadata
-        sources = new PlexusBeanSource[] { new AnnotatedBeanSource() };
+        // default "just-in-time" metadata
+        this( new AnnotatedBeanSource() );
     }
 
     public PlexusBindingModule( final PlexusBeanSource... sources )
     {
         this.sources = sources.clone();
+
+        startableListener = new PlexusStartableListener();
     }
 
     // ----------------------------------------------------------------------
@@ -70,6 +76,12 @@ public final class PlexusBindingModule
     @Override
     protected void configure()
     {
+        // injection about to begin
+        startableListener.start();
+
+        // allow clients to access the injector's main startable
+        bind( Startable.class ).toInstance( startableListener );
+
         // explicitly bind all known bean implementations
         for ( final PlexusBeanSource source : sources )
         {
@@ -127,6 +139,7 @@ public final class PlexusBindingModule
     final class PlexusBeanBinder
         implements BeanBinder
     {
+        @SuppressWarnings( "unchecked" )
         public <B> PropertyBinder bindBean( final TypeLiteral<B> type, final TypeEncounter<B> encounter )
         {
             final Class<?> clazz = type.getRawType();
@@ -135,6 +148,10 @@ public final class PlexusBindingModule
                 final PlexusBeanMetadata metadata = source.getBeanMetadata( clazz );
                 if ( metadata != null )
                 {
+                    if ( Startable.class.isAssignableFrom( clazz ) )
+                    {
+                        encounter.register( (InjectionListener) startableListener );
+                    }
                     return new PlexusPropertyBinder( encounter, metadata );
                 }
             }

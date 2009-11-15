@@ -17,21 +17,17 @@ package org.codehaus.plexus.personality.plexus.lifecycle.phase;
  */
 
 /**
- * Error occuring while starting a component.
+ * Describes an error that has occurred during the execution of a phase.
  *
  * @author <a href="mailto:brett@codehaus.org">Brett Porter</a>
- * @version $Id: StoppingException.java 6965 2007-10-21 05:32:27Z jvanzyl $
+ * @version $Id: PhaseExecutionException.java 4779 2006-11-23 04:09:31Z jvanzyl $
  */
-public class StoppingException
-    extends Exception
+public class PhaseExecutionException extends Exception
 {
-    public StoppingException( String message )
-    {
-        super( message );
-    }
+    private static final long serialVersionUID = 1L;
 
-    public StoppingException( String message, Throwable cause )
+    public PhaseExecutionException( String message, Throwable throwable )
     {
-        super( message, cause );
+        super( message, throwable );
     }
 }
