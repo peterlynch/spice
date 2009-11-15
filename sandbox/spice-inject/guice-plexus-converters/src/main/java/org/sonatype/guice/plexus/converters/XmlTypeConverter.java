@@ -12,7 +12,6 @@
  */
 package org.sonatype.guice.plexus.converters;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
@@ -110,16 +109,12 @@ public final class XmlTypeConverter
         try
         {
             final XmlPullParser parser = new MXParser();
-            parser.setInput( new StringReader( value.indexOf( '<' ) >= 0 ? value : "<_>" + value + "</_>" ) );
+            parser.setInput( new StringReader( value.trim().startsWith( "<" ) ? value : "<_>" + value + "</_>" ) );
             return parse( parser, toType );
         }
-        catch ( final XmlPullParserException e )
+        catch ( final Exception e )
         {
             throw new IllegalArgumentException( "Cannot parse \"" + value + "\" as " + toType, e );
-        }
-        catch ( final IOException e )
-        {
-            throw new RuntimeException( "I/O error converting \"" + value + "\" to " + toType, e );
         }
     }
 
@@ -129,7 +124,7 @@ public final class XmlTypeConverter
 
     @SuppressWarnings( "unchecked" )
     private <T> T parse( final XmlPullParser parser, final TypeLiteral<T> toType )
-        throws XmlPullParserException, IOException
+        throws Exception
     {
         final String implementationName = parseImplementation( parser );
         final Class<?> rawType = toType.getRawType();
@@ -162,7 +157,7 @@ public final class XmlTypeConverter
     }
 
     private Properties parseProperties( final XmlPullParser parser )
-        throws XmlPullParserException, IOException
+        throws Exception
     {
         final Properties properties = newImplementation( parser, Properties.class );
         while ( parser.next() != XmlPullParser.END_TAG )
@@ -186,7 +181,7 @@ public final class XmlTypeConverter
     }
 
     private <T> Map<String, T> parseMap( final XmlPullParser parser, final TypeLiteral<T> toType )
-        throws XmlPullParserException, IOException
+        throws Exception
     {
         @SuppressWarnings( "unchecked" )
         final Map<String, T> map = newImplementation( parser, HashMap.class );
@@ -199,7 +194,7 @@ public final class XmlTypeConverter
     }
 
     private <T> Collection<T> parseCollection( final XmlPullParser parser, final TypeLiteral<T> toType )
-        throws XmlPullParserException, IOException
+        throws Exception
     {
         @SuppressWarnings( "unchecked" )
         final Collection<T> collection = newImplementation( parser, ArrayList.class );
@@ -212,14 +207,12 @@ public final class XmlTypeConverter
     }
 
     private Object parseArray( final XmlPullParser parser, final TypeLiteral<?> toType )
-        throws XmlPullParserException, IOException
+        throws Exception
     {
-        final Class<?> componentType = toType.getRawType();
-        final TypeLiteral<?> boxedType = componentType.isPrimitive() ? Key.get( toType ).getTypeLiteral() : toType;
-        final Collection<?> collection = parseCollection( parser, boxedType );
+        final Collection<?> collection = parseCollection( parser, toType );
+        final Object array = Array.newInstance( toType.getRawType(), collection.size() );
 
         int i = 0;
-        final Object array = Array.newInstance( componentType, collection.size() );
         for ( Object element : collection )
         {
             Array.set( array, i++, element );
@@ -229,7 +222,7 @@ public final class XmlTypeConverter
     }
 
     private <T> T parseBean( final XmlPullParser parser, final TypeLiteral<T> toType )
-        throws XmlPullParserException, IOException
+        throws Exception
     {
         @SuppressWarnings( "unchecked" )
         final Class<T> clazz = (Class) loadImplementation( parseImplementation( parser ), toType.getRawType() );
@@ -300,9 +293,22 @@ public final class XmlTypeConverter
             }
         }
 
+        ClassLoader peer = defaultClazz.getClassLoader();
+        if ( peer != null )
+        {
+            try
+            {
+                return peer.loadClass( implementationName );
+            }
+            catch ( final ClassNotFoundException e ) // NOPMD
+            {
+                // drop through and try the classic approach
+            }
+        }
+
         try
         {
-            return defaultClazz.getClassLoader().loadClass( implementationName );
+            return Class.forName( implementationName );
         }
         catch ( final ClassNotFoundException e )
         {
@@ -354,9 +360,11 @@ public final class XmlTypeConverter
             return (T) value; // no need for any conversion
         }
 
+        final TypeLiteral<?> boxedType = rawType.isPrimitive() ? Key.get( rawType ).getTypeLiteral() : toType;
+
         for ( final TypeConverterBinding b : otherConverterBindings )
         {
-            if ( b.getTypeMatcher().matches( toType ) )
+            if ( b.getTypeMatcher().matches( boxedType ) )
             {
                 return (T) b.getTypeConverter().convert( value, toType );
             }
