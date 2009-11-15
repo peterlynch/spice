@@ -131,9 +131,11 @@ public final class XmlTypeConverter
     private <T> T parse( final XmlPullParser parser, final TypeLiteral<T> toType )
         throws XmlPullParserException, IOException
     {
+        final String implementationName = parseImplementation( parser );
+        final Class<?> rawType = toType.getRawType();
+
         if ( parser.next() == XmlPullParser.START_TAG )
         {
-            final Class<?> rawType = toType.getRawType();
             if ( Properties.class.isAssignableFrom( rawType ) )
             {
                 return (T) parseProperties( parser );
@@ -154,14 +156,16 @@ public final class XmlTypeConverter
         }
 
         parser.require( XmlPullParser.TEXT, null, null );
-        return convertText( parser.getText(), toType );
+
+        final Class<T> clazz = (Class) loadImplementation( implementationName, rawType );
+        return convertText( parser.getText(), rawType == clazz ? toType : TypeLiteral.get( clazz ) );
     }
 
     private Properties parseProperties( final XmlPullParser parser )
         throws XmlPullParserException, IOException
     {
-        final Properties properties = createImplementation( parser, Properties.class );
-        while ( parser.getEventType() != XmlPullParser.END_TAG )
+        final Properties properties = newImplementation( parser, Properties.class );
+        while ( parser.next() != XmlPullParser.END_TAG )
         {
             parser.next();
             if ( "name".equals( parser.getName() ) )
@@ -177,7 +181,6 @@ public final class XmlTypeConverter
                 properties.put( parser.nextText(), value );
             }
             parser.next();
-            parser.next();
         }
         return properties;
     }
@@ -186,11 +189,10 @@ public final class XmlTypeConverter
         throws XmlPullParserException, IOException
     {
         @SuppressWarnings( "unchecked" )
-        final Map<String, T> map = createImplementation( parser, HashMap.class );
-        while ( parser.getEventType() != XmlPullParser.END_TAG )
+        final Map<String, T> map = newImplementation( parser, HashMap.class );
+        while ( parser.next() != XmlPullParser.END_TAG )
         {
             map.put( parser.getName(), parse( parser, toType ) );
-            parser.next();
             parser.next();
         }
         return map;
@@ -200,11 +202,10 @@ public final class XmlTypeConverter
         throws XmlPullParserException, IOException
     {
         @SuppressWarnings( "unchecked" )
-        final List<T> collection = createImplementation( parser, ArrayList.class );
-        while ( parser.getEventType() != XmlPullParser.END_TAG )
+        final Collection<T> collection = newImplementation( parser, ArrayList.class );
+        while ( parser.next() != XmlPullParser.END_TAG )
         {
             collection.add( parse( parser, toType ) );
-            parser.next();
             parser.next();
         }
         return collection;
@@ -231,10 +232,18 @@ public final class XmlTypeConverter
         throws XmlPullParserException, IOException
     {
         @SuppressWarnings( "unchecked" )
-        final T bean = createImplementation( parser, (Class<T>) toType.getRawType() );
+        final Class<T> clazz = (Class) loadImplementation( parseImplementation( parser ), toType.getRawType() );
+        if ( parser.next() == XmlPullParser.TEXT )
+        {
+            final String text = parser.getText();
+            parser.next();
+            return newImplementation( clazz, text );
+        }
+
+        final T bean = newImplementation( clazz );
 
         final Map<String, BeanProperty<Object>> propertyMap = new HashMap<String, BeanProperty<Object>>();
-        for ( final BeanProperty<Object> property : new BeanProperties( bean.getClass() ) )
+        for ( final BeanProperty<Object> property : new BeanProperties( clazz ) )
         {
             final String name = property.getName();
             if ( !propertyMap.containsKey( name ) )
@@ -257,75 +266,90 @@ public final class XmlTypeConverter
                 throw new XmlPullParserException( "Unknown bean property: " + parser.getName(), parser, null );
             }
         }
+
         return bean;
     }
 
-    @SuppressWarnings( "unchecked" )
-    private <T> T createImplementation( final XmlPullParser parser, final Class<T> defaultImplementation )
-        throws XmlPullParserException, IOException
+    private static String parseImplementation( final XmlPullParser parser )
+        throws XmlPullParserException
     {
-        final Class<T> clazz;
+        if ( parser.getEventType() == XmlPullParser.START_TAG )
+        {
+            return parser.getAttributeValue( null, "implementation" );
+        }
+        return null;
+    }
 
-        final String implementationName = parser.getAttributeValue( null, "implementation" );
+    private static Class<?> loadImplementation( final String implementationName, final Class<?> defaultClazz )
+    {
         if ( null == implementationName )
         {
-            clazz = defaultImplementation;
+            return defaultClazz;
         }
-        else
+
+        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        if ( tccl != null )
         {
             try
             {
-                ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-                if ( null == tccl )
-                {
-                    tccl = defaultImplementation.getClassLoader();
-                }
-                clazz = (Class) tccl.loadClass( implementationName );
+                return tccl.loadClass( implementationName );
             }
-            catch ( final ClassNotFoundException e )
+            catch ( final ClassNotFoundException e ) // NOPMD
             {
-                throw new RuntimeException( "Unable to load implementation " + implementationName, e );
+                // drop through and try the peer class loader
             }
         }
 
         try
         {
-            if ( parser.next() == XmlPullParser.TEXT )
-            {
-                final String text = parser.getText();
-                parser.next();
-                if ( text.length() > 0 )
-                {
-                    try
-                    {
-                        return clazz.getConstructor( String.class ).newInstance( text );
-                    }
-                    catch ( NoSuchMethodException e ) // NOPMD
-                    {
-                        // drop through and try the default constructor
-                    }
-                }
-            }
+            return defaultClazz.getClassLoader().loadClass( implementationName );
+        }
+        catch ( final ClassNotFoundException e )
+        {
+            throw new RuntimeException( "Cannot load implementation " + implementationName, e );
+        }
+    }
+
+    private static <T> T newImplementation( final Class<T> clazz )
+    {
+        try
+        {
             return clazz.newInstance();
+        }
+        catch ( Exception e )
+        {
+            throw new RuntimeException( "Cannot create instance of " + clazz, e );
+        }
+    }
+
+    private static <T> T newImplementation( final Class<T> clazz, final String value )
+    {
+        try
+        {
+            return clazz.getConstructor( String.class ).newInstance( value );
         }
         catch ( InvocationTargetException e )
         {
-            throw new RuntimeException( "Unable to create instance of " + clazz, e.getCause() );
+            throw new IllegalArgumentException( "Cannot convert \"" + value + "\" to " + clazz, e.getTargetException() );
         }
-        catch ( IllegalAccessException e )
+        catch ( Exception e )
         {
-            throw new RuntimeException( "Unable to create instance of " + clazz, e );
+            throw new IllegalArgumentException( "Cannot convert \"" + value + "\" to " + clazz, e );
         }
-        catch ( InstantiationException e )
-        {
-            throw new RuntimeException( "Unable to create instance of " + clazz, e );
-        }
+    }
+
+    @SuppressWarnings( "unchecked" )
+    private static <T> T newImplementation( final XmlPullParser parser, final Class<T> defaultClazz )
+        throws XmlPullParserException
+    {
+        return (T) newImplementation( loadImplementation( parseImplementation( parser ), defaultClazz ) );
     }
 
     @SuppressWarnings( "unchecked" )
     private <T> T convertText( final String value, final TypeLiteral<T> toType )
     {
-        if ( toType.getRawType().isAssignableFrom( String.class ) )
+        final Class<?> rawType = toType.getRawType();
+        if ( rawType.isAssignableFrom( String.class ) )
         {
             return (T) value; // no need for any conversion
         }
@@ -338,6 +362,6 @@ public final class XmlTypeConverter
             }
         }
 
-        throw new IllegalArgumentException( "Cannot convert \"" + value + "\" to " + toType );
+        return (T) newImplementation( rawType, value );
     }
 }

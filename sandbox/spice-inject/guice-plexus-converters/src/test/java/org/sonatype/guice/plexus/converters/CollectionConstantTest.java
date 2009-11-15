@@ -1,0 +1,83 @@
+/**
+ * Copyright (c) 2009 Sonatype, Inc. All rights reserved.
+ *
+ * This program is licensed to you under the Apache License Version 2.0,
+ * and you may not use this file except in compliance with the Apache License Version 2.0.
+ * You may obtain a copy of the Apache License Version 2.0 at http://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the Apache License Version 2.0 is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
+ */
+package org.sonatype.guice.plexus.converters;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
+import junit.framework.TestCase;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+import com.google.inject.name.Names;
+
+public class CollectionConstantTest
+    extends TestCase
+{
+    @Override
+    protected void setUp()
+        throws Exception
+    {
+        Guice.createInjector( new AbstractModule()
+        {
+            private void bind( final String name, final String value )
+            {
+                bindConstant().annotatedWith( Names.named( name ) ).to( value );
+            }
+
+            @Override
+            protected void configure()
+            {
+                bind( "Empty", "<items/>" );
+                bind( "Custom", "<items implementation='java.util.LinkedHashSet'>"
+                    + "<item implementation='java.lang.StringBuilder'>TEST</item></items>" );
+                bind( "Animals", "<animals><animal>cat</animal><animal>dog</animal><animal>aardvark</animal></animals>" );
+                bind( "Numbers", "<as><a><bs><b>1</b><b>2</b></bs></a>" + "<a><bs><b>3</b><b>4</b></bs></a>"
+                    + "<a><bs><b>5</b><b>6</b></bs></a></as>" );
+
+                install( new XmlTypeConverter() );
+            }
+        } ).injectMembers( this );
+    }
+
+    @Inject
+    @Named( "Empty" )
+    List<?> empty;
+
+    @Inject
+    @Named( "Custom" )
+    Set<?> custom;
+
+    @Inject
+    @Named( "Animals" )
+    Collection<?> animals;
+
+    @Inject
+    @Named( "Numbers" )
+    Collection<Collection<Integer>> numbers;
+
+    @SuppressWarnings( { "unchecked", "boxing" } )
+    public void testTypeConversions()
+    {
+        assertTrue( empty.isEmpty() );
+        assertEquals( LinkedHashSet.class, custom.getClass() );
+        assertEquals( StringBuilder.class, custom.iterator().next().getClass() );
+        assertEquals( Arrays.asList( "cat", "dog", "aardvark" ), animals );
+        assertEquals( Arrays.asList( Arrays.asList( 1, 2 ), Arrays.asList( 3, 4 ), Arrays.asList( 5, 6 ) ), numbers );
+    }
+}
