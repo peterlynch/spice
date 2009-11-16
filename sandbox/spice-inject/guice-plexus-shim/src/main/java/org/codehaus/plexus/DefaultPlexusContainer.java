@@ -27,7 +27,7 @@ public class DefaultPlexusContainer
         throw new UnsupportedOperationException();
     }
 
-    public DefaultPlexusContainer( ContainerConfiguration c )
+    public DefaultPlexusContainer( @SuppressWarnings( "unused" ) ContainerConfiguration config )
     {
         throw new UnsupportedOperationException();
     }
@@ -98,17 +98,7 @@ public class DefaultPlexusContainer
         throw new UnsupportedOperationException();
     }
 
-    public void setClassWorld( ClassWorld classWorld )
-    {
-        throw new UnsupportedOperationException();
-    }
-
     public ClassRealm getContainerRealm()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public void setContainerRealm( ClassRealm containerRealm )
     {
         throw new UnsupportedOperationException();
     }
@@ -280,11 +270,6 @@ public class DefaultPlexusContainer
     }
 
     public <T> void addComponent( T component, Class<?> role, String roleHint )
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public void addComponent( Object component, String role, String roleHint )
     {
         throw new UnsupportedOperationException();
     }
