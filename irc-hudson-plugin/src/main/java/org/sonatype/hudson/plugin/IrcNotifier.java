@@ -19,7 +19,9 @@ import hudson.tasks.Publisher;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,8 +29,7 @@ import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.schwering.irc.lib.IRCConnection;
-import org.schwering.irc.lib.IRCEventListener;
-import org.schwering.irc.lib.IRCModeParser;
+import org.schwering.irc.lib.IRCEventAdapter;
 import org.schwering.irc.lib.IRCUser;
 
 public class IrcNotifier
@@ -40,12 +41,6 @@ public class IrcNotifier
 
     public BuildStepMonitor getRequiredMonitorService()
     {
-        System.out.println( "====================================================================" );
-        System.out.println( "=                                                                  =" );
-        System.out.println( "= required IrcNotifier                                             =" );
-        System.out.println( "=                                                                  =" );
-        System.out.println( "====================================================================" );
-
         return BuildStepMonitor.BUILD;
     }
 
@@ -53,12 +48,6 @@ public class IrcNotifier
     public boolean perform( AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener )
         throws InterruptedException, IOException
     {
-        System.out.println( "====================================================================" );
-        System.out.println( "=                                                                  =" );
-        System.out.println( "= perform IrcNotifier                                              =" );
-        System.out.println( "=                                                                  =" );
-        System.out.println( "====================================================================" );
-
         DESCRIPTOR.notify( build );
         return super.perform( build, launcher, listener );
     }
@@ -66,24 +55,17 @@ public class IrcNotifier
     @Override
     public IrcBuildStepDescriptor getDescriptor()
     {
-        System.out.println( "====================================================================" );
-        System.out.println( "=                                                                  =" );
-        System.out.println( "= descriptor IrcNotifier                                           =" );
-        System.out.println( "=                                                                  =" );
-        System.out.println( "====================================================================" );
-
         return DESCRIPTOR;
     }
 
     public static class IrcBuildStepDescriptor
         extends BuildStepDescriptor<Publisher>
-        implements IRCEventListener
     {
         private static final Logger LOG = Logger.getLogger( IrcBuildStepDescriptor.class.getName() );
 
-        private transient volatile Object connectionNotifier = new Object();
+        private transient Object connectionNotifier = new Object();
 
-        private transient volatile IRCConnection conn;
+        private transient IRCConnection conn;
 
         private boolean enabled;
 
@@ -102,6 +84,13 @@ public class IrcNotifier
         private transient String connectionError;
 
         private transient boolean isRegistered;
+
+        private transient Map<String, List<String>> pendingMessages = new LinkedHashMap<String, List<String>>();
+
+        protected IrcBuildStepDescriptor()
+        {
+            load();
+        }
 
         @SuppressWarnings( "unchecked" )
         @Override
@@ -124,12 +113,6 @@ public class IrcNotifier
         public boolean configure( StaplerRequest req, JSONObject json )
             throws hudson.model.Descriptor.FormException
         {
-            System.out.println( "====================================================================" );
-            System.out.println( "=                                                                  =" );
-            System.out.println( "= configure IrcNotifier                                            =" );
-            System.out.println( "=                                                                  =" );
-            System.out.println( "====================================================================" );
-
             enabled =
                 "on".equals( req.getParameter( "irc_publisher.enabled" ) )
                     || "true".equals( req.getParameter( "irc_publisher.enabled" ) );
@@ -188,7 +171,88 @@ public class IrcNotifier
             if ( enabled && conn == null )
             {
                 conn = new IRCConnection( hostname, new int[] { port }, password, nick, nick, nick );
-                conn.addIRCEventListener( this );
+                conn.addIRCEventListener( new IRCEventAdapter()
+                {
+                    @Override
+                    public void onError( String msg )
+                    {
+                        onError( -1, msg );
+                    }
+
+                    @Override
+                    public void onError( int num, String msg )
+                    {
+                        if ( !isRegistered )
+                        {
+                            connectionError = msg;
+                            synchronized ( connectionNotifier )
+                            {
+                                connectionNotifier.notifyAll();
+                            }
+                        }
+                        else
+                        {
+                            LOG.log( Level.WARNING, msg );
+                        }
+                    }
+
+                    @Override
+                    public void onJoin( String chan, IRCUser user )
+                    {
+                        checkPendingMessage( user.getNick() );
+                    }
+
+                    private void checkPendingMessage( String user )
+                    {
+                        List<String> msgs = pendingMessages.get( user );
+                        if ( msgs != null )
+                        {
+                            for ( String msg : msgs )
+                            {
+                                conn.doPrivmsg( user, msg );
+                            }
+
+                            msgs.clear();
+                        }
+                    }
+
+                    @Override
+                    public void onNick( IRCUser user, String newNick )
+                    {
+                        checkPendingMessage( user.getNick() );
+                        checkPendingMessage( newNick );
+                    }
+
+                    @Override
+                    public void onPrivmsg( String target, IRCUser user, String msg )
+                    {
+                        checkPendingMessage( user.getNick() );
+
+                        if ( msg.startsWith( commandPrefix ) )
+                        {
+                            conn.doPrivmsg( target, "PONG" );
+                        }
+                    }
+
+                    @Override
+                    public void onRegistered()
+                    {
+                        LOG.fine( "Connected to " + hostname );
+
+                        isRegistered = true;
+
+                        for ( String channel : channels )
+                        {
+                            conn.doJoin( channel );
+                        }
+
+                        synchronized ( connectionNotifier )
+                        {
+                            connectionNotifier.notifyAll();
+                        }
+                    }
+
+                } );
                 conn.connect();
 
                 synchronized ( connectionNotifier )
@@ -217,134 +281,6 @@ public class IrcNotifier
             return "IRC notification";
         }
 
-        public void onDisconnected()
-        {
-            // TODO Auto-generated method stub
-
-        }
-
-        public void onError( String msg )
-        {
-            onError( -1, msg );
-        }
-
-        public void onError( int num, String msg )
-        {
-            if ( !isRegistered )
-            {
-                connectionError = msg;
-                synchronized ( connectionNotifier )
-                {
-                    connectionNotifier.notifyAll();
-                }
-            }
-            else
-            {
-                LOG.log( Level.WARNING, msg );
-            }
-        }
-
-        public void onInvite( String chan, IRCUser user, String passiveNick )
-        {
-            // TODO Auto-generated method stub
-
-        }
-
-        public void onJoin( String chan, IRCUser user )
-        {
-            // TODO Auto-generated method stub
-
-        }
-
-        public void onKick( String chan, IRCUser user, String passiveNick, String msg )
-        {
-            // TODO Auto-generated method stub
-
-        }
-
-        public void onMode( String chan, IRCUser user, IRCModeParser modeParser )
-        {
-            // TODO Auto-generated method stub
-
-        }
-
-        public void onMode( IRCUser user, String passiveNick, String mode )
-        {
-            // TODO Auto-generated method stub
-
-        }
-
-        public void onNick( IRCUser user, String newNick )
-        {
-            // TODO Auto-generated method stub
-
-        }
-
-        public void onNotice( String target, IRCUser user, String msg )
-        {
-            // TODO Auto-generated method stub
-
-        }
-
-        public void onPart( String chan, IRCUser user, String msg )
-        {
-            // TODO Auto-generated method stub
-
-        }
-
-        public void onPing( String ping )
-        {
-            // TODO Auto-generated method stub
-
-        }
-
-        public void onPrivmsg( String target, IRCUser user, String msg )
-        {
-            // TODO Auto-generated method stub
-
-        }
-
-        public void onQuit( IRCUser user, String msg )
-        {
-            // TODO Auto-generated method stub
-
-        }
-
-        public void onRegistered()
-        {
-            LOG.fine( "Connected to " + hostname );
-
-            isRegistered = true;
-
-            for ( String channel : channels )
-            {
-                conn.doJoin( channel );
-            }
-
-            synchronized ( connectionNotifier )
-            {
-                connectionNotifier.notifyAll();
-            }
-        }
-
-        public void onReply( int num, String value, String msg )
-        {
-            // TODO Auto-generated method stub
-
-        }
-
-        public void onTopic( String chan, IRCUser user, String topic )
-        {
-            // TODO Auto-generated method stub
-
-        }
-
-        public void unknown( String prefix, String command, String middle, String trailing )
-        {
-            // TODO Auto-generated method stub
-
-        }
-
         public void notify( AbstractBuild<?, ?> build )
             throws InterruptedException, IOException
         {
@@ -370,18 +306,51 @@ public class IrcNotifier
                 relatedUsers.add( change.getAuthor().getDisplayName() );
             }
 
-            for ( String user : relatedUsers )
+            final IRCConnection conn = getIrcConnection();
+            for ( String channel : channels )
             {
-                String msg =
+                final String buildMsg =
                     build.getProject().getName() + " build is unstable  ( " + Hudson.getInstance().getRootUrl()
                         + build.getUrl() + " )";
-                getIrcConnection().doPrivmsg( user, msg );
-                for ( String channel : channels )
+                if ( relatedUsers == null || relatedUsers.isEmpty() )
                 {
-                    getIrcConnection().doPrivmsg( channel, user + ": " + msg );
+                    conn.doPrivmsg( channel, "Unknown user: " + buildMsg );
                 }
+                else
+                {
+                    for ( final String user : relatedUsers )
+                    {
+                        conn.doPrivmsg( channel, user + ": " + buildMsg );
+                        IRCEventAdapter userListener = new IRCEventAdapter()
+                        {
+                            @Override
+                            public void onError( int num, String msg )
+                            {
+                                if ( num == 401 )
+                                {
+                                    addPendingMessage( user, buildMsg );
+                                }
+                                conn.removeIRCEventListener( this );
+                            }
+
+                        };
+                        conn.addIRCEventListener( userListener );
+                        conn.doPrivmsg( user, buildMsg );
+                    }
+                }
+
             }
 
+        }
+
+        private void addPendingMessage( String user, String buildMsg )
+        {
+            if ( !pendingMessages.containsKey( user ) || pendingMessages.get( user ) == null )
+            {
+                pendingMessages.put( user, new ArrayList<String>() );
+            }
+            List<String> msgs = pendingMessages.get( user );
+            msgs.add( buildMsg );
         }
 
         public void stop()
