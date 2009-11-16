@@ -121,12 +121,7 @@ final class PlexusComponents<T>
         final Map<String, T> roleHintMap = new LinkedHashMap<String, T>( 2 * hints.length );
         for ( final String h : hints )
         {
-            final Provider<T> provider = roleMap.get( h );
-            if ( null == provider )
-            {
-                throw new ProvisionException( String.format( MISSING_ROLE_HINT_ERROR, roleName, h ) );
-            }
-            roleHintMap.put( h, provider.get() );
+            roleHintMap.put( h, lookupRole( h ) );
         }
         return roleHintMap;
     }
@@ -143,12 +138,7 @@ final class PlexusComponents<T>
         final List<T> roleHintList = new ArrayList<T>( hints.length );
         for ( final String h : hints )
         {
-            final Provider<T> provider = roleMap.get( h );
-            if ( null == provider )
-            {
-                throw new ProvisionException( String.format( MISSING_ROLE_HINT_ERROR, roleName, h ) );
-            }
-            roleHintList.add( provider.get() );
+            roleHintList.add( lookupRole( h ) );
         }
         return roleHintList;
     }
@@ -164,6 +154,20 @@ final class PlexusComponents<T>
         {
             throw new ProvisionException( String.format( MISSING_ROLE_ERROR, roleName ) );
         }
-        return roleMap.get( allHints[0] ).get();
+        return lookupRole( allHints[0] );
+    }
+
+    // ----------------------------------------------------------------------
+    // Implementation methods
+    // ----------------------------------------------------------------------
+
+    private T lookupRole( final String hint )
+    {
+        final Provider<T> provider = roleMap.get( hint );
+        if ( null == provider )
+        {
+            throw new ProvisionException( String.format( MISSING_ROLE_HINT_ERROR, roleName, hint ) );
+        }
+        return provider.get();
     }
 }

@@ -18,24 +18,24 @@ import org.codehaus.plexus.personality.plexus.lifecycle.phase.PhaseExecutionExce
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StartingException;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StoppingException;
 
-public class LifeCycleTest
+public class LifeCycleExceptionTest
     extends TestCase
 {
     public void testStartingException()
     {
-        assertNull( new StartingException( (String) null ).getMessage() );
-        assertNull( new StartingException( (Throwable) null ).getMessage() );
-        assertNull( new StartingException( null, new NullPointerException() ).getMessage() );
+        assertEquals( "TEST", new StartingException( "TEST" ).getMessage() );
+        assertEquals( "java.lang.Exception", new StartingException( new Exception() ).getMessage() );
+        assertEquals( "TEST", new StartingException( "TEST", new NullPointerException() ).getMessage() );
     }
 
     public void testStoppingException()
     {
-        assertNull( new StoppingException( (String) null ).getMessage() );
-        assertNull( new StoppingException( null, new NullPointerException() ).getMessage() );
+        assertEquals( "TEST", new StoppingException( "TEST" ).getMessage() );
+        assertEquals( "TEST", new StoppingException( "TEST", new NullPointerException() ).getMessage() );
     }
 
     public void testPhaseExecutionException()
     {
-        assertNull( new PhaseExecutionException( null, new NullPointerException() ).getMessage() );
+        assertEquals( "TEST", new PhaseExecutionException( "TEST", new NullPointerException() ).getMessage() );
     }
 }

@@ -20,11 +20,13 @@ import org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StartingException;
 
 import com.google.inject.ProvisionException;
+import com.google.inject.Singleton;
 import com.google.inject.spi.InjectionListener;
 
 /**
  * Guice {@link InjectionListener} that keeps track of {@link Startable} components.
  */
+@Singleton
 final class PlexusStartableListener
     implements InjectionListener<Startable>, Startable
 {
@@ -44,7 +46,7 @@ final class PlexusStartableListener
     // Constructors
     // ----------------------------------------------------------------------
 
-    public PlexusStartableListener()
+    PlexusStartableListener()
     {
         activeComponents = new ArrayList<Startable>();
     }

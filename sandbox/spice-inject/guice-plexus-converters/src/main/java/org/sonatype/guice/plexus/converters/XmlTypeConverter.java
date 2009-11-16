@@ -126,6 +126,7 @@ public final class XmlTypeConverter
     private <T> T parse( final XmlPullParser parser, final TypeLiteral<T> toType )
         throws Exception
     {
+        // remember any custom implementation from containing element
         final String implementationName = parseImplementation( parser );
         final Class<?> rawType = toType.getRawType();
 
@@ -152,6 +153,7 @@ public final class XmlTypeConverter
 
         parser.require( XmlPullParser.TEXT, null, null );
 
+        // see if the element containing this text declared any custom implementation
         final Class<T> clazz = (Class) loadImplementation( implementationName, rawType );
         return convertText( parser.getText(), rawType == clazz ? toType : TypeLiteral.get( clazz ) );
     }
@@ -358,9 +360,10 @@ public final class XmlTypeConverter
         final Class<?> rawType = toType.getRawType();
         if ( rawType.isAssignableFrom( String.class ) )
         {
-            return (T) value; // no need for any conversion
+            return (T) value; // compatible type => no conversion needed
         }
 
+        // use temporary Key to auto-box primitive types into their equivalent object types
         final TypeLiteral<?> boxedType = rawType.isPrimitive() ? Key.get( rawType ).getTypeLiteral() : toType;
 
         for ( final TypeConverterBinding b : otherConverterBindings )
@@ -371,6 +374,7 @@ public final class XmlTypeConverter
             }
         }
 
+        // last chance => try public string constructor?
         return (T) newImplementation( rawType, value );
     }
 }
