@@ -24,6 +24,11 @@ public final class DefaultContainerConfiguration
         return this;
     }
 
+    public ContainerConfiguration setName( final String name )
+    {
+        return this;
+    }
+
     public ContainerConfiguration setContext( final Map<?, ?> context )
     {
         return this;

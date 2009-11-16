@@ -13,6 +13,8 @@ public interface ContainerConfiguration
 
     ContainerConfiguration setContainerConfiguration( String configuration );
 
+    ContainerConfiguration setName( String name );
+
     ContainerConfiguration setContext( Map<?, ?> context );
 
     Map<?, ?> getContext();
