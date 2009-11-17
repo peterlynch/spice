@@ -34,7 +34,7 @@ final class BeanInjector<B>
 
     BeanInjector( final Collection<PropertyBinding> bindings )
     {
-        // cache using a fixed-sized binding array for small performance boost
+        // cache using a fixed-sized binding array for a nice performance boost
         this.bindings = bindings.toArray( new PropertyBinding[bindings.size()] );
     }
 

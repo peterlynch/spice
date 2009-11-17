@@ -14,7 +14,6 @@ package org.sonatype.guice.plexus.lifecycle;
 
 import junit.framework.TestCase;
 
-import org.codehaus.plexus.personality.plexus.lifecycle.phase.PhaseExecutionException;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StartingException;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StoppingException;
 
@@ -24,7 +23,6 @@ public class LifeCycleExceptionTest
     public void testStartingException()
     {
         assertEquals( "TEST", new StartingException( "TEST" ).getMessage() );
-        assertEquals( "java.lang.Exception", new StartingException( new Exception() ).getMessage() );
         assertEquals( "TEST", new StartingException( "TEST", new NullPointerException() ).getMessage() );
     }
 
@@ -32,10 +30,5 @@ public class LifeCycleExceptionTest
     {
         assertEquals( "TEST", new StoppingException( "TEST" ).getMessage() );
         assertEquals( "TEST", new StoppingException( "TEST", new NullPointerException() ).getMessage() );
-    }
-
-    public void testPhaseExecutionException()
-    {
-        assertEquals( "TEST", new PhaseExecutionException( "TEST", new NullPointerException() ).getMessage() );
     }
 }

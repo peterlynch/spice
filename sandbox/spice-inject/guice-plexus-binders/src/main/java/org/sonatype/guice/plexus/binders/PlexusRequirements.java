@@ -51,6 +51,13 @@ final class PlexusRequirements
     // Public methods
     // ----------------------------------------------------------------------
 
+    /**
+     * Creates a {@link Provider} that provides Plexus components that match the given property requirement.
+     * 
+     * @param requirement The Plexus requirement
+     * @param property The bean property
+     * @return Provider that provides required Plexus components for the given property
+     */
     @SuppressWarnings( "unchecked" )
     public <T> Provider<T> lookup( final Requirement requirement, final BeanProperty<T> property )
     {

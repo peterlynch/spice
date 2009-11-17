@@ -31,6 +31,16 @@ public final class DateTypeConverter
     implements Module, TypeConverter
 {
     // ----------------------------------------------------------------------
+    // Constants
+    // ----------------------------------------------------------------------
+
+    private final static DateFormat[] PLEXUS_DATE_FORMATS =
+        { new SimpleDateFormat( "yyyy-MM-dd hh:mm:ss.S a" ), new SimpleDateFormat( "yyyy-MM-dd hh:mm:ssa" ),
+            new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss.S" ), new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" ) };
+
+    private static final String CONVERSION_ERROR = "Cannot convert: \"%s\" to: %s";
+
+    // ----------------------------------------------------------------------
     // Guice binding
     // ----------------------------------------------------------------------
 
@@ -39,14 +49,6 @@ public final class DateTypeConverter
         // we're both matcher and converter
         binder.convertToTypes( this, this );
     }
-
-    // ----------------------------------------------------------------------
-    // Constants
-    // ----------------------------------------------------------------------
-
-    private final static DateFormat[] PLEXUS_DATE_FORMATS =
-        { new SimpleDateFormat( "yyyy-MM-dd hh:mm:ss.S a" ), new SimpleDateFormat( "yyyy-MM-dd hh:mm:ssa" ),
-            new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss.S" ), new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" ) };
 
     // ----------------------------------------------------------------------
     // Public methods
@@ -73,6 +75,6 @@ public final class DateTypeConverter
                 continue; // try another format
             }
         }
-        throw new IllegalArgumentException( "Unparseable date: " + value );
+        throw new IllegalArgumentException( String.format( CONVERSION_ERROR, value, Date.class ) );
     }
 }

@@ -34,12 +34,6 @@ import com.google.inject.spi.TypeEncounter;
 final class PlexusConfigurations
 {
     // ----------------------------------------------------------------------
-    // Constants
-    // ----------------------------------------------------------------------
-
-    private static final String MISSING_CONFIGURATOR_ERROR = "No implementation for PlexusConfigurator was bound.";
-
-    // ----------------------------------------------------------------------
     // Implementation fields
     // ----------------------------------------------------------------------
 
@@ -61,6 +55,13 @@ final class PlexusConfigurations
     // Public methods
     // ----------------------------------------------------------------------
 
+    /**
+     * Creates a {@link Provider} that provides Plexus components that match the given property configuration.
+     * 
+     * @param requirement The Plexus configuration
+     * @param property The bean property
+     * @return Provider that provides configurations for the given property
+     */
     public <T> Provider<T> lookup( final Configuration configuration, final BeanProperty<T> property )
     {
         final TypeLiteral<T> expectedType = property.getType();
@@ -68,7 +69,7 @@ final class PlexusConfigurations
         final Configuration namedConfig;
         if ( configuration.name().length() == 0 )
         {
-            // provided configuration doesn't have a name, so use the property name
+            // provided configuration doesn't have a name, so use the property name instead
             namedConfig = new ConfigurationImpl( property.getName(), configuration.value() );
         }
         else
@@ -98,13 +99,21 @@ final class PlexusConfigurations
         @Inject
         Injector injector;
 
+        // not required if we only use per-component configuration
         @Inject( optional = true )
         PlexusConfigurator globalConfigurator;
 
+        /**
+         * Returns a {@link PlexusConfigurator} that can configure an instance of the given @{@link Component}.
+         * 
+         * @param component The Plexus component
+         * @return PlexusConfigurator that can configure the given component role
+         */
         PlexusConfigurator forRole( final Component component )
         {
             try
             {
+                // support optional per-component configuration if required
                 return injector.getInstance( Roles.configuratorKey( component ) );
             }
             catch ( final ConfigurationException e )
@@ -113,7 +122,7 @@ final class PlexusConfigurations
                 {
                     return globalConfigurator;
                 }
-                throw new ProvisionException( MISSING_CONFIGURATOR_ERROR );
+                throw new ProvisionException( "No implementation for PlexusConfigurator was bound" );
             }
         }
     }

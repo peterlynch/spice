@@ -1,4 +1,4 @@
-package org.codehaus.plexus.personality.plexus.lifecycle.phase;
+package org.codehaus.plexus.test;
 
 /*
  * Copyright 2001-2006 Codehaus Foundation.
@@ -16,18 +16,26 @@ package org.codehaus.plexus.personality.plexus.lifecycle.phase;
  * limitations under the License.
  */
 
-/**
- * Describes an error that has occurred during the execution of a phase.
- *
- * @author <a href="mailto:brett@codehaus.org">Brett Porter</a>
- * @version $Id: PhaseExecutionException.java 4779 2006-11-23 04:09:31Z jvanzyl $
- */
-public class PhaseExecutionException extends Exception
-{
-    private static final long serialVersionUID = 1L;
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable;
 
-    public PhaseExecutionException( String message, Throwable throwable )
+/**
+ *
+ *
+ * @author Jason van Zyl
+ *
+ * @version $Id: DefaultLoadOnStartService.java 7089 2007-11-25 15:19:06Z jvanzyl $
+ */
+public class DefaultLoadOnStartService
+    implements LoadOnStartService, Startable
+{
+    public static boolean isStarted = false;
+
+    public void start()
     {
-        super( message, throwable );
+        isStarted = true;
+    }
+
+    public void stop()
+    {
     }
 }

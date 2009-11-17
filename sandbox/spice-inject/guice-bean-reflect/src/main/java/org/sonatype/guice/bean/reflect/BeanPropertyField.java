@@ -26,6 +26,12 @@ final class BeanPropertyField<T>
     implements BeanProperty<T>, PrivilegedAction<Void>
 {
     // ----------------------------------------------------------------------
+    // Constants
+    // ----------------------------------------------------------------------
+
+    private static final String BEAN_FIELD_ERROR = "Error updating bean field: %s reason: %s";
+
+    // ----------------------------------------------------------------------
     // Implementation fields
     // ----------------------------------------------------------------------
 
@@ -74,7 +80,7 @@ final class BeanPropertyField<T>
         }
         catch ( final Exception e )
         {
-            throw new RuntimeException( "Error updating bean field: " + field + " reason: " + e );
+            throw new RuntimeException( String.format( BEAN_FIELD_ERROR, field, e ) );
         }
     }
 

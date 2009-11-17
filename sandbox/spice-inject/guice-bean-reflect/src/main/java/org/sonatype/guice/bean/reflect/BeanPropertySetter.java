@@ -34,6 +34,8 @@ final class BeanPropertySetter<T>
 
     private static final Pattern SETTER_PATTERN = Pattern.compile( "^set(\\p{javaUpperCase})(.*)" );
 
+    private static final String BEAN_SETTER_ERROR = "Error calling bean setter: %s reason: %s";
+
     // ----------------------------------------------------------------------
     // Implementation fields
     // ----------------------------------------------------------------------
@@ -91,11 +93,11 @@ final class BeanPropertySetter<T>
         }
         catch ( final InvocationTargetException e )
         {
-            throw new RuntimeException( "Error calling bean setter: " + method + " reason: " + e.getTargetException() );
+            throw new RuntimeException( String.format( BEAN_SETTER_ERROR, method, e.getTargetException() ) );
         }
         catch ( final Exception e )
         {
-            throw new RuntimeException( "Error calling bean setter: " + method + " reason: " + e );
+            throw new RuntimeException( String.format( BEAN_SETTER_ERROR, method, e ) );
         }
     }
 

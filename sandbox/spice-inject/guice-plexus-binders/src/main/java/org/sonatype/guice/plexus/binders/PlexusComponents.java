@@ -161,6 +161,12 @@ final class PlexusComponents<T>
     // Implementation methods
     // ----------------------------------------------------------------------
 
+    /**
+     * Returns the component instance that matches the given Plexus hint.
+     * 
+     * @param hint The Plexus hint
+     * @return Component instance that matches the given hint
+     */
     private T lookupRole( final String hint )
     {
         final Provider<T> provider = roleMap.get( hint );

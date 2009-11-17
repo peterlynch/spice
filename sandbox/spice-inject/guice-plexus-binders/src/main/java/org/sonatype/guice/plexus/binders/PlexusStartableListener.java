@@ -19,7 +19,6 @@ import java.util.logging.Logger;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StartingException;
 
-import com.google.inject.ProvisionException;
 import com.google.inject.Singleton;
 import com.google.inject.spi.InjectionListener;
 
@@ -74,11 +73,11 @@ final class PlexusStartableListener
         }
         catch ( StartingException e )
         {
-            throw new ProvisionException( "Unable to start: " + startable, e );
+            throw new RuntimeException( "Unable to start: " + startable, e );
         }
     }
 
-    public synchronized void stop()
+    public void stop()
     {
         synchronized ( activeComponents )
         {
@@ -94,7 +93,7 @@ final class PlexusStartableListener
                 }
             }
 
-            // can now forget them all
+            // now forget everything
             activeComponents.clear();
         }
     }

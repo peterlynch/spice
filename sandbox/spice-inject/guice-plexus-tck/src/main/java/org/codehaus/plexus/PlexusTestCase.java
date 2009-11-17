@@ -29,7 +29,7 @@ import org.codehaus.plexus.context.DefaultContext;
  * @author Jason van Zyl
  * @author <a href="mailto:trygvis@inamo.no">Trygve Laugst&oslash;l</a>
  * @author <a href="mailto:michal@codehaus.org">Michal Maczka</a>
- * @version $Id: PlexusTestCase.java 8338 2009-08-14 22:10:56Z hboutemy $
+ * @version $Id: PlexusTestCase.java 8420 2009-09-18 22:56:56Z hboutemy $
  */
 public abstract class PlexusTestCase
     extends TestCase
@@ -99,7 +99,8 @@ public abstract class PlexusTestCase
         }
         catch ( PlexusContainerException e )
         {
-            throw new RuntimeException( "Failed to create plexus container.", e );
+            e.printStackTrace();
+            fail( "Failed to create plexus container." );
         }
     }
 

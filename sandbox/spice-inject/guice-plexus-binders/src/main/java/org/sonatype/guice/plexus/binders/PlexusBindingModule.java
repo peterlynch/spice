@@ -62,6 +62,9 @@ public final class PlexusBindingModule
         this( new AnnotatedBeanSource() );
     }
 
+    /**
+     * @param sources The available Plexus bean sources
+     */
     public PlexusBindingModule( final PlexusBeanSource... sources )
     {
         this.sources = sources.clone();
@@ -82,11 +85,11 @@ public final class PlexusBindingModule
         // allow clients to access the injector's main startable
         bind( Startable.class ).toInstance( startableListener );
 
-        // explicitly bind all known bean implementations
         for ( final PlexusBeanSource source : sources )
         {
             for ( final Class<?> clazz : source.findBeanImplementations() )
             {
+                // explicitly bind bean implementations according to their metadata
                 final PlexusBeanMetadata metadata = source.getBeanMetadata( clazz );
                 if ( metadata != null )
                 {
@@ -107,6 +110,12 @@ public final class PlexusBindingModule
     // Implementation methods
     // ----------------------------------------------------------------------
 
+    /**
+     * Binds the given bean implementation according to the given Plexus metadata.
+     * 
+     * @param clazz The bean implementation
+     * @param metadata The Plexus metadata
+     */
     @SuppressWarnings( "unchecked" )
     private void bindPlexusBean( final Class clazz, final PlexusBeanMetadata metadata )
     {
@@ -145,11 +154,13 @@ public final class PlexusBindingModule
             final Class<?> clazz = type.getRawType();
             for ( final PlexusBeanSource source : sources )
             {
+                // use first source that has metadata for the given implementation
                 final PlexusBeanMetadata metadata = source.getBeanMetadata( clazz );
                 if ( metadata != null )
                 {
                     if ( Startable.class.isAssignableFrom( clazz ) )
                     {
+                        // this component requires additional life-cycle management
                         encounter.register( (InjectionListener) startableListener );
                     }
                     return new PlexusPropertyBinder( encounter, metadata );

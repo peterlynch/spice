@@ -104,7 +104,7 @@ final class DeclaredMembers
                 }
 
                 // load each view in turn to get next members
-                members = VIEWS[viewIndex++].elements( clazz );
+                members = VIEWS[viewIndex++].members( clazz );
                 memberIndex = 0;
             }
 
@@ -155,7 +155,7 @@ final class DeclaredMembers
         METHODS
         {
             @Override
-            final Member[] elements( final Class<?> clazz )
+            final Member[] members( final Class<?> clazz )
             {
                 return clazz.getDeclaredMethods();
             }
@@ -163,12 +163,12 @@ final class DeclaredMembers
         FIELDS
         {
             @Override
-            final Member[] elements( final Class<?> clazz )
+            final Member[] members( final Class<?> clazz )
             {
                 return clazz.getDeclaredFields();
             }
         };
 
-        abstract Member[] elements( final Class<?> clazz );
+        abstract Member[] members( final Class<?> clazz );
     }
 }

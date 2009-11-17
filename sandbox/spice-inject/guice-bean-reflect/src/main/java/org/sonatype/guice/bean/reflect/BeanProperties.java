@@ -29,7 +29,7 @@ public final class BeanProperties
     // Implementation fields
     // ----------------------------------------------------------------------
 
-    final Iterable<Member> members;
+    private final Iterable<Member> members;
 
     // ----------------------------------------------------------------------
     // Constructors
@@ -51,7 +51,7 @@ public final class BeanProperties
 
     public Iterator<BeanProperty<Object>> iterator()
     {
-        return new BeanPropertyIterator<Object>();
+        return new BeanPropertyIterator<Object>( members );
     }
 
     // ----------------------------------------------------------------------
@@ -61,7 +61,7 @@ public final class BeanProperties
     /**
      * Read-only {@link Iterator} that picks out potential bean properties from members.
      */
-    private final class BeanPropertyIterator<T>
+    private static final class BeanPropertyIterator<T>
         implements Iterator<BeanProperty<T>>
     {
         // ----------------------------------------------------------------------
@@ -77,7 +77,7 @@ public final class BeanProperties
         // Constructors
         // ----------------------------------------------------------------------
 
-        BeanPropertyIterator()
+        BeanPropertyIterator( final Iterable<Member> members )
         {
             i = members.iterator();
         }
