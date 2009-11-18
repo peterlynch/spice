@@ -10,22 +10,28 @@
  */
 package org.codehaus.plexus;
 
+import java.net.URL;
 import java.util.Map;
 
 import org.codehaus.plexus.classworlds.ClassWorld;
+import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.ComponentRepository;
 
 public interface ContainerConfiguration
 {
-    ContainerConfiguration setClassWorld( ClassWorld classWorld );
-
-    ContainerConfiguration setComponentRepository( ComponentRepository repository );
+    ContainerConfiguration setName( String name );
 
     ContainerConfiguration setContainerConfiguration( String configuration );
 
-    ContainerConfiguration setName( String name );
+    ContainerConfiguration setContainerConfigurationURL( URL configuration );
+
+    ContainerConfiguration setClassWorld( ClassWorld classWorld );
+
+    ContainerConfiguration setRealm( ClassRealm classRealm );
+
+    ContainerConfiguration setComponentRepository( ComponentRepository repository );
 
     ContainerConfiguration setContext( Map<?, ?> context );
 
-    Map<?, ?> getContext();
+    Map<Object, Object> getContext();
 }

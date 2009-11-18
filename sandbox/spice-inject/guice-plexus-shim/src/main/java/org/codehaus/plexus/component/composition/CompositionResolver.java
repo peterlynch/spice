@@ -10,6 +10,9 @@
  */
 package org.codehaus.plexus.component.composition;
 
+import org.codehaus.plexus.component.repository.ComponentDescriptor;
+
 public interface CompositionResolver
 {
+    <T> void addComponentDescriptor( ComponentDescriptor<T> descriptor );
 }

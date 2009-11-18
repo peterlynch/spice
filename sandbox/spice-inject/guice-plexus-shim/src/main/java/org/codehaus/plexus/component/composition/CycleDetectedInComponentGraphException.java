@@ -10,16 +10,18 @@
  */
 package org.codehaus.plexus.component.composition;
 
-import org.codehaus.plexus.component.repository.ComponentDescriptor;
-
-public final class DefaultCompositionResolver
-    implements CompositionResolver
+public final class CycleDetectedInComponentGraphException
+    extends Exception
 {
-    // ----------------------------------------------------------------------
-    // Public methods
-    // ----------------------------------------------------------------------
+    private static final long serialVersionUID = 1L;
 
-    public <T> void addComponentDescriptor( final ComponentDescriptor<T> descriptor )
+    public CycleDetectedInComponentGraphException( final String message )
     {
+        super( message );
+    }
+
+    public CycleDetectedInComponentGraphException( final String message, final Exception detail )
+    {
+        super( message, detail );
     }
 }

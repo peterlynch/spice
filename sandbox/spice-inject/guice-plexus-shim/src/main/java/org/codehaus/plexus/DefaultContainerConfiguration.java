@@ -12,21 +12,22 @@
  */
 package org.codehaus.plexus;
 
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.codehaus.plexus.classworlds.ClassWorld;
+import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.ComponentRepository;
 
 public final class DefaultContainerConfiguration
     implements ContainerConfiguration
 {
-    public ContainerConfiguration setClassWorld( final ClassWorld classWorld )
-    {
-        return this;
-    }
+    // ----------------------------------------------------------------------
+    // Public methods
+    // ----------------------------------------------------------------------
 
-    public ContainerConfiguration setComponentRepository( final ComponentRepository repository )
+    public ContainerConfiguration setName( final String name )
     {
         return this;
     }
@@ -36,7 +37,22 @@ public final class DefaultContainerConfiguration
         return this;
     }
 
-    public ContainerConfiguration setName( final String name )
+    public ContainerConfiguration setContainerConfigurationURL( final URL configuration )
+    {
+        return this;
+    }
+
+    public ContainerConfiguration setClassWorld( final ClassWorld classWorld )
+    {
+        return this;
+    }
+
+    public ContainerConfiguration setRealm( final ClassRealm classRealm )
+    {
+        return null;
+    }
+
+    public ContainerConfiguration setComponentRepository( final ComponentRepository repository )
     {
         return this;
     }
@@ -46,7 +62,7 @@ public final class DefaultContainerConfiguration
         return this;
     }
 
-    public Map<?, ?> getContext()
+    public Map<Object, Object> getContext()
     {
         return new HashMap<Object, Object>();
     }

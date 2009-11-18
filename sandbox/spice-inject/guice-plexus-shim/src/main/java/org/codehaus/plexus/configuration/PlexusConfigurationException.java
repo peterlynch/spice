@@ -8,18 +8,20 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
-package org.codehaus.plexus.component.composition;
+package org.codehaus.plexus.configuration;
 
-import org.codehaus.plexus.component.repository.ComponentDescriptor;
-
-public final class DefaultCompositionResolver
-    implements CompositionResolver
+public final class PlexusConfigurationException
+    extends Exception
 {
-    // ----------------------------------------------------------------------
-    // Public methods
-    // ----------------------------------------------------------------------
+    private static final long serialVersionUID = 1L;
 
-    public <T> void addComponentDescriptor( final ComponentDescriptor<T> descriptor )
+    public PlexusConfigurationException( final String message )
     {
+        super( message );
+    }
+
+    public PlexusConfigurationException( final String message, final Exception detail )
+    {
+        super( message, detail );
     }
 }

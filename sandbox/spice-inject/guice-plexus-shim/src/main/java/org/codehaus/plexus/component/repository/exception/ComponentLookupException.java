@@ -24,4 +24,9 @@ public final class ComponentLookupException
     {
         super( message, detail );
     }
+
+    public ComponentLookupException( final String message, final String role, final String roleHint )
+    {
+        super( message );
+    }
 }

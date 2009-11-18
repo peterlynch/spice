@@ -8,18 +8,21 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
-package org.codehaus.plexus.component.composition;
+package org.codehaus.plexus.configuration.xml;
 
-import org.codehaus.plexus.component.repository.ComponentDescriptor;
+import org.codehaus.plexus.configuration.PlexusConfiguration;
 
-public final class DefaultCompositionResolver
-    implements CompositionResolver
+public final class XmlPlexusConfiguration
+    implements PlexusConfiguration
 {
     // ----------------------------------------------------------------------
     // Public methods
     // ----------------------------------------------------------------------
 
-    public <T> void addComponentDescriptor( final ComponentDescriptor<T> descriptor )
+    @SuppressWarnings( "unused" )
+    public PlexusConfiguration addChild( final String name, final String value )
     {
+        // TODO: someone presumably needs to read this configuration value?
+        return this;
     }
 }
