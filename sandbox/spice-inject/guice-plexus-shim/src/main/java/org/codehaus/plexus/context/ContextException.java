@@ -10,16 +10,18 @@
  */
 package org.codehaus.plexus.context;
 
-import java.util.Map;
-
-public interface Context
+public final class ContextException
+    extends Exception
 {
-    boolean contains( String key );
+    private static final long serialVersionUID = 1L;
 
-    void put( Object key, Object value );
+    public ContextException( final String message )
+    {
+        super( message );
+    }
 
-    Object get( Object key )
-        throws ContextException;
-
-    Map<Object, Object> getContextData();
+    public ContextException( final String message, final Exception detail )
+    {
+        super( message, detail );
+    }
 }
