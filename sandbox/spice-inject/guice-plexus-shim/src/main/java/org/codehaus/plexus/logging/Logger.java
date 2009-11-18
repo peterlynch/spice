@@ -1,6 +1,4 @@
 /**
- * Copyright (c) 2009 Sonatype, Inc. All rights reserved.
- *
  * This program is licensed to you under the Apache License Version 2.0,
  * and you may not use this file except in compliance with the Apache License Version 2.0.
  * You may obtain a copy of the Apache License Version 2.0 at http://www.apache.org/licenses/LICENSE-2.0.
@@ -12,30 +10,63 @@
  */
 package org.codehaus.plexus.logging;
 
-public abstract class AbstractLogEnabled
-    implements LogEnabled
+public interface Logger
 {
     // ----------------------------------------------------------------------
-    // Implementation fields
+    // Constants
     // ----------------------------------------------------------------------
 
-    private Logger logger;
+    int LEVEL_DEBUG = 0;
+
+    int LEVEL_INFO = 1;
+
+    int LEVEL_WARN = 2;
+
+    int LEVEL_ERROR = 3;
+
+    int LEVEL_FATAL = 4;
+
+    int LEVEL_DISABLED = 5;
 
     // ----------------------------------------------------------------------
-    // Public methods
+    // Logging methods
     // ----------------------------------------------------------------------
 
-    public final void enableLogging( final Logger theLogger )
-    {
-        logger = theLogger;
-    }
+    void debug( String message );
+
+    void debug( String message, Throwable throwable );
+
+    boolean isDebugEnabled();
+
+    void info( String message );
+
+    void info( String message, Throwable throwable );
+
+    boolean isInfoEnabled();
+
+    void warn( String message );
+
+    void warn( String message, Throwable throwable );
+
+    boolean isWarnEnabled();
+
+    void error( String message );
+
+    void error( String message, Throwable throwable );
+
+    boolean isErrorEnabled();
+
+    void fatalError( String message );
+
+    void fatalError( String message, Throwable throwable );
+
+    boolean isFatalErrorEnabled();
 
     // ----------------------------------------------------------------------
-    // Shared methods
+    // Management methods
     // ----------------------------------------------------------------------
 
-    protected final Logger getLogger()
-    {
-        return logger;
-    }
+    void setThreshold( int threshold );
+
+    Logger getChildLogger( String name );
 }
