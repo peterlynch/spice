@@ -52,8 +52,7 @@ public class CollectionConstantTest
 
                 bind( "Animals", "<animals><animal>cat</animal><animal>dog</animal><animal>aardvark</animal></animals>" );
 
-                bind( "Numbers", "<as><a><bs><b>1</b><b>2</b></bs></a>" + "<a><bs><b>3</b><b>4</b></bs></a>"
-                    + "<a><bs><b>5</b><b>6</b></bs></a></as>" );
+                bind( "Numbers", "<as><a><b>1</b><b>2</b></a><a><b>3</b><b>4</b></a><a><b>5</b><b>6</b></a></as>" );
 
                 install( new XmlTypeConverter() );
             }

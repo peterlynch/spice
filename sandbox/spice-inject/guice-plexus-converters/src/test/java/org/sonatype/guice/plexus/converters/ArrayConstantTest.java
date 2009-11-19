@@ -50,8 +50,7 @@ public class ArrayConstantTest
 
                 bind( "Numbers", "<items><item>4</item><item>5</item><item>6</item></items>" );
 
-                bind( "Multi", "<as><a><bs><b>1</b><b>2</b></bs></a><a><bs><b>3</b><b>4</b></bs></a>"
-                    + "<a><bs><b>5</b><b>6</b></bs></a></as>" );
+                bind( "Multi", "<as><a><b>1</b><b>2</b></a><a><b>3</b><b>4</b></a><a><b>5</b><b>6</b></a></as>" );
 
                 install( new XmlTypeConverter() );
             }

@@ -112,17 +112,23 @@ public final class XmlTypeConverter
 
     public Object convert( final String value, final TypeLiteral<?> toType )
     {
-        try
+        if ( value.trim().startsWith( "<" ) )
         {
-            final XmlPullParser parser = new MXParser();
-            // we XMLize simple strings so we can convert types that accept string constructors, like File and URL
-            parser.setInput( new StringReader( value.trim().startsWith( "<" ) ? value : "<_>" + value + "</_>" ) );
-            return parse( parser, toType );
+            try
+            {
+                final XmlPullParser parser = new MXParser();
+                parser.setInput( new StringReader( value ) );
+                parser.nextTag();
+
+                return parse( parser, toType );
+            }
+            catch ( final Exception e )
+            {
+                throw new IllegalArgumentException( String.format( CONVERSION_ERROR, value, toType ), e );
+            }
         }
-        catch ( final Exception e )
-        {
-            throw new IllegalArgumentException( String.format( CONVERSION_ERROR, value, toType ), e );
-        }
+
+        return convertText( value, toType );
     }
 
     // ----------------------------------------------------------------------
@@ -140,36 +146,24 @@ public final class XmlTypeConverter
     private <T> T parse( final XmlPullParser parser, final TypeLiteral<T> toType )
         throws Exception
     {
-        // remember any custom implementation from containing element
-        final String implementationName = parseImplementation( parser );
         final Class<?> rawType = toType.getRawType();
-
-        if ( parser.next() == XmlPullParser.START_TAG )
+        if ( Properties.class.isAssignableFrom( rawType ) )
         {
-            if ( Properties.class.isAssignableFrom( rawType ) )
-            {
-                return (T) parseProperties( parser );
-            }
-            if ( Map.class.isAssignableFrom( rawType ) )
-            {
-                return (T) parseMap( parser, Generics.getTypeArgument( toType, 1 ) );
-            }
-            if ( Collection.class.isAssignableFrom( rawType ) )
-            {
-                return (T) parseCollection( parser, Generics.getTypeArgument( toType, 0 ) );
-            }
-            if ( rawType.isArray() )
-            {
-                return (T) parseArray( parser, Generics.getComponentType( toType ) );
-            }
-            return parseBean( parser, toType );
+            return (T) parseProperties( parser );
         }
-
-        parser.require( XmlPullParser.TEXT, null, null );
-
-        // see if the element containing this text declared any custom implementation
-        final Class<T> clazz = (Class) loadImplementation( implementationName, rawType );
-        return convertText( parser.getText(), rawType == clazz ? toType : TypeLiteral.get( clazz ) );
+        if ( Map.class.isAssignableFrom( rawType ) )
+        {
+            return (T) parseMap( parser, Generics.getTypeArgument( toType, 1 ) );
+        }
+        if ( Collection.class.isAssignableFrom( rawType ) )
+        {
+            return (T) parseCollection( parser, Generics.getTypeArgument( toType, 0 ) );
+        }
+        if ( rawType.isArray() )
+        {
+            return (T) parseArray( parser, Generics.getComponentType( toType ) );
+        }
+        return parseBean( parser, toType, rawType );
     }
 
     /**
@@ -182,23 +176,23 @@ public final class XmlTypeConverter
         throws Exception
     {
         final Properties properties = newImplementation( parser, Properties.class );
-        // properties can be 'name-value' or 'value-name'
-        while ( parser.next() != XmlPullParser.END_TAG )
+        while ( parser.nextTag() == XmlPullParser.START_TAG )
         {
-            parser.next();
+            parser.nextTag();
+            // 'name-then-value' or 'value-then-name'
             if ( "name".equals( parser.getName() ) )
             {
                 final String name = parser.nextText();
-                parser.next();
+                parser.nextTag();
                 properties.put( name, parser.nextText() );
             }
             else
             {
                 final String value = parser.nextText();
-                parser.next();
+                parser.nextTag();
                 properties.put( parser.nextText(), value );
             }
-            parser.next();
+            parser.nextTag();
         }
         return properties;
     }
@@ -214,10 +208,9 @@ public final class XmlTypeConverter
     {
         @SuppressWarnings( "unchecked" )
         final Map<String, T> map = newImplementation( parser, HashMap.class );
-        while ( parser.next() != XmlPullParser.END_TAG )
+        while ( parser.nextTag() == XmlPullParser.START_TAG )
         {
             map.put( parser.getName(), parse( parser, toType ) );
-            parser.next();
         }
         return map;
     }
@@ -233,10 +226,9 @@ public final class XmlTypeConverter
     {
         @SuppressWarnings( "unchecked" )
         final Collection<T> collection = newImplementation( parser, ArrayList.class );
-        while ( parser.next() != XmlPullParser.END_TAG )
+        while ( parser.nextTag() == XmlPullParser.START_TAG )
         {
             collection.add( parse( parser, toType ) );
-            parser.next();
         }
         return collection;
     }
@@ -269,17 +261,20 @@ public final class XmlTypeConverter
      * @param parser The XML parser
      * @return Converted bean instance
      */
-    private <T> T parseBean( final XmlPullParser parser, final TypeLiteral<T> toType )
+    private <T> T parseBean( final XmlPullParser parser, final TypeLiteral<T> toType, final Class<?> rawType )
         throws Exception
     {
         @SuppressWarnings( "unchecked" )
-        final Class<T> clazz = (Class) loadImplementation( parseImplementation( parser ), toType.getRawType() );
+        final Class<T> clazz = (Class) loadImplementation( parseImplementation( parser ), rawType );
+
+        // simple bean with string constructor
         if ( parser.next() == XmlPullParser.TEXT )
         {
-            // we expect public string constructor
             final String text = parser.getText();
-            parser.next();
-            return newImplementation( clazz, text );
+            if ( parser.next() != XmlPullParser.START_TAG )
+            {
+                return convertText( text, clazz == rawType ? toType : TypeLiteral.get( clazz ) );
+            }
         }
 
         final T bean = newImplementation( clazz );
@@ -295,15 +290,14 @@ public final class XmlTypeConverter
             }
         }
 
-        while ( parser.getEventType() != XmlPullParser.END_TAG )
+        while ( parser.getEventType() == XmlPullParser.START_TAG )
         {
             // update properties inside the current bean, guided by the cached map
             final BeanProperty<Object> property = propertyMap.get( parser.getName() );
             if ( property != null )
             {
                 property.set( bean, parse( parser, property.getType() ) );
-                parser.next();
-                parser.next();
+                parser.nextTag();
             }
             else
             {
@@ -449,10 +443,12 @@ public final class XmlTypeConverter
     @SuppressWarnings( "unchecked" )
     private <T> T convertText( final String value, final TypeLiteral<T> toType )
     {
+        final String text = value.trim();
+
         final Class<?> rawType = toType.getRawType();
         if ( rawType.isAssignableFrom( String.class ) )
         {
-            return (T) value; // compatible type => no conversion needed
+            return (T) text; // compatible type => no conversion needed
         }
 
         // use temporary Key to auto-box primitive types into their equivalent object types
@@ -462,11 +458,11 @@ public final class XmlTypeConverter
         {
             if ( b.getTypeMatcher().matches( boxedType ) )
             {
-                return (T) b.getTypeConverter().convert( value, toType );
+                return (T) b.getTypeConverter().convert( text, toType );
             }
         }
 
-        // last chance => try public string constructor?
-        return (T) newImplementation( rawType, value );
+        // last chance => attempt to create an instance of the expected type (use the string if non-empty)
+        return (T) ( text.length() == 0 ? newImplementation( rawType ) : newImplementation( rawType, text ) );
     }
 }
