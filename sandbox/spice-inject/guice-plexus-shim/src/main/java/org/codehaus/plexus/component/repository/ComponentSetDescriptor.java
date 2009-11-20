@@ -21,27 +21,31 @@ public class ComponentSetDescriptor
 
     public void setId( final String id )
     {
-    }
-
-    public String getSource()
-    {
-        return null;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public void setSource( final String source )
     {
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
-    public List<ComponentDescriptor<?>> getComponents()
+    public String getSource()
     {
-        return null;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public void addComponentDescriptor( final ComponentDescriptor<?> descriptor )
     {
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public void addDependency( final ComponentDependency dependency )
     {
+        throw new UnsupportedOperationException( "SHIM" );
+    }
+
+    public List<ComponentDescriptor<?>> getComponents()
+    {
+        throw new UnsupportedOperationException( "SHIM" );
     }
 }

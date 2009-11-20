@@ -22,7 +22,6 @@ public final class XmlPlexusConfiguration
     @SuppressWarnings( "unused" )
     public PlexusConfiguration addChild( final String name, final String value )
     {
-        // TODO: someone presumably needs to read this configuration value?
-        return this;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 }

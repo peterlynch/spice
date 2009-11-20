@@ -30,6 +30,7 @@ public final class DefaultPlexusContainer
     public DefaultPlexusContainer( final ContainerConfiguration configuration )
         throws PlexusContainerException
     {
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     // ----------------------------------------------------------------------
@@ -38,108 +39,111 @@ public final class DefaultPlexusContainer
 
     public Context getContext()
     {
-        return null;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public Object lookup( final String role )
     {
-        return null;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
-    public Object lookup( final String role, final String roleHint )
+    public Object lookup( final String role, final String hint )
     {
-        return null;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public <T> T lookup( final Class<T> type )
     {
-        return null;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
-    public <T> T lookup( final Class<T> type, final String roleHint )
+    public <T> T lookup( final Class<T> type, final String hint )
     {
-        return null;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
-    public <T> T lookup( final Class<T> type, final String role, final String roleHint )
+    public <T> T lookup( final Class<T> type, final String role, final String hint )
     {
-        return null;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public <T> List<T> lookupList( final Class<T> type )
     {
-        return null;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public Map<String, Object> lookupMap( final String role )
     {
-        return null;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public boolean hasComponent( final Class<?> type )
     {
-        return false;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
-    public boolean hasComponent( final Class<?> type, final String roleHint )
+    public boolean hasComponent( final Class<?> type, final String hint )
     {
-        return false;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
-    public boolean hasComponent( final Class<?> type, final String role, final String roleHint )
+    public boolean hasComponent( final Class<?> type, final String role, final String hint )
     {
-        return false;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
-    public ComponentDescriptor<?> getComponentDescriptor( final String role, final String roleHint )
+    public ComponentDescriptor<?> getComponentDescriptor( final String role, final String hint )
     {
-        return null;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
-    public <T> ComponentDescriptor<T> getComponentDescriptor( final Class<T> type, final String role,
-                                                              final String roleHint )
+    public <T> ComponentDescriptor<T> getComponentDescriptor( final Class<T> type, final String role, final String hint )
     {
-        return null;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public List<ComponentDescriptor<?>> getComponentDescriptorList( final String role )
     {
-        return null;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public <T> List<ComponentDescriptor<T>> getComponentDescriptorList( final Class<T> type, final String role )
     {
-        return null;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public <T> void addComponentDescriptor( final ComponentDescriptor<T> descriptor )
     {
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public ClassRealm getContainerRealm()
     {
-        return null;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public ClassRealm createChildRealm( final String id )
     {
-        return null;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public List<ComponentDescriptor<?>> discoverComponents( final ClassRealm childRealm )
     {
-        return null;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public void removeComponentRealm( final ClassRealm realm )
     {
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public void release( final Object component )
     {
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public void dispose()
     {
+        throw new UnsupportedOperationException( "SHIM" );
     }
 }

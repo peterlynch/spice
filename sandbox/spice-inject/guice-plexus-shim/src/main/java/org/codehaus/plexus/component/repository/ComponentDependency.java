@@ -19,13 +19,16 @@ public final class ComponentDependency
 
     public void setGroupId( final String groupId )
     {
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public void setArtifactId( final String artifactId )
     {
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public void setVersion( final String version )
     {
+        throw new UnsupportedOperationException( "SHIM" );
     }
 }

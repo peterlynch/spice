@@ -10,9 +10,11 @@
  */
 package org.codehaus.plexus;
 
+import org.sonatype.guice.plexus.config.Hints;
+
 public interface PlexusConstants
 {
-    String PLEXUS_DEFAULT_HINT = "default";
+    String PLEXUS_DEFAULT_HINT = Hints.DEFAULT_HINT;
 
     String PLEXUS_KEY = "plexus";
 }

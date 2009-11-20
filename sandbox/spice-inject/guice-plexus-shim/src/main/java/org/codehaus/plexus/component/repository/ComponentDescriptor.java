@@ -22,74 +22,81 @@ public final class ComponentDescriptor<T>
 
     public String getDescription()
     {
-        return null;
-    }
-
-    public String getRole()
-    {
-        return null;
-    }
-
-    public String getRoleHint()
-    {
-        return null;
-    }
-
-    public String getInstantiationStrategy()
-    {
-        return null;
-    }
-
-    public Class<T> getRoleClass()
-    {
-        return null;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public void setRole( final String role )
     {
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
-    public void setRoleHint( final String roleHint )
+    public void setRoleHint( final String hint )
     {
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public void setInstantiationStrategy( final String instantiationStrategy )
     {
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
-    public String getImplementation()
+    public String getRole()
     {
-        return null;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
-    public Class<? extends T> getImplementationClass()
+    public String getRoleHint()
     {
-        return null;
+        throw new UnsupportedOperationException( "SHIM" );
+    }
+
+    public String getInstantiationStrategy()
+    {
+        throw new UnsupportedOperationException( "SHIM" );
+    }
+
+    public Class<T> getRoleClass()
+    {
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public void setImplementation( final String implementation )
     {
+        throw new UnsupportedOperationException( "SHIM" );
+    }
+
+    public String getImplementation()
+    {
+        throw new UnsupportedOperationException( "SHIM" );
+    }
+
+    public Class<? extends T> getImplementationClass()
+    {
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public void addRequirement( final ComponentRequirement requirement )
     {
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public void setConfiguration( final PlexusConfiguration configuration )
     {
-
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public void setComponentSetDescriptor( final ComponentSetDescriptor setDescriptor )
     {
-    }
-
-    public ClassRealm getRealm()
-    {
-        return null;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public void setRealm( final ClassRealm realm )
     {
+        throw new UnsupportedOperationException( "SHIM" );
+    }
+
+    public ClassRealm getRealm()
+    {
+        throw new UnsupportedOperationException( "SHIM" );
     }
 }

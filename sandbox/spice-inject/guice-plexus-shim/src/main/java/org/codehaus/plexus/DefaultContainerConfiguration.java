@@ -13,7 +13,6 @@
 package org.codehaus.plexus;
 
 import java.net.URL;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.codehaus.plexus.classworlds.ClassWorld;
@@ -29,41 +28,41 @@ public final class DefaultContainerConfiguration
 
     public ContainerConfiguration setName( final String name )
     {
-        return this;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public ContainerConfiguration setContainerConfiguration( final String configuration )
     {
-        return this;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public ContainerConfiguration setContainerConfigurationURL( final URL configuration )
     {
-        return this;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public ContainerConfiguration setClassWorld( final ClassWorld classWorld )
     {
-        return this;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public ContainerConfiguration setRealm( final ClassRealm classRealm )
     {
-        return null;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public ContainerConfiguration setComponentRepository( final ComponentRepository repository )
     {
-        return this;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public ContainerConfiguration setContext( final Map<?, ?> context )
     {
-        return this;
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public Map<Object, Object> getContext()
     {
-        return new HashMap<Object, Object>();
+        throw new UnsupportedOperationException( "SHIM" );
     }
 }

@@ -28,16 +28,19 @@ public interface PlexusContainer
     Object lookup( String role )
         throws ComponentLookupException;
 
-    Object lookup( String role, String roleHint )
+    Object lookup( String role, String hint )
         throws ComponentLookupException;
 
     <T> T lookup( Class<T> type )
         throws ComponentLookupException;
 
-    <T> T lookup( Class<T> type, String roleHint )
+    <T> T lookup( Class<T> type, String hint )
         throws ComponentLookupException;
 
-    <T> T lookup( Class<T> type, String role, String roleHint )
+    <T> T lookup( Class<T> type, String role, String hint )
+        throws ComponentLookupException;
+
+    <T> List<T> lookupList( String role )
         throws ComponentLookupException;
 
     <T> List<T> lookupList( Class<T> type )
@@ -46,15 +49,18 @@ public interface PlexusContainer
     Map<String, Object> lookupMap( String role )
         throws ComponentLookupException;
 
+    <T> Map<String, T> lookupMap( Class<T> type )
+        throws ComponentLookupException;
+
     boolean hasComponent( Class<?> type );
 
-    boolean hasComponent( Class<?> type, String roleHint );
+    boolean hasComponent( Class<?> type, String hint );
 
-    boolean hasComponent( Class<?> type, String role, String roleHint );
+    boolean hasComponent( Class<?> type, String role, String hint );
 
-    ComponentDescriptor<?> getComponentDescriptor( String role, String roleHint );
+    ComponentDescriptor<?> getComponentDescriptor( String role, String hint );
 
-    <T> ComponentDescriptor<T> getComponentDescriptor( Class<T> type, String role, String roleHint );
+    <T> ComponentDescriptor<T> getComponentDescriptor( Class<T> type, String role, String hint );
 
     List<ComponentDescriptor<?>> getComponentDescriptorList( String role );
 

@@ -19,17 +19,21 @@ public final class ComponentRequirement
 
     public void setRole( final String role )
     {
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
-    public void setRoleHint( final String roleHint )
+    public void setRoleHint( final String hint )
     {
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public void setFieldName( final String name )
     {
+        throw new UnsupportedOperationException( "SHIM" );
     }
 
     public void setFieldMappingType( final String mappingType )
     {
+        throw new UnsupportedOperationException( "SHIM" );
     }
 }

@@ -16,9 +16,9 @@ public final class CastUtils
     // Static utility methods
     // ----------------------------------------------------------------------
 
+    @SuppressWarnings( "unused" )
     public static boolean isAssignableFrom( final Class<?> api, final Class<?> implementation )
     {
-        // TODO: handle auto-boxing, null-checks, etc.
-        return api.isAssignableFrom( implementation );
+        throw new UnsupportedOperationException( "SHIM" );
     }
 }

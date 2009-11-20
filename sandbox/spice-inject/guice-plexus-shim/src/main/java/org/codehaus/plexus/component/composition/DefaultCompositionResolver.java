@@ -21,5 +21,6 @@ public final class DefaultCompositionResolver
 
     public <T> void addComponentDescriptor( final ComponentDescriptor<T> descriptor )
     {
+        throw new UnsupportedOperationException( "SHIM" );
     }
 }

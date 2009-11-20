@@ -11,6 +11,7 @@
 package org.codehaus.plexus.context;
 
 import java.util.AbstractMap;
+import java.util.Collections;
 import java.util.Set;
 
 public final class ContextMapAdapter
@@ -54,6 +55,6 @@ public final class ContextMapAdapter
     @Override
     public Set<Entry<Object, Object>> entrySet()
     {
-        return context.getContextData().entrySet();
+        return Collections.emptySet();
     }
 }

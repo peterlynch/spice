@@ -15,19 +15,34 @@ public final class ComponentLookupException
 {
     private static final long serialVersionUID = 1L;
 
-    public ComponentLookupException( final String message )
+    // ----------------------------------------------------------------------
+    // Constants
+    // ----------------------------------------------------------------------
+
+    private static final String LS = System.getProperty( "line.separator" );
+
+    // ----------------------------------------------------------------------
+    // Implementation fields
+    // ----------------------------------------------------------------------
+
+    private final String role;
+
+    private final String hint;
+
+    // ----------------------------------------------------------------------
+    // Public methods
+    // ----------------------------------------------------------------------
+
+    public ComponentLookupException( final String message, final String role, final String hint )
     {
         super( message );
+        this.role = role;
+        this.hint = hint;
     }
 
-    public ComponentLookupException( final String message, final Exception detail )
+    @Override
+    public String getMessage()
     {
-        super( message, detail );
-    }
-
-    @SuppressWarnings( "unused" )
-    public ComponentLookupException( final String message, final String role, final String roleHint )
-    {
-        super( message );
+        return super.getMessage() + LS + "      role: " + role + LS + "  roleHint: " + hint;
     }
 }
