@@ -69,6 +69,21 @@ public final class Hints
     }
 
     /**
+     * Returns the canonical form of the given Plexus hints.
+     * 
+     * @param hints The Plexus hints
+     * @return Array of canonical hints
+     */
+    public static String[] getCanonicalHints( final String... hints )
+    {
+        for ( int i = 0; i < hints.length; i++ )
+        {
+            hints[i] = getCanonicalHint( hints[i] );
+        }
+        return hints;
+    }
+
+    /**
      * Returns the Plexus hints contained in the given @{@link Requirement}.
      * 
      * @param requirement The Plexus requirement
@@ -79,16 +94,12 @@ public final class Hints
         final String[] hints = requirement.hints();
         if ( hints.length > 0 )
         {
-            for ( int i = 0; i < hints.length; i++ )
-            {
-                hints[i] = getCanonicalHint( hints[i] );
-            }
-            return hints;
+            return getCanonicalHints( hints );
         }
         final String hint = requirement.hint();
         if ( hint.length() > 0 )
         {
-            return new String[] { getCanonicalHint( hint ) };
+            return getCanonicalHints( hint );
         }
         return NO_HINTS;
     }

@@ -19,6 +19,7 @@ import java.util.List;
 import junit.framework.TestCase;
 
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.sonatype.guice.plexus.config.Roles;
 
 public class RequirementAnnotationTest
     extends TestCase
@@ -90,7 +91,8 @@ public class RequirementAnnotationTest
     {
         final String h = orig.hint();
 
-        return new RequirementImpl( orig.role(), orig.optional(), h.length() > 0 ? new String[] { h } : orig.hints() );
+        return new RequirementImpl( Roles.defer( orig.role() ), orig.optional(), h.length() > 0 ? new String[] { h }
+                        : orig.hints() );
     }
 
     public void testNullChecks()
@@ -104,7 +106,7 @@ public class RequirementAnnotationTest
     {
         try
         {
-            new RequirementImpl( role, false, hints );
+            new RequirementImpl( role != null ? Roles.defer( role ) : null, false, hints );
             fail( "Expected IllegalArgumentException" );
         }
         catch ( final IllegalArgumentException e )

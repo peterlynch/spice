@@ -27,6 +27,7 @@ import org.sonatype.guice.plexus.annotations.RequirementImpl;
 import org.sonatype.guice.plexus.config.PlexusBeanMetadata;
 import org.sonatype.guice.plexus.config.PlexusBeanSource;
 import org.sonatype.guice.plexus.config.PlexusConfigurator;
+import org.sonatype.guice.plexus.config.Roles;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.CreationException;
@@ -120,14 +121,14 @@ public class PlexusBeanMetadataTest
                 {
                     public Component getComponent()
                     {
-                        return new ComponentImpl( Bean.class, "2", "singleton" );
+                        return new ComponentImpl( Roles.defer( Bean.class ), "2", "singleton" );
                     }
 
                     public Requirement getRequirement( final BeanProperty<?> property )
                     {
                         if ( "extraMetadata".equals( property.getName() ) )
                         {
-                            return new RequirementImpl( String.class, false, "KEY1" );
+                            return new RequirementImpl( Roles.defer( String.class ), false, "KEY1" );
                         }
                         return null;
                     }
@@ -144,7 +145,7 @@ public class PlexusBeanMetadataTest
                 {
                     public Component getComponent()
                     {
-                        return new ComponentImpl( DefaultBean2.class, "", "per-lookup" );
+                        return new ComponentImpl( Roles.defer( DefaultBean2.class ), "", "per-lookup" );
                     }
 
                     public Requirement getRequirement( final BeanProperty<?> property )

@@ -64,12 +64,6 @@ public final class ConfigurationImpl
     // ----------------------------------------------------------------------
 
     @Override
-    public int hashCode()
-    {
-        return ( 127 * "name".hashCode() ^ name.hashCode() ) + ( 127 * "value".hashCode() ^ value.hashCode() );
-    }
-
-    @Override
     public boolean equals( final Object rhs )
     {
         if ( this == rhs )
@@ -85,6 +79,12 @@ public final class ConfigurationImpl
         }
 
         return false;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return ( 127 * "name".hashCode() ^ name.hashCode() ) + ( 127 * "value".hashCode() ^ value.hashCode() );
     }
 
     @Override

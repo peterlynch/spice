@@ -18,6 +18,7 @@ import java.lang.annotation.Annotation;
 import java.util.Arrays;
 
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.sonatype.guice.bean.reflect.DeferredClass;
 
 /**
  * Runtime implementation of Plexus @{@link Requirement} annotation.
@@ -29,7 +30,9 @@ public final class RequirementImpl
     // Implementation fields
     // ----------------------------------------------------------------------
 
-    private final Class<?> role;
+    private final DeferredClass<?> role;
+
+    private Class<?> roleClass;
 
     private final boolean optional;
 
@@ -41,7 +44,7 @@ public final class RequirementImpl
     // Constructors
     // ----------------------------------------------------------------------
 
-    public RequirementImpl( final Class<?> role, final boolean optional, final String... hints )
+    public RequirementImpl( final DeferredClass<?> role, final boolean optional, final String... hints )
     {
         if ( null == role || null == hints || Arrays.asList( hints ).contains( null ) )
         {
@@ -67,9 +70,13 @@ public final class RequirementImpl
     // Annotation properties
     // ----------------------------------------------------------------------
 
-    public Class<?> role()
+    public synchronized Class<?> role()
     {
-        return role;
+        if ( null == roleClass )
+        {
+            roleClass = role.load();
+        }
+        return roleClass;
     }
 
     public boolean optional()
@@ -92,14 +99,6 @@ public final class RequirementImpl
     // ----------------------------------------------------------------------
 
     @Override
-    public int hashCode()
-    {
-        return ( 127 * "role".hashCode() ^ role.hashCode() )
-            + ( 127 * "optional".hashCode() ^ Boolean.valueOf( optional ).hashCode() )
-            + ( 127 * "hint".hashCode() ^ hint.hashCode() ) + ( 127 * "hints".hashCode() ^ Arrays.hashCode( hints ) );
-    }
-
-    @Override
     public boolean equals( final Object rhs )
     {
         if ( this == rhs )
@@ -111,7 +110,7 @@ public final class RequirementImpl
         {
             final Requirement req = (Requirement) rhs;
 
-            return role.equals( req.role() ) && optional == req.optional() && hint.equals( req.hint() )
+            return role().equals( req.role() ) && optional == req.optional() && hint.equals( req.hint() )
                 && Arrays.equals( hints, req.hints() );
         }
 
@@ -119,10 +118,18 @@ public final class RequirementImpl
     }
 
     @Override
+    public int hashCode()
+    {
+        return ( 127 * "role".hashCode() ^ role().hashCode() )
+            + ( 127 * "optional".hashCode() ^ Boolean.valueOf( optional ).hashCode() )
+            + ( 127 * "hint".hashCode() ^ hint.hashCode() ) + ( 127 * "hints".hashCode() ^ Arrays.hashCode( hints ) );
+    }
+
+    @Override
     public String toString()
     {
         return String.format( "@%s(hints=%s, optional=%b, role=%s, hint=%s)", Requirement.class.getName(),
-                              Arrays.toString( hints ), Boolean.valueOf( optional ), role, hint );
+                              Arrays.toString( hints ), Boolean.valueOf( optional ), role(), hint );
     }
 
     public Class<? extends Annotation> annotationType()

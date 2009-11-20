@@ -66,6 +66,6 @@ public class HintsTest
 
     private static Requirement requirement( final String... hints )
     {
-        return new RequirementImpl( Object.class, true, hints );
+        return new RequirementImpl( Roles.defer( Object.class ), true, hints );
     }
 }

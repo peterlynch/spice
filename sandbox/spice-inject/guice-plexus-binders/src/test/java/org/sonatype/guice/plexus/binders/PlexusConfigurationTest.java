@@ -67,7 +67,7 @@ public class PlexusConfigurationTest
             protected void configure()
             {
                 bind( PlexusConfigurator.class ).to( GlobalConfigurator.class );
-                bind( Roles.configuratorKey( TypeLiteral.get( Object.class ), "" ) ).to( LocalConfigurator.class );
+                bind( Roles.configuratorKey( Object.class, "" ) ).to( LocalConfigurator.class );
                 install( new PlexusBindingModule() );
             }
         } ).injectMembers( this );
