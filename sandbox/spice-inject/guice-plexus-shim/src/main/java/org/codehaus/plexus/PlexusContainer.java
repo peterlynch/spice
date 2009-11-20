@@ -40,7 +40,7 @@ public interface PlexusContainer
     <T> T lookup( Class<T> type, String role, String hint )
         throws ComponentLookupException;
 
-    <T> List<T> lookupList( String role )
+    List<Object> lookupList( String role )
         throws ComponentLookupException;
 
     <T> List<T> lookupList( Class<T> type )

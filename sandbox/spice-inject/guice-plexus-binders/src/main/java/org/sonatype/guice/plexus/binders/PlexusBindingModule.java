@@ -55,7 +55,7 @@ public final class PlexusBindingModule
     public PlexusBindingModule()
     {
         // default "just-in-time" metadata
-        this( new AnnotatedBeanSource() );
+        this( new AnnotatedPlexusBeanSource() );
     }
 
     /**

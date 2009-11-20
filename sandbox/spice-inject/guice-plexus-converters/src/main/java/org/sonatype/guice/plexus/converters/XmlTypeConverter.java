@@ -273,6 +273,7 @@ public final class XmlTypeConverter
             final String text = parser.getText();
             if ( parser.next() != XmlPullParser.START_TAG )
             {
+                // try to use the original reified type, unless we have different implementation
                 return convertText( text, clazz == rawType ? toType : TypeLiteral.get( clazz ) );
             }
         }

@@ -67,12 +67,22 @@ public final class DefaultPlexusContainer
         throw new UnsupportedOperationException( "SHIM" );
     }
 
+    public List<Object> lookupList( final String role )
+    {
+        throw new UnsupportedOperationException( "SHIM" );
+    }
+
     public <T> List<T> lookupList( final Class<T> type )
     {
         throw new UnsupportedOperationException( "SHIM" );
     }
 
     public Map<String, Object> lookupMap( final String role )
+    {
+        throw new UnsupportedOperationException( "SHIM" );
+    }
+
+    public <T> Map<String, T> lookupMap( final Class<T> type )
     {
         throw new UnsupportedOperationException( "SHIM" );
     }

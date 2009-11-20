@@ -57,7 +57,7 @@ public class PlexusRequirementTest
 
                 bind( D.class ).annotatedWith( Names.named( "" ) ).to( DImpl.class );
 
-                install( new PlexusBindingModule( new AnnotatedBeanSource()
+                install( new PlexusBindingModule( new AnnotatedPlexusBeanSource()
                 {
                     @Override
                     public Iterable<Class<?>> findBeanImplementations()
