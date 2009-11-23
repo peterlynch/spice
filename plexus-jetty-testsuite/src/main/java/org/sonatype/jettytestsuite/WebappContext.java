@@ -12,6 +12,7 @@
  */
 package org.sonatype.jettytestsuite;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -33,7 +34,7 @@ public class WebappContext
 
     /** The servlet infos. */
     private List<ServletInfo> servletInfos;
-    
+
     private List<ServletFilterInfo> servletFilterInfos;
 
     /**
@@ -119,12 +120,16 @@ public class WebappContext
 
     public List<ServletFilterInfo> getServletFilterInfos()
     {
+        if ( servletFilterInfos == null )
+        {
+            servletFilterInfos = new ArrayList<ServletFilterInfo>();
+        }
         return servletFilterInfos;
     }
 
     public void setServletFilterInfos( List<ServletFilterInfo> servletFilterInfos )
     {
         this.servletFilterInfos = servletFilterInfos;
-    }    
-    
+    }
+
 }
