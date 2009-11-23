@@ -18,8 +18,10 @@ import java.util.Map;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.sonatype.guice.bean.reflect.ClassSpace;
 import org.sonatype.guice.bean.reflect.DeferredClass;
 import org.sonatype.guice.bean.reflect.Generics;
+import org.sonatype.guice.bean.reflect.WeakDeferredClass;
 
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
@@ -53,7 +55,7 @@ public final class Roles
      * 
      * @param requirement The Plexus requirement
      * @param expectedType The expected type
-     * @return The appropriate role type
+     * @return "Best-fit" role type
      */
     public static TypeLiteral<?> getRole( final Requirement requirement, final TypeLiteral<?> expectedType )
     {
@@ -116,44 +118,31 @@ public final class Roles
     }
 
     /**
-     * Returns the {@link PlexusConfigurator} binding {@link Key} for the given Plexus component.
-     * 
-     * @param component The Plexus component
-     * @return Configurator binding key for the given component
-     */
-    public static Key<PlexusConfigurator> configuratorKey( final Component component )
-    {
-        return configuratorKey( component.role(), component.hint() );
-    }
-
-    /**
-     * Returns the {@link PlexusConfigurator} binding {@link Key} for the given Plexus role-hint.
+     * Returns degenerate {@link DeferredClass} for the given Plexus role.
      * 
      * @param role The Plexus role
-     * @param hint The Plexus hint
-     * @return Configurator binding key for the given role-hint
-     */
-    public static Key<PlexusConfigurator> configuratorKey( final Class<?> role, final String hint )
-    {
-        final String roleName = role.getName();
-        final String roleHint = Hints.isDefaultHint( hint ) ? roleName : roleName + '-' + hint;
-        return Key.get( PlexusConfigurator.class, Names.named( roleHint ) );
-    }
-
-    /**
-     * Returns the {@link DeferredClass} form of the given Plexus role.
-     * 
-     * @param clazz The Plexus role
-     * @return Deferred class for the given role
+     * @return Deferred class
      */
     public static <T> DeferredClass<T> defer( final Class<T> role )
     {
         return new DeferredClass<T>()
         {
-            public Class<T> load()
+            public Class<T> get()
             {
                 return role;
             }
         };
+    }
+
+    /**
+     * Returns {@link DeferredClass} for the named role from the given {@link ClassSpace}.
+     * 
+     * @param space The class space
+     * @param role The Plexus role
+     * @return Deferred class
+     */
+    public static DeferredClass<?> defer( final ClassSpace space, final String role )
+    {
+        return new WeakDeferredClass<Object>( space, role );
     }
 }

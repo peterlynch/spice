@@ -38,17 +38,17 @@ public interface BeanProperty<T>
      * Returns the property annotation with the specified type.
      * 
      * @param annotationType The annotation type
-     * @return The property's annotation if it exists; otherwise {@code null}
+     * @return Property annotation if it exists; otherwise {@code null}
      */
     <A extends Annotation> A getAnnotation( Class<A> annotationType );
 
     /**
-     * @return The property's reified generic type
+     * @return Reified generic type of the property
      */
     TypeLiteral<T> getType();
 
     /**
-     * @return The property's name (excluding name-space)
+     * @return Name of the property (excluding name-space)
      */
     String getName();
 

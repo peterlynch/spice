@@ -36,8 +36,6 @@ public final class ComponentImpl
 
     private final DeferredClass<?> role;
 
-    private Class<?> roleClass;
-
     private final String hint;
 
     private final String instantiationStrategy;
@@ -46,7 +44,7 @@ public final class ComponentImpl
     // Constructors
     // ----------------------------------------------------------------------
 
-    public ComponentImpl( DeferredClass<?> role, final String hint, final String instantiationStrategy )
+    public ComponentImpl( final DeferredClass<?> role, final String hint, final String instantiationStrategy )
     {
         if ( null == role || null == hint || null == instantiationStrategy )
         {
@@ -62,13 +60,9 @@ public final class ComponentImpl
     // Annotation properties
     // ----------------------------------------------------------------------
 
-    public synchronized Class<?> role()
+    public Class<?> role()
     {
-        if ( null == roleClass )
-        {
-            roleClass = role.load();
-        }
-        return roleClass;
+        return role.get();
     }
 
     public String hint()

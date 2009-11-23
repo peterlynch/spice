@@ -12,17 +12,22 @@
  */
 package org.sonatype.guice.plexus.config;
 
+import java.util.Map;
+
+import org.codehaus.plexus.component.annotations.Component;
+import org.sonatype.guice.bean.reflect.DeferredClass;
+
 /**
- * Source of Plexus bean implementations and associated metadata.
+ * Source of Plexus component beans and associated metadata.
  */
 public interface PlexusBeanSource
 {
     /**
-     * Finds bean implementations by scanning, lookup, or other such methods.
+     * Finds Plexus component beans by scanning, lookup, or other such methods.
      * 
-     * @return Sequence of bean implementations
+     * @return Map of Plexus component beans
      */
-    Iterable<Class<?>> findBeanImplementations();
+    Map<Component, DeferredClass<?>> findPlexusComponentBeans();
 
     /**
      * Returns metadata associated with the given Plexus bean implementation.

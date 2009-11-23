@@ -12,7 +12,6 @@
  */
 package org.sonatype.guice.plexus.config;
 
-import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Configuration;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.guice.bean.reflect.BeanProperty;
@@ -22,13 +21,6 @@ import org.sonatype.guice.bean.reflect.BeanProperty;
  */
 public interface PlexusBeanMetadata
 {
-    /**
-     * Returns @{@link Component} metadata for the Plexus bean implementation.
-     * 
-     * @return Component metadata; {@code null} if no such metadata is available
-     */
-    Component getComponent();
-
     /**
      * Returns @{@link Configuration} metadata for the given property of the Plexus bean.
      * 

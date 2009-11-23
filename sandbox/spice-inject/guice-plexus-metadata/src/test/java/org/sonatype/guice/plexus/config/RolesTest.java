@@ -12,10 +12,17 @@
  */
 package org.sonatype.guice.plexus.config;
 
+import java.io.IOException;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.List;
+
 import junit.framework.TestCase;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.sonatype.guice.bean.reflect.ClassSpace;
+import org.sonatype.guice.bean.reflect.DeferredClass;
 import org.sonatype.guice.plexus.annotations.ComponentImpl;
 import org.sonatype.guice.plexus.annotations.RequirementImpl;
 
@@ -35,12 +42,6 @@ public class RolesTest
 
     private static final Key<Object> OBJECT_FOO_COMPONENT_KEY = Key.get( Object.class, Names.named( "foo" ) );
 
-    private static final Key<PlexusConfigurator> OBJECT_CONFIGURATOR_KEY =
-        Key.get( PlexusConfigurator.class, Names.named( Object.class.getName() ) );
-
-    private static final Key<PlexusConfigurator> OBJECT_FOO_CONFIGURATOR_KEY =
-        Key.get( PlexusConfigurator.class, Names.named( Object.class.getName() + "-foo" ) );
-
     public void testDefaultComponentKeys()
     {
         assertEquals( OBJECT_COMPONENT_KEY, Roles.componentKey( Object.class, null ) );
@@ -54,21 +55,6 @@ public class RolesTest
     {
         assertEquals( OBJECT_FOO_COMPONENT_KEY, Roles.componentKey( Object.class, "foo" ) );
         assertEquals( OBJECT_FOO_COMPONENT_KEY, Roles.componentKey( component( "foo" ) ) );
-    }
-
-    public void testDefaultConfiguratorKeys()
-    {
-        assertEquals( OBJECT_CONFIGURATOR_KEY, Roles.configuratorKey( Object.class, null ) );
-        assertEquals( OBJECT_CONFIGURATOR_KEY, Roles.configuratorKey( Object.class, "" ) );
-        assertEquals( OBJECT_CONFIGURATOR_KEY, Roles.configuratorKey( Object.class, "default" ) );
-        assertEquals( OBJECT_CONFIGURATOR_KEY, Roles.configuratorKey( component( "" ) ) );
-        assertEquals( OBJECT_CONFIGURATOR_KEY, Roles.configuratorKey( component( "default" ) ) );
-    }
-
-    public void testConfiguratorKeys()
-    {
-        assertEquals( OBJECT_FOO_CONFIGURATOR_KEY, Roles.configuratorKey( Object.class, "foo" ) );
-        assertEquals( OBJECT_FOO_CONFIGURATOR_KEY, Roles.configuratorKey( component( "foo" ) ) );
     }
 
     public void testRoleAnalysis()
@@ -91,5 +77,56 @@ public class RolesTest
     private static Requirement requirement( final Class<?> role )
     {
         return new RequirementImpl( Roles.defer( role ), true );
+    }
+
+    static final class ClassicSpace
+        implements ClassSpace
+    {
+        public Class<?> loadClass( final String name )
+            throws ClassNotFoundException
+        {
+            return getClass().getClassLoader().loadClass( name );
+        }
+
+        public Enumeration<URL> getResources( final String name )
+            throws IOException
+        {
+            return getClass().getClassLoader().getResources( name );
+        }
+    }
+
+    static final class BrokenSpace
+        implements ClassSpace
+    {
+        public Class<?> loadClass( final String name )
+            throws ClassNotFoundException
+        {
+            throw new ClassNotFoundException();
+        }
+
+        public Enumeration<URL> getResources( final String name )
+            throws IOException
+        {
+            throw new IOException();
+        }
+    }
+
+    public void testClassicDeferredClass()
+    {
+        final DeferredClass<?> clazz = Roles.defer( new ClassicSpace(), "java.util.List" );
+        assertEquals( List.class, clazz.get() );
+        assertEquals( clazz.get(), clazz.get() );
+    }
+
+    public void testBrokenDeferredClass()
+    {
+        try
+        {
+            Roles.defer( new BrokenSpace(), "java.util.List" ).get();
+            fail( "Expected TypeNotPresentException" );
+        }
+        catch ( final TypeNotPresentException e )
+        {
+        }
     }
 }

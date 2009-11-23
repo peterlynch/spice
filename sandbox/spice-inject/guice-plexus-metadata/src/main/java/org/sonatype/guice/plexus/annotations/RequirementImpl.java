@@ -32,8 +32,6 @@ public final class RequirementImpl
 
     private final DeferredClass<?> role;
 
-    private Class<?> roleClass;
-
     private final boolean optional;
 
     private final String hint;
@@ -70,13 +68,9 @@ public final class RequirementImpl
     // Annotation properties
     // ----------------------------------------------------------------------
 
-    public synchronized Class<?> role()
+    public Class<?> role()
     {
-        if ( null == roleClass )
-        {
-            roleClass = role.load();
-        }
-        return roleClass;
+        return role.get();
     }
 
     public boolean optional()
