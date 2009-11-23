@@ -152,9 +152,14 @@ public class PropertyListenerTest
         assertEquals( "cValue", bean2.c );
         assertNull( bean2.d );
 
-        assertNull( bean2.last );
-        PropertyBinder.LAST_BINDING.injectProperty( bean2 );
-        assertNull( bean2.last );
+        try
+        {
+            PropertyBinder.LAST_BINDING.injectProperty( bean2 );
+            fail( "Expected UnsupportedOperationException" );
+        }
+        catch ( final UnsupportedOperationException e )
+        {
+        }
     }
 
     public void testBrokenBinding()

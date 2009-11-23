@@ -12,16 +12,32 @@
  */
 package org.sonatype.guice.bean.reflect;
 
+import java.io.IOException;
+import java.net.URL;
+import java.util.Enumeration;
+
 /**
- * Simple {@link Class} reference that supports deferred access.
+ * Represents an abstract collection of related classes and resources.
  */
-public interface DeferredClass<T>
+public interface ClassSpace
 {
     /**
-     * Retrieves the class, for example from a cache or a class loader.
+     * Load the named class from the surrounding class space.
      * 
+     * @param name The class name
      * @return Class instance
+     * @see ClassLoader#loadClass(String)
      */
-    Class<T> get()
-        throws TypeNotPresentException;
+    Class<?> loadClass( String name )
+        throws ClassNotFoundException;
+
+    /**
+     * Queries the class space for resources matching the given name.
+     * 
+     * @param name The resource name
+     * @return Series of URLs
+     * @see ClassLoader#getResources(String)
+     */
+    Enumeration<URL> getResources( String name )
+        throws IOException;
 }

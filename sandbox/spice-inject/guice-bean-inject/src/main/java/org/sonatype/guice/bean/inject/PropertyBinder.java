@@ -34,7 +34,7 @@ public interface PropertyBinder
     {
         public <B> void injectProperty( final B bean )
         {
-            // this instance is for marking purposes only
+            throw new UnsupportedOperationException( "LAST_BINDING" );
         }
     };
 }
