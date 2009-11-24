@@ -113,20 +113,30 @@ public class RolesTest
 
     public void testClassicDeferredClass()
     {
-        final DeferredClass<?> clazz = Roles.defer( new ClassicSpace(), "java.util.List" );
-        assertEquals( List.class, clazz.get() );
-        assertEquals( clazz.get(), clazz.get() );
+        final DeferredClass<?> clazz1 = Roles.defer( List.class );
+        final DeferredClass<?> clazz2 = Roles.defer( new ClassicSpace(), "java.util.List" );
+
+        assertEquals( List.class, clazz1.get() );
+        assertEquals( List.class, clazz2.get() );
+        assertEquals( clazz1.get(), clazz2.get() );
+
+        assertEquals( "java.util.List", clazz1.getName() );
+        assertEquals( "java.util.List", clazz2.getName() );
     }
 
     public void testBrokenDeferredClass()
     {
+        final DeferredClass<?> clazz = Roles.defer( new BrokenSpace(), "java.util.List" );
+
         try
         {
-            Roles.defer( new BrokenSpace(), "java.util.List" ).get();
+            clazz.get();
             fail( "Expected TypeNotPresentException" );
         }
         catch ( final TypeNotPresentException e )
         {
         }
+
+        assertEquals( "java.util.List", clazz.getName() );
     }
 }

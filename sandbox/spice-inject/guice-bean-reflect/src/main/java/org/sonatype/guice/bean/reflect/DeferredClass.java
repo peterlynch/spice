@@ -24,4 +24,11 @@ public interface DeferredClass<T>
      */
     Class<T> get()
         throws TypeNotPresentException;
+
+    /**
+     * Returns the name of the deferred class.
+     * 
+     * @return Class name
+     */
+    String getName();
 }

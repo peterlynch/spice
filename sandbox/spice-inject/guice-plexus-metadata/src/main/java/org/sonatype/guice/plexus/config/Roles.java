@@ -131,6 +131,11 @@ public final class Roles
             {
                 return role;
             }
+
+            public String getName()
+            {
+                return role.getName();
+            }
         };
     }
 

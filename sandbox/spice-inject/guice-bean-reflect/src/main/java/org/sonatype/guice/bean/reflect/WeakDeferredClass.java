@@ -16,7 +16,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 
 /**
- * Weak {@link DeferredClass} request for a named class from a {@link ClassSpace}.
+ * Weak {@link DeferredClass} representing a named class from a {@link ClassSpace}.
  */
 public final class WeakDeferredClass<T>
     implements DeferredClass<T>
@@ -62,5 +62,10 @@ public final class WeakDeferredClass<T>
             }
         }
         return clazz;
+    }
+
+    public String getName()
+    {
+        return name;
     }
 }

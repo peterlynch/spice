@@ -77,5 +77,7 @@ public class DeferredClassTest
         {
             assertEquals( "ClassSpace has been unloaded.", e.getMessage() );
         }
+
+        assertEquals( clazzName, clazz.getName() );
     }
 }
