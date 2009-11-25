@@ -1,0 +1,14 @@
+<component-set>
+
+  <components>
+    <component>
+      <implementation>
+        org.sonatype.guice.plexus.scanners.XmlPlexusBeanSourceTest$DefaultBean
+      </implementation>
+      <configuration>
+        <variable>${some.value}</variable>
+      </configuration>
+    </component>
+  </components>
+
+</component-set>

@@ -100,7 +100,7 @@ public class XmlPlexusBeanSourceTest
         };
 
         final URL plexusDotXml = getClass().getResource( "/META-INF/plexus/plexus.xml" );
-        final PlexusBeanSource source = new XmlPlexusBeanSource( plexusDotXml, space );
+        final PlexusBeanSource source = new XmlPlexusBeanSource( plexusDotXml, space, null );
         final Map<Component, DeferredClass<?>> componentMap = source.findPlexusComponentBeans();
 
         assertEquals( 2, componentMap.size() );
@@ -119,7 +119,7 @@ public class XmlPlexusBeanSourceTest
 
         try
         {
-            new XmlPlexusBeanSource( getClass().getResource( "/META-INF/plexus/bad_plexus_1.xml" ), space );
+            new XmlPlexusBeanSource( getClass().getResource( "/META-INF/plexus/bad_plexus_1.xml" ), space, null );
             fail( "Expected XmlPullParserException" );
         }
         catch ( final XmlPullParserException e )
@@ -132,7 +132,7 @@ public class XmlPlexusBeanSourceTest
         throws XmlPullParserException, IOException
     {
         final ClassSpace space = new WeakClassSpace( XmlPlexusBeanSourceTest.class.getClassLoader() );
-        final PlexusBeanSource source = new XmlPlexusBeanSource( null, space );
+        final PlexusBeanSource source = new XmlPlexusBeanSource( null, space, null );
         final Map<Component, DeferredClass<?>> componentMap = source.findPlexusComponentBeans();
 
         assertEquals( 2, componentMap.size() );
@@ -184,7 +184,7 @@ public class XmlPlexusBeanSourceTest
         try
         {
             final ClassSpace space = new FixedClassSpace( "/META-INF/plexus/bad_components_1.xml" );
-            new XmlPlexusBeanSource( null, space );
+            new XmlPlexusBeanSource( null, space, null );
             fail( "Expected XmlPullParserException" );
         }
         catch ( final XmlPullParserException e )
@@ -195,7 +195,7 @@ public class XmlPlexusBeanSourceTest
         try
         {
             final ClassSpace space = new FixedClassSpace( "/META-INF/plexus/bad_components_2.xml" );
-            new XmlPlexusBeanSource( null, space );
+            new XmlPlexusBeanSource( null, space, null );
             fail( "Expected XmlPullParserException" );
         }
         catch ( final XmlPullParserException e )
@@ -206,12 +206,28 @@ public class XmlPlexusBeanSourceTest
         try
         {
             final ClassSpace space = new FixedClassSpace( "/META-INF/plexus/bad_components_3.xml" );
-            new XmlPlexusBeanSource( null, space );
+            new XmlPlexusBeanSource( null, space, null );
             fail( "Expected XmlPullParserException" );
         }
         catch ( final XmlPullParserException e )
         {
             System.out.println( e );
         }
+    }
+
+    public void testInterpolatedComponentsDotXml()
+        throws XmlPullParserException, IOException
+    {
+        final ClassSpace space = new FixedClassSpace( "/META-INF/plexus/variable_components.xml" );
+
+        final PlexusBeanSource uninterpolatedSource = new XmlPlexusBeanSource( null, space, null );
+        final PlexusBeanMetadata metadata1 = uninterpolatedSource.getBeanMetadata( DefaultBean.class );
+        assertEquals( "${some.value}", metadata1.getConfiguration( new NamedProperty( "variable" ) ).value() );
+
+        final Map<?, ?> variables = Collections.singletonMap( "some.value", "INTERPOLATED" );
+
+        final PlexusBeanSource interpolatedSource = new XmlPlexusBeanSource( null, space, variables );
+        final PlexusBeanMetadata metadata2 = interpolatedSource.getBeanMetadata( DefaultBean.class );
+        assertEquals( "INTERPOLATED", metadata2.getConfiguration( new NamedProperty( "variable" ) ).value() );
     }
 }

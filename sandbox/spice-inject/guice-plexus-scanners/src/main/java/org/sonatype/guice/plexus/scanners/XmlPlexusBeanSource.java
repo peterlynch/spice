@@ -13,6 +13,7 @@
 package org.sonatype.guice.plexus.scanners;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
 import java.util.ArrayList;
@@ -25,6 +26,8 @@ import java.util.Map;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Configuration;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.InterpolationFilterReader;
 import org.codehaus.plexus.util.xml.XmlStreamReader;
 import org.codehaus.plexus.util.xml.pull.MXParser;
 import org.codehaus.plexus.util.xml.pull.XmlPullParser;
@@ -70,18 +73,35 @@ public final class XmlPlexusBeanSource
      * 
      * @param plexusDotXml Optional plexus.xml URL
      * @param space The containing class space
+     * @param variables The filter variables
      */
-    public XmlPlexusBeanSource( final URL plexusDotXml, final ClassSpace space )
+    public XmlPlexusBeanSource( final URL plexusDotXml, final ClassSpace space, final Map<?, ?> variables )
         throws XmlPullParserException, IOException
     {
         if ( null != plexusDotXml )
         {
-            parsePlexusDotXml( new XmlStreamReader( plexusDotXml ), space );
+            final InputStream in = plexusDotXml.openStream();
+            try
+            {
+                parsePlexusDotXml( filteredXmlReader( in, variables ), space );
+            }
+            finally
+            {
+                IOUtil.close( in );
+            }
         }
 
         for ( final Enumeration<URL> i = space.getResources( COMPONENTS_XML_PATH ); i.hasMoreElements(); )
         {
-            parseComponentsDotXml( new XmlStreamReader( i.nextElement() ), space );
+            final InputStream in = i.nextElement().openStream();
+            try
+            {
+                parseComponentsDotXml( filteredXmlReader( in, variables ), space );
+            }
+            finally
+            {
+                IOUtil.close( in );
+            }
         }
     }
 
@@ -102,6 +122,20 @@ public final class XmlPlexusBeanSource
     // ----------------------------------------------------------------------
     // Implementation methods
     // ----------------------------------------------------------------------
+
+    /**
+     * Wraps the given {@link InputStream} as a {@link Reader} with XML encoding detection and optional interpolation.
+     * 
+     * @param in The input stream
+     * @param variables The filter variables
+     * @return Reader that can automatically detect XML encodings and optionally interpolate variables
+     */
+    private static Reader filteredXmlReader( final InputStream in, final Map<?, ?> variables )
+        throws IOException
+    {
+        final Reader reader = new XmlStreamReader( in );
+        return null != variables ? new InterpolationFilterReader( reader, variables ) : reader;
+    }
 
     /**
      * Parses a {@code plexus.xml} resource into load-on-start settings and Plexus bean metadata.
