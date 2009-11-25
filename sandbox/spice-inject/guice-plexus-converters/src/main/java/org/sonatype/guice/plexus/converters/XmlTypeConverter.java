@@ -22,12 +22,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.codehaus.plexus.component.annotations.Configuration;
 import org.codehaus.plexus.util.xml.pull.MXParser;
 import org.codehaus.plexus.util.xml.pull.XmlPullParser;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.sonatype.guice.bean.reflect.BeanProperties;
 import org.sonatype.guice.bean.reflect.BeanProperty;
 import org.sonatype.guice.bean.reflect.Generics;
+import org.sonatype.guice.plexus.config.PlexusConfigurator;
 
 import com.google.inject.Binder;
 import com.google.inject.Inject;
@@ -44,7 +46,7 @@ import com.google.inject.spi.TypeConverterBinding;
  */
 public final class XmlTypeConverter
     extends AbstractMatcher<TypeLiteral<?>>
-    implements Module, TypeConverter
+    implements PlexusConfigurator, Module, TypeConverter
 {
     // ----------------------------------------------------------------------
     // Constants
@@ -66,7 +68,7 @@ public final class XmlTypeConverter
     {
         // we're both matcher and converter
         binder.convertToTypes( this, this );
-        binder.requestInjection( this );
+        binder.bind( PlexusConfigurator.class ).toInstance( this );
     }
 
     // ----------------------------------------------------------------------
@@ -96,6 +98,12 @@ public final class XmlTypeConverter
     // ----------------------------------------------------------------------
     // Public methods
     // ----------------------------------------------------------------------
+
+    @SuppressWarnings( "unchecked" )
+    public <T> T configure( Configuration configuration, TypeLiteral<T> asType )
+    {
+        return (T) convert( configuration.value(), asType );
+    }
 
     public boolean matches( final TypeLiteral<?> type )
     {
@@ -146,6 +154,8 @@ public final class XmlTypeConverter
     private <T> T parse( final XmlPullParser parser, final TypeLiteral<T> toType )
         throws Exception
     {
+        parser.require( XmlPullParser.START_TAG, null, null );
+
         final Class<?> rawType = toType.getRawType();
         if ( Properties.class.isAssignableFrom( rawType ) )
         {
@@ -293,7 +303,7 @@ public final class XmlTypeConverter
 
         while ( parser.getEventType() == XmlPullParser.START_TAG )
         {
-            // update properties inside the current bean, guided by the cached map
+            // update properties inside the bean, guided by the cached property map
             final BeanProperty<Object> property = propertyMap.get( parser.getName() );
             if ( property != null )
             {
@@ -316,13 +326,8 @@ public final class XmlTypeConverter
      * @return Name of the custom implementation; otherwise {@code null}
      */
     private static String parseImplementation( final XmlPullParser parser )
-        throws XmlPullParserException
     {
-        if ( parser.getEventType() == XmlPullParser.START_TAG )
-        {
-            return parser.getAttributeValue( null, "implementation" );
-        }
-        return null;
+        return parser.getAttributeValue( null, "implementation" );
     }
 
     /**
@@ -429,7 +434,6 @@ public final class XmlTypeConverter
      */
     @SuppressWarnings( "unchecked" )
     private static <T> T newImplementation( final XmlPullParser parser, final Class<T> defaultClazz )
-        throws XmlPullParserException
     {
         return (T) newImplementation( loadImplementation( parseImplementation( parser ), defaultClazz ) );
     }
@@ -452,7 +456,7 @@ public final class XmlTypeConverter
             return (T) text; // compatible type => no conversion needed
         }
 
-        // use temporary Key to auto-box primitive types into their equivalent object types
+        // use temporary Key as quick way to auto-box primitive types into their equivalent object types
         final TypeLiteral<?> boxedType = rawType.isPrimitive() ? Key.get( rawType ).getTypeLiteral() : toType;
 
         for ( final TypeConverterBinding b : otherConverterBindings )

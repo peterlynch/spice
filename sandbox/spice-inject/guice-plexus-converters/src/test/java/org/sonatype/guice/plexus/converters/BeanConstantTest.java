@@ -21,12 +21,16 @@ import java.util.Date;
 
 import junit.framework.TestCase;
 
+import org.sonatype.guice.plexus.annotations.ConfigurationImpl;
+import org.sonatype.guice.plexus.config.PlexusConfigurator;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.ConfigurationException;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
 
 public class BeanConstantTest
     extends TestCase
@@ -46,11 +50,11 @@ public class BeanConstantTest
             @Override
             protected void configure()
             {
-                bindBean( "EmptyBean", EmptyBean.class.getName(), "" );
+                bindBean( "EmptyBean", EmptyBean.class.getName(), " " );
                 bindBean( "MissingType", "some.unknown.type", "" );
 
                 bindBean( "BeanWithProperty", BeanWithProperty.class.getName(), "<value>4.2</value>" );
-                bindBean( "MissingProperty", EmptyBean.class.getName(), "<value>4.2</value>" );
+                bindBean( "MissingProperty", EmptyBean.class.getName(), " <value>4.2</value>" );
 
                 bindBean( "MissingDefaultConstructor", MissingDefaultConstructor.class.getName(), "" );
                 bindBean( "BrokenDefaultConstructor", BrokenDefaultConstructor.class.getName(), "" );
@@ -197,6 +201,14 @@ public class BeanConstantTest
         assertEquals( 15, calendar.get( Calendar.DAY_OF_MONTH ) );
         assertEquals( Calendar.NOVEMBER, calendar.get( Calendar.MONTH ) );
         assertEquals( 2009, calendar.get( Calendar.YEAR ) );
+    }
+
+    @SuppressWarnings( "boxing" )
+    public void testConfigurator()
+    {
+        final PlexusConfigurator configurator = injector.getInstance( PlexusConfigurator.class );
+        final float value = configurator.configure( new ConfigurationImpl( "", "4.2" ), TypeLiteral.get( float.class ) );
+        assertEquals( 4.2f, value, 0 );
     }
 
     private Object getBean( final String bindingName, final Class<?> clazz )
