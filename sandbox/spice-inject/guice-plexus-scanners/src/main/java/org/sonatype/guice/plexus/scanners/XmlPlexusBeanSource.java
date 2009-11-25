@@ -19,10 +19,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Configuration;
@@ -57,7 +55,7 @@ public final class XmlPlexusBeanSource
     // Implementation fields
     // ----------------------------------------------------------------------
 
-    private final Set<String> loadOnStartRoleHints = new HashSet<String>();
+    private final Map<String, String> roleHintStrategies = new HashMap<String, String>();
 
     private final Map<Component, DeferredClass<?>> componentMap = new HashMap<Component, DeferredClass<?>>();
 
@@ -184,11 +182,11 @@ public final class XmlPlexusBeanSource
         {
             if ( "role".equals( parser.getName() ) )
             {
-                role = parser.nextText();
+                role = TEXT( parser );
             }
             else if ( "role-hint".equals( parser.getName() ) )
             {
-                hint = parser.nextText();
+                hint = TEXT( parser );
             }
             else
             {
@@ -196,10 +194,13 @@ public final class XmlPlexusBeanSource
             }
         }
 
-        if ( role != null )
+        if ( null == role )
         {
-            loadOnStartRoleHints.add( Roles.canonicalRoleHint( role, hint ) );
+            throw new XmlPullParserException( "Missing <role> element.", parser, null );
         }
+
+        roleHintStrategies.put( Roles.canonicalRoleHint( role, hint ), "load-on-start" );
+
     }
 
     /**
@@ -241,19 +242,19 @@ public final class XmlPlexusBeanSource
             }
             else if ( "role".equals( name ) )
             {
-                role = parser.nextText();
+                role = TEXT( parser );
             }
             else if ( "role-hint".equals( name ) )
             {
-                hint = parser.nextText();
+                hint = TEXT( parser );
             }
             else if ( "instantiation-strategy".equals( name ) )
             {
-                instantiationStrategy = parser.nextText();
+                instantiationStrategy = TEXT( parser );
             }
             else if ( "implementation".equals( name ) )
             {
-                implementation = parser.nextText();
+                implementation = TEXT( parser );
             }
             else
             {
@@ -261,31 +262,40 @@ public final class XmlPlexusBeanSource
             }
         }
 
-        if ( implementation != null )
+        if ( null == implementation )
         {
-            if ( null == role )
-            {
-                role = implementation;
-            }
-
-            final MappedPlexusBeanMetadata beanMetadata = metadataMap.get( implementation );
-            if ( beanMetadata != null )
-            {
-                beanMetadata.merge( configuration, requirements );
-            }
-            else
-            {
-                metadataMap.put( implementation, new MappedPlexusBeanMetadata( configuration, requirements ) );
-            }
-
-            if ( loadOnStartRoleHints.contains( Roles.canonicalRoleHint( role, hint ) ) )
-            {
-                instantiationStrategy = "load-on-start";
-            }
-
-            final Component component = new ComponentImpl( Roles.defer( space, role ), hint, instantiationStrategy );
-            componentMap.put( component, Roles.defer( space, implementation ) );
+            throw new XmlPullParserException( "Missing <implementation> element.", parser, null );
         }
+
+        if ( null == role )
+        {
+            role = implementation;
+        }
+
+        final MappedPlexusBeanMetadata beanMetadata = metadataMap.get( implementation );
+        if ( beanMetadata != null )
+        {
+            beanMetadata.merge( configuration, requirements );
+        }
+        else
+        {
+            metadataMap.put( implementation, new MappedPlexusBeanMetadata( configuration, requirements ) );
+        }
+
+        final String roleHintKey = Roles.canonicalRoleHint( role, hint );
+        final String strategy = roleHintStrategies.get( roleHintKey );
+        if ( null != strategy )
+        {
+            instantiationStrategy = strategy;
+        }
+        else
+        {
+            roleHintStrategies.put( roleHintKey, instantiationStrategy );
+        }
+
+        hint = Hints.canonicalHint( hint );
+        final Component component = new ComponentImpl( Roles.defer( space, role ), hint, instantiationStrategy );
+        componentMap.put( component, Roles.defer( space, implementation ) );
     }
 
     /**
@@ -302,6 +312,7 @@ public final class XmlPlexusBeanSource
         String role = null;
         final List<String> hintList = new ArrayList<String>();
         String fieldName = null;
+        boolean optional = false;
 
         parser.require( XmlPullParser.START_TAG, null, "requirement" );
 
@@ -310,22 +321,26 @@ public final class XmlPlexusBeanSource
             final String name = parser.getName();
             if ( "role".equals( name ) )
             {
-                role = parser.nextText();
+                role = TEXT( parser );
             }
             else if ( "role-hint".equals( name ) )
             {
-                hintList.add( parser.nextText() );
+                hintList.add( TEXT( parser ) );
             }
             else if ( "role-hints".equals( name ) )
             {
                 while ( parser.nextTag() == XmlPullParser.START_TAG )
                 {
-                    hintList.add( parser.nextText() );
+                    hintList.add( TEXT( parser ) );
                 }
             }
             else if ( "field-name".equals( name ) )
             {
-                fieldName = parser.nextText();
+                fieldName = TEXT( parser );
+            }
+            else if ( "optional".equals( name ) )
+            {
+                optional = Boolean.parseBoolean( TEXT( parser ) );
             }
             else
             {
@@ -333,11 +348,18 @@ public final class XmlPlexusBeanSource
             }
         }
 
-        if ( fieldName != null && role != null )
+        if ( null == role )
         {
-            final String[] hints = Hints.canonicalHints( hintList.toArray( new String[hintList.size()] ) );
-            requirementMap.put( fieldName, new RequirementImpl( Roles.defer( space, role ), false, hints ) );
+            throw new XmlPullParserException( "Missing <role> element.", parser, null );
         }
+
+        if ( null == fieldName )
+        {
+            throw new XmlPullParserException( "Missing <field-name> element.", parser, null );
+        }
+
+        final String[] hints = Hints.canonicalHints( hintList.toArray( new String[hintList.size()] ) );
+        requirementMap.put( fieldName, new RequirementImpl( Roles.defer( space, role ), optional, hints ) );
     }
 
     /**
@@ -364,9 +386,9 @@ public final class XmlPlexusBeanSource
     }
 
     /**
-     * Replaces any dashes (foo-bar) in the name with camelCase (fooBar).
+     * Removes any non-Java identifiers from the name and converts it to camelCase.
      * 
-     * @param name The potentially dashed name
+     * @param name The element name
      * @return CamelCased name with no dashes
      */
     private static String camelizeName( final String name )
@@ -377,13 +399,9 @@ public final class XmlPlexusBeanSource
         for ( int i = 0; i < name.length(); i++ )
         {
             final char c = name.charAt( i );
-            if ( c == '-' )
+            if ( !Character.isJavaIdentifierPart( c ) )
             {
                 capitalize = true;
-            }
-            else if ( !Character.isJavaIdentifierPart( c ) )
-            {
-                continue;
             }
             else if ( capitalize )
             {
@@ -397,5 +415,17 @@ public final class XmlPlexusBeanSource
         }
 
         return buf.toString();
+    }
+
+    /**
+     * Returns the text contained inside the current XML element, without any surrounding whitespace.
+     * 
+     * @param parser The XML parser
+     * @return Trimmed TEXT element
+     */
+    private static String TEXT( final XmlPullParser parser )
+        throws XmlPullParserException, IOException
+    {
+        return parser.nextText().trim();
     }
 }

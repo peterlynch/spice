@@ -78,7 +78,7 @@ final class MappedPlexusBeanMetadata
         for ( final Entry<K, V> e : secondary.entrySet() )
         {
             final K key = e.getKey();
-            if ( !secondary.containsKey( key ) )
+            if ( !primary.containsKey( key ) )
             {
                 primary.put( key, e.getValue() );
             }

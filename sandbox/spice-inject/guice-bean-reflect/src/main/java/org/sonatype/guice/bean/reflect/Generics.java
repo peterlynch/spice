@@ -55,7 +55,7 @@ public final class Generics
      * @param index The type argument index
      * @return Selected type argument
      */
-    public static TypeLiteral<?> getTypeArgument( final TypeLiteral<?> genericType, final int index )
+    public static TypeLiteral<?> typeArgument( final TypeLiteral<?> genericType, final int index )
     {
         final Type type = genericType.getType();
         if ( type instanceof ParameterizedType )
@@ -71,7 +71,7 @@ public final class Generics
      * @param arrayType The array type
      * @return Component type of the array
      */
-    public static TypeLiteral<?> getComponentType( final TypeLiteral<?> arrayType )
+    public static TypeLiteral<?> componentType( final TypeLiteral<?> arrayType )
     {
         final Type type = arrayType.getType();
         if ( type instanceof GenericArrayType )

@@ -23,7 +23,7 @@ import junit.framework.TestCase;
 public class DeferredClassTest
     extends TestCase
 {
-    private static final class Dummy
+    private static class Dummy
     {
     }
 

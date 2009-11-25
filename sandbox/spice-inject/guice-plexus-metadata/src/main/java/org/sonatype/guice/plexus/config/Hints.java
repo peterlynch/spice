@@ -51,7 +51,7 @@ public final class Hints
      * @param hint The Plexus hint
      * @return Canonical hint denoting the same component as the given hint
      */
-    public static String getCanonicalHint( final String hint )
+    public static String canonicalHint( final String hint )
     {
         // interning hints is a good idea because there's a lot of duplication
         return null == hint || hint.length() == 0 ? DEFAULT_HINT : hint.intern();
@@ -74,11 +74,11 @@ public final class Hints
      * @param hints The Plexus hints
      * @return Array of canonical hints
      */
-    public static String[] getCanonicalHints( final String... hints )
+    public static String[] canonicalHints( final String... hints )
     {
         for ( int i = 0; i < hints.length; i++ )
         {
-            hints[i] = getCanonicalHint( hints[i] );
+            hints[i] = canonicalHint( hints[i] );
         }
         return hints;
     }
@@ -89,17 +89,17 @@ public final class Hints
      * @param requirement The Plexus requirement
      * @return Array of canonical hints
      */
-    public static String[] getCanonicalHints( final Requirement requirement )
+    public static String[] canonicalHints( final Requirement requirement )
     {
         final String[] hints = requirement.hints();
         if ( hints.length > 0 )
         {
-            return getCanonicalHints( hints );
+            return canonicalHints( hints );
         }
         final String hint = requirement.hint();
         if ( hint.length() > 0 )
         {
-            return getCanonicalHints( hint );
+            return canonicalHints( hint );
         }
         return NO_HINTS;
     }

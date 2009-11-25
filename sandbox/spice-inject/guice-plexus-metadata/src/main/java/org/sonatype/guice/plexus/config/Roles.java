@@ -51,31 +51,43 @@ public final class Roles
     // ----------------------------------------------------------------------
 
     /**
+     * Returns the canonical form of the given Plexus role-hint.
+     * 
+     * @param role The Plexus role
+     * @param hint The Plexus hint
+     * @return Canonical role-hint denoting the same component as the given role-hint
+     */
+    public static String canonicalRoleHint( final String role, final String hint )
+    {
+        return role + '-' + Hints.canonicalHint( hint );
+    }
+
+    /**
      * Deduces the role type based on the given @{@link Requirement} and expected type.
      * 
      * @param requirement The Plexus requirement
-     * @param expectedType The expected type
+     * @param asType The expected type
      * @return "Best-fit" role type
      */
-    public static TypeLiteral<?> getRole( final Requirement requirement, final TypeLiteral<?> expectedType )
+    public static TypeLiteral<?> roleType( final Requirement requirement, final TypeLiteral<?> asType )
     {
         final Type role = requirement.role();
         if ( role != Object.class )
         {
             return TypeLiteral.get( role );
         }
-        final Class<?> rawType = expectedType.getRawType();
+        final Class<?> rawType = asType.getRawType();
         if ( Map.class == rawType )
         {
             // Map<String, T> --> T
-            return Generics.getTypeArgument( expectedType, 1 );
+            return Generics.typeArgument( asType, 1 );
         }
         if ( List.class == rawType )
         {
             // List<T> --> T
-            return Generics.getTypeArgument( expectedType, 0 );
+            return Generics.typeArgument( asType, 0 );
         }
-        return expectedType;
+        return asType;
     }
 
     /**
@@ -114,7 +126,7 @@ public final class Roles
         {
             return Key.get( role );
         }
-        return Key.get( role, Names.named( Hints.getCanonicalHint( hint ) ) );
+        return Key.get( role, Names.named( Hints.canonicalHint( hint ) ) );
     }
 
     /**

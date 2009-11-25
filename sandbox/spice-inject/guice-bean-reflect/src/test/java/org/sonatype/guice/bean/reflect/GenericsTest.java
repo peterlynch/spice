@@ -51,21 +51,21 @@ public class GenericsTest
 
     public void testTypeArguments()
     {
-        assertEquals( OBJECT_TYPE, Generics.getTypeArgument( getFieldType( "rawList" ), 0 ) );
-        assertEquals( OBJECT_TYPE, Generics.getTypeArgument( getFieldType( "rawMap" ), 0 ) );
-        assertEquals( OBJECT_TYPE, Generics.getTypeArgument( getFieldType( "rawMap" ), 1 ) );
+        assertEquals( OBJECT_TYPE, Generics.typeArgument( getFieldType( "rawList" ), 0 ) );
+        assertEquals( OBJECT_TYPE, Generics.typeArgument( getFieldType( "rawMap" ), 0 ) );
+        assertEquals( OBJECT_TYPE, Generics.typeArgument( getFieldType( "rawMap" ), 1 ) );
 
-        assertEquals( SHORT_TYPE, Generics.getTypeArgument( getFieldType( "shortList" ), 0 ) );
-        assertEquals( STRING_TYPE, Generics.getTypeArgument( getFieldType( "stringFloatMap" ), 0 ) );
-        assertEquals( FLOAT_TYPE, Generics.getTypeArgument( getFieldType( "stringFloatMap" ), 1 ) );
+        assertEquals( SHORT_TYPE, Generics.typeArgument( getFieldType( "shortList" ), 0 ) );
+        assertEquals( STRING_TYPE, Generics.typeArgument( getFieldType( "stringFloatMap" ), 0 ) );
+        assertEquals( FLOAT_TYPE, Generics.typeArgument( getFieldType( "stringFloatMap" ), 1 ) );
 
-        assertEquals( OBJECT_TYPE, Generics.getTypeArgument( getFieldType( "wildcardList" ), 0 ) );
-        assertEquals( OBJECT_TYPE, Generics.getTypeArgument( getFieldType( "wildcardMap" ), 0 ) );
-        assertEquals( OBJECT_TYPE, Generics.getTypeArgument( getFieldType( "wildcardMap" ), 1 ) );
+        assertEquals( OBJECT_TYPE, Generics.typeArgument( getFieldType( "wildcardList" ), 0 ) );
+        assertEquals( OBJECT_TYPE, Generics.typeArgument( getFieldType( "wildcardMap" ), 0 ) );
+        assertEquals( OBJECT_TYPE, Generics.typeArgument( getFieldType( "wildcardMap" ), 1 ) );
 
-        assertEquals( STRING_TYPE, Generics.getTypeArgument( getFieldType( "wildcardStringList" ), 0 ) );
-        assertEquals( FLOAT_TYPE, Generics.getTypeArgument( getFieldType( "wildcardFloatShortMap" ), 0 ) );
-        assertEquals( SHORT_TYPE, Generics.getTypeArgument( getFieldType( "wildcardFloatShortMap" ), 1 ) );
+        assertEquals( STRING_TYPE, Generics.typeArgument( getFieldType( "wildcardStringList" ), 0 ) );
+        assertEquals( FLOAT_TYPE, Generics.typeArgument( getFieldType( "wildcardFloatShortMap" ), 0 ) );
+        assertEquals( SHORT_TYPE, Generics.typeArgument( getFieldType( "wildcardFloatShortMap" ), 1 ) );
     }
 
     @SuppressWarnings( "unchecked" )
@@ -90,23 +90,22 @@ public class GenericsTest
 
     public void testComponentType()
     {
-        assertEquals( getFieldType( "rawList" ), Generics.getComponentType( getFieldType( "rawListArray" ) ) );
-        assertEquals( getFieldType( "rawMap" ), Generics.getComponentType( getFieldType( "rawMapArray" ) ) );
+        assertEquals( getFieldType( "rawList" ), Generics.componentType( getFieldType( "rawListArray" ) ) );
+        assertEquals( getFieldType( "rawMap" ), Generics.componentType( getFieldType( "rawMapArray" ) ) );
 
-        assertEquals( getFieldType( "shortList" ), Generics.getComponentType( getFieldType( "shortListArray" ) ) );
-        assertEquals( getFieldType( "stringFloatMap" ),
-                      Generics.getComponentType( getFieldType( "stringFloatMapArray" ) ) );
+        assertEquals( getFieldType( "shortList" ), Generics.componentType( getFieldType( "shortListArray" ) ) );
+        assertEquals( getFieldType( "stringFloatMap" ), Generics.componentType( getFieldType( "stringFloatMapArray" ) ) );
 
-        assertEquals( getFieldType( "wildcardList" ), Generics.getComponentType( getFieldType( "wildcardListArray" ) ) );
-        assertEquals( getFieldType( "wildcardMap" ), Generics.getComponentType( getFieldType( "wildcardMapArray" ) ) );
+        assertEquals( getFieldType( "wildcardList" ), Generics.componentType( getFieldType( "wildcardListArray" ) ) );
+        assertEquals( getFieldType( "wildcardMap" ), Generics.componentType( getFieldType( "wildcardMapArray" ) ) );
 
         assertEquals( getFieldType( "wildcardStringList" ),
-                      Generics.getComponentType( getFieldType( "wildcardStringListArray" ) ) );
+                      Generics.componentType( getFieldType( "wildcardStringListArray" ) ) );
         assertEquals( getFieldType( "wildcardFloatShortMap" ),
-                      Generics.getComponentType( getFieldType( "wildcardFloatShortMapArray" ) ) );
+                      Generics.componentType( getFieldType( "wildcardFloatShortMapArray" ) ) );
 
         assertEquals( STRING_TYPE,
-                      Generics.getComponentType( Generics.getTypeArgument( getFieldType( "stringArrayList" ), 0 ) ) );
+                      Generics.componentType( Generics.typeArgument( getFieldType( "stringArrayList" ), 0 ) ) );
     }
 
     public void testCornerCase()
@@ -120,7 +119,7 @@ public class GenericsTest
             typeField.setAccessible( true );
             typeField.set( literal, String[].class );
 
-            assertEquals( STRING_TYPE, Generics.getComponentType( literal ) );
+            assertEquals( STRING_TYPE, Generics.componentType( literal ) );
         }
         catch ( final NoSuchFieldException e )
         {

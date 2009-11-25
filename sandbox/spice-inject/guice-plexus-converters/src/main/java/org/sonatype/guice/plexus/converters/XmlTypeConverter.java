@@ -100,7 +100,7 @@ public final class XmlTypeConverter
     // ----------------------------------------------------------------------
 
     @SuppressWarnings( "unchecked" )
-    public <T> T configure( Configuration configuration, TypeLiteral<T> asType )
+    public <T> T configure( final Configuration configuration, final TypeLiteral<T> asType )
     {
         return (T) convert( configuration.value(), asType );
     }
@@ -163,15 +163,15 @@ public final class XmlTypeConverter
         }
         if ( Map.class.isAssignableFrom( rawType ) )
         {
-            return (T) parseMap( parser, Generics.getTypeArgument( toType, 1 ) );
+            return (T) parseMap( parser, Generics.typeArgument( toType, 1 ) );
         }
         if ( Collection.class.isAssignableFrom( rawType ) )
         {
-            return (T) parseCollection( parser, Generics.getTypeArgument( toType, 0 ) );
+            return (T) parseCollection( parser, Generics.typeArgument( toType, 0 ) );
         }
         if ( rawType.isArray() )
         {
-            return (T) parseArray( parser, Generics.getComponentType( toType ) );
+            return (T) parseArray( parser, Generics.componentType( toType ) );
         }
         return parseBean( parser, toType, rawType );
     }

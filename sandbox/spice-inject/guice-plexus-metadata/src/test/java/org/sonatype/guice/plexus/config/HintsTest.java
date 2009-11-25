@@ -24,31 +24,31 @@ public class HintsTest
 {
     public void testCanonicalHint()
     {
-        assertEquals( "default", Hints.getCanonicalHint( null ) );
-        assertEquals( "default", Hints.getCanonicalHint( "" ) );
-        assertEquals( "default", Hints.getCanonicalHint( new String( "default" ) ) );
-        assertEquals( "foo", Hints.getCanonicalHint( "foo" ) );
+        assertEquals( "default", Hints.canonicalHint( null ) );
+        assertEquals( "default", Hints.canonicalHint( "" ) );
+        assertEquals( "default", Hints.canonicalHint( new String( "default" ) ) );
+        assertEquals( "foo", Hints.canonicalHint( "foo" ) );
     }
 
     public void testCanonicalHints()
     {
-        assertArrayEquals( new String[0], Hints.getCanonicalHints( requirement() ) );
-        assertArrayEquals( new String[0], Hints.getCanonicalHints( requirement( "" ) ) );
-        assertArrayEquals( new String[] { "default" }, Hints.getCanonicalHints( requirement( "default" ) ) );
-        assertArrayEquals( new String[] { "foo" }, Hints.getCanonicalHints( requirement( "foo" ) ) );
-        assertArrayEquals( new String[] { "default", "foo" }, Hints.getCanonicalHints( requirement( "", "foo" ) ) );
-        assertArrayEquals( new String[] { "foo", "default" }, Hints.getCanonicalHints( requirement( "foo", "" ) ) );
+        assertArrayEquals( new String[0], Hints.canonicalHints( requirement() ) );
+        assertArrayEquals( new String[0], Hints.canonicalHints( requirement( "" ) ) );
+        assertArrayEquals( new String[] { "default" }, Hints.canonicalHints( requirement( "default" ) ) );
+        assertArrayEquals( new String[] { "foo" }, Hints.canonicalHints( requirement( "foo" ) ) );
+        assertArrayEquals( new String[] { "default", "foo" }, Hints.canonicalHints( requirement( "", "foo" ) ) );
+        assertArrayEquals( new String[] { "foo", "default" }, Hints.canonicalHints( requirement( "foo", "" ) ) );
     }
 
     public void testHintsAreInterned()
     {
-        assertSame( "hint", Hints.getCanonicalHint( new String( "hint" ) ) );
-        assertSame( "hint", Hints.getCanonicalHints( requirement( new String( "hint" ) ) )[0] );
+        assertSame( "hint", Hints.canonicalHint( new String( "hint" ) ) );
+        assertSame( "hint", Hints.canonicalHints( requirement( new String( "hint" ) ) )[0] );
         final Requirement requirement = requirement( new String( "foo" ), new String( "bar" ) );
-        assertSame( "foo", Hints.getCanonicalHints( requirement )[0] );
-        assertSame( "bar", Hints.getCanonicalHints( requirement )[1] );
-        assertNotSame( new String( "hint" ), Hints.getCanonicalHint( "hint" ) );
-        assertEquals( new String( "hint" ), Hints.getCanonicalHint( "hint" ) );
+        assertSame( "foo", Hints.canonicalHints( requirement )[0] );
+        assertSame( "bar", Hints.canonicalHints( requirement )[1] );
+        assertNotSame( new String( "hint" ), Hints.canonicalHint( "hint" ) );
+        assertEquals( new String( "hint" ), Hints.canonicalHint( "hint" ) );
     }
 
     public void testIsDefaultHint()

@@ -42,6 +42,14 @@ public class RolesTest
 
     private static final Key<Object> OBJECT_FOO_COMPONENT_KEY = Key.get( Object.class, Names.named( "foo" ) );
 
+    public void testCanonicalRoleHint()
+    {
+        assertEquals( OBJECT_LITERAL + "-default", Roles.canonicalRoleHint( Object.class.getName(), null ) );
+        assertEquals( OBJECT_LITERAL + "-default", Roles.canonicalRoleHint( Object.class.getName(), "" ) );
+        assertEquals( OBJECT_LITERAL + "-default", Roles.canonicalRoleHint( Object.class.getName(), "default" ) );
+        assertEquals( OBJECT_LITERAL + "-foo", Roles.canonicalRoleHint( Object.class.getName(), "foo" ) );
+    }
+
     public void testDefaultComponentKeys()
     {
         assertEquals( OBJECT_COMPONENT_KEY, Roles.componentKey( Object.class, null ) );
@@ -59,14 +67,14 @@ public class RolesTest
 
     public void testRoleAnalysis()
     {
-        assertEquals( STRING_LITERAL, Roles.getRole( requirement( String.class ), OBJECT_LITERAL ) );
-        assertEquals( STRING_LITERAL, Roles.getRole( requirement( Object.class ), STRING_LITERAL ) );
+        assertEquals( STRING_LITERAL, Roles.roleType( requirement( String.class ), OBJECT_LITERAL ) );
+        assertEquals( STRING_LITERAL, Roles.roleType( requirement( Object.class ), STRING_LITERAL ) );
 
-        assertEquals( STRING_LITERAL, Roles.getRole( requirement( Object.class ),
-                                                     TypeLiteral.get( Types.listOf( String.class ) ) ) );
+        assertEquals( STRING_LITERAL, Roles.roleType( requirement( Object.class ),
+                                                      TypeLiteral.get( Types.listOf( String.class ) ) ) );
 
-        assertEquals( STRING_LITERAL, Roles.getRole( requirement( Object.class ),
-                                                     TypeLiteral.get( Types.mapOf( Object.class, String.class ) ) ) );
+        assertEquals( STRING_LITERAL, Roles.roleType( requirement( Object.class ),
+                                                      TypeLiteral.get( Types.mapOf( Object.class, String.class ) ) ) );
     }
 
     private static Component component( final String hint )
@@ -79,7 +87,7 @@ public class RolesTest
         return new RequirementImpl( Roles.defer( role ), true );
     }
 
-    static final class ClassicSpace
+    static class ClassicSpace
         implements ClassSpace
     {
         public Class<?> loadClass( final String name )
@@ -95,7 +103,7 @@ public class RolesTest
         }
     }
 
-    static final class BrokenSpace
+    static class BrokenSpace
         implements ClassSpace
     {
         public Class<?> loadClass( final String name )
