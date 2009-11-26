@@ -11,7 +11,6 @@ import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.context.Context;
-import org.codehaus.plexus.context.DefaultContext;
 import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.appcontext.AppContext;
 import org.sonatype.appcontext.AppContextFactory;
@@ -174,13 +173,11 @@ public class PlexusAppBooter
         // put the app booter into context too
         response.put( PlexusAppBooter.class.getName(), this );
 
-        // put itself into context, since PlexusContext is created from this, and original would be throwed away
-        response.put( AppContext.class.getName(), response );
-
         // put in the basedir for plexus apps backward compat
         response.put( "basedir", response.getBasedir().getAbsolutePath() );
 
-        return new DefaultContext( response );
+        // wrap it in, to make Plexus friendly
+        return new PlexusAppContext( response );
     }
 
     protected void customizeContext( Context context )
