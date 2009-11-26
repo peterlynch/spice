@@ -169,6 +169,20 @@ public class BeanPropertiesTest
         }
     }
 
+    static class M
+    {
+        void setter( final String value )
+        {
+        }
+    }
+
+    static class N
+    {
+        void set( final String value )
+        {
+        }
+    }
+
     public void testInterface()
     {
         for ( final BeanProperty<?> bp : new BeanProperties( A.class ) )
@@ -347,5 +361,11 @@ public class BeanPropertiesTest
         catch ( final RuntimeException e )
         {
         }
+    }
+
+    public void testSetterNames()
+    {
+        assertEquals( "setter", new BeanProperties( M.class ).iterator().next().getName() );
+        assertEquals( "set", new BeanProperties( N.class ).iterator().next().getName() );
     }
 }

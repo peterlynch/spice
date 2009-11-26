@@ -17,8 +17,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.google.inject.TypeLiteral;
 
@@ -31,8 +29,6 @@ final class BeanPropertySetter<T>
     // ----------------------------------------------------------------------
     // Constants
     // ----------------------------------------------------------------------
-
-    private static final Pattern SETTER_PATTERN = Pattern.compile( "^set(\\p{javaUpperCase})(.*)" );
 
     private static final String BEAN_SETTER_ERROR = "Error calling bean setter: %s reason: %s";
 
@@ -69,13 +65,14 @@ final class BeanPropertySetter<T>
     public String getName()
     {
         final String name = method.getName();
-
-        final Matcher matcher = SETTER_PATTERN.matcher( name );
-        if ( matcher.matches() )
+        if ( name.length() >= 4 && name.startsWith( "set" ) )
         {
-            return Character.toLowerCase( matcher.group( 1 ).charAt( 0 ) ) + matcher.group( 2 );
+            final char c = name.charAt( 3 );
+            if ( Character.isUpperCase( c ) )
+            {
+                return Character.toLowerCase( c ) + name.substring( 4 );
+            }
         }
-
         return name;
     }
 
