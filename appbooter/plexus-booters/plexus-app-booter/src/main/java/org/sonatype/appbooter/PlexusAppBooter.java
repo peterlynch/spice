@@ -16,7 +16,9 @@ import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.appcontext.AppContext;
 import org.sonatype.appcontext.AppContextFactory;
 import org.sonatype.appcontext.AppContextRequest;
+import org.sonatype.appcontext.DefaultBasedirDiscoverer;
 import org.sonatype.appcontext.PropertiesFileContextFiller;
+import org.sonatype.appcontext.SimpleBasedirDiscoverer;
 
 /**
  * The simplest class needed to bring up a Plexus Application. No hokus-pokus, just real stuff.
@@ -38,6 +40,8 @@ public class PlexusAppBooter
     private String name;
 
     private ClassWorld world;
+
+    private File basedir;
 
     private File configuration;
 
@@ -85,12 +89,17 @@ public class PlexusAppBooter
 
     public File getBasedir()
     {
-        File basedir = appContextFactory.getBasedir();
-
-        // but, check for nesting
-        if ( System.getProperty( getName() + ".basedir" ) != null )
+        if ( basedir == null )
         {
-            basedir = new File( System.getProperty( getName() + ".basedir" ) ).getAbsoluteFile();
+            // The default discoverer encapsulates equivalent logic as used in plexus apps: just use the "basedir"
+            // system properties key
+            basedir = new DefaultBasedirDiscoverer().discoverBasedir();
+
+            // but, check for nesting
+            if ( System.getProperty( getName() + ".basedir" ) != null )
+            {
+                basedir = new File( System.getProperty( getName() + ".basedir" ) ).getAbsoluteFile();
+            }
         }
 
         return basedir;
@@ -98,7 +107,7 @@ public class PlexusAppBooter
 
     public void setBasedir( File basedir )
     {
-        appContextFactory.setBasedir( basedir );
+        this.basedir = basedir;
     }
 
     public File getConfiguration()
@@ -137,6 +146,9 @@ public class PlexusAppBooter
 
         request.setName( getName() );
 
+        // just pass over the already found basedir
+        request.setBasedirDiscoverer( new SimpleBasedirDiscoverer( getBasedir() ) );
+
         // create a properties filler for plexus.properties, that will fail if props file not found
         File containerPropertiesFile;
 
@@ -164,6 +176,9 @@ public class PlexusAppBooter
 
         // put itself into context, since PlexusContext is created from this, and original would be throwed away
         response.put( AppContext.class.getName(), response );
+
+        // put in the basedir for plexus apps backward compat
+        response.put( "basedir", response.getBasedir().getAbsolutePath() );
 
         return new DefaultContext( response );
     }
