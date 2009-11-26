@@ -12,7 +12,7 @@
  */
 package org.sonatype.guice.plexus.binders;
 
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -21,10 +21,16 @@ import junit.framework.TestCase;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.sonatype.guice.bean.reflect.DeferredClass;
+import org.sonatype.guice.bean.reflect.WeakClassSpace;
+import org.sonatype.guice.plexus.annotations.ComponentImpl;
+import org.sonatype.guice.plexus.config.PlexusBeanMetadata;
+import org.sonatype.guice.plexus.config.PlexusBeanSource;
+import org.sonatype.guice.plexus.config.Roles;
+import org.sonatype.guice.plexus.scanners.AnnotatedPlexusBeanSource;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.ConfigurationException;
-import com.google.inject.Guice;
 import com.google.inject.ImplementedBy;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -43,7 +49,7 @@ public class PlexusRequirementTest
     @Override
     protected void setUp()
     {
-        Guice.createInjector( new AbstractModule()
+        PlexusGuice.createInjector( new AbstractModule()
         {
             @Override
             protected void configure()
@@ -57,16 +63,34 @@ public class PlexusRequirementTest
 
                 bind( D.class ).annotatedWith( Names.named( "" ) ).to( DImpl.class );
 
-                install( new PlexusBindingModule( new AnnotatedPlexusBeanSource()
+                install( new PlexusBindingModule( null, new PlexusBeanSource()
                 {
-                    @Override
-                    public Iterable<Class<?>> findBeanImplementations()
+                    public Map<Component, DeferredClass<?>> findPlexusComponentBeans()
                     {
-                        return Arrays.<Class<?>> asList( ComponentLoadOnStart.class, ComponentDontLoadOnStart.class );
+                        final Map<Component, DeferredClass<?>> componentMap =
+                            new HashMap<Component, DeferredClass<?>>();
+
+                        componentMap.put( new ComponentImpl( Roles.defer( Alpha.class ), "", "load-on-start" ),
+                                          Roles.defer( AlphaImpl.class ) );
+                        componentMap.put( new ComponentImpl( Roles.defer( Omega.class ), "", "load-on-start" ),
+                                          Roles.defer( OmegaImpl.class ) );
+
+                        componentMap.put( new ComponentImpl( Roles.defer( Gamma.class ), "", "" ),
+                                          Roles.defer( new WeakClassSpace( getClass().getClassLoader() ),
+                                                       "some-broken-class" ) );
+
+                        return componentMap;
                     }
-                } ) );
+
+                    public PlexusBeanMetadata getBeanMetadata( final Class<?> implementation )
+                    {
+                        return null;
+                    }
+                }, new AnnotatedPlexusBeanSource( null ) ) );
+
+                requestInjection( PlexusRequirementTest.this );
             }
-        } ).injectMembers( this );
+        } );
     }
 
     @ImplementedBy( AImpl.class )
@@ -219,28 +243,6 @@ public class PlexusRequirementTest
     {
         @Requirement( hint = "default" )
         B testNoDefault;
-    }
-
-    @Component( role = ComponentLoadOnStart.class, instantiationStrategy = "load-on-start" )
-    static class ComponentLoadOnStart
-    {
-        static String STATE;
-
-        ComponentLoadOnStart()
-        {
-            STATE = "LOADED";
-        }
-    }
-
-    @Component( role = ComponentDontLoadOnStart.class, instantiationStrategy = "dont-load-on-start" )
-    static class ComponentDontLoadOnStart
-    {
-        static String STATE;
-
-        ComponentDontLoadOnStart()
-        {
-            STATE = "LOADED";
-        }
     }
 
     public void testSingleRequirement()
@@ -398,9 +400,59 @@ public class PlexusRequirementTest
         }
     }
 
-    public void testLoadOnStart()
+    interface Alpha
     {
-        assertEquals( "LOADED", ComponentLoadOnStart.STATE );
-        assertNull( ComponentDontLoadOnStart.STATE );
+    }
+
+    interface Omega
+    {
+    }
+
+    interface Gamma
+    {
+    }
+
+    @Component( role = Alpha.class )
+    static class AlphaImpl
+        implements Alpha
+    {
+        @Requirement
+        Omega omega;
+    }
+
+    @Component( role = Omega.class )
+    static class OmegaImpl
+        implements Omega
+    {
+        @Requirement
+        Alpha alpha;
+    }
+
+    @Inject
+    Alpha alpha;
+
+    @Inject
+    Omega omega;
+
+    public void testCircularity()
+    {
+        assertNotNull( ( (OmegaImpl) omega ).alpha );
+        assertNotNull( ( (AlphaImpl) alpha ).omega );
+
+        assertSame( alpha, ( (OmegaImpl) omega ).alpha );
+        assertSame( omega, ( (AlphaImpl) alpha ).omega );
+    }
+
+    public void testBadDeferredRole()
+    {
+        try
+        {
+            injector.getInstance( Gamma.class );
+            fail( "Expected ProvisionException" );
+        }
+        catch ( final ProvisionException e )
+        {
+            System.out.println( e );
+        }
     }
 }

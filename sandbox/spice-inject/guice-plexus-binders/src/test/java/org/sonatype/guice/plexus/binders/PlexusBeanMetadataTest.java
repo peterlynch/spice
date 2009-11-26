@@ -12,8 +12,8 @@
  */
 package org.sonatype.guice.plexus.binders;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import junit.framework.TestCase;
 
@@ -21,21 +21,18 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Configuration;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.guice.bean.reflect.BeanProperty;
+import org.sonatype.guice.bean.reflect.DeferredClass;
 import org.sonatype.guice.plexus.annotations.ComponentImpl;
 import org.sonatype.guice.plexus.annotations.ConfigurationImpl;
 import org.sonatype.guice.plexus.annotations.RequirementImpl;
 import org.sonatype.guice.plexus.config.PlexusBeanMetadata;
 import org.sonatype.guice.plexus.config.PlexusBeanSource;
-import org.sonatype.guice.plexus.config.PlexusConfigurator;
 import org.sonatype.guice.plexus.config.Roles;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.CreationException;
-import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Key;
-import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
@@ -52,17 +49,16 @@ public class PlexusBeanMetadataTest
     @Override
     protected void setUp()
     {
-        Guice.createInjector( new AbstractModule()
+        PlexusGuice.createInjector( new AbstractModule()
         {
             @Override
             protected void configure()
             {
                 bindConstant().annotatedWith( Names.named( "KEY1" ) ).to( "REQUIREMENT" );
-                bindConstant().annotatedWith( Names.named( "KEY2" ) ).to( "CONFIGURATION" );
-                bind( PlexusConfigurator.class ).to( DummyConfigurator.class );
-                install( new PlexusBindingModule( new ExtraBeanSource() ) );
+                install( new PlexusBindingModule( null, new CustomizedBeanSource() ) );
+                requestInjection( PlexusBeanMetadataTest.this );
             }
-        } ).injectMembers( this );
+        } );
     }
 
     interface Bean
@@ -93,24 +89,19 @@ public class PlexusBeanMetadataTest
         String extraMetadata;
     }
 
-    static class DummyConfigurator
-        implements PlexusConfigurator
-    {
-        @Inject
-        Injector injector;
-
-        public <T> T configure( final Configuration configuration, final TypeLiteral<T> expectedType )
-        {
-            return injector.getInstance( Key.get( expectedType, Names.named( configuration.name() ) ) );
-        }
-    }
-
-    static class ExtraBeanSource
+    static class CustomizedBeanSource
         implements PlexusBeanSource
     {
-        public Iterable<Class<?>> findBeanImplementations()
+        public Map<Component, DeferredClass<?>> findPlexusComponentBeans()
         {
-            return Arrays.<Class<?>> asList( DefaultBean1.class, DefaultBean2.class );
+            final Map<Component, DeferredClass<?>> componentMap = new HashMap<Component, DeferredClass<?>>();
+
+            componentMap.put( new ComponentImpl( Roles.defer( Bean.class ), "2", "singleton" ),
+                              Roles.defer( DefaultBean1.class ) );
+            componentMap.put( new ComponentImpl( Roles.defer( DefaultBean2.class ), "", "per-lookup" ),
+                              Roles.defer( DefaultBean2.class ) );
+
+            return componentMap;
         }
 
         public PlexusBeanMetadata getBeanMetadata( final Class<?> implementation )
@@ -119,11 +110,6 @@ public class PlexusBeanMetadataTest
             {
                 return new PlexusBeanMetadata()
                 {
-                    public Component getComponent()
-                    {
-                        return new ComponentImpl( Roles.defer( Bean.class ), "2", "singleton" );
-                    }
-
                     public Requirement getRequirement( final BeanProperty<?> property )
                     {
                         if ( "extraMetadata".equals( property.getName() ) )
@@ -143,11 +129,6 @@ public class PlexusBeanMetadataTest
             {
                 return new PlexusBeanMetadata()
                 {
-                    public Component getComponent()
-                    {
-                        return new ComponentImpl( Roles.defer( DefaultBean2.class ), "", "per-lookup" );
-                    }
-
                     public Requirement getRequirement( final BeanProperty<?> property )
                     {
                         return null;
@@ -157,7 +138,7 @@ public class PlexusBeanMetadataTest
                     {
                         if ( "extraMetadata".equals( property.getName() ) )
                         {
-                            return new ConfigurationImpl( "KEY2", "TEST" );
+                            return new ConfigurationImpl( "KEY2", "CONFIGURATION" );
                         }
                         return null;
                     }
@@ -174,37 +155,5 @@ public class PlexusBeanMetadataTest
         assertEquals( "REQUIREMENT", bean.getExtraMetadata() );
 
         assertEquals( "CONFIGURATION", injector.getInstance( DefaultBean2.class ).extraMetadata );
-    }
-
-    public void testMissingMetadata()
-    {
-        try
-        {
-            Guice.createInjector( new AbstractModule()
-            {
-                @Override
-                protected void configure()
-                {
-                    install( new PlexusBindingModule( new PlexusBeanSource()
-                    {
-                        public Iterable<Class<?>> findBeanImplementations()
-                        {
-                            return Collections.<Class<?>> singleton( DefaultBean1.class );
-                        }
-
-                        public PlexusBeanMetadata getBeanMetadata( final Class<?> implementation )
-                        {
-                            return null; // have implementations, but no metadata
-                        }
-                    } ) );
-                }
-            } );
-
-            fail( "Expected error for missing metadata" );
-        }
-        catch ( final CreationException e )
-        {
-            System.out.println( e );
-        }
     }
 }

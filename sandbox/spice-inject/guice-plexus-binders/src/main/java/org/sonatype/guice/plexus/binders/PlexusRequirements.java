@@ -63,10 +63,11 @@ final class PlexusRequirements
     {
         // deduce requirement from metadata + property details
         final TypeLiteral expectedType = property.getType();
-        final TypeLiteral roleType = Roles.getRole( requirement, expectedType );
-        final String[] canonicalHints = Hints.getCanonicalHints( requirement );
+        final TypeLiteral roleType = Roles.roleType( requirement, expectedType );
+        final String[] canonicalHints = Hints.canonicalHints( requirement );
+        final Class rawType = expectedType.getRawType();
 
-        if ( Map.class == expectedType.getRawType() )
+        if ( Map.class == rawType )
         {
             final Provider<PlexusComponents> components = getComponentsForRole( roleType );
             return new Provider()
@@ -77,7 +78,7 @@ final class PlexusRequirements
                 }
             };
         }
-        else if ( List.class == expectedType.getRawType() )
+        else if ( List.class == rawType )
         {
             final Provider<PlexusComponents> components = getComponentsForRole( roleType );
             return new Provider()

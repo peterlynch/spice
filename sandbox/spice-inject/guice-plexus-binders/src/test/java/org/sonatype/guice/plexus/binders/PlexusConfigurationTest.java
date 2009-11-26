@@ -16,113 +16,90 @@ import junit.framework.TestCase;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Configuration;
-import org.sonatype.guice.plexus.config.PlexusConfigurator;
-import org.sonatype.guice.plexus.config.Roles;
+import org.sonatype.guice.plexus.scanners.AnnotatedPlexusBeanSource;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import com.google.inject.ProvisionException;
-import com.google.inject.TypeLiteral;
+import com.google.inject.matcher.AbstractMatcher;
 
 public class PlexusConfigurationTest
     extends TestCase
 {
     @Inject
-    Component1 component1;
-
-    @Inject
-    Component2 component2;
+    ConfiguredComponent component;
 
     @Inject
     Injector injector;
 
-    static class GlobalConfigurator
-        implements PlexusConfigurator
+    static class ComponentWatcher
+        extends AbstractMatcher<Class<?>>
+        implements BeanWatcher
     {
-        @SuppressWarnings( "unchecked" )
-        public <T> T configure( final Configuration config, final TypeLiteral<T> type )
-        {
-            return (T) ( "GLOBAL-" + config.name() + '-' + config.value() );
-        }
-    }
+        static int SEEN;
 
-    static class LocalConfigurator
-        implements PlexusConfigurator
-    {
-        @SuppressWarnings( "unchecked" )
-        public <T> T configure( final Configuration config, final TypeLiteral<T> type )
+        public boolean matches( final Class<?> clazz )
         {
-            return (T) ( "LOCAL-" + config.name() + '-' + config.value() );
+            return ConfiguredComponent.class.isAssignableFrom( clazz );
+        }
+
+        public void afterInjection( final Object injectee )
+        {
+            SEEN++;
         }
     }
 
     @Override
     protected void setUp()
     {
-        Guice.createInjector( new AbstractModule()
+        PlexusGuice.createInjector( new AbstractModule()
         {
             @Override
             protected void configure()
             {
-                bind( PlexusConfigurator.class ).to( GlobalConfigurator.class );
-                bind( Roles.configuratorKey( Object.class, "" ) ).to( LocalConfigurator.class );
-                install( new PlexusBindingModule() );
+                install( new PlexusBindingModule( new ComponentWatcher(), new AnnotatedPlexusBeanSource( null ) ) );
+                requestInjection( PlexusConfigurationTest.this );
             }
-        } ).injectMembers( this );
+        } );
     }
 
     @Component( role = Object.class )
-    static class Component1
+    static class ConfiguredComponent
     {
-        @Configuration( "unamed" )
+        @Configuration( "1" )
         String a;
 
-        @Configuration( name = "b", value = "named" )
-        String field;
+        @Configuration( "2" )
+        Integer b;
+
+        @Configuration( "3" )
+        int c;
+
+        @Configuration( "4" )
+        Double d;
+
+        @Configuration( "5" )
+        double e;
     }
 
-    @Component( role = String.class )
-    static class Component2
+    public void testConfiguration()
     {
-        @Configuration( "unamed" )
-        String a;
+        assertEquals( "1", component.a );
+        assertEquals( Integer.valueOf( 2 ), component.b );
+        assertEquals( 3, component.c );
+        assertEquals( Double.valueOf( 4.0 ), component.d );
+        assertEquals( 5.0, component.e, 0 );
 
-        @Configuration( name = "b", value = "named" )
-        String field;
-    }
+        assertEquals( 1, ComponentWatcher.SEEN );
 
-    public void testLocalConfiguration()
-    {
-        assertEquals( "LOCAL-a-unamed", component1.a );
-        assertEquals( "LOCAL-b-named", component1.field );
-    }
+        final ConfiguredComponent jitComponent = injector.getInstance( ConfiguredComponent.class );
 
-    public void testGlobalConfiguration()
-    {
-        assertEquals( "GLOBAL-a-unamed", component2.a );
-        assertEquals( "GLOBAL-b-named", component2.field );
-    }
+        assertEquals( "1", jitComponent.a );
+        assertEquals( Integer.valueOf( 2 ), jitComponent.b );
+        assertEquals( 3, jitComponent.c );
+        assertEquals( Double.valueOf( 4.0 ), jitComponent.d );
+        assertEquals( 5.0, jitComponent.e, 0 );
 
-    public void testMissingConfiguration()
-    {
-        try
-        {
-            Guice.createInjector( new AbstractModule()
-            {
-                @Override
-                protected void configure()
-                {
-                    install( new PlexusBindingModule() );
-                }
-            } ).getInstance( Component1.class );
-
-            fail( "Expected error for missing configuration" );
-        }
-        catch ( final ProvisionException e )
-        {
-            System.out.println( e );
-        }
+        assertEquals( 2, ComponentWatcher.SEEN );
     }
 }

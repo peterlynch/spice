@@ -12,6 +12,9 @@
  */
 package org.sonatype.guice.plexus.binders;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.codehaus.plexus.component.annotations.Configuration;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.guice.bean.inject.PropertyBinder;
@@ -19,6 +22,7 @@ import org.sonatype.guice.bean.inject.PropertyBinding;
 import org.sonatype.guice.bean.reflect.BeanProperty;
 import org.sonatype.guice.plexus.config.PlexusBeanMetadata;
 
+import com.google.inject.Provider;
 import com.google.inject.spi.TypeEncounter;
 
 /**
@@ -37,6 +41,8 @@ final class PlexusPropertyBinder
 
     private final PlexusRequirements requirements;
 
+    private final Set<String> visited = new HashSet<String>();
+
     // ----------------------------------------------------------------------
     // Constructors
     // ----------------------------------------------------------------------
@@ -44,7 +50,8 @@ final class PlexusPropertyBinder
     PlexusPropertyBinder( final TypeEncounter<?> encounter, final PlexusBeanMetadata metadata )
     {
         this.metadata = metadata;
-        configurations = new PlexusConfigurations( encounter, metadata.getComponent() );
+
+        configurations = new PlexusConfigurations( encounter );
         requirements = new PlexusRequirements( encounter );
     }
 
@@ -54,13 +61,11 @@ final class PlexusPropertyBinder
 
     public <T> PropertyBinding bindProperty( final BeanProperty<T> property )
     {
-        /*
-         * @Requirement binding
-         */
-        final Requirement requirement = metadata.getRequirement( property );
-        if ( null != requirement )
+        // try to avoid double injections
+        final String name = property.getName();
+        if ( visited.contains( name ) )
         {
-            return new ProvidedPropertyBinding<T>( property, requirements.lookup( requirement, property ) );
+            return null;
         }
 
         /*
@@ -69,7 +74,20 @@ final class PlexusPropertyBinder
         final Configuration configuration = metadata.getConfiguration( property );
         if ( null != configuration )
         {
-            return new ProvidedPropertyBinding<T>( property, configurations.lookup( configuration, property ) );
+            final Provider<T> valueProvider = configurations.lookup( configuration, property );
+            visited.add( name );
+            return new ProvidedPropertyBinding<T>( property, valueProvider );
+        }
+
+        /*
+         * @Requirement binding
+         */
+        final Requirement requirement = metadata.getRequirement( property );
+        if ( null != requirement )
+        {
+            final Provider<T> roleProvider = requirements.lookup( requirement, property );
+            visited.add( name );
+            return new ProvidedPropertyBinding<T>( property, roleProvider );
         }
 
         return null; // nothing to bind

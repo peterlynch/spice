@@ -13,7 +13,7 @@
 package org.sonatype.guice.plexus.binders;
 
 import static org.sonatype.guice.plexus.config.Hints.DEFAULT_HINT;
-import static org.sonatype.guice.plexus.config.Hints.getCanonicalHint;
+import static org.sonatype.guice.plexus.config.Hints.canonicalHint;
 import static org.sonatype.guice.plexus.config.Hints.isDefaultHint;
 
 import java.lang.annotation.Annotation;
@@ -92,7 +92,7 @@ final class PlexusComponents<T>
             if ( a instanceof Named )
             {
                 // ignore default bindings as we already captured that above
-                final String hint = getCanonicalHint( ( (Named) a ).value() );
+                final String hint = canonicalHint( ( (Named) a ).value() );
                 if ( !isDefaultHint( hint ) )
                 {
                     tempMap.put( hint, b.getProvider() );

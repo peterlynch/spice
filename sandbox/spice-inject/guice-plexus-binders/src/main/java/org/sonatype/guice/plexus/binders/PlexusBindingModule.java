@@ -12,13 +12,19 @@
  */
 package org.sonatype.guice.plexus.binders;
 
+import java.util.Map.Entry;
+
 import org.codehaus.plexus.component.annotations.Component;
 import org.sonatype.guice.bean.inject.BeanBinder;
 import org.sonatype.guice.bean.inject.BeanListener;
 import org.sonatype.guice.bean.inject.PropertyBinder;
+import org.sonatype.guice.bean.reflect.DeferredClass;
+import org.sonatype.guice.plexus.binders.DeferredInjector.DeferredProvider;
 import org.sonatype.guice.plexus.config.PlexusBeanMetadata;
 import org.sonatype.guice.plexus.config.PlexusBeanSource;
 import org.sonatype.guice.plexus.config.Roles;
+import org.sonatype.guice.plexus.converters.DateTypeConverter;
+import org.sonatype.guice.plexus.converters.XmlTypeConverter;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
@@ -35,34 +41,29 @@ import com.google.inject.spi.TypeListener;
  */
 public final class PlexusBindingModule
     extends AbstractModule
+    implements BeanBinder
 {
-    // ----------------------------------------------------------------------
-    // Constants
-    // ----------------------------------------------------------------------
-
-    private static final String MISSING_METADATA_ERROR = "Component %s has no Plexus metadata.";
-
     // ----------------------------------------------------------------------
     // Implementation fields
     // ----------------------------------------------------------------------
 
-    final PlexusBeanSource[] sources;
+    private final BeanWatcher beanWatcher;
+
+    private final PlexusBeanSource[] sources;
 
     // ----------------------------------------------------------------------
     // Constructors
     // ----------------------------------------------------------------------
 
-    public PlexusBindingModule()
-    {
-        // default "just-in-time" metadata
-        this( new AnnotatedPlexusBeanSource() );
-    }
-
     /**
-     * @param sources The available Plexus bean sources
+     * Creates a Guice {@link Module} that auto-binds Plexus beans according to the given metadata sources.
+     * 
+     * @param beanWatcher An optional bean watcher
+     * @param sources The Plexus metadata sources
      */
-    public PlexusBindingModule( final PlexusBeanSource... sources )
+    public PlexusBindingModule( final BeanWatcher beanWatcher, final PlexusBeanSource... sources )
     {
+        this.beanWatcher = beanWatcher;
         this.sources = sources.clone();
     }
 
@@ -73,48 +74,68 @@ public final class PlexusBindingModule
     @Override
     protected void configure()
     {
+        // Plexus-style constant conversion
+        install( new DateTypeConverter() );
+        install( new XmlTypeConverter() );
+
         for ( final PlexusBeanSource source : sources )
         {
-            for ( final Class<?> clazz : source.findBeanImplementations() )
+            for ( final Entry<Component, DeferredClass<?>> e : source.findPlexusComponentBeans().entrySet() )
             {
-                // explicitly bind bean implementations according to their metadata
-                final PlexusBeanMetadata metadata = source.getBeanMetadata( clazz );
-                if ( metadata != null )
-                {
-                    bindPlexusBean( clazz, metadata );
-                }
-                else
-                {
-                    addError( MISSING_METADATA_ERROR, clazz );
-                }
+                // record all known Plexus component bindings
+                bindPlexusBean( e.getKey(), e.getValue() );
             }
         }
 
-        // mechanism to inject Plexus requirements and configurations into beans
-        bindListener( Matchers.any(), new BeanListener( new PlexusBeanBinder() ) );
+        // wire Plexus requirements/configurations into beans
+        bindListener( Matchers.any(), new BeanListener( this ) );
+    }
+
+    public <B> PropertyBinder bindBean( final TypeLiteral<B> type, final TypeEncounter<B> encounter )
+    {
+        final Class<?> clazz = type.getRawType();
+
+        // watchers are a way to mix-in behaviour, like lifecycles
+        if ( null != beanWatcher && beanWatcher.matches( clazz ) )
+        {
+            encounter.register( beanWatcher );
+        }
+
+        for ( final PlexusBeanSource source : sources )
+        {
+            // use first source that has metadata for the given implementation
+            final PlexusBeanMetadata metadata = source.getBeanMetadata( clazz );
+            if ( metadata != null )
+            {
+                return new PlexusPropertyBinder( encounter, metadata );
+            }
+        }
+
+        return null; // no need to auto-bind
     }
 
     // ----------------------------------------------------------------------
     // Implementation methods
     // ----------------------------------------------------------------------
 
-    /**
-     * Binds the given bean implementation according to the given Plexus metadata.
-     * 
-     * @param clazz The bean implementation
-     * @param metadata The Plexus metadata
-     */
     @SuppressWarnings( "unchecked" )
-    private void bindPlexusBean( final Class clazz, final PlexusBeanMetadata metadata )
+    private void bindPlexusBean( final Component component, final DeferredClass<?> clazz )
     {
-        // we want to bind the role to the implementation
-        final Component component = metadata.getComponent();
-        final Key roleKey = Roles.componentKey( component );
-        final Key beanKey = Key.get( clazz );
+        final Key<?> roleKey = Roles.componentKey( component );
+        final ScopedBindingBuilder sbb;
 
-        final ScopedBindingBuilder sbb = roleKey.equals( beanKey ) ? bind( beanKey ) : bind( roleKey ).to( beanKey );
+        // we can take a simple shortcut if role == implementation
+        if ( component.role().getName().equals( clazz.getName() ) )
+        {
+            sbb = bind( roleKey );
+        }
+        else
+        {
+            // use deferred approach to match the expected Plexus behaviour
+            sbb = bind( roleKey ).toProvider( new DeferredProvider( clazz ) );
+        }
 
-        // singleton is the default strategy for Plexus beans
+        // 'singleton' is the default strategy for Plexus beans
         final String strategy = component.instantiationStrategy();
         if ( "load-on-start".equals( strategy ) )
         {
@@ -123,32 +144,6 @@ public final class PlexusBindingModule
         else if ( !"per-lookup".equals( strategy ) )
         {
             sbb.in( Scopes.SINGLETON );
-        }
-    }
-
-    // ----------------------------------------------------------------------
-    // Implementation helpers
-    // ----------------------------------------------------------------------
-
-    /**
-     * {@link BeanBinder} that auto-binds beans according to Plexus metadata.
-     */
-    final class PlexusBeanBinder
-        implements BeanBinder
-    {
-        public <B> PropertyBinder bindBean( final TypeLiteral<B> type, final TypeEncounter<B> encounter )
-        {
-            final Class<?> clazz = type.getRawType();
-            for ( final PlexusBeanSource source : sources )
-            {
-                // use first source that has metadata for the given implementation
-                final PlexusBeanMetadata metadata = source.getBeanMetadata( clazz );
-                if ( metadata != null )
-                {
-                    return new PlexusPropertyBinder( encounter, metadata );
-                }
-            }
-            return null; // no need to auto-bind
         }
     }
 }
