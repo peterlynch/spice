@@ -10,9 +10,7 @@
       </instantiation-strategy>
       <configuration>
         <some-field.name>
-          <items>
-            <item>PRIMARY</item>
-          </items>
+          <item>PRIMARY</item>
         </some-field.name>
       </configuration>
     </component>
@@ -34,9 +32,7 @@
       </implementation>
       <configuration>
         <some-field.name>
-          <items>
-            <item>SECONDARY</item>
-          </items>
+          <item>SECONDARY</item>
         </some-field.name>
       </configuration>
       <requirements>

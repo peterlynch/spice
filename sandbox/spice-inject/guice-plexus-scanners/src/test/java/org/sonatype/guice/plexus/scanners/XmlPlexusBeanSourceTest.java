@@ -145,7 +145,8 @@ public class XmlPlexusBeanSourceTest
 
         final PlexusBeanMetadata metadata1 = source.getBeanMetadata( DefaultBean.class );
 
-        assertEquals( new ConfigurationImpl( "someFieldName", "<items><item>PRIMARY</item></items>" ),
+        assertEquals(
+                      new ConfigurationImpl( "someFieldName", "<some-field.name><item>PRIMARY</item></some-field.name>" ),
                       metadata1.getConfiguration( new NamedProperty( "someFieldName" ) ) );
 
         assertEquals( new RequirementImpl( Roles.defer( Bean.class ), true, "debug" ),
@@ -222,12 +223,14 @@ public class XmlPlexusBeanSourceTest
 
         final PlexusBeanSource uninterpolatedSource = new XmlPlexusBeanSource( null, space, null );
         final PlexusBeanMetadata metadata1 = uninterpolatedSource.getBeanMetadata( DefaultBean.class );
-        assertEquals( "${some.value}", metadata1.getConfiguration( new NamedProperty( "variable" ) ).value() );
+        assertEquals( "<variable>${some.value}</variable>",
+                      metadata1.getConfiguration( new NamedProperty( "variable" ) ).value() );
 
         final Map<?, ?> variables = Collections.singletonMap( "some.value", "INTERPOLATED" );
 
         final PlexusBeanSource interpolatedSource = new XmlPlexusBeanSource( null, space, variables );
         final PlexusBeanMetadata metadata2 = interpolatedSource.getBeanMetadata( DefaultBean.class );
-        assertEquals( "INTERPOLATED", metadata2.getConfiguration( new NamedProperty( "variable" ) ).value() );
+        assertEquals( "<variable>INTERPOLATED</variable>",
+                      metadata2.getConfiguration( new NamedProperty( "variable" ) ).value() );
     }
 }

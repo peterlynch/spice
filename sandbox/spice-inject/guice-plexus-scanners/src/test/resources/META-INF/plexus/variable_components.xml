@@ -6,7 +6,9 @@
         org.sonatype.guice.plexus.scanners.XmlPlexusBeanSourceTest$DefaultBean
       </implementation>
       <configuration>
+        <prefix>foo</prefix>
         <variable>${some.value}</variable>
+        <suffix>bar</suffix>
       </configuration>
     </component>
   </components>

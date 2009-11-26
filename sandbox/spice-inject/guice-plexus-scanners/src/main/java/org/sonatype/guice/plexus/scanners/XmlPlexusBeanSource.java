@@ -418,12 +418,14 @@ public final class XmlPlexusBeanSource
         final String fieldName = camelizeName( parser.getName() );
         final StringBuilder buf = new StringBuilder();
 
-        // combine child elements into single string
         final int depth = parser.getDepth();
-        while ( parser.next() != XmlPullParser.END_TAG || parser.getDepth() > depth )
+        do
         {
+            // combine children into single string
             buf.append( parser.getText().trim() );
+            parser.next();
         }
+        while ( parser.getDepth() >= depth );
 
         configurationMap.put( fieldName, new ConfigurationImpl( fieldName, buf.toString() ) );
     }
