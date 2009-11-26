@@ -70,7 +70,7 @@ public class BundleBooter
             {
                 if ( appDir.isDirectory() )
                 {
-                    String appName = appDir.getName();
+                    String appName = plexusAppBooter.getName() + "." + appDir.getName();
 
                     File confDir = new File( appDir, "conf" );
 

@@ -1,12 +1,8 @@
 package org.sonatype.appbooter;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
@@ -16,10 +12,11 @@ import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.context.DefaultContext;
-import org.codehaus.plexus.interpolation.Interpolator;
-import org.codehaus.plexus.interpolation.MapBasedValueSource;
-import org.codehaus.plexus.interpolation.RegexBasedInterpolator;
 import org.codehaus.plexus.util.StringUtils;
+import org.sonatype.appcontext.AppContextFactory;
+import org.sonatype.appcontext.AppContextRequest;
+import org.sonatype.appcontext.AppContextResponse;
+import org.sonatype.appcontext.PropertiesContextFiller;
 
 /**
  * The simplest class needed to bring up a Plexus Application. No hokus-pokus, just real stuff.
@@ -30,8 +27,6 @@ import org.codehaus.plexus.util.StringUtils;
 public class PlexusAppBooter
 {
     public static final String DEFAULT_NAME = "plexus";
-
-    public static final String BASEDIR_KEY = "basedir";
 
     public static final String CONFIGURATION_FILE_PROPERTY_KEY = ".configuration";
 
@@ -46,13 +41,9 @@ public class PlexusAppBooter
 
     private File configuration;
 
-    private File basedir;
-
-    private List<ContextFiller> contextFillers;
-
-    private List<ContextPublisher> contextPublishers;
-
     private PlexusContainer container;
+
+    private AppContextFactory appContextFactory = new AppContextFactory();
 
     private List<PlexusAppBooterCustomizer> customizers;
 
@@ -94,30 +85,12 @@ public class PlexusAppBooter
 
     public File getBasedir()
     {
-        if ( basedir != null )
-        {
-            return basedir;
-        }
+        File basedir = appContextFactory.getBasedir();
 
-        // property "basedir" is looked up 1st
-        if ( System.getProperty( BASEDIR_KEY ) != null )
+        // but, check for nesting
+        if ( System.getProperty( getName() + ".basedir" ) != null )
         {
-            basedir = new File( System.getProperty( BASEDIR_KEY ) ).getAbsoluteFile();
-        }
-
-        // 2nd, the "name.basedir" is looked up
-        if ( basedir == null )
-        {
-            if ( System.getProperty( getName() + "." + BASEDIR_KEY ) != null )
-            {
-                basedir = new File( System.getProperty( BASEDIR_KEY ) ).getAbsoluteFile();
-            }
-        }
-
-        // 3rd, defaulting it to current directory
-        if ( basedir == null )
-        {
-            basedir = new File( "" ).getAbsoluteFile();
+            basedir = new File( System.getProperty( getName() + ".basedir" ) ).getAbsoluteFile();
         }
 
         return basedir;
@@ -125,7 +98,7 @@ public class PlexusAppBooter
 
     public void setBasedir( File basedir )
     {
-        this.basedir = basedir;
+        appContextFactory.setBasedir( basedir );
     }
 
     public File getConfiguration()
@@ -152,48 +125,6 @@ public class PlexusAppBooter
         this.configuration = configuration;
     }
 
-    public List<ContextFiller> getContextFillers()
-    {
-        if ( contextFillers == null )
-        {
-            contextFillers = new ArrayList<ContextFiller>( 2 );
-
-            // the order is important! 1st env variables
-            contextFillers.add( new SystemEnvironmentContextFiller() );
-
-            // then system properties, that will override env vars if needed
-            contextFillers.add( new SystemPropertiesContextFiller() );
-        }
-
-        return contextFillers;
-    }
-
-    public void setContextFillers( List<ContextFiller> contextFillers )
-    {
-        this.contextFillers = contextFillers;
-    }
-
-    public List<ContextPublisher> getContextPublishers()
-    {
-        if ( contextPublishers == null )
-        {
-            contextPublishers = new ArrayList<ContextPublisher>( 2 );
-
-            // the order is important! 1st system properties
-            contextPublishers.add( new SystemPropertiesContextPublisher() );
-
-            // 2nd the terminal
-            contextPublishers.add( new TerminalContextPublisher() );
-        }
-
-        return contextPublishers;
-    }
-
-    public void setContextPublishers( List<ContextPublisher> contextPublishers )
-    {
-        this.contextPublishers = contextPublishers;
-    }
-
     public PlexusContainer getContainer()
     {
         return container;
@@ -202,35 +133,15 @@ public class PlexusAppBooter
     protected Context createContainerContext()
         throws Exception
     {
-        // environment is a map of properties that comes from "environment": env vars and JVM system properties.
-        // Keys found in this map are collected in this order, and the latter added will always replace any pre-existing
-        // key:
-        //
-        // - basedir is put initially
-        // - env vars
-        // - system properties (will "stomp" env vars)
-        //
-        // As next step, the plexus.properties file is searched. If found, it will be loaded and filtered out for any
-        // key that exists in environment map, and finally interpolation will be made against the "union" of those two.
-        // The interpolation sources used in interpolation are: plexusProperties, environment and
-        // System.getProperties().
-        // The final interpolated values are put into containerContext map and returned.
+        AppContextRequest request = appContextFactory.getDefaultAppContextRequest();
 
-        Map<Object, Object> environment = new HashMap<Object, Object>();
+        request.setName( getName() );
 
-        environment.put( BASEDIR_KEY, getBasedir().getAbsolutePath() );
-
-        for ( ContextFiller filler : getContextFillers() )
-        {
-            filler.fillContext( this, environment );
-        }
-
-        /*
-         * A standard source: plexus.properties next to plexus.xml (config file) Iterate through plexus.properties,
-         * insert all items into a map add into plexus context using a RegexBasedInterpolator.
-         */
+        // create a properties filler for plexus.properties, that will fail if props file not found
         File containerPropertiesFile;
+
         String plexusCfg = System.getProperty( "plexus.container.properties.file" );
+
         if ( plexusCfg != null )
         {
             containerPropertiesFile = new File( plexusCfg );
@@ -240,50 +151,14 @@ public class PlexusAppBooter
             containerPropertiesFile = new File( getConfiguration().getParentFile(), "plexus.properties" );
         }
 
-        Properties containerProperties = new Properties();
+        PropertiesContextFiller plexusPropertiesFiller = new PropertiesContextFiller( containerPropertiesFile, true );
 
-        if ( containerPropertiesFile.exists() )
-        {
-            containerProperties.load( new FileInputStream( containerPropertiesFile ) );
+        // add it to fillers as very 1st resource, and leaving others in
+        request.getContextFillers().add( 0, plexusPropertiesFiller );
 
-            // filter the keys in containerProperties with keys from environment
-            for ( Object envKey : environment.keySet() )
-            {
-                containerProperties.remove( envKey );
-            }
-        }
+        AppContextResponse response = appContextFactory.getAppContext( request );
 
-        // interpolate what we have
-        Interpolator interpolator = new RegexBasedInterpolator();
-
-        interpolator.addValueSource( new MapBasedValueSource( containerProperties ) );
-        interpolator.addValueSource( new MapBasedValueSource( System.getProperties() ) );
-        interpolator.addValueSource( new MapBasedValueSource( environment ) );
-
-        Map<Object, Object> containerContext = new HashMap<Object, Object>();
-
-        // 1st containerProperties
-        for ( Object key : containerProperties.keySet() )
-        {
-            containerContext.put( key, interpolator.interpolate( (String) containerProperties.get( key ) ) );
-        }
-
-        // 2nd environment properties, to step over stuff coming from container properties
-        for ( Object key : environment.keySet() )
-        {
-            containerContext.put( key, interpolator.interpolate( (String) environment.get( key ) ) );
-        }
-
-        // Now that we have containerContext with proper values, set them back into System properties and
-        // dump them to System.out for reference.
-        for ( ContextPublisher publisher : getContextPublishers() )
-        {
-            publisher.publishContext( this, containerContext );
-        }
-
-        containerContext.put( PlexusAppBooter.class.getName(), this );
-
-        return new DefaultContext( containerContext );
+        return new DefaultContext( response.getContext() );
     }
 
     protected void customizeContext( Context context )
@@ -335,8 +210,7 @@ public class PlexusAppBooter
 
             ContainerConfiguration configuration =
                 new DefaultContainerConfiguration().setClassWorld( getWorld() ).setContainerConfiguration(
-                                                                                                           getConfiguration().getAbsolutePath() ).setContext(
-                                                                                                                                                              context.getContextData() );
+                    getConfiguration().getAbsolutePath() ).setContext( context.getContextData() );
 
             customizeContainerConfiguration( configuration );
 
