@@ -13,9 +13,9 @@ import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.context.DefaultContext;
 import org.codehaus.plexus.util.StringUtils;
+import org.sonatype.appcontext.AppContext;
 import org.sonatype.appcontext.AppContextFactory;
 import org.sonatype.appcontext.AppContextRequest;
-import org.sonatype.appcontext.AppContextResponse;
 import org.sonatype.appcontext.PropertiesFileContextFiller;
 
 /**
@@ -151,14 +151,21 @@ public class PlexusAppBooter
             containerPropertiesFile = new File( getConfiguration().getParentFile(), "plexus.properties" );
         }
 
-        PropertiesFileContextFiller plexusPropertiesFiller = new PropertiesFileContextFiller( containerPropertiesFile, true );
+        PropertiesFileContextFiller plexusPropertiesFiller =
+            new PropertiesFileContextFiller( containerPropertiesFile, true );
 
         // add it to fillers as very 1st resource, and leaving others in
         request.getContextFillers().add( 0, plexusPropertiesFiller );
 
-        AppContextResponse response = appContextFactory.getAppContext( request );
+        AppContext response = appContextFactory.getAppContext( request );
 
-        return new DefaultContext( response.getContext() );
+        // put the app booter into context too
+        response.put( PlexusAppBooter.class.getName(), this );
+
+        // put itself into context, since PlexusContext is created from this, and original would be throwed away
+        response.put( AppContext.class.getName(), response );
+
+        return new DefaultContext( response );
     }
 
     protected void customizeContext( Context context )
