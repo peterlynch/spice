@@ -16,7 +16,7 @@ import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.appcontext.AppContextFactory;
 import org.sonatype.appcontext.AppContextRequest;
 import org.sonatype.appcontext.AppContextResponse;
-import org.sonatype.appcontext.PropertiesContextFiller;
+import org.sonatype.appcontext.PropertiesFileContextFiller;
 
 /**
  * The simplest class needed to bring up a Plexus Application. No hokus-pokus, just real stuff.
@@ -151,7 +151,7 @@ public class PlexusAppBooter
             containerPropertiesFile = new File( getConfiguration().getParentFile(), "plexus.properties" );
         }
 
-        PropertiesContextFiller plexusPropertiesFiller = new PropertiesContextFiller( containerPropertiesFile, true );
+        PropertiesFileContextFiller plexusPropertiesFiller = new PropertiesFileContextFiller( containerPropertiesFile, true );
 
         // add it to fillers as very 1st resource, and leaving others in
         request.getContextFillers().add( 0, plexusPropertiesFiller );
