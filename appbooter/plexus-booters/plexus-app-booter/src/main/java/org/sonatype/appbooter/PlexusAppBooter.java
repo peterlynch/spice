@@ -107,7 +107,7 @@ public class PlexusAppBooter
 
     public void setBasedir( File basedir )
     {
-        this.basedir = basedir;
+        this.basedir = basedir.getAbsoluteFile();
     }
 
     public File getConfiguration()
