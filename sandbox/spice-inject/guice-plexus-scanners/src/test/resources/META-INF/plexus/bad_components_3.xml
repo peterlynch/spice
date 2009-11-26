@@ -8,7 +8,7 @@
       <requirements>
         <requirement>
           <role>
-            org.sonatype.guice.plexus.scanners.XmlPlexusBeanSourceTest$Bean
+            .
           </role>
         </requirement>
       </requirements>

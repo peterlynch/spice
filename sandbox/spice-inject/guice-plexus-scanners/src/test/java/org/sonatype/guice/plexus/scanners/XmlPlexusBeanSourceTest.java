@@ -149,10 +149,10 @@ public class XmlPlexusBeanSourceTest
                       metadata1.getConfiguration( new NamedProperty( "someFieldName" ) ) );
 
         assertEquals( new RequirementImpl( Roles.defer( Bean.class ), true, "debug" ),
-                      metadata1.getRequirement( new NamedProperty( "beanField" ) ) );
+                      metadata1.getRequirement( new NamedProperty( "bean" ) ) );
 
         assertEquals( new RequirementImpl( Roles.defer( Bean.class ), false, "default", "debug" ),
-                      metadata1.getRequirement( new NamedProperty( "mapField" ) ) );
+                      metadata1.getRequirement( new NamedProperty( "beanMap" ) ) );
 
     }
 

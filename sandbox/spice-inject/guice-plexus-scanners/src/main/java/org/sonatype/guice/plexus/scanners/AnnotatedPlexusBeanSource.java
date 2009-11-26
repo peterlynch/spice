@@ -55,7 +55,7 @@ public final class AnnotatedPlexusBeanSource
         return Collections.emptyMap();
     }
 
-    public final PlexusBeanMetadata getBeanMetadata( final Class<?> implementation )
+    public PlexusBeanMetadata getBeanMetadata( final Class<?> implementation )
     {
         return implementation.isAnnotationPresent( Component.class ) ? this : null;
     }
@@ -63,7 +63,7 @@ public final class AnnotatedPlexusBeanSource
     public Configuration getConfiguration( final BeanProperty<?> property )
     {
         Configuration configuration = property.getAnnotation( Configuration.class );
-        if ( variables != null )
+        if ( configuration != null && variables != null )
         {
             // support runtime interpolation of @Configuration values
             final String value = StringUtils.interpolate( configuration.value(), variables );

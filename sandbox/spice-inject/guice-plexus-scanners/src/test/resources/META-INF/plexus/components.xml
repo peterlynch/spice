@@ -47,9 +47,6 @@
           <role-hint>
             debug
           </role-hint>
-          <field-name>
-            beanField
-          </field-name>
           <optional>
             True
           </optional>
@@ -68,7 +65,7 @@
             </role-hint>
           </role-hints>
           <field-name>
-            mapField
+            beanMap
           </field-name>
         </requirement>
       </requirements>

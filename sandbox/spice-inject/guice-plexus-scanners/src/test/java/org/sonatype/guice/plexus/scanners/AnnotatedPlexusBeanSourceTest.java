@@ -41,8 +41,12 @@ public class AnnotatedPlexusBeanSourceTest
         @Configuration( name = "2", value = "${some.value}" )
         String variable;
 
+        String dummy1;
+
         @Requirement( role = Bean.class, hint = "mock", optional = true )
         Bean self;
+
+        String dummy2;
     }
 
     public void testNonComponent()
@@ -62,14 +66,18 @@ public class AnnotatedPlexusBeanSourceTest
         propertyIterator = new BeanProperties( Bean.class ).iterator();
         final Configuration configuration11 = metadata1.getConfiguration( propertyIterator.next() );
         final Configuration configuration12 = metadata1.getConfiguration( propertyIterator.next() );
+        final Configuration configuration13 = metadata1.getConfiguration( propertyIterator.next() );
         final Requirement requirement11 = metadata1.getRequirement( propertyIterator.next() );
+        final Requirement requirement12 = metadata1.getRequirement( propertyIterator.next() );
         assertFalse( propertyIterator.hasNext() );
 
         assertFalse( configuration11 instanceof ConfigurationImpl );
         assertEquals( new ConfigurationImpl( "1", "BLANK" ), configuration11 );
         assertFalse( configuration12 instanceof ConfigurationImpl );
         assertEquals( new ConfigurationImpl( "2", "${some.value}" ), configuration12 );
+        assertNull( configuration13 );
         assertEquals( new RequirementImpl( Roles.defer( Bean.class ), true, "mock" ), requirement11 );
+        assertNull( requirement12 );
 
         final Map<?, ?> variables = Collections.singletonMap( "some.value", "INTERPOLATED" );
 
@@ -79,13 +87,17 @@ public class AnnotatedPlexusBeanSourceTest
         propertyIterator = new BeanProperties( Bean.class ).iterator();
         final Configuration configuration21 = metadata2.getConfiguration( propertyIterator.next() );
         final Configuration configuration22 = metadata2.getConfiguration( propertyIterator.next() );
+        final Configuration configuration23 = metadata2.getConfiguration( propertyIterator.next() );
         final Requirement requirement21 = metadata2.getRequirement( propertyIterator.next() );
+        final Requirement requirement22 = metadata2.getRequirement( propertyIterator.next() );
         assertFalse( propertyIterator.hasNext() );
 
         assertFalse( configuration21 instanceof ConfigurationImpl );
         assertEquals( new ConfigurationImpl( "1", "BLANK" ), configuration21 );
         assertTrue( configuration22 instanceof ConfigurationImpl );
         assertEquals( new ConfigurationImpl( "2", "INTERPOLATED" ), configuration22 );
+        assertNull( configuration23 );
         assertEquals( new RequirementImpl( Roles.defer( Bean.class ), true, "mock" ), requirement21 );
+        assertNull( requirement22 );
     }
 }

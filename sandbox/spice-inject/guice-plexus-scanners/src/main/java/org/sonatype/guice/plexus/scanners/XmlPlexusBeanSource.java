@@ -389,7 +389,16 @@ public final class XmlPlexusBeanSource
 
         if ( null == fieldName )
         {
-            throw new XmlPullParserException( "Missing <field-name> element.", parser, null );
+            // missing name, try and use simple role class name as the basis for the field name
+            final int cursor = Math.max( role.lastIndexOf( '.' ), role.lastIndexOf( '$' ) ) + 1;
+            if ( cursor < role.length() )
+            {
+                fieldName = Character.toLowerCase( role.charAt( cursor ) ) + role.substring( cursor + 1 );
+            }
+            else
+            {
+                throw new XmlPullParserException( "Missing <field-name> element.", parser, null );
+            }
         }
 
         final String[] hints = Hints.canonicalHints( hintList.toArray( new String[hintList.size()] ) );
