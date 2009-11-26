@@ -22,47 +22,98 @@ import org.codehaus.plexus.component.repository.ComponentRepository;
 public final class DefaultContainerConfiguration
     implements ContainerConfiguration
 {
+    private String name;
+
+    private String configurationPath;
+
+    private URL configurationUrl;
+
+    private ClassWorld classWorld;
+
+    private ClassRealm classRealm;
+
+    private ComponentRepository repository;
+
+    private Map<Object, Object> contextData;
+
     // ----------------------------------------------------------------------
     // Public methods
     // ----------------------------------------------------------------------
 
     public ContainerConfiguration setName( final String name )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        this.name = name;
+        return this;
     }
 
-    public ContainerConfiguration setContainerConfiguration( final String configuration )
+    public String getName()
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        return name;
     }
 
-    public ContainerConfiguration setContainerConfigurationURL( final URL configuration )
+    public ContainerConfiguration setContainerConfiguration( final String configurationPath )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        this.configurationPath = configurationPath;
+        return this;
+    }
+
+    public String getContainerConfiguration()
+    {
+        return configurationPath;
+    }
+
+    public ContainerConfiguration setContainerConfigurationURL( final URL configurationUrl )
+    {
+        this.configurationUrl = configurationUrl;
+        return this;
+    }
+
+    public URL getContainerConfigurationURL()
+    {
+        return configurationUrl;
     }
 
     public ContainerConfiguration setClassWorld( final ClassWorld classWorld )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        this.classWorld = classWorld;
+        return this;
+    }
+
+    public ClassWorld getClassWorld()
+    {
+        return classWorld;
     }
 
     public ContainerConfiguration setRealm( final ClassRealm classRealm )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        this.classRealm = classRealm;
+        return this;
+    }
+
+    public ClassRealm getRealm()
+    {
+        return classRealm;
     }
 
     public ContainerConfiguration setComponentRepository( final ComponentRepository repository )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        this.repository = repository;
+        return this;
     }
 
-    public ContainerConfiguration setContext( final Map<?, ?> context )
+    public ComponentRepository getComponentRepository()
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        return repository;
+    }
+
+    public ContainerConfiguration setContext( final Map<Object, Object> contextData )
+    {
+        this.contextData = contextData;
+        return this;
     }
 
     public Map<Object, Object> getContext()
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        return contextData;
     }
 }

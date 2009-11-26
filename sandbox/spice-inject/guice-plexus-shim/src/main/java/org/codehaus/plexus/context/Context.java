@@ -14,7 +14,7 @@ import java.util.Map;
 
 public interface Context
 {
-    boolean contains( String key );
+    boolean contains( Object key );
 
     void put( Object key, Object value );
 

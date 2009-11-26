@@ -35,9 +35,12 @@ public final class DefaultContext
 
     public DefaultContext( final Map<?, ?> context )
     {
-        for ( final Entry<?, ?> e : context.entrySet() )
+        if ( context != null )
         {
-            put( e.getKey(), e.getValue() );
+            for ( final Entry<?, ?> e : context.entrySet() )
+            {
+                put( e.getKey(), e.getValue() );
+            }
         }
     }
 
@@ -45,7 +48,7 @@ public final class DefaultContext
     // Public methods
     // ----------------------------------------------------------------------
 
-    public boolean contains( final String key )
+    public boolean contains( final Object key )
     {
         return contextData.containsKey( key );
     }

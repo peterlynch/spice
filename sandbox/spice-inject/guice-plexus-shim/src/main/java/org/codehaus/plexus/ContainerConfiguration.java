@@ -21,17 +21,29 @@ public interface ContainerConfiguration
 {
     ContainerConfiguration setName( String name );
 
-    ContainerConfiguration setContainerConfiguration( String configuration );
+    String getName();
+
+    ContainerConfiguration setContainerConfiguration( String configurationPath );
+
+    String getContainerConfiguration();
 
     ContainerConfiguration setContainerConfigurationURL( URL configuration );
 
+    URL getContainerConfigurationURL();
+
     ContainerConfiguration setClassWorld( ClassWorld classWorld );
+
+    ClassWorld getClassWorld();
 
     ContainerConfiguration setRealm( ClassRealm classRealm );
 
+    ClassRealm getRealm();
+
     ContainerConfiguration setComponentRepository( ComponentRepository repository );
 
-    ContainerConfiguration setContext( Map<?, ?> context );
+    ComponentRepository getComponentRepository();
+
+    ContainerConfiguration setContext( Map<Object, Object> context );
 
     Map<Object, Object> getContext();
 }

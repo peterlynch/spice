@@ -73,10 +73,10 @@ public interface PlexusContainer
 
     ClassRealm createChildRealm( String id );
 
-    List<ComponentDescriptor<?>> discoverComponents( ClassRealm childRealm )
+    List<ComponentDescriptor<?>> discoverComponents( ClassRealm classRealm )
         throws PlexusConfigurationException, CycleDetectedInComponentGraphException;
 
-    void removeComponentRealm( ClassRealm realm )
+    void removeComponentRealm( ClassRealm classRealm )
         throws PlexusContainerException;
 
     void release( Object component )
