@@ -40,4 +40,22 @@ public class BuupInvocationRequest
     {
         return parameters;
     }
+
+    // ==
+
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder( "BUUP Invocation Request (" + super.toString() + ") [" );
+
+        sb.append( "basedir=\"" ).append( getBasedir().getAbsolutePath() ).append( "\"; " );
+
+        sb.append( "upgradeBundleDirectory=\"" ).append( getUpgradeBundleDirectory().getAbsolutePath() )
+            .append( "\"; " );
+
+        sb.append( "params=" ).append( getParameters().toString() ).append( "\"; " );
+
+        sb.append( "]" );
+
+        return sb.toString();
+    }
 }

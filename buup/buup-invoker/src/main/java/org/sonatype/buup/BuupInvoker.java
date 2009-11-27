@@ -22,17 +22,23 @@ public class BuupInvoker
     {
         validateRequest( request );
 
+        getLogger().info( "BUUP invocation; {}", request.toString() );
+
         WrapperHelper wrapperHelper = new WrapperHelper( request.getBasedir() );
 
         boolean backupDone = false;
 
         try
         {
+            getLogger().info( "Backing up wrapper.conf." );
+
             // 1st, forcedly backup the configuration
             backupDone = wrapperHelper.backupWrapperConf( true );
 
             // 2nd, get an jsw config editor (we have a backup, now we modify the user edited one)
             WrapperConfEditor editor = wrapperHelper.getWrapperConfEditor();
+
+            getLogger().info( "Modifying wrapper.conf to start BUUP." );
 
             // 3rd, swap in a nice alternative app
             editor.setWrapperJavaMainclass( "org.sonatype.buup.Buup" );
@@ -50,12 +56,14 @@ public class BuupInvoker
             // save
             editor.save();
 
+            getLogger().info( "Stopping JVM forcedly, BUUP should come up and do upgrade." );
+
             // STOP JVM (and wrapper will bring up BUUP)
             System.exit( 0 );
         }
         catch ( Throwable t )
         {
-            getLogger().error( "Cannot invoke BUUP!", t );
+            getLogger().error( "Cannot invoke BUUP, restoring wrapper.conf!", t );
 
             if ( backupDone )
             {
