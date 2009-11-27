@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -26,10 +27,11 @@ import java.util.Set;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.Scanner;
 import org.sonatype.plexus.build.incremental.BuildContext;
+import org.sonatype.plexus.build.incremental.BuildContext2;
 
 
-public class TestIncrementalBuildContext implements BuildContext {
-  
+public class TestIncrementalBuildContext implements BuildContext, BuildContext2 {
+
   private final File basedir;
 
   private final HashSet refresh = new HashSet();
@@ -74,16 +76,25 @@ public class TestIncrementalBuildContext implements BuildContext {
 
   private final Map context;
 
+  private final List warnings;
+  
+  private final List errors;
 
-  public TestIncrementalBuildContext(File basedir, Set files, Map context) {
-    this(basedir, files, new HashSet(), context);
+  public TestIncrementalBuildContext(File basedir, Set changedFiles, Map context) {
+    this(basedir, changedFiles, new HashSet(), context);
   }
 
   public TestIncrementalBuildContext(File basedir, Set changedFiles, Set deletedFiles, Map context) {
+    this(basedir, changedFiles, new HashSet(), context, new ArrayList(), new ArrayList());
+  }
+
+  public TestIncrementalBuildContext(File basedir, Set changedFiles, Set deletedFiles, Map context, List warnings, List errors) {
     this.basedir = basedir;
     this.changedFiles = changedFiles;
     this.deletedFiles = deletedFiles;
     this.context = context;
+    this.warnings = warnings;
+    this.errors = errors;
   }
 
   public boolean hasDelta(String relpath) {
@@ -149,4 +160,9 @@ public class TestIncrementalBuildContext implements BuildContext {
     return refresh;
   }
 
+  public void addError(File file, int line, int column, String message, Throwable cause) {
+  }
+
+  public void addWarning(File file, int line, int column, String message, Throwable cause) {
+  }
 }

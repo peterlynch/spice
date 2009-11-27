@@ -77,4 +77,10 @@ public class DefaultBuildContext implements BuildContext {
 
   public void setValue(String key, Object value) {
   }
+
+  public void addWarning(File file, int line, int column, String message, Throwable cause) {
+  }
+
+  public void addError(File file, int line, int column, String message, Throwable cause) {
+  }
 }

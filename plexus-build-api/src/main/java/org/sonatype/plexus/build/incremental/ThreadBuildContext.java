@@ -18,8 +18,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
-import org.sonatype.plexus.build.incremental.BuildContext;
-import org.sonatype.plexus.build.incremental.DefaultBuildContext;
 import org.codehaus.plexus.util.Scanner;
 
 /**
@@ -31,7 +29,7 @@ import org.codehaus.plexus.util.Scanner;
  * Apparently, older version of plexus used by maven-filtering and likely
  * other projects, does not honour "default" role-hint.
  */
-public class ThreadBuildContext implements BuildContext {
+public class ThreadBuildContext implements BuildContext, BuildContext2 {
 
   private static final ThreadLocal threadContext = new ThreadLocal();
 
@@ -87,6 +85,20 @@ public class ThreadBuildContext implements BuildContext {
 
   public void setValue(String key, Object value) {
     getContext().setValue(key, value);
+  }
+
+  public void addWarning(File file, int line, int column, String message, Throwable cause) {
+    BuildContext context = getContext();
+    if (context instanceof BuildContext2) {
+	  ((BuildContext2) context).addWarning(file, line, column, message, cause);
+    }
+  }
+
+  public void addError(File file, int line, int column, String message, Throwable cause) {
+    BuildContext context = getContext();
+    if (context instanceof BuildContext2) {
+      ((BuildContext2) context).addError(file, line, column, message, cause);
+    }
   }
 
 }
