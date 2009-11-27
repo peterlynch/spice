@@ -2,13 +2,11 @@ package org.sonatype.buup.backup;
 
 import java.io.IOException;
 
-import org.sonatype.buup.Buup;
-
 public interface BackupManager
 {
-    void backup( Buup buup )
+    void backup()
         throws IOException;
 
-    void restore( Buup buup )
+    void restore()
         throws IOException;
 }

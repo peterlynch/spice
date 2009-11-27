@@ -16,9 +16,14 @@ import org.sonatype.buup.backup.BackupManager;
 import org.sonatype.buup.backup.DefaultBackupManager;
 import org.sonatype.buup.cfgfiles.jsw.WrapperHelper;
 
+/**
+ * This is the main entry class of the BUUP.
+ * 
+ * @author cstamas
+ */
 public class Buup
 {
-    private Logger logger = LoggerFactory.getLogger( getClass() );
+    private Logger logger = LoggerFactory.getLogger( "BUUP" );
 
     public Logger getLogger()
     {
@@ -40,6 +45,11 @@ public class Buup
         return appContext;
     }
 
+    public File getUpgradeBundleDirectory()
+    {
+        return upgradeBundleDirectory;
+    }
+
     public Map<String, String> getParameters()
     {
         return parameters;
@@ -55,11 +65,6 @@ public class Buup
         return wrapperHelper;
     }
 
-    public File getUpgradeBundleDirectory()
-    {
-        return upgradeBundleDirectory;
-    }
-
     public boolean upgrade()
     {
         try
@@ -72,11 +77,11 @@ public class Buup
 
             parameters = initInvokerParameters();
 
-            backupManager = new DefaultBackupManager();
+            backupManager = new DefaultBackupManager( this );
 
             wrapperHelper = new WrapperHelper( appContext.getBasedir() );
 
-            return upgrade( upgradeBundleDirectory, parameters );
+            return doUpgrade();
         }
         catch ( Throwable t )
         {
@@ -84,39 +89,6 @@ public class Buup
 
             return false;
         }
-    }
-
-    protected File initUpgradeBundleDirectory()
-    {
-        String filePath = System.getProperty( "buup.upgradeBundleDirectory" );
-
-        File result = new File( filePath );
-
-        if ( !result.isDirectory() )
-        {
-            throw new IllegalArgumentException(
-                "The supplied upgradeBundleDirectory is not a directory or does not exists (upgradeBundleDirectory=\""
-                    + filePath + "\")!" );
-        }
-
-        return result;
-    }
-
-    protected Map<String, String> initInvokerParameters()
-    {
-        HashMap<String, String> result = new HashMap<String, String>();
-
-        for ( Object propertyKey : System.getProperties().keySet() )
-        {
-            String propertyKeyString = propertyKey.toString();
-
-            if ( propertyKeyString.startsWith( "buup.parameter." ) )
-            {
-                result.put( propertyKeyString.substring( 15 ), System.getProperty( propertyKeyString ) );
-            }
-        }
-
-        return result;
     }
 
     /**
@@ -160,11 +132,44 @@ public class Buup
         return appContext;
     }
 
-    public boolean upgrade( File upgradeBundleDirectory, Map<String, String> parameters )
+    protected File initUpgradeBundleDirectory()
+    {
+        String filePath = System.getProperty( "buup.upgradeBundleDirectory" );
+
+        File result = new File( filePath );
+
+        if ( !result.isDirectory() )
+        {
+            throw new IllegalArgumentException(
+                "The supplied upgradeBundleDirectory is not a directory or does not exists (upgradeBundleDirectory=\""
+                    + filePath + "\")!" );
+        }
+
+        return result;
+    }
+
+    protected Map<String, String> initInvokerParameters()
+    {
+        HashMap<String, String> result = new HashMap<String, String>();
+
+        for ( Object propertyKey : System.getProperties().keySet() )
+        {
+            String propertyKeyString = propertyKey.toString();
+
+            if ( propertyKeyString.startsWith( "buup.parameter." ) )
+            {
+                result.put( propertyKeyString.substring( 15 ), System.getProperty( propertyKeyString ) );
+            }
+        }
+
+        return result;
+    }
+
+    public boolean doUpgrade()
     {
         try
         {
-            backupManager.backup( this );
+            backupManager.backup();
 
             return true;
         }
@@ -172,7 +177,7 @@ public class Buup
         {
             try
             {
-                backupManager.restore( this );
+                backupManager.restore();
 
                 return true;
             }
@@ -188,10 +193,12 @@ public class Buup
         throws IOException
     {
         // do a restore
-        backupManager.restore( this );
+        backupManager.restore();
 
         System.exit( 0 );
     }
+
+    // ==
 
     public static void main( String[] args )
     {
