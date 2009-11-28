@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
-import org.sonatype.guice.plexus.config.Roles;
 
 public abstract class BaseLoggerManager
     implements LoggerManager, Initializable
@@ -29,7 +28,7 @@ public abstract class BaseLoggerManager
 
     private int currentThreshold;
 
-    private final Map<String, Logger> componentLoggers = new HashMap<String, Logger>();
+    private final Map<String, Logger> activeLoggers = new HashMap<String, Logger>();
 
     // ----------------------------------------------------------------------
     // Public methods
@@ -43,35 +42,34 @@ public abstract class BaseLoggerManager
     public final void setThresholds( final int currentThreshold )
     {
         this.currentThreshold = currentThreshold;
-        for ( final Logger logger : componentLoggers.values() )
+        for ( final Logger logger : activeLoggers.values() )
         {
             logger.setThreshold( currentThreshold );
         }
     }
 
-    public final Logger getLoggerForComponent( final String role, final String hint )
+    public final Logger getLogger( final String name )
     {
-        final String key = Roles.canonicalRoleHint( role, hint );
-        Logger logger = componentLoggers.get( key );
+        Logger logger = activeLoggers.get( name );
         if ( null == logger )
         {
-            logger = createLogger( key );
+            logger = createLogger( name );
             logger.setThreshold( currentThreshold );
-            componentLoggers.put( key, logger );
+            activeLoggers.put( name, logger );
         }
         return logger;
     }
 
-    public final void returnComponentLogger( final String role, final String hint )
+    public final void returnLogger( final String name )
     {
-        componentLoggers.remove( Roles.canonicalRoleHint( role, hint ) );
+        activeLoggers.remove( name );
     }
 
     // ----------------------------------------------------------------------
     // Customizable methods
     // ----------------------------------------------------------------------
 
-    protected abstract Logger createLogger( String key );
+    protected abstract Logger createLogger( String name );
 
     // ----------------------------------------------------------------------
     // Implementation methods

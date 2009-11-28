@@ -12,9 +12,9 @@ package org.codehaus.plexus.logging;
 
 public interface LoggerManager
 {
-    Logger getLoggerForComponent( String role, String hint );
+    Logger getLogger( String name );
 
-    void returnComponentLogger( String role, String hint );
+    void returnLogger( String name );
 
     void setThresholds( int threshold );
 }
