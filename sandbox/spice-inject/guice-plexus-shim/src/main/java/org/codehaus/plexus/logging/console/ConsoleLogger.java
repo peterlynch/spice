@@ -28,9 +28,9 @@ public final class ConsoleLogger
     // Constructors
     // ----------------------------------------------------------------------
 
-    public ConsoleLogger( final int threshold, @SuppressWarnings( "unused" ) final String name )
+    public ConsoleLogger( final int threshold, final String name )
     {
-        setThreshold( threshold );
+        super( threshold, name );
     }
 
     // ----------------------------------------------------------------------
@@ -42,12 +42,51 @@ public final class ConsoleLogger
         return this;
     }
 
+    public void debug( String message, Throwable throwable )
+    {
+        if ( isDebugEnabled() )
+        {
+            log( LEVEL_DEBUG, message, throwable );
+        }
+    }
+
+    public void info( String message, Throwable throwable )
+    {
+        if ( isInfoEnabled() )
+        {
+            log( LEVEL_INFO, message, throwable );
+        }
+    }
+
+    public void warn( String message, Throwable throwable )
+    {
+        if ( isWarnEnabled() )
+        {
+            log( LEVEL_WARN, message, throwable );
+        }
+    }
+
+    public void error( String message, Throwable throwable )
+    {
+        if ( isErrorEnabled() )
+        {
+            log( LEVEL_ERROR, message, throwable );
+        }
+    }
+
+    public void fatalError( String message, Throwable throwable )
+    {
+        if ( isFatalErrorEnabled() )
+        {
+            log( LEVEL_FATAL, message, throwable );
+        }
+    }
+
     // ----------------------------------------------------------------------
-    // Customized methods
+    // Implementation methods
     // ----------------------------------------------------------------------
 
-    @Override
-    protected void log( final int level, final String message, final Throwable throwable )
+    private static void log( final int level, final String message, final Throwable throwable )
     {
         System.out.println( TAGS[level].concat( message ) );
         if ( throwable != null )

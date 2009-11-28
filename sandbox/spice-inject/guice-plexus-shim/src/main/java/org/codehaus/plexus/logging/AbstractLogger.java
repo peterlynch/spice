@@ -19,129 +19,86 @@ public abstract class AbstractLogger
     // Implementation fields
     // ----------------------------------------------------------------------
 
-    private int threshold = LEVEL_INFO;
+    private int threshold;
+
+    private final String name;
+
+    // ----------------------------------------------------------------------
+    // Constructors
+    // ----------------------------------------------------------------------
+
+    public AbstractLogger( final int threshold, final String name )
+    {
+        if ( threshold < LEVEL_DEBUG || LEVEL_DISABLED < threshold )
+        {
+            throw new IllegalArgumentException( "Threshold " + threshold + " is not valid" );
+        }
+
+        this.threshold = threshold;
+        this.name = name;
+    }
 
     // ----------------------------------------------------------------------
     // Public methods
     // ----------------------------------------------------------------------
 
-    public final void debug( final String message )
+    public void setThreshold( final int threshold )
     {
-        if ( isDebugEnabled() )
-        {
-            log( LEVEL_DEBUG, message, null );
-        }
+        this.threshold = threshold;
     }
 
-    public final void debug( final String message, final Throwable throwable )
+    public String getName()
     {
-        if ( isDebugEnabled() )
-        {
-            log( LEVEL_DEBUG, message, throwable );
-        }
+        return name;
     }
 
-    public final boolean isDebugEnabled()
+    public void debug( final String message )
+    {
+        debug( message, null );
+    }
+
+    public boolean isDebugEnabled()
     {
         return threshold <= LEVEL_DEBUG;
     }
 
-    public final void info( final String message )
+    public void info( final String message )
     {
-        if ( isInfoEnabled() )
-        {
-            log( LEVEL_INFO, message, null );
-        }
+        info( message, null );
     }
 
-    public final void info( final String message, final Throwable throwable )
-    {
-        if ( isInfoEnabled() )
-        {
-            log( LEVEL_INFO, message, throwable );
-        }
-    }
-
-    public final boolean isInfoEnabled()
+    public boolean isInfoEnabled()
     {
         return threshold <= LEVEL_INFO;
     }
 
-    public final void warn( final String message )
+    public void warn( final String message )
     {
-        if ( isWarnEnabled() )
-        {
-            log( LEVEL_WARN, message, null );
-        }
+        warn( message, null );
     }
 
-    public final void warn( final String message, final Throwable throwable )
-    {
-        if ( isWarnEnabled() )
-        {
-            log( LEVEL_WARN, message, throwable );
-        }
-    }
-
-    public final boolean isWarnEnabled()
+    public boolean isWarnEnabled()
     {
         return threshold <= LEVEL_WARN;
     }
 
-    public final void error( final String message )
+    public void error( final String message )
     {
-        if ( isErrorEnabled() )
-        {
-            log( LEVEL_ERROR, message, null );
-        }
+        error( message, null );
     }
 
-    public final void error( final String message, final Throwable throwable )
-    {
-        if ( isErrorEnabled() )
-        {
-            log( LEVEL_ERROR, message, throwable );
-        }
-    }
-
-    public final boolean isErrorEnabled()
+    public boolean isErrorEnabled()
     {
         return threshold <= LEVEL_ERROR;
     }
 
-    public final void fatalError( final String message )
+    public void fatalError( final String message )
     {
-        if ( isFatalErrorEnabled() )
-        {
-            log( LEVEL_FATAL, message, null );
-        }
+        fatalError( message, null );
     }
 
-    public final void fatalError( final String message, final Throwable throwable )
-    {
-        if ( isFatalErrorEnabled() )
-        {
-            log( LEVEL_FATAL, message, throwable );
-        }
-    }
-
-    public final boolean isFatalErrorEnabled()
+    public boolean isFatalErrorEnabled()
     {
         return threshold <= LEVEL_FATAL;
     }
-
-    public final void setThreshold( final int theThreshold )
-    {
-        if ( theThreshold < LEVEL_DEBUG || theThreshold > LEVEL_DISABLED )
-        {
-            throw new IllegalArgumentException( "Invalid threshold: " + theThreshold );
-        }
-        threshold = theThreshold;
-    }
-
-    // ----------------------------------------------------------------------
-    // Customizable methods
-    // ----------------------------------------------------------------------
-
-    protected abstract void log( int level, String message, Throwable throwable );
 }
