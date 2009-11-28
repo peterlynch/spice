@@ -23,7 +23,6 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.guice.bean.reflect.ClassSpace;
 import org.sonatype.guice.bean.reflect.DeferredClass;
-import org.sonatype.guice.bean.reflect.Generics;
 import org.sonatype.guice.plexus.annotations.ComponentImpl;
 import org.sonatype.guice.plexus.annotations.RequirementImpl;
 
@@ -64,17 +63,6 @@ public class RolesTest
     {
         assertEquals( OBJECT_FOO_COMPONENT_KEY, Roles.componentKey( Object.class, "foo" ) );
         assertEquals( OBJECT_FOO_COMPONENT_KEY, Roles.componentKey( component( "foo" ) ) );
-    }
-
-    public void testRegistryKeys()
-    {
-        final Key<PlexusBeanRegistry<Object>> registryKey1 = Roles.registryKey( Object.class );
-        assertEquals( PlexusBeanRegistry.class, registryKey1.getTypeLiteral().getRawType() );
-        assertEquals( OBJECT_LITERAL, Generics.typeArgument( registryKey1.getTypeLiteral(), 0 ) );
-
-        final Key<PlexusBeanRegistry<String>> registryKey2 = Roles.registryKey( STRING_LITERAL );
-        assertEquals( PlexusBeanRegistry.class, registryKey2.getTypeLiteral().getRawType() );
-        assertEquals( STRING_LITERAL, Generics.typeArgument( registryKey2.getTypeLiteral(), 0 ) );
     }
 
     public void testRoleAnalysis()
