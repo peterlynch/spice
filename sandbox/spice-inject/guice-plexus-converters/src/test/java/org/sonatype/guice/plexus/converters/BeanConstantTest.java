@@ -12,8 +12,6 @@
  */
 package org.sonatype.guice.plexus.converters;
 
-import static com.google.inject.name.Names.named;
-
 import java.io.File;
 import java.net.URL;
 import java.util.Calendar;
@@ -31,6 +29,7 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
+import com.google.inject.name.Names;
 
 public class BeanConstantTest
     extends TestCase
@@ -44,7 +43,7 @@ public class BeanConstantTest
             private void bindBean( final String name, final String clazzName, final String content )
             {
                 final String xml = "<bean implementation='" + clazzName + "'>" + content + "</bean>";
-                bindConstant().annotatedWith( named( name ) ).to( xml );
+                bindConstant().annotatedWith( Names.named( name ) ).to( xml );
             }
 
             @Override
@@ -61,9 +60,9 @@ public class BeanConstantTest
                 bindBean( "MissingStringConstructor", MissingStringConstructor.class.getName(), "text" );
                 bindBean( "BrokenStringConstructor", BrokenStringConstructor.class.getName(), "text" );
 
-                bindConstant().annotatedWith( named( "README" ) ).to( "some/temp/readme.txt" );
-                bindConstant().annotatedWith( named( "SITE" ) ).to( "http://www.sonatype.org" );
-                bindConstant().annotatedWith( named( "DATE" ) ).to( "2009-11-15 18:02:00" );
+                bindConstant().annotatedWith( Names.named( "README" ) ).to( "some/temp/readme.txt" );
+                bindConstant().annotatedWith( Names.named( "SITE" ) ).to( "http://www.sonatype.org" );
+                bindConstant().annotatedWith( Names.named( "DATE" ) ).to( "2009-11-15 18:02:00" );
 
                 install( new XmlTypeConverter() );
                 install( new DateTypeConverter() );
@@ -186,18 +185,18 @@ public class BeanConstantTest
 
     public void testSimpleFileBean()
     {
-        assertEquals( "readme.txt", injector.getInstance( Key.get( File.class, named( "README" ) ) ).getName() );
+        assertEquals( "readme.txt", injector.getInstance( Key.get( File.class, Names.named( "README" ) ) ).getName() );
     }
 
     public void testSimpleUrlBean()
     {
-        assertEquals( "www.sonatype.org", injector.getInstance( Key.get( URL.class, named( "SITE" ) ) ).getHost() );
+        assertEquals( "www.sonatype.org", injector.getInstance( Key.get( URL.class, Names.named( "SITE" ) ) ).getHost() );
     }
 
     public void testNonBean()
     {
         final Calendar calendar = Calendar.getInstance();
-        calendar.setTime( injector.getInstance( Key.get( Date.class, named( "DATE" ) ) ) );
+        calendar.setTime( injector.getInstance( Key.get( Date.class, Names.named( "DATE" ) ) ) );
         assertEquals( 15, calendar.get( Calendar.DAY_OF_MONTH ) );
         assertEquals( Calendar.NOVEMBER, calendar.get( Calendar.MONTH ) );
         assertEquals( 2009, calendar.get( Calendar.YEAR ) );
@@ -213,7 +212,7 @@ public class BeanConstantTest
 
     private Object getBean( final String bindingName, final Class<?> clazz )
     {
-        return injector.getInstance( Key.get( clazz, named( bindingName ) ) );
+        return injector.getInstance( Key.get( clazz, Names.named( bindingName ) ) );
     }
 
     private void testFailedConversion( final String bindingName, final Class<?> clazz )

@@ -12,8 +12,6 @@
  */
 package org.sonatype.guice.bean.inject;
 
-import static org.sonatype.guice.bean.inject.PropertyBinder.LAST_BINDING;
-
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -63,7 +61,7 @@ public final class BeanListener
             try
             {
                 final PropertyBinding binding = propertyBinder.bindProperty( property );
-                if ( binding == LAST_BINDING )
+                if ( binding == PropertyBinder.LAST_BINDING )
                 {
                     break; // no more bindings
                 }
