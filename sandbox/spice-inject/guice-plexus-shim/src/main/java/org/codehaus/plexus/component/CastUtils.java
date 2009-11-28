@@ -10,15 +10,30 @@
  */
 package org.codehaus.plexus.component;
 
+import com.google.inject.Key;
+
 public final class CastUtils
 {
     // ----------------------------------------------------------------------
     // Static utility methods
     // ----------------------------------------------------------------------
 
-    @SuppressWarnings( "unused" )
-    public static boolean isAssignableFrom( final Class<?> api, final Class<?> implementation )
+    public static boolean isAssignableFrom( final Class<?> expected, final Class<?> actual )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        if ( null == actual )
+        {
+            return false;
+        }
+        if ( null == expected )
+        {
+            return true;
+        }
+        if ( !expected.isPrimitive() )
+        {
+            return expected.isAssignableFrom( actual );
+        }
+
+        // shortcut: use temporary Key as quick way to auto-box primitive types
+        return Key.get( expected ).getTypeLiteral().getRawType().equals( actual );
     }
 }

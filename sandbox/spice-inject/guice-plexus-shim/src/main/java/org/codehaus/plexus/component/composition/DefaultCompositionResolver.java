@@ -21,6 +21,7 @@ public final class DefaultCompositionResolver
 
     public <T> void addComponentDescriptor( final ComponentDescriptor<T> descriptor )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        // TODO: do we need to do anything here?
+        System.out.println( "TODO DefaultCompositionResolver.addComponentDescriptor(" + descriptor + ")" );
     }
 }

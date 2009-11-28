@@ -19,9 +19,10 @@ public final class XmlPlexusConfiguration
     // Public methods
     // ----------------------------------------------------------------------
 
-    @SuppressWarnings( "unused" )
     public PlexusConfiguration addChild( final String name, final String value )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        // TODO: do we need to do anything here?
+        System.out.println( "TODO XmlPlexusConfiguration.addChild(" + name + ", " + value + ")" );
+        return this;
     }
 }

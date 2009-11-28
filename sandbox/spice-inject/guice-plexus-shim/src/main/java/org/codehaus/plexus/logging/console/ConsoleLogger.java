@@ -42,7 +42,7 @@ public final class ConsoleLogger
         return this;
     }
 
-    public void debug( String message, Throwable throwable )
+    public void debug( final String message, final Throwable throwable )
     {
         if ( isDebugEnabled() )
         {
@@ -50,7 +50,7 @@ public final class ConsoleLogger
         }
     }
 
-    public void info( String message, Throwable throwable )
+    public void info( final String message, final Throwable throwable )
     {
         if ( isInfoEnabled() )
         {
@@ -58,7 +58,7 @@ public final class ConsoleLogger
         }
     }
 
-    public void warn( String message, Throwable throwable )
+    public void warn( final String message, final Throwable throwable )
     {
         if ( isWarnEnabled() )
         {
@@ -66,7 +66,7 @@ public final class ConsoleLogger
         }
     }
 
-    public void error( String message, Throwable throwable )
+    public void error( final String message, final Throwable throwable )
     {
         if ( isErrorEnabled() )
         {
@@ -74,7 +74,7 @@ public final class ConsoleLogger
         }
     }
 
-    public void fatalError( String message, Throwable throwable )
+    public void fatalError( final String message, final Throwable throwable )
     {
         if ( isFatalErrorEnabled() )
         {

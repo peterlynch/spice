@@ -10,7 +10,6 @@
  */
 package org.codehaus.plexus.component.repository;
 
-@SuppressWarnings( "unused" )
 public final class ComponentDependency
 {
     // ----------------------------------------------------------------------
@@ -19,16 +18,19 @@ public final class ComponentDependency
 
     public void setGroupId( final String groupId )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        // TODO: do we need to do anything here?
+        System.out.println( "TODO ComponentDependency.setGroupId(" + groupId + ")" );
     }
 
     public void setArtifactId( final String artifactId )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        // TODO: do we need to do anything here?
+        System.out.println( "TODO ComponentDependency.setArtifactId(" + artifactId + ")" );
     }
 
     public void setVersion( final String version )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        // TODO: do we need to do anything here?
+        System.out.println( "TODO ComponentDependency.setVersion(" + version + ")" );
     }
 }

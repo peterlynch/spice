@@ -10,7 +10,6 @@
  */
 package org.codehaus.plexus.component.repository;
 
-@SuppressWarnings( "unused" )
 public final class ComponentRequirement
 {
     // ----------------------------------------------------------------------
@@ -19,21 +18,25 @@ public final class ComponentRequirement
 
     public void setRole( final String role )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        // TODO: do we need to do anything here?
+        System.out.println( "TODO ComponentRequirement.setRole(" + role + ")" );
     }
 
     public void setRoleHint( final String hint )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        // TODO: do we need to do anything here?
+        System.out.println( "TODO ComponentRequirement.setRoleHint(" + hint + ")" );
     }
 
     public void setFieldName( final String name )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        // TODO: do we need to do anything here?
+        System.out.println( "TODO ComponentRequirement.setFieldName(" + name + ")" );
     }
 
     public void setFieldMappingType( final String mappingType )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        // TODO: do we need to do anything here?
+        System.out.println( "TODO ComponentRequirement.setFieldMappingType(" + mappingType + ")" );
     }
 }

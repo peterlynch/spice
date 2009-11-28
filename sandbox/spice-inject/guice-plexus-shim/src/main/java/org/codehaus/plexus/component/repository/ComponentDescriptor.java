@@ -12,91 +12,136 @@ package org.codehaus.plexus.component.repository;
 
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
+import org.sonatype.guice.plexus.config.Hints;
 
-@SuppressWarnings( "unused" )
 public final class ComponentDescriptor<T>
 {
+    // ----------------------------------------------------------------------
+    // Implementation fields
+    // ----------------------------------------------------------------------
+
+    private String role;
+
+    private String hint = Hints.DEFAULT_HINT;
+
+    private String instantiationStrategy;
+
+    private String implementation;
+
+    private ClassRealm classRealm;
+
+    private Class<? extends T> roleClass;
+
+    private Class<? extends T> implementationClass;
+
     // ----------------------------------------------------------------------
     // Public methods
     // ----------------------------------------------------------------------
 
     public String getDescription()
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        return "TODO"; // TODO: do we need to do anything here?
     }
 
     public void setRole( final String role )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        this.role = role;
     }
 
     public void setRoleHint( final String hint )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        this.hint = Hints.canonicalHint( hint );
     }
 
     public void setInstantiationStrategy( final String instantiationStrategy )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        this.instantiationStrategy = instantiationStrategy;
     }
 
     public String getRole()
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        return role;
     }
 
     public String getRoleHint()
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        return hint;
     }
 
     public String getInstantiationStrategy()
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        return instantiationStrategy;
     }
 
+    @SuppressWarnings( "unchecked" )
     public Class<T> getRoleClass()
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        if ( null == roleClass )
+        {
+            try
+            {
+                roleClass = classRealm.loadClass( role );
+            }
+            catch ( final Throwable e )
+            {
+                // ignore
+            }
+        }
+        return null == roleClass ? (Class) Object.class : roleClass;
     }
 
     public void setImplementation( final String implementation )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        this.implementation = implementation;
     }
 
     public String getImplementation()
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        return implementation;
     }
 
+    @SuppressWarnings( "unchecked" )
     public Class<? extends T> getImplementationClass()
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        if ( null == implementationClass )
+        {
+            try
+            {
+                implementationClass = classRealm.loadClass( implementation );
+            }
+            catch ( final Throwable e )
+            {
+                // ignore
+            }
+        }
+        return null == implementationClass ? (Class) Object.class : implementationClass;
     }
 
     public void addRequirement( final ComponentRequirement requirement )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        // TODO: do we need to do anything here?
+        System.out.println( "TODO ComponentDescriptor.addRequirement(" + requirement + ")" );
     }
 
     public void setConfiguration( final PlexusConfiguration configuration )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        // TODO: do we need to do anything here?
+        System.out.println( "TODO ComponentDescriptor.setConfiguration(" + configuration + ")" );
     }
 
     public void setComponentSetDescriptor( final ComponentSetDescriptor setDescriptor )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        // TODO: do we need to do anything here?
+        System.out.println( "TODO ComponentDescriptor.setComponentSetDescriptor(" + setDescriptor + ")" );
     }
 
-    public void setRealm( final ClassRealm realm )
+    public void setRealm( final ClassRealm classRealm )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        this.classRealm = classRealm;
     }
 
     public ClassRealm getRealm()
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        return classRealm;
     }
 }

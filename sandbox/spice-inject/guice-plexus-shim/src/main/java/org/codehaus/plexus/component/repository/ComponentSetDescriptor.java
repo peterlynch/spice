@@ -10,42 +10,53 @@
  */
 package org.codehaus.plexus.component.repository;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-@SuppressWarnings( "unused" )
 public class ComponentSetDescriptor
 {
+    // ----------------------------------------------------------------------
+    // Implementation fields
+    // ----------------------------------------------------------------------
+
+    private String source;
+
+    private final List<ComponentDescriptor<?>> components = new ArrayList<ComponentDescriptor<?>>();
+
     // ----------------------------------------------------------------------
     // Public methods
     // ----------------------------------------------------------------------
 
-    public void setId( final String id )
+    public final void setId( final String id )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        // TODO: do we need to do anything here?
+        System.out.println( "TODO ComponentSetDescriptor.setId(" + id + ")" );
     }
 
-    public void setSource( final String source )
+    public final void setSource( final String source )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        this.source = source;
     }
 
-    public String getSource()
+    public final String getSource()
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        return source;
     }
 
-    public void addComponentDescriptor( final ComponentDescriptor<?> descriptor )
+    public final void addComponentDescriptor( final ComponentDescriptor<?> component )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        components.add( component );
     }
 
-    public void addDependency( final ComponentDependency dependency )
+    public final void addDependency( final ComponentDependency dependency )
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        // TODO: do we need to do anything here?
+        System.out.println( "TODO ComponentSetDescriptor.addDependency(" + dependency + ")" );
     }
 
-    public List<ComponentDescriptor<?>> getComponents()
+    public final List<ComponentDescriptor<?>> getComponents()
     {
-        throw new UnsupportedOperationException( "SHIM" );
+        return Collections.unmodifiableList( components );
     }
 }
