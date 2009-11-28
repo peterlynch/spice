@@ -39,15 +39,6 @@ public abstract class BaseLoggerManager
         currentThreshold = parseThreshold( threshold );
     }
 
-    public final void setThresholds( final int currentThreshold )
-    {
-        this.currentThreshold = currentThreshold;
-        for ( final Logger logger : activeLoggers.values() )
-        {
-            logger.setThreshold( currentThreshold );
-        }
-    }
-
     public final Logger getLogger( final String name )
     {
         Logger logger = activeLoggers.get( name );
@@ -63,6 +54,20 @@ public abstract class BaseLoggerManager
     public final void returnLogger( final String name )
     {
         activeLoggers.remove( name );
+    }
+
+    public final void setThresholds( final int currentThreshold )
+    {
+        this.currentThreshold = currentThreshold;
+        for ( final Logger logger : activeLoggers.values() )
+        {
+            logger.setThreshold( currentThreshold );
+        }
+    }
+
+    public int getThreshold()
+    {
+        return currentThreshold;
     }
 
     // ----------------------------------------------------------------------

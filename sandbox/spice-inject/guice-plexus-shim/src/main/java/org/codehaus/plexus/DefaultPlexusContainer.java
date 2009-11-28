@@ -15,32 +15,33 @@ package org.codehaus.plexus;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
+import org.codehaus.plexus.classworlds.realm.DuplicateRealmException;
 import org.codehaus.plexus.classworlds.realm.NoSuchRealmException;
+import org.codehaus.plexus.component.composition.CycleDetectedInComponentGraphException;
 import org.codehaus.plexus.component.repository.ComponentDescriptor;
+import org.codehaus.plexus.component.repository.ComponentRepository;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.context.ContextMapAdapter;
 import org.codehaus.plexus.context.DefaultContext;
-import org.codehaus.plexus.logging.LogEnabled;
+import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.logging.Logger;
-import org.codehaus.plexus.logging.console.ConsoleLogger;
-import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
-import org.codehaus.plexus.personality.plexus.lifecycle.phase.Disposable;
-import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
-import org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable;
+import org.codehaus.plexus.logging.LoggerManager;
+import org.codehaus.plexus.logging.console.ConsoleLoggerManager;
 import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.guice.bean.reflect.ClassSpace;
 import org.sonatype.guice.bean.reflect.WeakClassSpace;
-import org.sonatype.guice.plexus.binders.BeanWatcher;
 import org.sonatype.guice.plexus.binders.PlexusBindingModule;
 import org.sonatype.guice.plexus.binders.PlexusGuice;
 import org.sonatype.guice.plexus.config.Hints;
+import org.sonatype.guice.plexus.config.PlexusBeanRegistry;
 import org.sonatype.guice.plexus.config.PlexusBeanSource;
 import org.sonatype.guice.plexus.config.Roles;
 import org.sonatype.guice.plexus.scanners.AnnotatedPlexusBeanSource;
@@ -49,9 +50,13 @@ import org.sonatype.guice.plexus.scanners.XmlPlexusBeanSource;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import com.google.inject.matcher.AbstractMatcher;
+import com.google.inject.Provides;
 
+/**
+ * {@link PlexusContainer} shim that delegates to a Plexus-aware Guice {@link Injector}.
+ */
 public final class DefaultPlexusContainer
+    extends AbstractLogEnabled
     implements PlexusContainer
 {
     // ----------------------------------------------------------------------
@@ -64,6 +69,10 @@ public final class DefaultPlexusContainer
     // Implementation fields
     // ----------------------------------------------------------------------
 
+    final PlexusLifecycleManager lifecycleManager = new PlexusLifecycleManager( this );
+
+    private final ComponentRepository repository;
+
     private final ClassRealm containerRealm;
 
     private final URL configurationUrl;
@@ -71,27 +80,252 @@ public final class DefaultPlexusContainer
     final Context context;
 
     @Inject
-    Logger logger;
-
-    @Inject
     Injector injector;
+
+    @Inject( optional = true )
+    LoggerManager loggerManager = new ConsoleLoggerManager();
 
     // ----------------------------------------------------------------------
     // Constructors
     // ----------------------------------------------------------------------
 
-    @SuppressWarnings( "unused" )
     public DefaultPlexusContainer( final ContainerConfiguration configuration )
         throws PlexusContainerException
     {
-        ClassWorld world = configuration.getClassWorld();
-        if ( null == world )
+        repository = configuration.getComponentRepository();
+        containerRealm = lookupContainerRealm( configuration );
+        configurationUrl = lookupConfigurationUrl( configuration );
+        context = new DefaultContext( configuration.getContext() );
+        context.put( PlexusConstants.PLEXUS_KEY, this );
+
+        final Map<?, ?> contextMap = new ContextMapAdapter( context );
+        final ClassSpace space = new WeakClassSpace( containerRealm );
+
+        try
         {
-            world = new ClassWorld( DEFAULT_REALM_NAME, Thread.currentThread().getContextClassLoader() );
+            final PlexusBeanSource xmlSource = new XmlPlexusBeanSource( configurationUrl, space, contextMap );
+            final PlexusBeanSource annSource = new AnnotatedPlexusBeanSource( contextMap );
+
+            PlexusGuice.createInjector( new AbstractModule()
+            {
+                @Override
+                protected void configure()
+                {
+                    bind( PlexusContainer.class ).toInstance( DefaultPlexusContainer.this );
+                }
+
+                @Provides
+                @SuppressWarnings( "unused" )
+                private Logger logger()
+                {
+                    return loggerManager.getLogger( PlexusContainer.class.getName() ); // TODO: per-component name?
+                }
+            }, new PlexusBindingModule( lifecycleManager, xmlSource, annSource ) );
         }
+        catch ( final Exception e )
+        {
+            throw new PlexusContainerException( "Unable to create Plexus container", e );
+        }
+    }
+
+    // ----------------------------------------------------------------------
+    // Context methods
+    // ----------------------------------------------------------------------
+
+    public Context getContext()
+    {
+        return context;
+    }
+
+    // ----------------------------------------------------------------------
+    // Lookup methods
+    // ----------------------------------------------------------------------
+
+    public Object lookup( final String role )
+        throws ComponentLookupException
+    {
+        return lookup( role, Hints.DEFAULT_HINT );
+    }
+
+    public Object lookup( final String role, final String hint )
+        throws ComponentLookupException
+    {
+        return lookup( loadRoleClass( role ), hint );
+    }
+
+    public <T> T lookup( final Class<T> type )
+        throws ComponentLookupException
+    {
+        return lookup( type, Hints.DEFAULT_HINT );
+    }
+
+    public <T> T lookup( final Class<T> type, final String hint )
+        throws ComponentLookupException
+    {
+        try
+        {
+            final T instance = injector.getInstance( Roles.componentKey( type, Hints.canonicalHint( hint ) ) );
+            PlexusGuice.resumeInjections( injector );
+            return instance;
+        }
+        catch ( final RuntimeException e )
+        {
+            throw new ComponentLookupException( e.toString(), type.getName(), hint );
+        }
+    }
+
+    public <T> T lookup( final Class<T> type, final String role, final String hint )
+        throws ComponentLookupException
+    {
+        return role.equals( type.getName() ) ? lookup( type, hint ) : type.cast( lookup( role, hint ) );
+    }
+
+    public List<Object> lookupList( final String role )
+        throws ComponentLookupException
+    {
+        return lookupList( loadRoleClass( role ) );
+    }
+
+    public <T> List<T> lookupList( final Class<T> type )
+    {
+        final List<T> componentList = injector.getInstance( PlexusGuice.registryKey( type ) ).lookupList();
+        PlexusGuice.resumeInjections( injector );
+        return componentList;
+    }
+
+    public Map<String, Object> lookupMap( final String role )
+        throws ComponentLookupException
+    {
+        return lookupMap( loadRoleClass( role ) );
+    }
+
+    public <T> Map<String, T> lookupMap( final Class<T> type )
+    {
+        final Map<String, T> componentMap = injector.getInstance( PlexusGuice.registryKey( type ) ).lookupMap();
+        PlexusGuice.resumeInjections( injector );
+        return componentMap;
+    }
+
+    // ----------------------------------------------------------------------
+    // Query methods
+    // ----------------------------------------------------------------------
+
+    public boolean hasComponent( final Class<?> type )
+    {
+        return !injector.getInstance( PlexusGuice.registryKey( type ) ).availableHints().isEmpty();
+    }
+
+    public boolean hasComponent( final Class<?> type, final String hint )
+    {
+        final PlexusBeanRegistry<?> registry = injector.getInstance( PlexusGuice.registryKey( type ) );
+        return registry.availableHints().contains( Hints.canonicalHint( hint ) );
+    }
+
+    public boolean hasComponent( final Class<?> type, final String role, final String hint )
+    {
+        return role.equals( type.getName() ) ? hasComponent( type, hint ) : hasComponent( loadRoleClass( role ), hint );
+    }
+
+    // ----------------------------------------------------------------------
+    // Component descriptor methods
+    // ----------------------------------------------------------------------
+
+    public ComponentDescriptor<?> getComponentDescriptor( final String role, final String hint )
+    {
+        return getComponentDescriptor( Object.class, role, hint );
+    }
+
+    public <T> ComponentDescriptor<T> getComponentDescriptor( final Class<T> type, final String role, final String hint )
+    {
+        return repository.getComponentDescriptor( type, role, hint );
+    }
+
+    @SuppressWarnings( "unchecked" )
+    public List<ComponentDescriptor<?>> getComponentDescriptorList( final String role )
+    {
+        return (List) getComponentDescriptorList( Object.class, role );
+    }
+
+    public <T> List<ComponentDescriptor<T>> getComponentDescriptorList( final Class<T> type, final String role )
+    {
+        return repository.getComponentDescriptorList( type, role );
+    }
+
+    public <T> void addComponentDescriptor( final ComponentDescriptor<T> descriptor )
+        throws CycleDetectedInComponentGraphException
+    {
+        repository.addComponentDescriptor( descriptor );
+    }
+
+    public List<ComponentDescriptor<?>> discoverComponents( final ClassRealm classRealm )
+    {
+        // TODO: do we need to do anything here?
+        System.out.println( "TODO DefaultPlexusContainer.discoverComponents(" + classRealm + ")" );
+        return Collections.emptyList();
+    }
+
+    // ----------------------------------------------------------------------
+    // Class realm methods
+    // ----------------------------------------------------------------------
+
+    public ClassRealm getContainerRealm()
+    {
+        return containerRealm;
+    }
+
+    public ClassRealm createChildRealm( final String id )
+    {
+        try
+        {
+            return containerRealm.createChildRealm( id );
+        }
+        catch ( final DuplicateRealmException e )
+        {
+            return containerRealm.getWorld().getClassRealm( id );
+        }
+    }
+
+    public void removeComponentRealm( final ClassRealm classRealm )
+    {
+        repository.removeComponentRealm( classRealm );
+    }
+
+    // ----------------------------------------------------------------------
+    // Shutdown methods
+    // ----------------------------------------------------------------------
+
+    public void release( final Object component )
+    {
+        // TODO: do we need to do anything here?
+        System.out.println( "TODO DefaultPlexusContainer.release(" + component + ")" );
+    }
+
+    public void dispose()
+    {
+        lifecycleManager.dispose();
+    }
+
+    // ----------------------------------------------------------------------
+    // Implementation methods
+    // ----------------------------------------------------------------------
+
+    /**
+     * Finds container {@link ClassRealm}, taking existing {@link ClassWorld}s or {@link ClassLoader}s into account.
+     * 
+     * @param configuration The container configuration
+     * @return Container class realm
+     */
+    private ClassRealm lookupContainerRealm( final ContainerConfiguration configuration )
+        throws PlexusContainerException
+    {
         ClassRealm realm = configuration.getRealm();
         if ( null == realm )
         {
+            ClassWorld world = configuration.getClassWorld();
+            if ( null == world )
+            {
+                world = new ClassWorld( DEFAULT_REALM_NAME, Thread.currentThread().getContextClassLoader() );
+            }
             try
             {
                 realm = world.getRealm( DEFAULT_REALM_NAME );
@@ -107,262 +341,66 @@ public final class DefaultPlexusContainer
         }
         if ( null == realm )
         {
-            // TODO: log or abort?
+            throw new PlexusContainerException( "Unable to find class realm: " + DEFAULT_REALM_NAME );
         }
+        return realm;
+    }
 
-        containerRealm = realm;
-
-        final String configurationPath = configuration.getContainerConfiguration();
-        if ( null == configurationPath )
+    /**
+     * Finds container configuration URL, may search the container {@link ClassRealm} and local file-system.
+     * 
+     * @param configuration The container configuration
+     * @return Local or remote URL
+     */
+    private URL lookupConfigurationUrl( final ContainerConfiguration configuration )
+    {
+        URL url = configuration.getContainerConfigurationURL();
+        if ( null == url )
         {
-            configurationUrl = configuration.getContainerConfigurationURL();
-        }
-        else
-        {
-            URL url = getClass().getClassLoader().getResource( StringUtils.stripStart( configurationPath, "/" ) );
-            if ( null == url )
+            final String configurationPath = configuration.getContainerConfiguration();
+            if ( null != configurationPath )
             {
-                final File file = new File( configurationPath );
-                if ( file.isFile() )
+                url = getClass().getClassLoader().getResource( StringUtils.stripStart( configurationPath, "/" ) );
+                if ( null == url )
                 {
-                    try
+                    final File file = new File( configurationPath );
+                    if ( file.isFile() )
                     {
-                        url = file.toURI().toURL();
-                    }
-                    catch ( final MalformedURLException e )
-                    {
-                        // TODO: log or abort?
+                        try
+                        {
+                            url = file.toURI().toURL();
+                        }
+                        catch ( final MalformedURLException e )
+                        {
+                            // drop through and recover
+                        }
                     }
                 }
-            }
-            if ( null == url )
-            {
-                // TODO: log or abort?
-            }
-            configurationUrl = url;
-        }
-
-        context = new DefaultContext( configuration.getContext() );
-        context.put( PlexusConstants.PLEXUS_KEY, this );
-        final Map<?, ?> contextMap = new ContextMapAdapter( context );
-
-        try
-        {
-            final PlexusLifecycleManager lifecycleManager = new PlexusLifecycleManager();
-
-            final ClassSpace space = new WeakClassSpace( containerRealm );
-            final PlexusBeanSource xmlSource = new XmlPlexusBeanSource( configurationUrl, space, contextMap );
-            final PlexusBeanSource annSource = new AnnotatedPlexusBeanSource( contextMap );
-
-            PlexusGuice.createInjector( new AbstractModule()
-            {
-                @Override
-                protected void configure()
+                if ( null == url )
                 {
-                    bind( PlexusContainer.class ).toInstance( DefaultPlexusContainer.this );
-                    bind( Logger.class ).toInstance( new ConsoleLogger( Logger.LEVEL_DEBUG, "" ) );
-                    requestInjection( DefaultPlexusContainer.this );
+                    ConsoleLoggerManager.LOGGER.warn( "Bad container configuration path: " + configurationPath );
                 }
-            }, new PlexusBindingModule( lifecycleManager, xmlSource, annSource ) );
+            }
         }
-        catch ( final Exception e )
-        {
-            // TODO: log or abort?
-            throw new RuntimeException( e );
-        }
+        return url;
     }
 
-    // ----------------------------------------------------------------------
-    // Public methods
-    // ----------------------------------------------------------------------
-
-    public Context getContext()
-    {
-        return context;
-    }
-
-    public Object lookup( final String role )
-        throws ComponentLookupException
-    {
-        return lookup( role, Hints.DEFAULT_HINT );
-    }
-
+    /**
+     * Loads the named Plexus role from the current container {@link ClassRealm}.
+     * 
+     * @param role The Plexus role
+     * @return Plexus role class
+     */
     @SuppressWarnings( "unchecked" )
-    public Object lookup( final String role, final String hint )
-        throws ComponentLookupException
+    private Class<Object> loadRoleClass( final String role )
     {
         try
         {
-            return lookup( containerRealm.loadClass( role ), hint );
+            return containerRealm.loadClass( role );
         }
         catch ( final ClassNotFoundException e )
         {
-            throw new ComponentLookupException( e.toString(), role, hint );
-        }
-    }
-
-    public <T> T lookup( final Class<T> type )
-        throws ComponentLookupException
-    {
-        return lookup( type, Hints.DEFAULT_HINT );
-    }
-
-    public <T> T lookup( final Class<T> type, final String hint )
-        throws ComponentLookupException
-    {
-        try
-        {
-            return injector.getInstance( Roles.componentKey( type, hint ) );
-        }
-        catch ( final RuntimeException e )
-        {
-            throw new ComponentLookupException( e.toString(), type.getName(), hint );
-        }
-        finally
-        {
-            PlexusGuice.resumeInjections( injector );
-        }
-    }
-
-    public <T> T lookup( final Class<T> type, final String role, final String hint )
-        throws ComponentLookupException
-    {
-        return role.equals( type.getName() ) ? lookup( type, hint ) : type.cast( lookup( role, hint ) );
-    }
-
-    public List<Object> lookupList( final String role )
-    {
-        throw new UnsupportedOperationException( "SHIM" );
-    }
-
-    public <T> List<T> lookupList( final Class<T> type )
-    {
-        throw new UnsupportedOperationException( "SHIM" );
-    }
-
-    public Map<String, Object> lookupMap( final String role )
-    {
-        throw new UnsupportedOperationException( "SHIM" );
-    }
-
-    public <T> Map<String, T> lookupMap( final Class<T> type )
-    {
-        throw new UnsupportedOperationException( "SHIM" );
-    }
-
-    public boolean hasComponent( final Class<?> type )
-    {
-        throw new UnsupportedOperationException( "SHIM" );
-    }
-
-    public boolean hasComponent( final Class<?> type, final String hint )
-    {
-        throw new UnsupportedOperationException( "SHIM" );
-    }
-
-    public boolean hasComponent( final Class<?> type, final String role, final String hint )
-    {
-        throw new UnsupportedOperationException( "SHIM" );
-    }
-
-    public ComponentDescriptor<?> getComponentDescriptor( final String role, final String hint )
-    {
-        throw new UnsupportedOperationException( "SHIM" );
-    }
-
-    public <T> ComponentDescriptor<T> getComponentDescriptor( final Class<T> type, final String role, final String hint )
-    {
-        throw new UnsupportedOperationException( "SHIM" );
-    }
-
-    public List<ComponentDescriptor<?>> getComponentDescriptorList( final String role )
-    {
-        throw new UnsupportedOperationException( "SHIM" );
-    }
-
-    public <T> List<ComponentDescriptor<T>> getComponentDescriptorList( final Class<T> type, final String role )
-    {
-        throw new UnsupportedOperationException( "SHIM" );
-    }
-
-    public <T> void addComponentDescriptor( final ComponentDescriptor<T> descriptor )
-    {
-        throw new UnsupportedOperationException( "SHIM" );
-    }
-
-    public ClassRealm getContainerRealm()
-    {
-        return containerRealm;
-    }
-
-    public ClassRealm createChildRealm( final String id )
-    {
-        throw new UnsupportedOperationException( "SHIM" );
-    }
-
-    public List<ComponentDescriptor<?>> discoverComponents( final ClassRealm classRealm )
-    {
-        throw new UnsupportedOperationException( "SHIM" );
-    }
-
-    public void removeComponentRealm( final ClassRealm classRealm )
-    {
-        throw new UnsupportedOperationException( "SHIM" );
-    }
-
-    public void release( final Object component )
-    {
-        throw new UnsupportedOperationException( "SHIM" );
-    }
-
-    public void dispose()
-    {
-        // TODO: handle proper shutdown
-    }
-
-    // ----------------------------------------------------------------------
-    // Implementation helpers
-    // ----------------------------------------------------------------------
-
-    final class PlexusLifecycleManager
-        extends AbstractMatcher<Class<?>>
-        implements BeanWatcher
-    {
-        public boolean matches( final Class<?> clazz )
-        {
-            return LogEnabled.class.isAssignableFrom( clazz ) || Contextualizable.class.isAssignableFrom( clazz )
-                || Initializable.class.isAssignableFrom( clazz ) || Startable.class.isAssignableFrom( clazz )
-                || Disposable.class.isAssignableFrom( clazz );
-        }
-
-        public void afterInjection( final Object injectee )
-        {
-            try
-            {
-                if ( injectee instanceof LogEnabled )
-                {
-                    ( (LogEnabled) injectee ).enableLogging( logger ); // TODO: is this OK?
-                }
-                if ( injectee instanceof Contextualizable )
-                {
-                    ( (Contextualizable) injectee ).contextualize( context );
-                }
-                if ( injectee instanceof Initializable )
-                {
-                    ( (Initializable) injectee ).initialize();
-                }
-                if ( injectee instanceof Startable )
-                {
-                    ( (Startable) injectee ).start();
-                }
-            }
-            catch ( final Exception e )
-            {
-                // TODO: log or abort?
-                System.out.println( e );
-            }
-
-            // TODO: handle stop + disposal...
+            throw new TypeNotPresentException( role, e );
         }
     }
 }

@@ -22,7 +22,7 @@ public final class ConsoleLoggerManager
     // Constants
     // ----------------------------------------------------------------------
 
-    private static final Logger CONSOLE_LOGGER = new ConsoleLogger( Logger.LEVEL_DEBUG, "" );
+    public static final Logger LOGGER = new ConsoleLogger( Logger.LEVEL_DEBUG, "" );
 
     // ----------------------------------------------------------------------
     // Customizable methods
@@ -31,6 +31,6 @@ public final class ConsoleLoggerManager
     @Override
     protected Logger createLogger( final String name )
     {
-        return CONSOLE_LOGGER;
+        return LOGGER;
     }
 }

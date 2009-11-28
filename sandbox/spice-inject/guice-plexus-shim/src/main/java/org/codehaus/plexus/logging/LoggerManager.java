@@ -17,4 +17,6 @@ public interface LoggerManager
     void returnLogger( String name );
 
     void setThresholds( int threshold );
+
+    int getThreshold();
 }

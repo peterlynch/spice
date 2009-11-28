@@ -15,11 +15,8 @@ package org.codehaus.plexus;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.logging.LogEnabled;
 import org.codehaus.plexus.logging.Logger;
-import org.codehaus.plexus.logging.LoggerManager;
-import org.codehaus.plexus.logging.console.ConsoleLoggerManager;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Disposable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
@@ -27,8 +24,6 @@ import org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable;
 import org.sonatype.guice.plexus.binders.BeanWatcher;
 import org.sonatype.guice.plexus.binders.PlexusGuice;
 
-import com.google.inject.Inject;
-import com.google.inject.Injector;
 import com.google.inject.matcher.AbstractMatcher;
 
 /**
@@ -44,14 +39,16 @@ final class PlexusLifecycleManager
 
     private final List<Object> activeComponents = new ArrayList<Object>();
 
-    @Inject
-    private Injector injector;
+    private final DefaultPlexusContainer container;
 
-    @Inject( optional = true )
-    LoggerManager loggerManager = new ConsoleLoggerManager();
+    // ----------------------------------------------------------------------
+    // Constructors
+    // ----------------------------------------------------------------------
 
-    @Inject
-    private Context plexusContext;
+    PlexusLifecycleManager( final DefaultPlexusContainer container )
+    {
+        this.container = container;
+    }
 
     // ----------------------------------------------------------------------
     // Public methods
@@ -67,9 +64,9 @@ final class PlexusLifecycleManager
     public void afterInjection( final Object injectee )
     {
         // ensure all members are initialized
-        PlexusGuice.resumeInjections( injector );
+        PlexusGuice.resumeInjections( container.injector );
 
-        final Logger logger = loggerManager.getLogger( injectee.getClass().getName() );
+        final Logger logger = container.loggerManager.getLogger( injectee.getClass().getName() );
         try
         {
             /*
@@ -81,7 +78,7 @@ final class PlexusLifecycleManager
             }
             if ( injectee instanceof Contextualizable )
             {
-                ( (Contextualizable) injectee ).contextualize( plexusContext );
+                ( (Contextualizable) injectee ).contextualize( container.context );
             }
             if ( injectee instanceof Initializable )
             {
@@ -108,7 +105,7 @@ final class PlexusLifecycleManager
         while ( !activeComponents.isEmpty() )
         {
             final Object injectee = activeComponents.remove( 0 );
-            final Logger logger = loggerManager.getLogger( injectee.getClass().getName() );
+            final Logger logger = container.loggerManager.getLogger( injectee.getClass().getName() );
             try
             {
                 /*
