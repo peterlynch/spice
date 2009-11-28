@@ -30,18 +30,18 @@ public interface PlexusBeanRegistry<T>
     /**
      * Returns a list of Plexus beans for the specific role, filtered by the given hints.
      * 
-     * @param hints The Plexus hints to filter on
+     * @param canonicalHints The Plexus hints to filter on
      * @return List of Plexus beans with the given hints
      */
-    List<T> lookupList( final String... hints );
+    List<T> lookupList( final String... canonicalHints );
 
     /**
      * Returns a hint-map of Plexus beans for the specific role, filtered by the given hints.
      * 
-     * @param hints The Plexus hints to filter on
+     * @param canonicalHints The Plexus hints to filter on
      * @return Map of Plexus beans with the given hints
      */
-    Map<String, T> lookupMap( final String... hints );
+    Map<String, T> lookupMap( final String... canonicalHints );
 
     /**
      * Returns the first Plexus bean registered for the specific role, regardless of hints.

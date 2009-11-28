@@ -12,9 +12,14 @@
  */
 package org.sonatype.guice.plexus.binders;
 
+import org.sonatype.guice.plexus.config.PlexusBeanRegistry;
+
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Module;
+import com.google.inject.TypeLiteral;
+import com.google.inject.util.Types;
 
 /**
  * Utility methods that provide Plexus-style deferred injection on top of standard Guice.
@@ -59,5 +64,28 @@ public final class PlexusGuice
     public static Injector resumeInjections( final Injector injector )
     {
         return injector.getInstance( DeferredInjector.class ).resumeInjections();
+    }
+
+    /**
+     * Returns the Guice {@link PlexusBeanRegistry} binding {@link Key} for the given Plexus role.
+     * 
+     * @param role The Plexus role
+     * @return Registry binding key for the given role
+     */
+    public static <T> Key<PlexusBeanRegistry<T>> registryKey( final Class<T> role )
+    {
+        return registryKey( TypeLiteral.get( role ) );
+    }
+
+    /**
+     * Returns the Guice {@link PlexusComponentRegistry} binding {@link Key} for the given Plexus role.
+     * 
+     * @param role The Plexus role
+     * @return Registry binding key for the given role
+     */
+    @SuppressWarnings( "unchecked" )
+    public static <T> Key<PlexusBeanRegistry<T>> registryKey( final TypeLiteral<T> role )
+    {
+        return (Key) Key.get( Types.newParameterizedType( GuicePlexusBeanRegistry.class, role.getType() ) );
     }
 }

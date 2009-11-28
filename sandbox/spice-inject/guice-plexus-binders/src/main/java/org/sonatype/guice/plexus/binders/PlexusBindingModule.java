@@ -74,7 +74,6 @@ public final class PlexusBindingModule
     @Override
     protected void configure()
     {
-        // Plexus-style constant conversion
         install( new DateTypeConverter() );
         install( new XmlTypeConverter() );
 
@@ -82,7 +81,6 @@ public final class PlexusBindingModule
         {
             for ( final Entry<Component, DeferredClass<?>> e : source.findPlexusComponentBeans().entrySet() )
             {
-                // record all known Plexus component bindings
                 bindPlexusBean( e.getKey(), e.getValue() );
             }
         }

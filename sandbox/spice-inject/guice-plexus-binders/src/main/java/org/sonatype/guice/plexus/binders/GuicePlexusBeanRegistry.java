@@ -12,16 +12,16 @@
  */
 package org.sonatype.guice.plexus.binders;
 
-import static org.sonatype.guice.plexus.config.Hints.DEFAULT_HINT;
-import static org.sonatype.guice.plexus.config.Hints.canonicalHint;
-import static org.sonatype.guice.plexus.config.Hints.isDefaultHint;
-
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.sonatype.guice.plexus.config.Hints;
+import org.sonatype.guice.plexus.config.PlexusBeanRegistry;
 
 import com.google.inject.Binding;
 import com.google.inject.ConfigurationException;
@@ -35,10 +35,11 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 
 /**
- * Supplies filtered maps/lists/wildcards of registered Plexus components.
+ * {@link PlexusBeanRegistry} that queries the Guice {@link Injector} to find role {@link Binding}s.
  */
 @Singleton
-final class PlexusComponents<T>
+final class GuicePlexusBeanRegistry<T>
+    implements PlexusBeanRegistry<T>
 {
     // ----------------------------------------------------------------------
     // Constants
@@ -55,7 +56,7 @@ final class PlexusComponents<T>
 
     private final String roleName;
 
-    private final Map<String, Provider<T>> roleMap;
+    private final Map<String, Provider<T>> roleHintMap;
 
     private final String[] allHints;
 
@@ -64,7 +65,7 @@ final class PlexusComponents<T>
     // ----------------------------------------------------------------------
 
     @Inject
-    PlexusComponents( final Injector injector, final TypeLiteral<T> roleType )
+    GuicePlexusBeanRegistry( final Injector injector, final TypeLiteral<T> roleType )
     {
         this.roleName = roleType.toString();
 
@@ -77,7 +78,7 @@ final class PlexusComponents<T>
         try
         {
             // use explicit query for default, in case it's a Just-In-Time binding
-            tempMap.put( DEFAULT_HINT, injector.getProvider( Key.get( roleType ) ) );
+            tempMap.put( Hints.DEFAULT_HINT, injector.getProvider( Key.get( roleType ) ) );
         }
         catch ( final ConfigurationException e ) // NOPMD
         {
@@ -92,8 +93,8 @@ final class PlexusComponents<T>
             if ( a instanceof Named )
             {
                 // ignore default bindings as we already captured that above
-                final String hint = canonicalHint( ( (Named) a ).value() );
-                if ( !isDefaultHint( hint ) )
+                final String hint = Hints.canonicalHint( ( (Named) a ).value() );
+                if ( !Hints.isDefaultHint( hint ) )
                 {
                     tempMap.put( hint, b.getProvider() );
                 }
@@ -102,53 +103,39 @@ final class PlexusComponents<T>
 
         // ordering is recorded in hint array, so can use simpler hash map
         allHints = tempMap.keySet().toArray( new String[tempMap.size()] );
-        roleMap = new HashMap<String, Provider<T>>( tempMap );
+        roleHintMap = new HashMap<String, Provider<T>>( tempMap );
     }
 
     // ----------------------------------------------------------------------
-    // Shared package-private methods
+    // Public methods
     // ----------------------------------------------------------------------
 
-    /**
-     * Returns a map of Plexus components for the current role, filtered by the given hints.
-     * 
-     * @param canonicalHints The Plexus hints
-     * @return Map of Plexus components with the given hints
-     */
-    Map<String, T> lookupMap( final String... canonicalHints )
+    public List<String> availableHints()
     {
-        final String[] hints = canonicalHints.length > 0 ? canonicalHints : allHints;
-        final Map<String, T> roleHintMap = new LinkedHashMap<String, T>( 2 * hints.length );
-        for ( final String h : hints )
-        {
-            roleHintMap.put( h, lookupRole( h ) );
-        }
-        return roleHintMap;
+        return Arrays.asList( allHints );
     }
 
-    /**
-     * Returns a list of Plexus components for the current role, filtered by the given hints.
-     * 
-     * @param canonicalHints The Plexus hints
-     * @return List of Plexus components with the given hints
-     */
-    List<T> lookupList( final String... canonicalHints )
+    public List<T> lookupList( final String... canonicalHints )
     {
-        final String[] hints = canonicalHints.length > 0 ? canonicalHints : allHints;
-        final List<T> roleHintList = new ArrayList<T>( hints.length );
-        for ( final String h : hints )
+        final List<T> componentList = new ArrayList<T>();
+        for ( final String h : canonicalHints.length == 0 ? allHints : canonicalHints )
         {
-            roleHintList.add( lookupRole( h ) );
+            componentList.add( lookupRole( h ) );
         }
-        return roleHintList;
+        return componentList;
     }
 
-    /**
-     * Returns the first component registered for the current role, regardless of hints.
-     * 
-     * @return Single Plexus component
-     */
-    T lookupWildcard()
+    public Map<String, T> lookupMap( final String... canonicalHints )
+    {
+        final Map<String, T> componentMap = new LinkedHashMap<String, T>();
+        for ( final String h : canonicalHints.length == 0 ? allHints : canonicalHints )
+        {
+            componentMap.put( h, lookupRole( h ) );
+        }
+        return componentMap;
+    }
+
+    public T lookupWildcard()
     {
         if ( allHints.length == 0 )
         {
@@ -164,15 +151,19 @@ final class PlexusComponents<T>
     /**
      * Returns the component instance that matches the given Plexus hint.
      * 
-     * @param hint The Plexus hint
+     * @param canonicalHint The Plexus hint
      * @return Component instance that matches the given hint
      */
-    private T lookupRole( final String hint )
+    private T lookupRole( final String canonicalHint )
     {
-        final Provider<T> provider = roleMap.get( hint );
+        final Provider<T> provider = roleHintMap.get( canonicalHint );
         if ( null == provider )
         {
-            throw new ProvisionException( String.format( MISSING_ROLE_HINT_ERROR, roleName, hint ) );
+            if ( Hints.isDefaultHint( canonicalHint ) )
+            {
+                throw new ProvisionException( String.format( MISSING_ROLE_ERROR, roleName ) );
+            }
+            throw new ProvisionException( String.format( MISSING_ROLE_HINT_ERROR, roleName, canonicalHint ) );
         }
         return provider.get();
     }

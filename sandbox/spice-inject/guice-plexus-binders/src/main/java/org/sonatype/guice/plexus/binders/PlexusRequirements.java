@@ -12,20 +12,18 @@
  */
 package org.sonatype.guice.plexus.binders;
 
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.guice.bean.reflect.BeanProperty;
 import org.sonatype.guice.plexus.config.Hints;
+import org.sonatype.guice.plexus.config.PlexusBeanRegistry;
 import org.sonatype.guice.plexus.config.Roles;
 
-import com.google.inject.Key;
 import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
 import com.google.inject.spi.TypeEncounter;
-import com.google.inject.util.Types;
 
 /**
  * Creates {@link Provider}s for properties with @{@link Requirement} metadata.
@@ -61,47 +59,48 @@ final class PlexusRequirements
     @SuppressWarnings( "unchecked" )
     public <T> Provider<T> lookup( final Requirement requirement, final BeanProperty<T> property )
     {
-        // deduce requirement from metadata + property details
+        final String[] hints = Hints.canonicalHints( requirement );
+
+        // deduce lookup from metadata + property details
         final TypeLiteral expectedType = property.getType();
         final TypeLiteral roleType = Roles.roleType( requirement, expectedType );
-        final String[] canonicalHints = Hints.canonicalHints( requirement );
         final Class rawType = expectedType.getRawType();
 
         if ( Map.class == rawType )
         {
-            final Provider<PlexusComponents> components = getComponentsForRole( roleType );
+            final Provider<PlexusBeanRegistry<T>> registry = getRoleRegistry( roleType );
             return new Provider()
             {
                 public Map<String, T> get()
                 {
-                    return components.get().lookupMap( canonicalHints );
+                    return registry.get().lookupMap( hints );
                 }
             };
         }
         else if ( List.class == rawType )
         {
-            final Provider<PlexusComponents> components = getComponentsForRole( roleType );
+            final Provider<PlexusBeanRegistry<T>> registry = getRoleRegistry( roleType );
             return new Provider()
             {
                 public List<T> get()
                 {
-                    return components.get().lookupList( canonicalHints );
+                    return registry.get().lookupList( hints );
                 }
             };
         }
-        else if ( canonicalHints.length == 0 )
+        else if ( hints.length == 0 )
         {
-            final Provider<PlexusComponents> components = getComponentsForRole( roleType );
+            final Provider<PlexusBeanRegistry<T>> registry = getRoleRegistry( roleType );
             return new Provider()
             {
                 public Object get()
                 {
-                    return components.get().lookupWildcard();
+                    return registry.get().lookupWildcard();
                 }
             };
         }
 
-        return encounter.getProvider( Roles.componentKey( roleType, canonicalHints[0] ) );
+        return encounter.getProvider( Roles.componentKey( roleType, hints[0] ) );
     }
 
     // ----------------------------------------------------------------------
@@ -109,15 +108,13 @@ final class PlexusRequirements
     // ----------------------------------------------------------------------
 
     /**
-     * Returns a {@link Provider} that can provide a {@link PlexusComponents} for the given role type.
+     * Returns a {@link Provider} that can provide a {@link PlexusBeanRegistry} for the given role type.
      * 
-     * @param roleType The reified Plexus role
-     * @return Provider that provides components for the given role
+     * @param role The reified Plexus role
+     * @return Provider that provides a bean registry for the given role
      */
-    @SuppressWarnings( "unchecked" )
-    private Provider<PlexusComponents> getComponentsForRole( final TypeLiteral roleType )
+    private <T> Provider<PlexusBeanRegistry<T>> getRoleRegistry( final TypeLiteral<T> role )
     {
-        final Type providerType = Types.newParameterizedType( PlexusComponents.class, roleType.getType() );
-        return (Provider) encounter.getProvider( Key.get( providerType ) );
+        return encounter.getProvider( PlexusGuice.registryKey( role ) );
     }
 }

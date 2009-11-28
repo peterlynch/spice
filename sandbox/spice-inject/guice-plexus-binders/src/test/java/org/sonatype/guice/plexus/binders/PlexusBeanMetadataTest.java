@@ -12,6 +12,7 @@
  */
 package org.sonatype.guice.plexus.binders;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -150,10 +151,11 @@ public class PlexusBeanMetadataTest
 
     public void testExtraMetadata()
     {
+        assertEquals( "REQUIREMENT", bean.getExtraMetadata() );
+        assertEquals( "CONFIGURATION", injector.getInstance( DefaultBean2.class ).extraMetadata );
         assertSame( bean, injector.getInstance( Key.get( Bean.class, Names.named( "2" ) ) ) );
 
-        assertEquals( "REQUIREMENT", bean.getExtraMetadata() );
-
-        assertEquals( "CONFIGURATION", injector.getInstance( DefaultBean2.class ).extraMetadata );
+        assertEquals( Collections.singletonList( "2" ),
+                      injector.getInstance( PlexusGuice.registryKey( Bean.class ) ).availableHints() );
     }
 }
