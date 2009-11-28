@@ -26,6 +26,7 @@ import org.sonatype.guice.bean.reflect.WeakDeferredClass;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
+import com.google.inject.util.Types;
 
 /**
  * Constants and utility methods for dealing with Plexus roles.
@@ -59,7 +60,7 @@ public final class Roles
      */
     public static String canonicalRoleHint( final String role, final String hint )
     {
-        return role + '-' + Hints.canonicalHint( hint );
+        return role + ':' + Hints.canonicalHint( hint );
     }
 
     /**
@@ -127,6 +128,29 @@ public final class Roles
             return Key.get( role );
         }
         return Key.get( role, Names.named( Hints.canonicalHint( hint ) ) );
+    }
+
+    /**
+     * Returns the {@link PlexusBeanRegistry} binding {@link Key} for the given Plexus role.
+     * 
+     * @param role The Plexus role
+     * @return Registry binding key for the given role
+     */
+    public static <T> Key<PlexusBeanRegistry<T>> registryKey( final Class<T> role )
+    {
+        return registryKey( TypeLiteral.get( role ) );
+    }
+
+    /**
+     * Returns the {@link PlexusComponentRegistry} binding {@link Key} for the given Plexus role.
+     * 
+     * @param role The Plexus role
+     * @return Registry binding key for the given role
+     */
+    @SuppressWarnings( "unchecked" )
+    public static <T> Key<PlexusBeanRegistry<T>> registryKey( final TypeLiteral<T> role )
+    {
+        return (Key) Key.get( Types.newParameterizedType( PlexusBeanRegistry.class, role.getType() ) );
     }
 
     /**

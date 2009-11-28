@@ -12,13 +12,12 @@
  */
 package org.sonatype.guice.plexus.annotations;
 
-import static org.sonatype.guice.plexus.config.Hints.NO_HINTS;
-
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.sonatype.guice.bean.reflect.DeferredClass;
+import org.sonatype.guice.plexus.config.Hints;
 
 /**
  * Runtime implementation of Plexus @{@link Requirement} annotation.
@@ -55,7 +54,7 @@ public final class RequirementImpl
         if ( hints.length == 1 )
         {
             hint = hints[0];
-            this.hints = NO_HINTS;
+            this.hints = Hints.NO_HINTS;
         }
         else
         {
