@@ -54,11 +54,13 @@ public final class XmlPlexusBeanSource
 
     private static final String COMPONENTS_XML_PATH = "META-INF/plexus/components.xml";
 
+    private static final String LOAD_ON_START = "load-on-start";
+
+    private static final String SINGLETON = "singleton";
+
     // ----------------------------------------------------------------------
     // Implementation fields
     // ----------------------------------------------------------------------
-
-    private final Map<String, String> roleHintStrategies = new HashMap<String, String>();
 
     private final Map<Component, DeferredClass<?>> componentMap = new HashMap<Component, DeferredClass<?>>();
 
@@ -78,12 +80,14 @@ public final class XmlPlexusBeanSource
     public XmlPlexusBeanSource( final URL plexusDotXml, final ClassSpace space, final Map<?, ?> variables )
         throws XmlPullParserException, IOException
     {
+        final Map<String, String> strategies = new HashMap<String, String>();
+
         if ( null != plexusDotXml )
         {
             final InputStream in = plexusDotXml.openStream();
             try
             {
-                parsePlexusDotXml( filteredXmlReader( in, variables ), space );
+                parsePlexusDotXml( filteredXmlReader( in, variables ), space, strategies );
             }
             finally
             {
@@ -96,7 +100,7 @@ public final class XmlPlexusBeanSource
             final InputStream in = i.nextElement().openStream();
             try
             {
-                parseComponentsDotXml( filteredXmlReader( in, variables ), space );
+                parseComponentsDotXml( filteredXmlReader( in, variables ), space, strategies );
             }
             finally
             {
@@ -142,8 +146,9 @@ public final class XmlPlexusBeanSource
      * 
      * @param reader The XML resource reader
      * @param space The containing class space
+     * @param strategies The role instantiation strategies
      */
-    private void parsePlexusDotXml( final Reader reader, final ClassSpace space )
+    private void parsePlexusDotXml( final Reader reader, final ClassSpace space, final Map<String, String> strategies )
         throws XmlPullParserException, IOException
     {
         final MXParser parser = new MXParser();
@@ -155,18 +160,18 @@ public final class XmlPlexusBeanSource
         while ( parser.nextTag() == XmlPullParser.START_TAG )
         {
             final String name = parser.getName();
-            if ( "load-on-start".equals( name ) )
+            if ( LOAD_ON_START.equals( name ) )
             {
                 while ( parser.nextTag() == XmlPullParser.START_TAG )
                 {
-                    parseLoadOnStart( parser );
+                    parseLoadOnStart( parser, strategies );
                 }
             }
             else if ( "components".equals( name ) )
             {
                 while ( parser.nextTag() == XmlPullParser.START_TAG )
                 {
-                    parseComponent( parser, space );
+                    parseComponent( parser, space, strategies );
                 }
             }
             else
@@ -181,8 +186,10 @@ public final class XmlPlexusBeanSource
      * 
      * @param reader The XML resource reader
      * @param space The containing class space
+     * @param strategies The role instantiation strategies
      */
-    private void parseComponentsDotXml( final Reader reader, final ClassSpace space )
+    private void parseComponentsDotXml( final Reader reader, final ClassSpace space,
+                                        final Map<String, String> strategies )
         throws XmlPullParserException, IOException
     {
         final MXParser parser = new MXParser();
@@ -195,7 +202,7 @@ public final class XmlPlexusBeanSource
 
         while ( parser.nextTag() == XmlPullParser.START_TAG )
         {
-            parseComponent( parser, space );
+            parseComponent( parser, space, strategies );
         }
     }
 
@@ -203,8 +210,9 @@ public final class XmlPlexusBeanSource
      * Parses a load-on-start &lt;component&gt; XML stanza into a Plexus role-hint.
      * 
      * @param parser The XML parser
+     * @param strategies The role instantiation strategies
      */
-    private void parseLoadOnStart( final MXParser parser )
+    private void parseLoadOnStart( final MXParser parser, final Map<String, String> strategies )
         throws XmlPullParserException, IOException
     {
         String role = null;
@@ -233,8 +241,7 @@ public final class XmlPlexusBeanSource
             throw new XmlPullParserException( "Missing <role> element.", parser, null );
         }
 
-        roleHintStrategies.put( Roles.canonicalRoleHint( role, hint ), "load-on-start" );
-
+        strategies.put( Roles.canonicalRoleHint( role, hint ), LOAD_ON_START );
     }
 
     /**
@@ -242,14 +249,15 @@ public final class XmlPlexusBeanSource
      * 
      * @param parser The XML parser
      * @param space The containing class space
+     * @param strategies The role instantiation strategies
      */
-    private void parseComponent( final MXParser parser, final ClassSpace space )
+    private void parseComponent( final MXParser parser, final ClassSpace space, final Map<String, String> strategies )
         throws XmlPullParserException, IOException
     {
         String role = null;
         String hint = "";
 
-        String instantiationStrategy = "singleton";
+        String instantiationStrategy = SINGLETON;
         String implementation = null;
 
         final Map<String, Requirement> requirements = new HashMap<String, Requirement>();
@@ -276,7 +284,7 @@ public final class XmlPlexusBeanSource
             }
             else if ( "role".equals( name ) )
             {
-                role = TEXT( parser );
+                role = TEXT( parser ).intern();
             }
             else if ( "role-hint".equals( name ) )
             {
@@ -284,11 +292,11 @@ public final class XmlPlexusBeanSource
             }
             else if ( "instantiation-strategy".equals( name ) )
             {
-                instantiationStrategy = TEXT( parser );
+                instantiationStrategy = TEXT( parser ).intern();
             }
             else if ( "implementation".equals( name ) )
             {
-                implementation = TEXT( parser );
+                implementation = TEXT( parser ).intern();
             }
             else
             {
@@ -317,14 +325,14 @@ public final class XmlPlexusBeanSource
         }
 
         final String roleHintKey = Roles.canonicalRoleHint( role, hint );
-        final String strategy = roleHintStrategies.get( roleHintKey );
+        final String strategy = strategies.get( roleHintKey );
         if ( null != strategy )
         {
             instantiationStrategy = strategy;
         }
         else
         {
-            roleHintStrategies.put( roleHintKey, instantiationStrategy );
+            strategies.put( roleHintKey, instantiationStrategy );
         }
 
         hint = Hints.canonicalHint( hint );
@@ -355,7 +363,7 @@ public final class XmlPlexusBeanSource
             final String name = parser.getName();
             if ( "role".equals( name ) )
             {
-                role = TEXT( parser );
+                role = TEXT( parser ).intern();
             }
             else if ( "role-hint".equals( name ) )
             {
