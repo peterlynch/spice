@@ -5,11 +5,14 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonatype.buup.cfgfiles.jsw.OnExitCommand;
 import org.sonatype.buup.cfgfiles.jsw.WrapperConfEditor;
 import org.sonatype.buup.cfgfiles.jsw.WrapperHelper;
 
 public class BuupInvoker
 {
+    private static final int RESTART_EXIT_CODE = 12;
+
     private Logger logger = LoggerFactory.getLogger( BuupInvoker.class );
 
     protected Logger getLogger()
@@ -53,13 +56,17 @@ public class BuupInvoker
                 editor.addWrapperJavaAdditional( "-Dbuup.parameter." + entry.getKey() + "=" + entry.getValue() );
             }
 
+            // modify the wrapper.conf to have proper settings for restarting the App
+            editor.setWrapperRestartReloadConfiguration( true );
+            editor.setWrapperOnExit( RESTART_EXIT_CODE, OnExitCommand.RESTART );
+
             // save
             editor.save();
 
             getLogger().info( "Stopping JVM forcedly, BUUP should come up and do upgrade." );
 
             // STOP JVM (and wrapper will bring up BUUP)
-            System.exit( 0 );
+            System.exit( RESTART_EXIT_CODE );
         }
         catch ( Throwable t )
         {
