@@ -45,6 +45,9 @@ public class BuupInvoker
 
             // 3rd, swap in a nice alternative app
             editor.setWrapperJavaMainclass( "org.sonatype.buup.Buup" );
+            
+            // TODO: think about removing _everything_ except wrapper.jar from classpath.
+            // Hence, we would have _full_ upgrade possibility (except JSW upgrade)
 
             // 4th, communicate with buup
             editor.addWrapperJavaAdditional( "-Dbuup.upgradeBundleDirectory="
