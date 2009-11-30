@@ -2,6 +2,6 @@ package org.sonatype.buup.actions;
 
 public interface Action
 {
-    void perform()
+    void perform( ActionContext ctx )
         throws Exception;
 }

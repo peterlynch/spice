@@ -3,6 +3,7 @@ package org.sonatype.buup;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -12,6 +13,8 @@ import org.sonatype.appcontext.AppContextException;
 import org.sonatype.appcontext.AppContextFactory;
 import org.sonatype.appcontext.AppContextRequest;
 import org.sonatype.appcontext.PropertiesFileContextFiller;
+import org.sonatype.buup.actions.Action;
+import org.sonatype.buup.actions.ActionContext;
 import org.sonatype.buup.backup.BackupManager;
 import org.sonatype.buup.backup.DefaultBackupManager;
 import org.sonatype.buup.cfgfiles.jsw.WrapperHelper;
@@ -23,7 +26,7 @@ import org.sonatype.buup.cfgfiles.jsw.WrapperHelper;
  */
 public class Buup
 {
-    private Logger logger = LoggerFactory.getLogger( "BUUP" );
+    private Logger logger = LoggerFactory.getLogger( getClass() );
 
     public Logger getLogger()
     {
@@ -69,19 +72,9 @@ public class Buup
     {
         try
         {
-            // create app context to have access to same values as bundle app has, with same transformations and
-            // overrides
-            appContext = createAppContext();
+            initialize();
 
-            upgradeBundleDirectory = initUpgradeBundleDirectory();
-
-            parameters = initInvokerParameters();
-
-            backupManager = new DefaultBackupManager( this );
-
-            wrapperHelper = new WrapperHelper( appContext.getBasedir() );
-
-            return doUpgrade();
+            return performUpgrade();
         }
         catch ( Throwable t )
         {
@@ -89,6 +82,22 @@ public class Buup
 
             return false;
         }
+    }
+
+    protected void initialize()
+        throws Exception
+    {
+        // create app context to have access to same values as bundle app has, with same transformations and
+        // overrides
+        appContext = createAppContext();
+
+        upgradeBundleDirectory = initUpgradeBundleDirectory();
+
+        parameters = initInvokerParameters();
+
+        backupManager = new DefaultBackupManager( this );
+
+        wrapperHelper = new WrapperHelper( appContext.getBasedir() );
     }
 
     /**
@@ -165,29 +174,67 @@ public class Buup
         return result;
     }
 
-    public boolean doUpgrade()
+    public boolean performUpgrade()
     {
         try
         {
             backupManager.backup();
 
-            return true;
+            return doUpgrade();
         }
         catch ( Throwable e )
         {
+            getLogger().error( "Error while performing upgrade!", e );
+
             try
             {
                 backupManager.restore();
 
-                return true;
+                return false;
             }
             catch ( IOException e1 )
             {
+                getLogger().error( "Could not restore the previous state!", e1 );
+
                 return false;
             }
         }
 
     }
+
+    public boolean doUpgrade()
+        throws IOException
+    {
+        return false;
+    }
+
+    // ==
+
+    public void executeActions( List<Action> actions )
+        throws IOException
+    {
+        ActionContext ctx = new ActionContext();
+
+        for ( Action action : actions )
+        {
+            try
+            {
+                action.perform( ctx );
+            }
+            catch ( Throwable e )
+            {
+                getLogger().error( "Action \"" + action.toString() + "\" thrown an error!", e );
+
+                IOException wrappedE = new IOException( "Action \"" + action.toString() + "\" thrown an error!" );
+
+                wrappedE.initCause( e );
+
+                throw wrappedE;
+            }
+        }
+    }
+
+    // ==
 
     public void finishWithoutJobDone()
         throws IOException
