@@ -40,6 +40,15 @@ public interface PropertiesFile
     int getIntegerProperty( String key, int defaultValue );
 
     /**
+     * Getter for "single-keyed" properties as boolean. Will not look for ".1 .2, etc" suffixes.
+     * 
+     * @param key
+     * @param defaultValue
+     * @return the found value, or null if key not found.
+     */
+    boolean getBooleanProperty( String key, boolean defaultValue );
+
+    /**
      * Setter for "single-keyed" properties. Will not try to figure out ".1 .2 etc suffixes.
      * 
      * @param key
@@ -54,6 +63,14 @@ public interface PropertiesFile
      * @param value
      */
     void setIntegerProperty( String key, int value );
+
+    /**
+     * Setter for "single-keyed" properties as integer. Will not try to figure out ".1 .2 etc suffixes.
+     * 
+     * @param key
+     * @param value
+     */
+    void setBooleanProperty( String key, boolean value );
 
     /**
      * Setter for "single-keyed" properties. Will not try to figure out ".1 .2 etc suffixes. Removes the key=value pair

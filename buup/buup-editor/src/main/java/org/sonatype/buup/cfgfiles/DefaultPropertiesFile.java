@@ -131,6 +131,11 @@ public class DefaultPropertiesFile
         }
     }
 
+    public boolean getBooleanProperty( String key, boolean defaultValue )
+    {
+        return Boolean.valueOf( getProperty( key, Boolean.toString( defaultValue ) ) );
+    }
+
     public void setProperty( String key, String value )
     {
         setProperty( getLineIndexWithKey( key ), key, value );
@@ -162,6 +167,11 @@ public class DefaultPropertiesFile
     public void setIntegerProperty( String key, int value )
     {
         setProperty( key, String.valueOf( value ) );
+    }
+
+    public void setBooleanProperty( String key, boolean value )
+    {
+        setProperty( key, Boolean.toString( value ) );
     }
 
     public boolean removeProperty( String key )
@@ -371,15 +381,15 @@ public class DefaultPropertiesFile
         else if ( elems != null && elems.length > 2 )
         {
             StringBuilder sb = new StringBuilder();
-            
+
             for ( int idx = 1; idx < elems.length; idx++ )
             {
                 sb.append( elems[idx] );
-                
+
                 sb.append( "=" );
             }
 
-            return sb.substring( 0, sb.length()-1 ); 
+            return sb.substring( 0, sb.length() - 1 );
         }
 
         return defaultValue;

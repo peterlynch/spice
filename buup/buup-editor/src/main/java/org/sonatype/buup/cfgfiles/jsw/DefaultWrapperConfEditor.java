@@ -29,6 +29,14 @@ public class DefaultWrapperConfEditor
 
     private static final String WRAPPER_JAVA_ADDITIONAL = "wrapper.java.additional";
 
+    private static final String WRAPPER_RESTART_RELOAD_CONFIGURATION = "wrapper.restart.reload_configuration";
+
+    private static final boolean WRAPPER_RESTART_RELOAD_CONFIGURATION_DEFAULT = false;
+
+    private static final String WRAPPER_ON_EXIT = "wrapper.on_exit.";
+
+    private static final OnExitCommand WRAPPER_ON_EXIT_DEFAULT = OnExitCommand.SHUTDOWN;
+
     private final PropertiesFile wrapperConfWrapper;
 
     public DefaultWrapperConfEditor( PropertiesFile wrappedWrapper )
@@ -171,5 +179,63 @@ public class DefaultWrapperConfEditor
     public void setWrapperJavaAdditional( List<String> additionalElems )
     {
         wrapperConfWrapper.setPropertyList( WRAPPER_JAVA_ADDITIONAL, additionalElems );
+    }
+
+    public OnExitCommand getWrapperOnExit( int exitCode )
+    {
+        String exitCodeSuffix = intToExitCodeSuffix( exitCode );
+
+        try
+        {
+            return OnExitCommand.valueOf( wrapperConfWrapper.getProperty( WRAPPER_ON_EXIT + exitCodeSuffix,
+                WRAPPER_ON_EXIT_DEFAULT.name() ) );
+        }
+        catch ( Exception e )
+        {
+            // fallback to default
+            return WRAPPER_ON_EXIT_DEFAULT;
+        }
+    }
+
+    public void setWrapperOnExit( int exitCode, OnExitCommand cmd )
+    {
+        String exitCodeSuffix = intToExitCodeSuffix( exitCode );
+
+        wrapperConfWrapper.setProperty( WRAPPER_ON_EXIT + exitCodeSuffix, cmd.name() );
+    }
+
+    public boolean getWrapperRestartReloadConfiguration()
+    {
+        return string2Bool( wrapperConfWrapper.getProperty( WRAPPER_RESTART_RELOAD_CONFIGURATION,
+            bool2String( WRAPPER_RESTART_RELOAD_CONFIGURATION_DEFAULT ) ) );
+    }
+
+    public void setWrapperRestartReloadConfiguration( boolean reload )
+    {
+        wrapperConfWrapper.setProperty( WRAPPER_RESTART_RELOAD_CONFIGURATION, bool2String( reload ) );
+    }
+
+    // ==
+
+    protected String intToExitCodeSuffix( int exitCode )
+    {
+        if ( exitCode == -1 )
+        {
+            return "default";
+        }
+        else
+        {
+            return Integer.toString( exitCode );
+        }
+    }
+
+    protected boolean string2Bool( String val )
+    {
+        return Boolean.valueOf( val );
+    }
+
+    protected String bool2String( boolean val )
+    {
+        return Boolean.toString( val ).toUpperCase();
     }
 }

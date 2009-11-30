@@ -160,4 +160,38 @@ public interface WrapperConfEditor
      * @param additionalElems
      */
     void setWrapperJavaAdditional( List<String> additionalElems );
+
+    /**
+     * Gets the exit command for given exit code.
+     * 
+     * @see http://wrapper.tanukisoftware.org/doc/english/prop-on-exit-n.html
+     * @return
+     */
+    OnExitCommand getWrapperOnExit( int exitCode );
+
+    /**
+     * Sets the exit command for given exit code.
+     * 
+     * @see http://wrapper.tanukisoftware.org/doc/english/prop-on-exit-n.html
+     * @param exitCode
+     * @param cmd
+     */
+    void setWrapperOnExit( int exitCode, OnExitCommand cmd );
+
+    /**
+     * Gets the reload configuration settings of wrapper.
+     * 
+     * @see http://wrapper.tanukisoftware.org/doc/english/prop-restart-reload-configuration.html
+     * @return
+     */
+    boolean getWrapperRestartReloadConfiguration();
+
+    /**
+     * Sets the reload settings of wrapper
+     * 
+     * @see http://wrapper.tanukisoftware.org/doc/english/prop-restart-reload-configuration.html
+     * @param reload
+     */
+    void setWrapperRestartReloadConfiguration( boolean reload );
+
 }
