@@ -10,13 +10,17 @@ public class BuupInvocationRequest
 
     private final File upgradeBundleDirectory;
 
+    private final String mainClass;
+    
     private final Map<String, String> parameters;
 
-    public BuupInvocationRequest( File basedir, File explodedUpgradeBundleDirectory, Map<String, String> parameters )
+    public BuupInvocationRequest( File basedir, File explodedUpgradeBundleDirectory, String mainClass, Map<String, String> parameters )
     {
         this.basedir = basedir;
 
         this.upgradeBundleDirectory = explodedUpgradeBundleDirectory;
+        
+        this.mainClass = mainClass;
 
         this.parameters = new HashMap<String, String>();
 
@@ -24,6 +28,11 @@ public class BuupInvocationRequest
         {
             this.parameters.putAll( parameters );
         }
+    }
+
+    public String getMainClass()
+    {
+        return mainClass;
     }
 
     public File getBasedir()

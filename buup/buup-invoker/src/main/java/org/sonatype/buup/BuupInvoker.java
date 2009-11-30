@@ -44,7 +44,7 @@ public class BuupInvoker
             getLogger().info( "Modifying wrapper.conf to start BUUP." );
 
             // 3rd, swap in a nice alternative app
-            editor.setWrapperJavaMainclass( "org.sonatype.buup.Buup" );
+            editor.setWrapperJavaMainclass( request.getMainClass());
             
             // TODO: think about removing _everything_ except wrapper.jar from classpath.
             // Hence, we would have _full_ upgrade possibility (except JSW upgrade)
