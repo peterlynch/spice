@@ -1,16 +1,19 @@
 package org.sonatype.buup.actions.nexus;
 
 import org.sonatype.buup.actions.AbstractAction;
+import org.sonatype.buup.actions.ActionContext;
+import org.sonatype.buup.nexus.NexusBuup;
 
 public class ValidateNexusContextAction
     extends AbstractAction
 {
-
-    public void perform()
-        throws Exception
+    public ValidateNexusContextAction( NexusBuup buup )
     {
-        // TODO Auto-generated method stub
-        
+        super( buup );
     }
 
+    public void perform( ActionContext ctx )
+    {
+        // TODO:
+    }
 }
