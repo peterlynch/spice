@@ -2,6 +2,7 @@ package org.sonatype.buup.actions;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 
 import org.codehaus.plexus.util.FileUtils;
 import org.sonatype.buup.Buup;
@@ -16,6 +17,9 @@ public abstract class AbstractFileManipulatorAction
 
     // ==
 
+    /**
+     * Copied a file and tries to figure out where to copy it.
+     */
     protected void copyFile( File source, File destination, boolean overwrite )
         throws IOException
     {
@@ -63,6 +67,13 @@ public abstract class AbstractFileManipulatorAction
         }
     }
 
+    /**
+     * Tries to figure out what to delete.
+     * 
+     * @param destination
+     * @param failIfNotFound
+     * @throws IOException
+     */
     protected void deleteFile( File destination, boolean failIfNotFound )
         throws IOException
     {
@@ -78,7 +89,43 @@ public abstract class AbstractFileManipulatorAction
         {
             throw ioexception( "Illegal delete operation, file to delete does not exists!" );
         }
-
     }
 
+    /**
+     * Return true if any of the passed files exists.
+     * 
+     * @param files
+     * @param all to check for existence ALL (true) or ANY (false)
+     * @return true if any of passed files exists.
+     */
+    protected boolean filesExists( final Collection<File> files, final boolean all )
+    {
+        for ( File file : files )
+        {
+            if ( !all && file.exists() )
+            {
+                return true;
+            }
+            else if ( all && !file.exists() )
+            {
+                return false;
+            }
+        }
+
+        return all;
+    }
+
+    protected File resolveChildPath( File basedir, String childPath )
+    {
+        File child = new File( childPath );
+
+        if ( child.isAbsolute() )
+        {
+            return child;
+        }
+        else
+        {
+            return new File( basedir, childPath );
+        }
+    }
 }
