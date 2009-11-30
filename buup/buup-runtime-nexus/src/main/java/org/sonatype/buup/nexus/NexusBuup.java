@@ -1,8 +1,14 @@
 package org.sonatype.buup.nexus;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.sonatype.buup.Buup;
+import org.sonatype.buup.actions.Action;
+import org.sonatype.buup.actions.nexus.CheckNexusReadWritePermissionsAction;
+import org.sonatype.buup.actions.nexus.ValidateNexusContextAction;
 
 public class NexusBuup
     extends Buup
@@ -46,8 +52,18 @@ public class NexusBuup
 
     @Override
     public boolean doUpgrade()
+        throws IOException
     {
-        return false;
+        // acreate actions to perform
+        List<Action> actions = new ArrayList<Action>();
+
+        actions.add( new ValidateNexusContextAction( this ) );
+        actions.add( new CheckNexusReadWritePermissionsAction( this ) );
+        // etc.
+
+        executeActions( actions );
+
+        return true;
     }
 
     // == entry point

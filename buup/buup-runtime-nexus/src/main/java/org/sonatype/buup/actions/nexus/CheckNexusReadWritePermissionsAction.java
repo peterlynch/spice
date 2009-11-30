@@ -2,7 +2,6 @@ package org.sonatype.buup.actions.nexus;
 
 import java.io.IOException;
 
-import org.sonatype.buup.Buup;
 import org.sonatype.buup.actions.ActionContext;
 import org.sonatype.buup.actions.CheckReadWritePermissionsAction;
 import org.sonatype.buup.nexus.NexusBuup;
@@ -10,7 +9,7 @@ import org.sonatype.buup.nexus.NexusBuup;
 public class CheckNexusReadWritePermissionsAction
     extends CheckReadWritePermissionsAction
 {
-    public CheckNexusReadWritePermissionsAction( Buup buup )
+    public CheckNexusReadWritePermissionsAction( NexusBuup buup )
     {
         super( buup );
     }
