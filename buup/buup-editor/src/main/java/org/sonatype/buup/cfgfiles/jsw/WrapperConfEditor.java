@@ -162,6 +162,11 @@ public interface WrapperConfEditor
     void setWrapperJavaAdditional( List<String> additionalElems );
 
     /**
+     * The exit code that maps to JSW's "default". To be used with methods getWrapperOnExit() and setWrapperOnExit().
+     */
+    int DEFAULT_EXIT_CODE = -1;
+
+    /**
      * Gets the exit command for given exit code.
      * 
      * @see http://wrapper.tanukisoftware.org/doc/english/prop-on-exit-n.html

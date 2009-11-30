@@ -219,7 +219,7 @@ public class DefaultWrapperConfEditor
 
     protected String intToExitCodeSuffix( int exitCode )
     {
-        if ( exitCode == -1 )
+        if ( exitCode == DEFAULT_EXIT_CODE )
         {
             return "default";
         }
