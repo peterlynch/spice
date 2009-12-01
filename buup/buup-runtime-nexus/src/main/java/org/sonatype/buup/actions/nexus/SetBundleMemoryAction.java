@@ -18,12 +18,6 @@ public class SetBundleMemoryAction
     public void perform( ActionContext ctx )
         throws Exception
     {
-        // look for nexus.jvm.memory param, if not found exit
-        // if exists, get it
-        // prepare JVM invocation param
-        // get wrapper.conf editor
-        // check for existing line with those params
-        // update/add it
         WrapperConfEditor editor = ctx.getWrapperConfEditor();
 
         if ( ctx.getBuup().getParameters().containsKey( NEXUS_BUNDLE_INITIAL_HEAP_SIZE_KEY ) )
