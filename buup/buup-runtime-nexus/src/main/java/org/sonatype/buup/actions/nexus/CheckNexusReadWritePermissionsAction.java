@@ -9,11 +9,6 @@ import org.sonatype.buup.nexus.NexusBuup;
 public class CheckNexusReadWritePermissionsAction
     extends CheckReadWritePermissionsAction
 {
-    public CheckNexusReadWritePermissionsAction( NexusBuup buup )
-    {
-        super( buup );
-    }
-
     @Override
     public void perform( ActionContext ctx )
         throws IOException
@@ -22,9 +17,9 @@ public class CheckNexusReadWritePermissionsAction
         super.perform( ctx );
 
         // but also nexus app dir
-        checkRWAccess( ( (NexusBuup) getBuup() ).getNexusAppDir() );
+        checkRWAccess( ( (NexusBuup) ctx.getBuup() ).getNexusAppDir() );
 
         // and also nexus work dir
-        checkRWAccess( ( (NexusBuup) getBuup() ).getNexusWorkDir() );
+        checkRWAccess( ( (NexusBuup) ctx.getBuup() ).getNexusWorkDir() );
     }
 }

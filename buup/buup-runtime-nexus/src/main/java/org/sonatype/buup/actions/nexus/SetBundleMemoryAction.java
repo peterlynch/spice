@@ -7,7 +7,6 @@ import java.util.List;
 import org.sonatype.buup.actions.AbstractAction;
 import org.sonatype.buup.actions.ActionContext;
 import org.sonatype.buup.cfgfiles.jsw.WrapperConfEditor;
-import org.sonatype.buup.nexus.NexusBuup;
 
 public class SetBundleMemoryAction
     extends AbstractAction
@@ -15,11 +14,6 @@ public class SetBundleMemoryAction
     public static final String NEXUS_BUNDLE_MAX_HEAP_SIZE_KEY = "nexus.bundle.xmx";
 
     public static final String NEXUS_BUNDLE_INITIAL_HEAP_SIZE_KEY = "nexus.bundle.xms";
-
-    public SetBundleMemoryAction( NexusBuup buup )
-    {
-        super( buup );
-    }
 
     public void perform( ActionContext ctx )
         throws Exception
@@ -30,16 +24,16 @@ public class SetBundleMemoryAction
         // get wrapper.conf editor
         // check for existing line with those params
         // update/add it
-        WrapperConfEditor editor = getBuup().getWrapperHelper().getWrapperConfEditor();
+        WrapperConfEditor editor = ctx.getWrapperConfEditor();
 
-        if ( getBuup().getParameters().containsKey( NEXUS_BUNDLE_INITIAL_HEAP_SIZE_KEY ) )
+        if ( ctx.getBuup().getParameters().containsKey( NEXUS_BUNDLE_INITIAL_HEAP_SIZE_KEY ) )
         {
-            setJVMParameter( editor, "-Xms", getBuup().getParameters().get( NEXUS_BUNDLE_INITIAL_HEAP_SIZE_KEY ) );
+            setJVMParameter( editor, "-Xms", ctx.getBuup().getParameters().get( NEXUS_BUNDLE_INITIAL_HEAP_SIZE_KEY ) );
         }
 
-        if ( getBuup().getParameters().containsKey( NEXUS_BUNDLE_MAX_HEAP_SIZE_KEY ) )
+        if ( ctx.getBuup().getParameters().containsKey( NEXUS_BUNDLE_MAX_HEAP_SIZE_KEY ) )
         {
-            setJVMParameter( editor, "-Xmx", getBuup().getParameters().get( NEXUS_BUNDLE_INITIAL_HEAP_SIZE_KEY ) );
+            setJVMParameter( editor, "-Xmx", ctx.getBuup().getParameters().get( NEXUS_BUNDLE_INITIAL_HEAP_SIZE_KEY ) );
         }
 
         editor.save();

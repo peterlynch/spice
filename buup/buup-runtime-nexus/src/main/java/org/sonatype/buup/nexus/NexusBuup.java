@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.sonatype.buup.Buup;
 import org.sonatype.buup.actions.Action;
+import org.sonatype.buup.actions.ActionContext;
 import org.sonatype.buup.actions.nexus.CheckNexusReadWritePermissionsAction;
 import org.sonatype.buup.actions.nexus.ValidateNexusContextAction;
 
@@ -57,11 +58,13 @@ public class NexusBuup
         // acreate actions to perform
         List<Action> actions = new ArrayList<Action>();
 
-        actions.add( new ValidateNexusContextAction( this ) );
-        actions.add( new CheckNexusReadWritePermissionsAction( this ) );
+        actions.add( new ValidateNexusContextAction() );
+        actions.add( new CheckNexusReadWritePermissionsAction() );
         // etc.
 
-        executeActions( actions );
+        ActionContext ctx = new ActionContext();
+
+        executeActions( ctx, actions );
 
         return true;
     }
