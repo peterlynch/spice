@@ -27,7 +27,7 @@ public class SetBundleMemoryAction
 
         if ( ctx.getBuup().getParameters().containsKey( NEXUS_BUNDLE_MAX_HEAP_SIZE_KEY ) )
         {
-            setJVMParameter( editor, "-Xmx", ctx.getBuup().getParameters().get( NEXUS_BUNDLE_INITIAL_HEAP_SIZE_KEY ) );
+            setJVMParameter( editor, "-Xmx", ctx.getBuup().getParameters().get( NEXUS_BUNDLE_MAX_HEAP_SIZE_KEY ) );
         }
 
         editor.save();
@@ -46,7 +46,7 @@ public class SetBundleMemoryAction
 
             if ( jvmParam.startsWith( prefix ) )
             {
-                jvmParamsIterator.remove();
+                jvmParamsIterator.remove(); // no break, to remove ALL if there are by mistake
             }
         }
 

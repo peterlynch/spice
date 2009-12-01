@@ -11,6 +11,8 @@ import org.sonatype.buup.actions.Action;
 import org.sonatype.buup.actions.ActionContext;
 import org.sonatype.buup.actions.CopyFilesToPlaceAction;
 import org.sonatype.buup.actions.nexus.CheckNexusReadWritePermissionsAction;
+import org.sonatype.buup.actions.nexus.DeleteNexusBuupPluginAction;
+import org.sonatype.buup.actions.nexus.DeleteObsoleteAppFilesAction;
 import org.sonatype.buup.actions.nexus.NexusActionContext;
 import org.sonatype.buup.actions.nexus.SetBundleMemoryAction;
 import org.sonatype.buup.actions.nexus.ValidateNexusContextAction;
@@ -70,14 +72,14 @@ public class NexusBuup
     public boolean doUpgrade()
         throws IOException
     {
-        // copy the backup wrapper.conf (backed by invoker, since the actual one is already modified to run BUUP!) to
+        // copy the backed up wrapper.conf (backed by invoker, since the actual one is already modified to run BUUP!) to
         // new place, get editor for it
-        File wrapperConfToBeEdited =
-            new File( getWrapperHelper().getBackupWrapperConfFile().getParentFile(), getWrapperHelper()
-                .getBackupWrapperConfFile().getName()
-                + ".work" );
+        File backedUpWrapperConfFile = getWrapperHelper().getBackupWrapperConfFile();
 
-        FileUtils.copyFile( getWrapperHelper().getBackupWrapperConfFile(), wrapperConfToBeEdited );
+        File wrapperConfToBeEdited =
+            new File( backedUpWrapperConfFile.getParentFile(), backedUpWrapperConfFile.getName() + ".work" );
+
+        FileUtils.copyFile( backedUpWrapperConfFile, wrapperConfToBeEdited );
 
         WrapperConfEditor actionEditor = getWrapperHelper().getWrapperEditor( wrapperConfToBeEdited );
 
@@ -92,6 +94,11 @@ public class NexusBuup
         actions.add( new SetBundleMemoryAction() );
         // copy all JAR files from bundle to it's place
         actions.add( new CopyFilesToPlaceAction() );
+        // delete obsolete file
+        actions.add( new DeleteObsoleteAppFilesAction() );
+
+        // delete nexus-buup-plugin since it is not needed anymore
+        actions.add( new DeleteNexusBuupPluginAction() );
         // etc.
 
         ActionContext ctx =
