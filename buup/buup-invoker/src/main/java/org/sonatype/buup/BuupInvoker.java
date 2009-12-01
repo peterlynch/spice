@@ -1,6 +1,8 @@
 package org.sonatype.buup;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -44,12 +46,16 @@ public class BuupInvoker
             getLogger().info( "Modifying wrapper.conf to start BUUP." );
 
             // 3rd, swap in a nice alternative app
-            editor.setWrapperJavaMainclass( request.getMainClass());
-            
-            // TODO: think about removing _everything_ except wrapper.jar from classpath.
-            // Hence, we would have _full_ upgrade possibility (except JSW upgrade)
+            editor.setWrapperJavaMainclass( request.getMainClass() );
 
-            // 4th, communicate with buup
+            // 4th, set up BUUP classpath (only wrapper and bundle runtime)
+            ArrayList<String> classpathElems = new ArrayList<String>();
+            classpathElems.add( "../../../lib/wrapper*.jar" );
+            classpathElems.add( new File( request.getUpgradeBundleDirectory().getAbsolutePath(), "runtime/*.jar" )
+                .getAbsolutePath() );
+            editor.setWrapperJavaClasspath( classpathElems );
+
+            // 5th, communicate with buup
             editor.addWrapperJavaAdditional( "-Dbuup.upgradeBundleDirectory="
                 + request.getUpgradeBundleDirectory().getAbsolutePath() );
 
@@ -85,7 +91,12 @@ public class BuupInvoker
                 {
                     // wow, we have now an original throwable that made us to restore, but restore died also...
                     // what to report? Original t reported above, so let's nag about IOException
-                    getLogger().error( "Cannot restore Bundle JSW configuration!", e );
+                    getLogger()
+                        .error(
+                            "Cannot restore Bundle JSW configuration, Nexus bundle is probably hozed! Please copy manually the backed up wrapper configuration to it's place (copy \""
+                                + wrapperHelper.getBackupWrapperConfFile().getAbsolutePath()
+                                + "\" to \""
+                                + wrapperHelper.getWrapperConfFile().getAbsolutePath() + "\")", e );
                 }
             }
 
