@@ -9,6 +9,7 @@ import org.codehaus.plexus.util.FileUtils;
 import org.sonatype.buup.Buup;
 import org.sonatype.buup.actions.Action;
 import org.sonatype.buup.actions.ActionContext;
+import org.sonatype.buup.actions.CleanUpAction;
 import org.sonatype.buup.actions.CopyFilesToPlaceAction;
 import org.sonatype.buup.actions.nexus.CheckNexusReadWritePermissionsAction;
 import org.sonatype.buup.actions.nexus.DeleteNexusBuupPluginAction;
@@ -99,6 +100,8 @@ public class NexusBuup
 
         // delete nexus-buup-plugin since it is not needed anymore
         actions.add( new DeleteNexusBuupPluginAction() );
+        // clean up
+        actions.add( new CleanUpAction() );
         // etc.
 
         ActionContext ctx =
