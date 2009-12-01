@@ -260,7 +260,7 @@ public final class DefaultPlexusContainer
     public List<ComponentDescriptor<?>> discoverComponents( final ClassRealm classRealm )
     {
         // TODO: do we need to do anything here?
-        System.out.println( "TODO DefaultPlexusContainer.discoverComponents(" + classRealm + ")" );
+        getLogger().warn( "TODO DefaultPlexusContainer.discoverComponents(" + classRealm + ")" );
         return Collections.emptyList();
     }
 
@@ -297,12 +297,14 @@ public final class DefaultPlexusContainer
     public void release( final Object component )
     {
         // TODO: do we need to do anything here?
-        System.out.println( "TODO DefaultPlexusContainer.release(" + component + ")" );
+        getLogger().warn( "TODO DefaultPlexusContainer.release(" + component + ")" );
     }
 
     public void dispose()
     {
         lifecycleManager.dispose();
+
+        containerRealm.setParentRealm( null );
     }
 
     // ----------------------------------------------------------------------
