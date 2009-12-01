@@ -34,7 +34,15 @@ public interface EMailer
     MailSender getMailSender();
 
     // mail sending
+    /**
+     * Asynchronously send an e-mail
+     */
     MailRequestStatus sendMail( MailRequest request );
+
+    /**
+     * Synchronously send an e-mail
+     */
+    MailRequestStatus sendSyncedMail( MailRequest request );
 
     void sendMailBatch( MailRequestSource mailRequestSource );
 }

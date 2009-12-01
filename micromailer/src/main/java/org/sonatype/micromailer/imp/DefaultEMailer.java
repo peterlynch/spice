@@ -121,10 +121,15 @@ public class DefaultEMailer
 
         MailRequestStatus status = new MailRequestStatus( request );
 
-        executor.execute( new RunnableMailer( getLogger(), request, mailTypeSource, mailComposer, emailerConfiguration,
-                                              mailStorage, mailSender, status ) );
+        executor.execute( createMailer( request, status ) );
 
         return status;
+    }
+
+    private RunnableMailer createMailer( MailRequest request, MailRequestStatus status )
+    {
+        return new RunnableMailer( getLogger(), request, mailTypeSource, mailComposer, emailerConfiguration,
+                                   mailStorage, mailSender, status );
     }
 
     private static final class RunnableMailer
@@ -205,5 +210,14 @@ public class DefaultEMailer
                 status.setErrorCause( ex );
             }
         }
+    }
+
+    public MailRequestStatus sendSyncedMail( MailRequest request )
+    {
+        MailRequestStatus status = new MailRequestStatus( request );
+
+        createMailer( request, status ).run();
+
+        return status;
     }
 }
