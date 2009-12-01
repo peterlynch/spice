@@ -210,11 +210,9 @@ public class Buup
 
     // ==
 
-    public void executeActions( List<Action> actions )
+    public void executeActions( ActionContext ctx, List<Action> actions )
         throws IOException
     {
-        ActionContext ctx = new ActionContext();
-
         for ( Action action : actions )
         {
             try

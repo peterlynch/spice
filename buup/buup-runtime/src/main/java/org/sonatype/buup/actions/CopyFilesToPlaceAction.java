@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 
 import org.codehaus.plexus.util.DirectoryScanner;
-import org.sonatype.buup.Buup;
 
 /**
  * This class scans the basedir (configurable, defaults to upgradeBundleDirectory and include pattern *.jar) directory
@@ -18,7 +17,7 @@ import org.sonatype.buup.Buup;
 public class CopyFilesToPlaceAction
     extends AbstractFileManipulatorAction
 {
-    public File basedir;
+    public File sourceDir;
 
     public File targetDir;
 
@@ -28,23 +27,14 @@ public class CopyFilesToPlaceAction
 
     public String[] excludes = DirectoryScanner.DEFAULTEXCLUDES;
 
-    public CopyFilesToPlaceAction( Buup buup )
+    public File getSourceDir()
     {
-        super( buup );
-
-        setBasedir( getBuup().getUpgradeBundleDirectory() );
-
-        setTargetDir( getBuup().getAppContext().getBasedir() );
+        return sourceDir;
     }
 
-    public File getBasedir()
+    public void setSourceDir( File basedir )
     {
-        return basedir;
-    }
-
-    public void setBasedir( File basedir )
-    {
-        this.basedir = basedir;
+        this.sourceDir = basedir;
     }
 
     public File getTargetDir()
@@ -90,9 +80,18 @@ public class CopyFilesToPlaceAction
     public void perform( ActionContext ctx )
         throws Exception
     {
+        if ( getSourceDir() == null )
+        {
+            setSourceDir( ctx.getUpgradeBundleBasedir() );
+        }
+
+        if ( getTargetDir() == null )
+        {
+            setTargetDir( ctx.getBasedir() );
+        }
         DirectoryScanner scanner = new DirectoryScanner();
 
-        scanner.setBasedir( getBasedir() );
+        scanner.setBasedir( getSourceDir() );
 
         scanner.setIncludes( getIncludes() );
 
@@ -105,7 +104,7 @@ public class CopyFilesToPlaceAction
 
         for ( String fileName : scanner.getIncludedFiles() )
         {
-            sourceFiles.add( resolveChildPath( getBasedir(), fileName ) );
+            sourceFiles.add( resolveChildPath( getSourceDir(), fileName ) );
             destinationFiles.add( resolveChildPath( getTargetDir(), fileName ) );
         }
 

@@ -5,18 +5,10 @@ import java.io.IOException;
 import java.util.Collection;
 
 import org.codehaus.plexus.util.FileUtils;
-import org.sonatype.buup.Buup;
 
 public abstract class AbstractFileManipulatorAction
     extends AbstractAction
 {
-    public AbstractFileManipulatorAction( Buup buup )
-    {
-        super( buup );
-    }
-
-    // ==
-
     /**
      * Copied a file and tries to figure out where to copy it.
      */

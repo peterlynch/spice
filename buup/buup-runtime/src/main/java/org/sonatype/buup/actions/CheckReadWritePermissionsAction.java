@@ -5,22 +5,16 @@ import java.io.IOException;
 
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
-import org.sonatype.buup.Buup;
 
 public class CheckReadWritePermissionsAction
     extends AbstractAction
 {
     protected static final String TEST_CONTENT = "buup FS perms test";
 
-    public CheckReadWritePermissionsAction( Buup buup )
-    {
-        super( buup );
-    }
-
     public void perform( ActionContext ctx )
         throws IOException
     {
-        checkRWAccess( getBuup().getAppContext().getBasedir() );
+        checkRWAccess( ctx.getBasedir() );
     }
 
     // ==
