@@ -1,33 +1,40 @@
 package org.sonatype.buup.actions;
 
 import java.io.File;
-import java.util.HashMap;
+import java.util.Map;
 
 import org.sonatype.buup.Buup;
 import org.sonatype.buup.cfgfiles.jsw.WrapperConfEditor;
 
-public class ActionContext
-    extends HashMap<String, Object>
+public interface ActionContext
+    extends Map<String, Object>
 {
-    private static final long serialVersionUID = 1783950650409400826L;
-    
-    public Buup getBuup()
-    {
-        return  null;
-    }
+    /**
+     * Returns the Buup instance that is running the action.
+     * 
+     * @return
+     */
+    Buup getBuup();
 
-    public WrapperConfEditor getWrapperConfEditor()
-    {
-        return null;
-    }
+    /**
+     * Gets the wrapper.conf editor to apply all the changes and at the end will be swapped in as the one used by
+     * bundle.
+     * 
+     * @return
+     */
+    WrapperConfEditor getWrapperConfEditor();
 
-    public File getBasedir()
-    {
-        return null;
-    }
+    /**
+     * Returns the bundle (beeing upgraded) basedir.
+     * 
+     * @return
+     */
+    File getBasedir();
 
-    public File getUpgradeBundleBasedir()
-    {
-        return null;
-    }
+    /**
+     * Returns the upgrade-bundle basedir.
+     * 
+     * @return
+     */
+    File getUpgradeBundleBasedir();
 }

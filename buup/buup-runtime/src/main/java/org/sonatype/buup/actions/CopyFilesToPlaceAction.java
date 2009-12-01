@@ -89,6 +89,7 @@ public class CopyFilesToPlaceAction
         {
             setTargetDir( ctx.getBasedir() );
         }
+        
         DirectoryScanner scanner = new DirectoryScanner();
 
         scanner.setBasedir( getSourceDir() );
