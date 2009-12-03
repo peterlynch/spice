@@ -56,7 +56,7 @@ public abstract class AbstractBatchDeleteObsoleteFilesAction
         {
             for ( File fileToDelete : filesToDelete )
             {
-                deleteFile( fileToDelete, isAllShouldExists() );
+                deleteFile( ctx, fileToDelete, isAllShouldExists() );
             }
         }
         else

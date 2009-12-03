@@ -3,7 +3,6 @@ package org.sonatype.buup;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -24,7 +23,7 @@ import org.sonatype.buup.cfgfiles.jsw.WrapperHelper;
  * 
  * @author cstamas
  */
-public class Buup
+public abstract class Buup
 {
     private Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -39,9 +38,11 @@ public class Buup
 
     private Map<String, String> parameters;
 
+    private WrapperHelper wrapperHelper;
+
     private BackupManager backupManager;
 
-    private WrapperHelper wrapperHelper;
+    private boolean upgradeSucessful = false;
 
     public AppContext getAppContext()
     {
@@ -53,14 +54,14 @@ public class Buup
         return upgradeBundleDirectory;
     }
 
+    public File getUpgradeBundleContentDirectory()
+    {
+        return new File( getUpgradeBundleDirectory(), "content" );
+    }
+
     public Map<String, String> getParameters()
     {
         return parameters;
-    }
-
-    public BackupManager getBackupManager()
-    {
-        return backupManager;
     }
 
     public WrapperHelper getWrapperHelper()
@@ -68,13 +69,23 @@ public class Buup
         return wrapperHelper;
     }
 
+    public BackupManager getBackupManager()
+    {
+        return backupManager;
+    }
+
     public boolean upgrade()
     {
+        getLogger().info( "Initializing BUUP..." );
         try
         {
             initialize();
 
-            return performUpgrade();
+            prepareEnvironment();
+
+            upgradeSucessful = performUpgrade();
+
+            return upgradeSucessful;
         }
         catch ( Throwable t )
         {
@@ -95,9 +106,25 @@ public class Buup
 
         parameters = initInvokerParameters();
 
+        wrapperHelper = new WrapperHelper( appContext.getBasedir() );
+
         backupManager = new DefaultBackupManager( this );
 
-        wrapperHelper = new WrapperHelper( appContext.getBasedir() );
+        Runtime.getRuntime().addShutdownHook( new Thread()
+        {
+            @Override
+            public void run()
+            {
+                shutdown();
+            }
+        } );
+    }
+
+    protected void prepareEnvironment()
+        throws Exception
+    {
+        // undo what buup invoker did
+        wrapperHelper.restoreWrapperConf();
     }
 
     /**
@@ -154,6 +181,8 @@ public class Buup
                     + filePath + "\")!" );
         }
 
+        getLogger().info( "BUUP bundle is located at \"" + result.getAbsolutePath() + "\"..." );
+
         return result;
     }
 
@@ -176,77 +205,70 @@ public class Buup
 
     public boolean performUpgrade()
     {
+        getLogger().info( "Performing actual upgrade..." );
+
         try
         {
-            backupManager.backup();
-
-            return doUpgrade();
+            getBackupManager().backup();
         }
-        catch ( Throwable e )
+        catch ( IOException e )
         {
-            getLogger().error( "Error while performing upgrade!", e );
+            getLogger().error( "Could not do a backup!", e );
 
-            try
-            {
-                backupManager.restore();
-
-                return false;
-            }
-            catch ( IOException e1 )
-            {
-                getLogger().error( "Could not restore the previous state!", e1 );
-
-                return false;
-            }
+            return false;
         }
 
+        boolean succesful = false;
+
+        try
+        {
+            succesful = doUpgrade();
+
+            if ( succesful )
+            {
+                getLogger().info( "Upgrade finished succesfully." );
+
+                getBackupManager().cleanup();
+            }
+        }
+        catch ( Exception t )
+        {
+            getLogger().error( "Unexpected exception while doing upgrade!", t );
+
+            succesful = false;
+        }
+
+        return succesful;
     }
 
     public boolean doUpgrade()
-        throws IOException
+        throws Exception
     {
-        return false;
+        ActionContext ctx = getActionContext();
+
+        getAction().perform( ctx );
+
+        return true;
     }
+
+    public abstract ActionContext getActionContext();
+
+    public abstract Action getAction();
 
     // ==
 
-    public void executeActions( ActionContext ctx, List<Action> actions )
-        throws IOException
+    public void shutdown()
     {
-        for ( Action action : actions )
+        if ( !upgradeSucessful )
         {
-            try
-            {
-                action.perform( ctx );
-            }
-            catch ( Throwable e )
-            {
-                getLogger().error( "Action \"" + action.toString() + "\" thrown an error!", e );
-
-                IOException wrappedE = new IOException( "Action \"" + action.toString() + "\" thrown an error!" );
-
-                wrappedE.initCause( e );
-
-                throw wrappedE;
-            }
+            backupManager.restore();
         }
     }
 
     // ==
 
-    public void finishWithoutJobDone()
-        throws IOException
-    {
-        // do a restore
-        backupManager.restore();
-
-        System.exit( 0 );
-    }
-
-    // ==
-
-    public static void main( String[] args )
-    {
-        new Buup().upgrade();
-    }
+    // public static void main( String[] args )
+    // {
+    // new Buup().upgrade();
+    // }
 }

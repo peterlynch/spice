@@ -17,7 +17,6 @@
   <url>http://maven.apache.org</url>
 
   <dependencies>
-    <!-- These deps will be shaded in, to end up with one single huuge JAR, to make it simple to use even as CLI -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>

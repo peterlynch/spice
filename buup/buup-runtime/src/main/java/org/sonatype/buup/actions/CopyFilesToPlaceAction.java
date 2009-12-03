@@ -21,9 +21,9 @@ public class CopyFilesToPlaceAction
 
     public File targetDir;
 
-    public boolean overwrite = false;
+    public boolean overwrite = true;
 
-    public String[] includes = new String[] { "**/*.jar" };
+    public String[] includes = new String[] { "**/*.*" };
 
     public String[] excludes = DirectoryScanner.DEFAULTEXCLUDES;
 
@@ -82,7 +82,7 @@ public class CopyFilesToPlaceAction
     {
         if ( getSourceDir() == null )
         {
-            setSourceDir( ctx.getUpgradeBundleBasedir() );
+            setSourceDir( ctx.getUpgradeBundleContentBasedir() );
         }
 
         if ( getTargetDir() == null )
@@ -119,7 +119,7 @@ public class CopyFilesToPlaceAction
 
         for ( int i = 0; i < sourceFiles.size(); i++ )
         {
-            copyFile( sourceFiles.get( i ), destinationFiles.get( i ), isOverwrite() );
+            copyFile( ctx, sourceFiles.get( i ), destinationFiles.get( i ), isOverwrite() );
         }
     }
 }

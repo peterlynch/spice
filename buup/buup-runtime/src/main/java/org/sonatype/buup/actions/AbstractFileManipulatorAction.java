@@ -12,7 +12,7 @@ public abstract class AbstractFileManipulatorAction
     /**
      * Copied a file and tries to figure out where to copy it.
      */
-    protected void copyFile( File source, File destination, boolean overwrite )
+    protected void copyFile( ActionContext ctx, File source, File destination, boolean overwrite )
         throws IOException
     {
         if ( source == null || !source.isFile() )
@@ -29,13 +29,13 @@ public abstract class AbstractFileManipulatorAction
             // check is destination there
             File target = new File( destination, source.getName() );
 
-            if ( target.isFile() && overwrite )
+            if ( ( target.isFile() && overwrite ) || !target.exists() )
             {
-                FileUtils.copyFileToDirectory( source, destination );
+                FileUtils.copyFileToDirectory( source, ctx.getBuup().getBackupManager().overwriteFile( target ) );
             }
             else if ( !target.exists() )
             {
-                FileUtils.copyFileToDirectory( source, destination );
+                FileUtils.copyFileToDirectory( source, ctx.getBuup().getBackupManager().writeFile( target ) );
             }
             else
             {
@@ -46,11 +46,11 @@ public abstract class AbstractFileManipulatorAction
         {
             if ( destination.isFile() && overwrite )
             {
-                FileUtils.copyFileToDirectory( source, destination );
+                FileUtils.copyFile( source, ctx.getBuup().getBackupManager().overwriteFile( destination ) );
             }
             else if ( !destination.exists() )
             {
-                FileUtils.copyFileToDirectory( source, destination );
+                FileUtils.copyFile( source, ctx.getBuup().getBackupManager().writeFile( destination ) );
             }
             else
             {
@@ -66,16 +66,12 @@ public abstract class AbstractFileManipulatorAction
      * @param failIfNotFound
      * @throws IOException
      */
-    protected void deleteFile( File destination, boolean failIfNotFound )
+    protected void deleteFile( ActionContext ctx, File destination, boolean failIfNotFound )
         throws IOException
     {
-        if ( destination.isFile() )
+        if ( destination.isFile() || destination.isDirectory() )
         {
-            FileUtils.forceDelete( destination );
-        }
-        else if ( destination.isDirectory() )
-        {
-            FileUtils.deleteDirectory( destination );
+            ctx.getBuup().getBackupManager().deleteFile( destination );
         }
         else if ( failIfNotFound )
         {
