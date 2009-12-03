@@ -14,14 +14,15 @@ public interface BackupManager
         throws IOException;
 
     /**
-     * Performs a full restore, putting back the backed up files to their place.
+     * Removes the backup files, commits changes (to be called after successful upgrade).
      */
-    void restore();
+    void commit()
+        throws IOException;
 
     /**
-     * Removes the backup files (to be called after sucessful upgrade).
+     * Performs a full restore, undoing changes (to be called after unsuccessful upgrade).
      */
-    void cleanup();
+    void rollback();
 
     // ==
 

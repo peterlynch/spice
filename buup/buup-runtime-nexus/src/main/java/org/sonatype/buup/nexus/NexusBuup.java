@@ -8,6 +8,7 @@ import org.sonatype.buup.actions.ActionContext;
 import org.sonatype.buup.actions.ActionList;
 import org.sonatype.buup.actions.CleanUpAction;
 import org.sonatype.buup.actions.CopyFilesToPlaceAction;
+import org.sonatype.buup.actions.FailingAction;
 import org.sonatype.buup.actions.nexus.CheckNexusReadWritePermissionsAction;
 import org.sonatype.buup.actions.nexus.DeleteNexusBuupPluginAction;
 import org.sonatype.buup.actions.nexus.DeleteObsoleteAppFilesAction;
@@ -87,6 +88,9 @@ public class NexusBuup
         // clean up
         actions.getActions().add( new CleanUpAction() );
         // etc.
+        
+        // TESTING, remove this from production!
+        // actions.getActions().add( new FailingAction() );
 
         return actions;
     }

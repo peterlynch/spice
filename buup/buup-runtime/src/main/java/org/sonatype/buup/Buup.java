@@ -228,7 +228,7 @@ public abstract class Buup
             {
                 getLogger().info( "Upgrade finished succesfully." );
 
-                getBackupManager().cleanup();
+                getBackupManager().commit();
             }
         }
         catch ( Exception t )
@@ -261,7 +261,7 @@ public abstract class Buup
     {
         if ( !upgradeSucessful )
         {
-            backupManager.restore();
+            backupManager.rollback();
         }
     }
 

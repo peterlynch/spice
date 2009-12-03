@@ -32,7 +32,7 @@ public class ActionList
 
         for ( Action action : actions )
         {
-            getLogger().info( "Performing " + action.getClass() + " (" + i++ + "/" + actions.size() + ")." );
+            getLogger().info( "Performing action " + action.getClass().getName() + " (" + i++ + "/" + actions.size() + ")." );
 
             action.perform( ctx );
         }
