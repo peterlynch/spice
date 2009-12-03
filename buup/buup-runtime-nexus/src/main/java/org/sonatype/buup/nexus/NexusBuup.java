@@ -1,23 +1,20 @@
 package org.sonatype.buup.nexus;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.codehaus.plexus.util.FileUtils;
 import org.sonatype.buup.Buup;
 import org.sonatype.buup.actions.Action;
 import org.sonatype.buup.actions.ActionContext;
+import org.sonatype.buup.actions.ActionList;
 import org.sonatype.buup.actions.CleanUpAction;
 import org.sonatype.buup.actions.CopyFilesToPlaceAction;
 import org.sonatype.buup.actions.nexus.CheckNexusReadWritePermissionsAction;
 import org.sonatype.buup.actions.nexus.DeleteNexusBuupPluginAction;
 import org.sonatype.buup.actions.nexus.DeleteObsoleteAppFilesAction;
 import org.sonatype.buup.actions.nexus.NexusActionContext;
+import org.sonatype.buup.actions.nexus.NexusUpgradePlexusPropertiesAction;
 import org.sonatype.buup.actions.nexus.SetBundleMemoryAction;
 import org.sonatype.buup.actions.nexus.ValidateNexusContextAction;
-import org.sonatype.buup.cfgfiles.jsw.WrapperConfEditor;
 
 public class NexusBuup
     extends Buup
@@ -46,16 +43,6 @@ public class NexusBuup
         this.nexusWorkDir = nexusWorkDir;
     }
 
-    public File getNexusSystemPluginRepositoryDir()
-    {
-        return new File( getNexusAppDir(), "plugin-repository" );
-    }
-
-    public File getNexusUserPluginRepositoryDir()
-    {
-        return new File( getNexusWorkDir(), "plugin-repository" );
-    }
-
     // == BUUP
 
     @Override
@@ -64,59 +51,44 @@ public class NexusBuup
     {
         super.initialize();
 
-        nexusAppDir = new File( getAppContext().getBasedir(), (String) getAppContext().get( "nexus-app" ) );
+        nexusAppDir = new File( (String) getAppContext().get( "nexus-app" ) );
 
-        nexusWorkDir = new File( getAppContext().getBasedir(), (String) getAppContext().get( "nexus-work" ) );
+        nexusWorkDir = new File( (String) getAppContext().get( "nexus-work" ) );
     }
 
     @Override
-    public boolean doUpgrade()
-        throws IOException
+    public ActionContext getActionContext()
     {
-        // copy the backed up wrapper.conf (backed by invoker, since the actual one is already modified to run BUUP!) to
-        // new place, get editor for it
-        File backedUpWrapperConfFile = getWrapperHelper().getBackupWrapperConfFile();
+        return new NexusActionContext( this, getAppContext().getBasedir(), getUpgradeBundleDirectory(),
+            getUpgradeBundleContentDirectory(), getNexusAppDir(), getNexusWorkDir(), getParameters() );
+    }
 
-        File wrapperConfToBeEdited =
-            new File( backedUpWrapperConfFile.getParentFile(), backedUpWrapperConfFile.getName() + ".work" );
-
-        FileUtils.copyFile( backedUpWrapperConfFile, wrapperConfToBeEdited );
-
-        WrapperConfEditor actionEditor = getWrapperHelper().getWrapperEditor( wrapperConfToBeEdited );
-
-        // acreate actions to perform
-        List<Action> actions = new ArrayList<Action>();
+    @Override
+    public Action getAction()
+    {
+        // create actions to perform
+        ActionList actions = new ActionList();
 
         // validate context
-        actions.add( new ValidateNexusContextAction() );
+        actions.getActions().add( new ValidateNexusContextAction() );
         // check for proper FS perms in nexus-app and nexus-work too (not just basedir)
-        actions.add( new CheckNexusReadWritePermissionsAction() );
-        // set bundle memory if needed
-        actions.add( new SetBundleMemoryAction() );
+        actions.getActions().add( new CheckNexusReadWritePermissionsAction() );
         // copy all JAR files from bundle to it's place
-        actions.add( new CopyFilesToPlaceAction() );
+        actions.getActions().add( new CopyFilesToPlaceAction() );
         // delete obsolete file
-        actions.add( new DeleteObsoleteAppFilesAction() );
+        actions.getActions().add( new DeleteObsoleteAppFilesAction() );
+        // add p2 support to plexus.properties
+        actions.getActions().add( new NexusUpgradePlexusPropertiesAction() );
+        // set bundle memory if needed
+        actions.getActions().add( new SetBundleMemoryAction() );
 
         // delete nexus-buup-plugin since it is not needed anymore
-        actions.add( new DeleteNexusBuupPluginAction() );
+        actions.getActions().add( new DeleteNexusBuupPluginAction() );
         // clean up
-        actions.add( new CleanUpAction() );
+        actions.getActions().add( new CleanUpAction() );
         // etc.
 
-        ActionContext ctx =
-            new NexusActionContext( this, getAppContext().getBasedir(), new File( getUpgradeBundleDirectory(),
-                "content" ), actionEditor );
-
-        executeActions( ctx, actions );
-
-        // save wrapper.conf potentially modified by actions
-        actionEditor.save();
-
-        // make the wrapper.conf the new wrapper.conf
-        getWrapperHelper().swapInWrapperConf( wrapperConfToBeEdited );
-
-        return true;
+        return actions;
     }
 
     // == entry point
@@ -128,4 +100,5 @@ public class NexusBuup
     {
         new NexusBuup().upgrade();
     }
+
 }

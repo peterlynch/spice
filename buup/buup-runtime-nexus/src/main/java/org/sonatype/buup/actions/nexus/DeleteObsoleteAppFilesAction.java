@@ -1,11 +1,11 @@
 package org.sonatype.buup.actions.nexus;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.sonatype.buup.actions.AbstractBatchDeleteObsoleteFilesAction;
 import org.sonatype.buup.actions.ActionContext;
-import org.sonatype.buup.nexus.NexusBuup;
 
 public class DeleteObsoleteAppFilesAction
     extends AbstractBatchDeleteObsoleteFilesAction
@@ -14,7 +14,7 @@ public class DeleteObsoleteAppFilesAction
     public void perform( ActionContext ctx )
         throws Exception
     {
-        setTargetDir( ( (NexusBuup) ctx.getBuup() ).getNexusAppDir() );
+        setTargetDir( ( (NexusActionContext) ctx ).getNexusAppDir() );
 
         super.perform( ctx );
     }
@@ -24,8 +24,21 @@ public class DeleteObsoleteAppFilesAction
     {
         ArrayList<String> result = new ArrayList<String>();
 
-        result.add( "lib/nexus-oss-edition-1.4.1.jar" );
-        // etc
+        // scan in lib for nexus-oss-edition (this is mere a workaround to make it work while we do not release and have
+        // timestmaped versions in too)
+        File[] jars = getTargetDir().listFiles();
+
+        if ( jars != null )
+        {
+            for ( File jar : jars )
+            {
+                if ( jar.getName().startsWith( "nexus-oss-edition" ) && jar.getName().endsWith( ".jar" )
+                    && jar.getParentFile().getName().equals( "lib" ) )
+                {
+                    result.add( "lib/" + jar.getName() );
+                }
+            }
+        }
 
         return result;
     }

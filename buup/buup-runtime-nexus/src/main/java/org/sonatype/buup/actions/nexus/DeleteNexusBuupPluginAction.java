@@ -2,10 +2,8 @@ package org.sonatype.buup.actions.nexus;
 
 import java.io.File;
 
-import org.codehaus.plexus.util.FileUtils;
 import org.sonatype.buup.actions.AbstractFileManipulatorAction;
 import org.sonatype.buup.actions.ActionContext;
-import org.sonatype.buup.nexus.NexusBuup;
 
 public class DeleteNexusBuupPluginAction
     extends AbstractFileManipulatorAction
@@ -13,7 +11,7 @@ public class DeleteNexusBuupPluginAction
     public void perform( ActionContext ctx )
         throws Exception
     {
-        File systemPluginRepository = ( (NexusBuup) ctx.getBuup() ).getNexusSystemPluginRepositoryDir();
+        File systemPluginRepository = ( (NexusActionContext) ctx ).getNexusSystemPluginRepositoryDir();
 
         File[] installedPlugins = systemPluginRepository.listFiles();
 
@@ -21,11 +19,9 @@ public class DeleteNexusBuupPluginAction
         {
             for ( File pluginDir : installedPlugins )
             {
-                if ( pluginDir.getName().startsWith( "nexus-buup-plugin" ) )
+                if ( pluginDir.isDirectory() && pluginDir.getName().startsWith( "nexus-buup-plugin" ) )
                 {
-                    FileUtils.deleteDirectory( pluginDir );
-
-                    return;
+                    deleteFile( ctx, pluginDir, true );
                 }
             }
         }

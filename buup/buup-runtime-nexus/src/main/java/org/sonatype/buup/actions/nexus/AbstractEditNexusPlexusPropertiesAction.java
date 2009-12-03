@@ -1,26 +1,16 @@
 package org.sonatype.buup.actions.nexus;
 
-import java.io.IOException;
+import java.io.File;
 
-import org.sonatype.buup.actions.AbstractFileManipulatorAction;
+import org.sonatype.buup.actions.AbstractEditPropertiesAction;
 import org.sonatype.buup.actions.ActionContext;
-import org.sonatype.buup.cfgfiles.DefaultPropertiesFile;
-import org.sonatype.buup.cfgfiles.PropertiesFile;
 
 public abstract class AbstractEditNexusPlexusPropertiesAction
-    extends AbstractFileManipulatorAction
+    extends AbstractEditPropertiesAction
 {
-    public void perform( ActionContext ctx )
-        throws Exception
+    @Override
+    public File getPropertiesFile( ActionContext ctx )
     {
-        DefaultPropertiesFile plexusProperties =
-            new DefaultPropertiesFile( resolveChildPath( ctx.getBasedir(), "conf/plexus.properties" ) );
-
-        editPlexusProperties( plexusProperties );
-
-        plexusProperties.save();
+        return resolveChildPath( ctx.getBasedir(), "conf/plexus.properties" );
     }
-
-    public abstract void editPlexusProperties( PropertiesFile file )
-        throws IOException;
 }
