@@ -27,10 +27,8 @@ import java.util.Set;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.Scanner;
 import org.sonatype.plexus.build.incremental.BuildContext;
-import org.sonatype.plexus.build.incremental.BuildContext2;
 
-
-public class TestIncrementalBuildContext implements BuildContext, BuildContext2 {
+public class TestIncrementalBuildContext implements BuildContext {
 
   private final File basedir;
 
@@ -117,7 +115,27 @@ public class TestIncrementalBuildContext implements BuildContext, BuildContext2 
     return false;
   }
 
-  public boolean isIncremental() {
+  public boolean hasDelta(File file) {
+    String relpath = getRelpath(file);
+	return relpath == null || hasDelta(relpath);
+  }
+
+  private String getRelpath(File file) {
+    try {
+      String path = file.getCanonicalPath();
+      String basepath = basedir.getCanonicalPath();
+      if (path.startsWith(basepath) && !path.equals(basepath)) {
+        return path.substring(basepath.length());
+      } else {
+        return null;
+      }
+    } catch (IOException e) {
+      // this is a test implementation, we can be little loose here
+      throw new IllegalArgumentException(e);
+    }
+  }
+
+public boolean isIncremental() {
     return true;
   }
 
@@ -164,5 +182,11 @@ public class TestIncrementalBuildContext implements BuildContext, BuildContext2 
   }
 
   public void addWarning(File file, int line, int column, String message, Throwable cause) {
+  }
+
+  public boolean isUptodate(File target, File source) {
+    return target != null && target.exists() && !hasDelta(target)
+        && source != null && source.exists() && !hasDelta(source)
+        && target.lastModified() > source.lastModified();
   }
 }
