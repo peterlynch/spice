@@ -34,6 +34,14 @@ public interface BuildContext {
   boolean hasDelta(String relpath);
 
   /**
+   * Returns <code>true</code> if the file has changed since last build or is not
+   * under basedir.
+   * 
+   * @since 0.5.0
+   */
+  boolean hasDelta(File file);
+
+  /**
    * Returns <code>true</code> if any file or folder identified by <code>relpaths</code> has 
    * changed since last build.
    *  
@@ -82,7 +90,17 @@ public interface BuildContext {
    * If <code>ignoreDelta</code> is <code>true</code>, the scanner will "see" all
    * files and folders. 
    * 
+   * Please beware that ignoreDelta=false does NOT work reliably for operations
+   * that copy resources from source to target locations. Returned Scanner
+   * only scans changed source resources and it does not consider changed or deleted
+   * target resources. This results in missing or stale target resources.
+   * Starting with 0.5.0, recommended way to process resources is to use
+   * #newScanner(basedir,true) to locate all source resources and {@link #isUptodate(File, File)}
+   * to optimized processing of uptodate target resources. 
+   * 
    * Returns empty Scanner if <code>basedir</code> is not under this build context basedir.
+   * 
+   * @see http://jira.codehaus.org/browse/MSHARED-125
    */
   Scanner newScanner(File basedir, boolean ignoreDelta);
 
@@ -111,7 +129,7 @@ public interface BuildContext {
    *
    * @see #getValue(String)
    */
-  public void setValue(String key, Object value);
+  void setValue(String key, Object value);
 
   /**
    * Returns value associated with <code>key</code> during previous mojo execution.
@@ -123,6 +141,29 @@ public interface BuildContext {
    * @see #setValue(String, Object)
    * @see #isIncremental()
    */
-  public Object getValue(String key);
+  Object getValue(String key);
+
+  /**
+   * 
+   * @since 0.5.0
+   */
+  void addWarning(File file, int line, int column, String message, Throwable cause);
+
+  /**
+   * 
+   * @since 0.5.0
+   */
+  void addError(File file, int line, int column, String message, Throwable cause);
+
+  /**
+   * Returns true, if the target file exists and is uptodate compared to the source file.
+   * 
+   * More specifically, this method returns true when both target and source files exist,
+   * do not have changes since last incremental build and the target file was last modified
+   * later than the source file. Returns false in all other cases.
+   * 
+   * @since 0.5.0
+   */
+  boolean isUptodate(File target, File source);
 
 }

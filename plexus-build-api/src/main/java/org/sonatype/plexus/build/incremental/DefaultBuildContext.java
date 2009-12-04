@@ -27,7 +27,7 @@ import org.codehaus.plexus.util.Scanner;
  * were just created. More specifically, 
  * 
  * hasDelta returns <code>true</code> for all paths
- * newScanner returns Scanner that scanns all files under provided basedir
+ * newScanner returns Scanner that scans all files under provided basedir
  * newDeletedScanner always returns empty scanner.
  * isIncremental returns <code>false</code<
  * getValue always returns <code>null</code>
@@ -38,6 +38,10 @@ import org.codehaus.plexus.util.Scanner;
 public class DefaultBuildContext implements BuildContext {
 
   public boolean hasDelta(String relpath) {
+    return true;
+  }
+
+  public boolean hasDelta(File file) {
     return true;
   }
 
@@ -82,5 +86,10 @@ public class DefaultBuildContext implements BuildContext {
   }
 
   public void addError(File file, int line, int column, String message, Throwable cause) {
+  }
+
+  public boolean isUptodate(File target, File source) {
+    return target != null && target.exists() && source != null && source.exists()
+        && target.lastModified() > source.lastModified();
   }
 }

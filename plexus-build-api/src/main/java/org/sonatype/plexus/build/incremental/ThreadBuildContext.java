@@ -29,7 +29,7 @@ import org.codehaus.plexus.util.Scanner;
  * Apparently, older version of plexus used by maven-filtering and likely
  * other projects, does not honour "default" role-hint.
  */
-public class ThreadBuildContext implements BuildContext, BuildContext2 {
+public class ThreadBuildContext implements BuildContext {
 
   private static final ThreadLocal threadContext = new ThreadLocal();
 
@@ -49,6 +49,10 @@ public class ThreadBuildContext implements BuildContext, BuildContext2 {
 
   public boolean hasDelta(String relPath) {
     return getContext().hasDelta(relPath);
+  }
+
+  public boolean hasDelta(File file) {
+    return getContext().hasDelta(file);
   }
 
   public boolean hasDelta(List relPaths) {
@@ -88,17 +92,14 @@ public class ThreadBuildContext implements BuildContext, BuildContext2 {
   }
 
   public void addWarning(File file, int line, int column, String message, Throwable cause) {
-    BuildContext context = getContext();
-    if (context instanceof BuildContext2) {
-	  ((BuildContext2) context).addWarning(file, line, column, message, cause);
-    }
+    getContext().addWarning(file, line, column, message, cause);
   }
 
   public void addError(File file, int line, int column, String message, Throwable cause) {
-    BuildContext context = getContext();
-    if (context instanceof BuildContext2) {
-      ((BuildContext2) context).addError(file, line, column, message, cause);
-    }
+    getContext().addError(file, line, column, message, cause);
   }
 
+  public boolean isUptodate(File target, File source) {
+    return getContext().isUptodate(target, source);
+  }
 }
