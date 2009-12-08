@@ -14,6 +14,8 @@ package org.sonatype.micromailer;
 
 import javax.mail.internet.MimeMessage;
 
+import junit.framework.Assert;
+
 import org.codehaus.plexus.PlexusTestCase;
 import org.sonatype.micromailer.imp.DefaultMailType;
 import org.sonatype.micromailer.imp.HtmlMailType;
@@ -113,6 +115,46 @@ public class EMailerTest
         String receivedBody = GreenMailUtil.getBody( msgs[0] );
         assertTrue( receivedBody.contains( "Sonatype" ) );
 
+    }
+
+    public void testEmptyUsername()
+    {
+        final String host = "localhost";
+        final int port = 12345;
+
+        // mailer config
+        EmailerConfiguration config = new EmailerConfiguration();
+        config.setMailHost( host );
+        config.setMailPort( port );
+        config.setUsername( null );
+        config.setPassword( null );
+        config.setSsl( false );
+        config.setTls( false );
+        config.setDebug( true );
+
+        // should be null
+        Assert.assertNull( config.getAuthenticator() );
+
+        config.setUsername( "" );
+        config.setPassword( null );
+        // should be null
+        Assert.assertNull( config.getAuthenticator() );
+
+        config.setUsername( null );
+        config.setPassword( "" );
+        // should be null
+        Assert.assertNull( config.getAuthenticator() );
+        
+        config.setUsername( "user" );
+        config.setPassword( "" );
+        // should be null
+        Assert.assertNotNull( config.getAuthenticator() );
+        
+        config.setUsername( "" );
+        config.setPassword( "invalid" );
+        // should be null
+        Assert.assertNull( config.getAuthenticator() );
+        
     }
 
 }

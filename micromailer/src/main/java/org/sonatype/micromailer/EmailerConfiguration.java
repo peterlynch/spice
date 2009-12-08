@@ -174,7 +174,7 @@ public class EmailerConfiguration
 
     public Authenticator getAuthenticator()
     {
-        if ( getUsername() != null )
+        if ( StringUtils.isNotEmpty( getUsername() ) )
         {
             return new DefaultAuthenticator( getUsername(), getPassword() );
         }
