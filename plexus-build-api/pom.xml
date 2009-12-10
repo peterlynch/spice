@@ -16,7 +16,7 @@ See the Apache License Version 2.0 for the specific language governing permissio
   <parent>
     <groupId>org.sonatype.spice</groupId>
     <artifactId>spice-parent</artifactId>
-    <version>10</version>
+    <version>14</version>
   </parent>
   <groupId>org.sonatype.plexus</groupId>
   <artifactId>plexus-build-api</artifactId>
@@ -27,6 +27,12 @@ See the Apache License Version 2.0 for the specific language governing permissio
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
       <version>1.5.8</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-container-default</artifactId>
+      <version>1.0-alpha-9</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 

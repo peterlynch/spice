@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
+import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.Scanner;
 
@@ -35,7 +36,7 @@ import org.codehaus.plexus.util.Scanner;
  * @plexus.component role="org.sonatype.plexus.build.incremental.BuildContext"
  *                   role-hint="default"
  */
-public class DefaultBuildContext implements BuildContext {
+public class DefaultBuildContext extends AbstractLogEnabled implements BuildContext {
 
   public boolean hasDelta(String relpath) {
     return true;
@@ -83,9 +84,18 @@ public class DefaultBuildContext implements BuildContext {
   }
 
   public void addWarning(File file, int line, int column, String message, Throwable cause) {
+    getLogger().warn(getMessage(file, line, column, message), cause);
+  }
+
+  private String getMessage(File file, int line, int column, String message) {
+    StringBuffer sb = new StringBuffer();
+    sb.append(file.getAbsolutePath()).append(" [").append(line).append(':').append(column).append("]: ");
+    sb.append(message);
+    return sb.toString();
   }
 
   public void addError(File file, int line, int column, String message, Throwable cause) {
+    getLogger().error(getMessage(file, line, column, message), cause);
   }
 
   public boolean isUptodate(File target, File source) {
