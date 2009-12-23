@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.sonatype.spice</groupId>
     <artifactId>spice-parent</artifactId>
-    <version>12</version>
+    <version>15-SNAPSHOT</version>
   </parent>
 
   <artifactId>jscoverage-component</artifactId>

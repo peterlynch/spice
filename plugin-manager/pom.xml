@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.sonatype.spice</groupId>
     <artifactId>spice-parent</artifactId>
-    <version>10</version>
+    <version>15-SNAPSHOT</version>
   </parent>
   <groupId>org.sonatype.plexus</groupId>
   <artifactId>plugin-manager-aggregator</artifactId>
