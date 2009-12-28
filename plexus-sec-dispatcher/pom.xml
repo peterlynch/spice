@@ -51,6 +51,7 @@
           <models>
             <model>src/main/mdo/settings-security.mdo</model>
           </models>
+          <useJava5>false</useJava5>
         </configuration>
         <executions>
           <execution>
