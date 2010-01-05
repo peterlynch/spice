@@ -12,6 +12,7 @@
  */
 package org.sonatype.ldaptestsuite;
 
+import java.io.File;
 import java.util.Hashtable;
 
 import javax.naming.Context;
@@ -58,5 +59,12 @@ public class LdapTestEnvironmentTest extends AbstractLdapTestEnvironment
         // Ok, everything is fine
     }
 
+    
+    public void testStop() throws Exception
+    {
+        // stopping seems to lock file on windows
+        this.getLdapServer().stop();
+        this.getLdapServer().doDelete( new File( "target/apache-ds/") );
+    }
     
 }

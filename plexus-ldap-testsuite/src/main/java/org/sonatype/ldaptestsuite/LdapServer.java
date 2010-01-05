@@ -31,6 +31,7 @@ import javax.naming.NamingException;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 
+import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 
 import org.apache.directory.server.constants.ServerDNConstants;
@@ -563,10 +564,16 @@ public class LdapServer
      */
     public void dispose()
     {
-
+        socketAcceptor.unbindAll();
+        
         try
         {
             ldapService.stop();
+            schemaRoot.close();
+        }
+        catch ( NamingException e )
+        {
+           System.out.println( "Failed to close schemaRoot" );
         }
         finally
         {
@@ -577,6 +584,7 @@ public class LdapServer
             }
             catch ( Exception e )
             {
+                System.out.println( "Failed to stop directoryService" );
             }
         }
     }
