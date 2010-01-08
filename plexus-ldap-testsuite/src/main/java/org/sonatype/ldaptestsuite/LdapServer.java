@@ -31,7 +31,6 @@ import javax.naming.NamingException;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 
-import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 
 import org.apache.directory.server.constants.ServerDNConstants;
@@ -67,7 +66,6 @@ import org.apache.directory.shared.ldap.ldif.LdifReader;
 import org.codehaus.plexus.logging.LogEnabled;
 import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Disposable;
-import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StartingException;
@@ -82,7 +80,7 @@ import org.codehaus.plexus.util.StringUtils;
  * @author cstamas
  */
 public class LdapServer
-    implements Initializable, Startable, LogEnabled, Disposable
+    implements Startable, LogEnabled, Disposable
 {
 
     /** The Constant ROLE. */
@@ -404,14 +402,9 @@ public class LdapServer
         schemaRoot = new InitialLdapContext( envFinal, null );
     }
 
-    // ===
-    // Initializable iface
+  
 
-    /*
-     * (non-Javadoc)
-     * @see org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable#initialize()
-     */
-    public void initialize()
+    public void init()
         throws InitializationException
     {
 
@@ -456,12 +449,12 @@ public class LdapServer
             for ( org.sonatype.ldaptestsuite.Partition partition : getPartitions() )
             {
                 try
-                {
+                {   
                     // Add partition
                     JdbmPartition jbdmPartition = new JdbmPartition();
                     jbdmPartition.setId( partition.getName() );
                     jbdmPartition.setSuffix( partition.getSuffix() );
-
+                    
                     // Create indices
                     if ( partition.getIndexedAttributes() != null && partition.getIndexedAttributes().size() > 0 )
                     {
@@ -501,7 +494,12 @@ public class LdapServer
         try
         {
 
-            this.doDelete( directoryService.getWorkingDirectory() );
+
+            this.doDelete( this.workingDirectory );
+            
+            // reconfigure the server
+            this.init();
+            
             this.configureDirectoryService();
 
             directoryService.startup();
@@ -563,13 +561,29 @@ public class LdapServer
      * @see org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable#stop()
      */
     public void dispose()
-    {
-        socketAcceptor.unbindAll();
-        
+    {   
         try
         {
             ldapService.stop();
-            schemaRoot.close();
+            if( schemaRoot != null )
+            {
+                schemaRoot.close();
+            }
+            
+            for ( org.apache.directory.server.core.partition.Partition partition : this.directoryService.getPartitions() )
+            {
+                try
+                {
+                    partition.destroy();
+                }
+                catch ( Exception e )
+                {
+                    e.printStackTrace();
+                }
+            }
+            
+            this.directoryService.getPartitions().clear();
+            
         }
         catch ( NamingException e )
         {
@@ -680,6 +694,5 @@ public class LdapServer
     public int getPort()
     {
         return this.port;
-    }
-    
+    }    
 }
