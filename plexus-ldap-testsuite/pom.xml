@@ -8,13 +8,13 @@
 
 	<groupId>org.sonatype.plexus</groupId>
 	<artifactId>plexus-ldap-testsuite</artifactId>
-	<version>1.2-SNAPSHOT</version>
+	<version>1.2</version>
 	<name>Plexus LDAP Testsuite</name>
 	
 	<scm>
-      <connection>scm:svn:http://svn.sonatype.org/spice/tags/plexus-ldap-testsuite-1.1</connection>
-      <url>http://svn.sonatype.org/spice/tags/plexus-ldap-testsuite-1.1</url>
-      <developerConnection>scm:svn:https://svn.sonatype.org/spice/tags/plexus-ldap-testsuite-1.1</developerConnection>
+      <connection>scm:svn:http://svn.sonatype.org/spice/tags/plexus-ldap-testsuite-1.2</connection>
+      <url>http://svn.sonatype.org/spice/tags/plexus-ldap-testsuite-1.2</url>
+      <developerConnection>scm:svn:https://svn.sonatype.org/spice/tags/plexus-ldap-testsuite-1.2</developerConnection>
     </scm>
 	
 	<dependencies>
