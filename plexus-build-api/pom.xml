@@ -20,7 +20,7 @@ See the Apache License Version 2.0 for the specific language governing permissio
   </parent>
   <groupId>org.sonatype.plexus</groupId>
   <artifactId>plexus-build-api</artifactId>
-  <version>0.0.5-SNAPSHOT</version>
+  <version>0.0.5</version>
   
   <dependencies>
     <dependency>
@@ -79,4 +79,10 @@ See the Apache License Version 2.0 for the specific language governing permissio
       </plugin>
     </plugins>
   </build>
+
+  <scm>
+    <connection>scm:svn:http://svn.sonatype.org/spice/tags/plexus-build-api-0.0.5</connection>
+    <developerConnection>scm:svn:https://svn.sonatype.org/spice/tags/plexus-build-api-0.0.5</developerConnection>
+    <url>http://svn.sonatype.org/spice/tags/plexus-build-api-0.0.5</url>
+  </scm>
 </project>
