@@ -37,6 +37,12 @@ See the Apache License Version 2.0 for the specific language governing permissio
   </dependencies>
 
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <groupId>org.codehaus.plexus</groupId>
@@ -51,12 +57,12 @@ See the Apache License Version 2.0 for the specific language governing permissio
         </executions>
       </plugin>
       <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <configuration>
-              <source>1.4</source>
-              <target>1.4</target>
-          </configuration>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.4</source>
+          <target>1.4</target>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
