@@ -12,10 +12,12 @@
  */
 package org.codehaus.plexus.swizzle;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
@@ -108,10 +110,7 @@ public class JiraIssueSubmitter
             throw new IssueSubmissionException( "Error creating issue: " + e.getMessage(), e );
         }
 
-        if ( request.getProblemReportBundle() != null )
-        {
-            attachProblemReport( addedIssue.getId(), request );
-        }
+        attachProblemReport( addedIssue.getId(), request );
 
         return new IssueSubmissionResult( addedIssue.getLink(), addedIssue.getKey() );
     }
@@ -148,16 +147,16 @@ public class JiraIssueSubmitter
     //
     // /secure/AttachFile.jspa?id=${issueId}&os_username=${username}&os_password=${password}
 
-    private void attachProblemReport( String issueKey, IssueSubmissionRequest request )
-        throws IssueSubmissionException
-    {
-        Issue issue = jira.getIssue( issueKey );
-        attachProblemReport( issue.getId(), request );
-    }
-
     private void attachProblemReport( int issueId, IssueSubmissionRequest request )
         throws IssueSubmissionException
     {
+        List<File> problemReportBundles = request.getProblemReportBundles();
+
+        if ( problemReportBundles == null || problemReportBundles.isEmpty() )
+        {
+            return;
+        }
+
         String username = authenticationSource.getLogin();
         String password = authenticationSource.getPassword();
 
@@ -167,37 +166,40 @@ public class JiraIssueSubmitter
 
         HttpClient client = getHttpClient( request );
         client.getHttpConnectionManager().getParams().setConnectionTimeout( 8000 );
-        PostMethod upload = new PostMethod( uploadUrl );
 
-        try
+        for ( File problemReportBundle : problemReportBundles )
         {
-            Part[] parts = { new FilePart( FILE_ATTATCHMENT_PARAMETER, request.getProblemReportBundle() ) };
-            upload.setRequestEntity( new MultipartRequestEntity( parts, upload.getParams() ) );
-            int status = client.executeMethod( upload );
-
-            // JIRA returns temporarily moved because the web UI moves to another page when the attachment
-            // submission is done normally.
-
-            if ( status != HttpStatus.SC_MOVED_TEMPORARILY )
+            try
             {
-                // This should not fail once we have successfully created the issue, but in the event the
-                // attachment does fail we should probably roll back the creation of the issue.
-            }
+                PostMethod upload = new PostMethod( uploadUrl );
+                Part[] parts = { new FilePart( FILE_ATTATCHMENT_PARAMETER, problemReportBundle ) };
+                upload.setRequestEntity( new MultipartRequestEntity( parts, upload.getParams() ) );
+                int status = client.executeMethod( upload );
 
-            upload.releaseConnection();
-        }
-        catch ( FileNotFoundException e )
-        {
-            throw new IssueSubmissionException( "The problem report bundle specified does not exist: "
-                + request.getProblemReportBundle() );
-        }
-        catch ( HttpException e )
-        {
-            throw new IssueSubmissionException( "There was an error posting the problem report bundle: ", e );
-        }
-        catch ( IOException e )
-        {
-            throw new IssueSubmissionException( "There was an error posting the problem report bundle: ", e );
+                // JIRA returns temporarily moved because the web UI moves to another page when the attachment
+                // submission is done normally.
+
+                if ( status != HttpStatus.SC_MOVED_TEMPORARILY )
+                {
+                    // This should not fail once we have successfully created the issue, but in the event the
+                    // attachment does fail we should probably roll back the creation of the issue.
+                }
+
+                upload.releaseConnection();
+            }
+            catch ( FileNotFoundException e )
+            {
+                throw new IssueSubmissionException( "The problem report bundle specified does not exist: "
+                    + problemReportBundle );
+            }
+            catch ( HttpException e )
+            {
+                throw new IssueSubmissionException( "There was an error posting the problem report bundle: ", e );
+            }
+            catch ( IOException e )
+            {
+                throw new IssueSubmissionException( "There was an error posting the problem report bundle: ", e );
+            }
         }
     }
 

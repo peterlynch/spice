@@ -69,9 +69,9 @@
     	<version>3.1</version>
     </dependency>
     <dependency>
-        <groupId>org.sonatype.spice</groupId>
-        <artifactId>spice-utils</artifactId>
-        <version>1.0.0</version>
+      <groupId>org.sonatype.spice</groupId>
+      <artifactId>spice-utils</artifactId>
+      <version>1.0.0</version>
     </dependency>
   </dependencies>
   <build>

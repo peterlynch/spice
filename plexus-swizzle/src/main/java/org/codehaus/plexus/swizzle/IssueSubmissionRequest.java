@@ -13,6 +13,8 @@
 package org.codehaus.plexus.swizzle;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.sonatype.spice.utils.proxyserver.ProxyServerConfigurator;
 
@@ -28,7 +30,7 @@ public class IssueSubmissionRequest
 
     private String assignee;
 
-    private File problemReportBundle;
+    private List<File> problemReportBundles = new ArrayList<File>();
 
     private String environment;
 
@@ -86,14 +88,33 @@ public class IssueSubmissionRequest
         this.assignee = assignee;
     }
 
+    public List<File> getProblemReportBundles()
+    {
+        return problemReportBundles;
+    }
+
+    public void addProblemReportBundle( File problemReportBundle )
+    {
+        if ( problemReportBundle == null )
+        {
+            throw new IllegalArgumentException( "bundle file not specified" );
+        }
+        problemReportBundles.add( problemReportBundle );
+    }
+
+    @Deprecated
     public File getProblemReportBundle()
     {
-        return problemReportBundle;
+        return problemReportBundles.isEmpty() ? null : problemReportBundles.get( 0 );
     }
 
     public void setProblemReportBundle( File problemReportBundle )
     {
-        this.problemReportBundle = problemReportBundle;
+        this.problemReportBundles.clear();
+        if ( problemReportBundle != null )
+        {
+            addProblemReportBundle( problemReportBundle );
+        }
     }
 
     public void setEnvironment( String environment )
