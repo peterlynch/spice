@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>                                                                                          
     <relativePath>../spice-parent/pom.xml</relativePath>                                                   
@@ -10,7 +9,7 @@
   </parent>      
   <groupId>org.sonatype.plexus.archiver</groupId>
   <artifactId>plexus-archiver-zip</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -19,4 +18,10 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <scm>
+    <connection>scm:svn:http://svn.sonatype.org/spice/tags/plexus-archiver-zip-1.0</connection>
+    <developerConnection>scm:svn:https://svn.sonatype.org/spice/tags/plexus-archiver-zip-1.0</developerConnection>
+    <url>http://svn.sonatype.org/spice/tags/plexus-archiver-zip-1.0</url>
+  </scm>
 </project>
