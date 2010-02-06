@@ -3,10 +3,10 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <parent>                                                                                          
-    <relativePath>../spice-parent/</relativePath>                                                   
+    <relativePath>../spice-parent/pom.xml</relativePath>                                                   
     <artifactId>spice-parent</artifactId>                                                           
     <groupId>org.sonatype.spice</groupId>                                                           
-    <version>15-SNAPSHOT</version>                                                                  
+    <version>15</version>                                                                  
   </parent>      
   <groupId>org.sonatype.plexus.archiver</groupId>
   <artifactId>plexus-archiver-zip</artifactId>
