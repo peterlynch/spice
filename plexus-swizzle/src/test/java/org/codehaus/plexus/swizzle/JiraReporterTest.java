@@ -35,10 +35,10 @@ public class JiraReporterTest
         r.setDescription( "description" );
         r.setAssignee( "sonatype_problem_reporting" );
         r.setReporter( "sonatype_problem_reporting" );
-        r.setProblemReportBundle( new File( getBasedir(), "src/test/bundle.zip" ) );
-        r.setEnvironment("Eclipse 3.4.2");
-        
+        r.addScreenCapture( new File( getBasedir(), "src/test/capture.png" ) );
+        r.setEnvironment("Eclipse 3.4.2");        
         IssueSubmissionResult result = is.submitIssue( r );
         assertNotNull( result.getIssueUrl() );
+        System.out.println( result.getIssueUrl() );
     }
 }
