@@ -15,41 +15,28 @@ package org.codehaus.plexus.swizzle;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Writer;
 import java.util.Iterator;
 import java.util.Map;
-
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.MultipartPostMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.multipart.FilePart;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.velocity.VelocityContext;
 import org.codehaus.plexus.component.annotations.Component;
-import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.util.IOUtil;
-import org.codehaus.swizzle.jira.Attachment;
-import org.codehaus.swizzle.jira.Issue;
 import org.codehaus.swizzle.jira.Jira;
-import org.codehaus.swizzle.jira.ServerInfo;
 import org.codehaus.swizzle.jirareport.Main;
 
-@Component(role = JiraReporter.class)
+@Component( role = JiraReporter.class )
 public class DefaultJiraReporter
     implements JiraReporter
 {
+
     private Jira jira;
     private VelocityContext context;
     private String jiraServerUrl = "http://jira.codehaus.org";
     private String username = "xxx";
     private String password = "xxx";
-
 
     public void generateReport( String template, Map configuration, OutputStream os )
         throws Exception
@@ -60,7 +47,7 @@ public class DefaultJiraReporter
         context.put( "username", username );
         context.put( "password", password );
         context.put( "stringtool", new StringTool() );
-        
+
         for ( Iterator i = configuration.keySet().iterator(); i.hasNext(); )
         {
             String key = (String) i.next();
@@ -73,7 +60,7 @@ public class DefaultJiraReporter
 
         LineNumberReader read = new LineNumberReader( new FileReader( new File( "roadmap.txt" ) ) );
         Writer w = new FileWriter( "o.txt" );
-        
+
         String line;
         boolean skip = false;
         while ( ( line = read.readLine() ) != null )
@@ -82,19 +69,19 @@ public class DefaultJiraReporter
             {
                 skip = false;
             }
-            
+
             if ( line.startsWith( "ERD:" ) )
             {
                 skip = true;
             }
-            
+
             if ( !skip )
-            {           
+            {
                 w.write( line + "\n" );
             }
         }
-        
-        IOUtil.close(  read );
+
+        IOUtil.close( read );
         IOUtil.close( w );
     }
 
@@ -111,6 +98,7 @@ public class DefaultJiraReporter
 
     public class StringTool
     {
+
         public String replace( String a, String b, String c )
         {
             return c.replaceAll( a, b );
