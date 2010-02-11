@@ -24,20 +24,6 @@ import org.codehaus.plexus.swizzle.jira.authentication.PropertiesFileAuthenticat
 public class JiraReporterTest
     extends PlexusTestCase
 {
-    public void testReporting()
-        throws Exception
-    {
-        /*
-        JiraReporter reporter = (JiraReporter) lookup( JiraReporter.class );        
-        Map m = new HashMap();
-        m.put( "projectKey", "NXCM" );
-        m.put( "projectVersion", "1.3eet" );
-        File file = new File( getBasedir(), "roadmap.txt" );
-        OutputStream result = new FileOutputStream( file );
-        reporter.generateReport( "org/sonatype/plexus/report/roadmap/Roadmap.vm", m, result );        
-        */
-    }
-    
     public void testAttachment()
         throws Exception
     {

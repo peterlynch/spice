@@ -15,21 +15,31 @@ package org.codehaus.plexus.swizzle;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.multipart.FilePart;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.Part;
+import javax.imageio.ImageIO;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpException;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.InitializationException;
+import org.codehaus.plexus.swizzle.IssueSubmissionException;
+import org.codehaus.plexus.swizzle.IssueSubmissionRequest;
+import org.codehaus.plexus.swizzle.IssueSubmissionResult;
+import org.codehaus.plexus.swizzle.IssueSubmitter;
 import org.codehaus.plexus.swizzle.jira.authentication.AuthenticationSource;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.swizzle.jira.Issue;
@@ -37,7 +47,6 @@ import org.codehaus.swizzle.jira.IssueType;
 import org.codehaus.swizzle.jira.Jira;
 import org.codehaus.swizzle.jira.Priority;
 import org.codehaus.swizzle.jira.Project;
-import org.sonatype.spice.utils.proxyserver.ProxyServerConfigurator;
 
 //TODO detect whether the remote api is enabled
 @Component( role = IssueSubmitter.class, hint = "jira" )
@@ -110,8 +119,10 @@ public class JiraIssueSubmitter
             throw new IssueSubmissionException( "Error creating issue: " + e.getMessage(), e );
         }
 
-        attachProblemReport( addedIssue.getId(), request );
+        processAttachments( addedIssue.getId(), request, request.getProblemReportBundles() );
 
+        processAttachments( addedIssue.getId(), request, request.getScreenCaptures() );
+        
         return new IssueSubmissionResult( addedIssue.getLink(), addedIssue.getKey() );
     }
 
@@ -147,12 +158,10 @@ public class JiraIssueSubmitter
     //
     // /secure/AttachFile.jspa?id=${issueId}&os_username=${username}&os_password=${password}
 
-    private void attachProblemReport( int issueId, IssueSubmissionRequest request )
+    private void processAttachments( int issueId, IssueSubmissionRequest request, List<File> attachements )
         throws IssueSubmissionException
     {
-        List<File> problemReportBundles = request.getProblemReportBundles();
-
-        if ( problemReportBundles == null || problemReportBundles.isEmpty() )
+        if ( attachements == null || attachements.isEmpty() )
         {
             return;
         }
@@ -160,41 +169,61 @@ public class JiraIssueSubmitter
         String username = authenticationSource.getLogin();
         String password = authenticationSource.getPassword();
 
-        String uploadUrl =
-            serverUrl + "/secure/AttachFile.jspa?id=" + issueId + "&os_username=" + username + "&os_password="
-                + password;
+        String uploadUrl = serverUrl + "/secure/AttachFile.jspa?id=" + issueId + "&os_username=" + username + "&os_password=" + password;
 
-        HttpClient client = getHttpClient( request );
-        client.getHttpConnectionManager().getParams().setConnectionTimeout( 8000 );
-
-        for ( File problemReportBundle : problemReportBundles )
+        DefaultHttpClient client = getHttpClient( request );
+        //client.getHttpConnectionManager().getParams().setConnectionTimeout( 8000 );
+        
+        for ( File attachment : attachements )
         {
             try
             {
+                HttpPost httppost = new HttpPost( uploadUrl );  
+                MultipartEntity reqEntity = new MultipartEntity( HttpMultipartMode.BROWSER_COMPATIBLE);                     
+				reqEntity.addPart(FILE_ATTATCHMENT_PARAMETER, new FileBody( attachment ) );
+				httppost.setEntity(reqEntity);				
+				HttpResponse response = client.execute(httppost);
+				HttpEntity resEntity = response.getEntity();
+
+				if (resEntity != null) 
+				{
+					String page = EntityUtils.toString(resEntity);
+				}
+            	
+				/*
                 PostMethod upload = new PostMethod( uploadUrl );
-                Part[] parts = { new FilePart( FILE_ATTATCHMENT_PARAMETER, problemReportBundle ) };
+                
+                String contentType = null;
+                
+                if ( attachment.getName().endsWith( ".zip" ) )
+                {
+                	contentType = "application/zip";
+                }
+                else if ( attachment.getName().endsWith( ".png" ) )
+                {
+                	contentType = "image/png"; 
+                }
+                
+                Part[] parts = { new FilePart( FILE_ATTATCHMENT_PARAMETER, attachment, contentType, null ) };
                 upload.setRequestEntity( new MultipartRequestEntity( parts, upload.getParams() ) );
                 int status = client.executeMethod( upload );
 
+                //
                 // JIRA returns temporarily moved because the web UI moves to another page when the attachment
                 // submission is done normally.
+                //
 
                 if ( status != HttpStatus.SC_MOVED_TEMPORARILY )
                 {
                     // This should not fail once we have successfully created the issue, but in the event the
                     // attachment does fail we should probably roll back the creation of the issue.
                 }
-
-                upload.releaseConnection();
+                */
             }
             catch ( FileNotFoundException e )
             {
                 throw new IssueSubmissionException( "The problem report bundle specified does not exist: "
-                    + problemReportBundle );
-            }
-            catch ( HttpException e )
-            {
-                throw new IssueSubmissionException( "There was an error posting the problem report bundle: ", e );
+                    + attachment );
             }
             catch ( IOException e )
             {
@@ -221,9 +250,9 @@ public class JiraIssueSubmitter
         }
     }
 
-    private HttpClient getHttpClient( IssueSubmissionRequest request )
+    private DefaultHttpClient getHttpClient( IssueSubmissionRequest request )
     {
-        HttpClient client = new HttpClient();
+        DefaultHttpClient client = new DefaultHttpClient();
 
         ProxyServerConfigurator configurator = request.getProxyConfigurator();
 
@@ -236,5 +265,4 @@ public class JiraIssueSubmitter
 
         return client;
     }
-
 }

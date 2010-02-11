@@ -16,7 +16,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.sonatype.spice.utils.proxyserver.ProxyServerConfigurator;
 
 public class IssueSubmissionRequest
 {
@@ -32,6 +31,8 @@ public class IssueSubmissionRequest
 
     private List<File> problemReportBundles = new ArrayList<File>();
 
+    private List<File> screenCaptures = new ArrayList<File>();
+    
     private String environment;
 
     private String component;
@@ -108,6 +109,7 @@ public class IssueSubmissionRequest
         return problemReportBundles.isEmpty() ? null : problemReportBundles.get( 0 );
     }
 
+    @Deprecated
     public void setProblemReportBundle( File problemReportBundle )
     {
         this.problemReportBundles.clear();
@@ -117,6 +119,21 @@ public class IssueSubmissionRequest
         }
     }
 
+    public List<File> getScreenCaptures()
+    {
+        return screenCaptures;
+    }
+
+    public void addScreenCapture( File screenCapture )
+    {
+        if ( screenCapture == null )
+        {
+            throw new IllegalArgumentException( "screen capture file not specified" );
+        }
+        screenCaptures.add( screenCapture );
+    }
+   
+    
     public void setEnvironment( String environment )
     {
         this.environment = environment;

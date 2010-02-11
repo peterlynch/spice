@@ -12,16 +12,18 @@
  */
 package org.codehaus.plexus.swizzle;
 
-import org.apache.commons.httpclient.Credentials;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.sonatype.spice.utils.proxyserver.ProxyServerConfigurator;
+import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.HttpClient;
+import org.apache.http.conn.params.ConnRoutePNames;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 public class DefaultProxyServerConfigurator
     implements ProxyServerConfigurator
 {
-    public void applyToClient( HttpClient client )
+    public void applyToClient( DefaultHttpClient client )
     {
         String proxySet = System.getProperty("http.proxySet");
         String proxyHost = System.getProperty("http.proxyHost");
@@ -33,11 +35,14 @@ public class DefaultProxyServerConfigurator
             return;
         }
         
-        client.getHostConfiguration().setProxy(proxyHost, Integer.parseInt(proxyPort));
-
+        HttpHost proxy = new HttpHost(proxyHost, Integer.parseInt(proxyPort)); 
+        client.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
+        
         if (proxyUser != null) {
-          Credentials cred = new UsernamePasswordCredentials(proxyUser, proxyPass);
-          client.getState().setProxyCredentials(AuthScope.ANY, cred);
+        	
+            client.getCredentialsProvider().setCredentials(
+                    new AuthScope(proxyHost, Integer.parseInt(proxyPort)), 
+                    new UsernamePasswordCredentials(proxyUser, proxyPass));
         }
     }
 }
