@@ -14,21 +14,9 @@
   <url>http://spice.sonatype.org</url>
   <dependencies>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
       <version>1.5.4</version>
-    </dependency>
-    <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-velocity</artifactId>
-      <version>1.1.6</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.codehaus.swizzle</groupId>
@@ -40,7 +28,43 @@
       <artifactId>swizzle-jira</artifactId>
       <version>${swizzleVersion}</version>
     </dependency>
+    <dependency>
+    	<groupId>commons-httpclient</groupId>
+    	<artifactId>commons-httpclient</artifactId>
+    	<version>3.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.sonatype.spice</groupId>
+      <artifactId>spice-utils</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-component-annotations</artifactId>
+      <version>1.0-beta-3.0.5</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-component-api</artifactId>
+      <version>1.0-alpha-20</version>
+      <scope>provided</scope>
+    </dependency>
+
     <!--  test dependencies -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>    
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-velocity</artifactId>
+      <version>1.1.6</version>
+      <scope>test</scope>
+    </dependency>    
     <dependency>
       <groupId>jdom</groupId>
       <artifactId>jdom</artifactId>
@@ -55,23 +79,9 @@
     </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-component-annotations</artifactId>
-      <version>1.0-beta-3.0.5</version>
-    </dependency>
-    <dependency>
-      <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-container-default</artifactId>
       <version>1.0-beta-3.0.5</version>
-    </dependency>
-    <dependency>
-    	<groupId>commons-httpclient</groupId>
-    	<artifactId>commons-httpclient</artifactId>
-    	<version>3.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.sonatype.spice</groupId>
-      <artifactId>spice-utils</artifactId>
-      <version>1.0.0</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
   <build>
@@ -93,6 +103,43 @@
             <goals>
               <goal>generate-metadata</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <version>2.0.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>bundle</goal>
+            </goals>
+            <configuration>
+              <classifier>ubundle</classifier>
+              <instructions>
+                <Export-Package>org.codehaus.plexus.swizzle.*;version="${pom.version}"</Export-Package>
+                <Import-Package>
+                  org.codehaus.plexus.swizzle.*,
+                  org.apache.commons.logging.*,
+                  org.apache.log4j.*,
+                  org.codehaus.plexus.personality.plexus.lifecycle.phase.*,
+                  javax.xml.*,
+                  !org.codehaus.plexus.interpolation.*,
+                  !junit.*,
+                  *;resolution:=optional
+                </Import-Package>
+                <_versionpolicy>[$(version;==;$(@)),$(version;+;$(@)))</_versionpolicy>
+                <_nouses>true</_nouses>
+                <Embed-Dependency>*;scope=compile;type=!pom;inline=false</Embed-Dependency>
+                <Embed-Transitive>true</Embed-Transitive>
+              </instructions>
+              <excludeDependencies>
+                commons-logging,
+                log4j,
+                xml-apis
+              </excludeDependencies>
+            </configuration>            
           </execution>
         </executions>
       </plugin>
