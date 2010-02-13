@@ -188,37 +188,7 @@ public class JiraIssueSubmitter
 				if (resEntity != null) 
 				{
 					String page = EntityUtils.toString(resEntity);
-				}
-            	
-				/*
-                PostMethod upload = new PostMethod( uploadUrl );
-                
-                String contentType = null;
-                
-                if ( attachment.getName().endsWith( ".zip" ) )
-                {
-                	contentType = "application/zip";
-                }
-                else if ( attachment.getName().endsWith( ".png" ) )
-                {
-                	contentType = "image/png"; 
-                }
-                
-                Part[] parts = { new FilePart( FILE_ATTATCHMENT_PARAMETER, attachment, contentType, null ) };
-                upload.setRequestEntity( new MultipartRequestEntity( parts, upload.getParams() ) );
-                int status = client.executeMethod( upload );
-
-                //
-                // JIRA returns temporarily moved because the web UI moves to another page when the attachment
-                // submission is done normally.
-                //
-
-                if ( status != HttpStatus.SC_MOVED_TEMPORARILY )
-                {
-                    // This should not fail once we have successfully created the issue, but in the event the
-                    // attachment does fail we should probably roll back the creation of the issue.
-                }
-                */
+				}            	
             }
             catch ( FileNotFoundException e )
             {
