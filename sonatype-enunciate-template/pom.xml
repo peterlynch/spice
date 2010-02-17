@@ -9,7 +9,7 @@
     <version>16-SNAPSHOT</version>
   </parent>
 
-  <groupId>com.sonatype.templates</groupId>
+  <groupId>org.sonatype.templates</groupId>
   <artifactId>enunciate-doc-template</artifactId>
   <name>Sonatype Enunciate Documentation Template</name>
   <packaging>jar</packaging>
