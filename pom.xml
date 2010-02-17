@@ -54,6 +54,7 @@ under the License.
       <module>buup</module>
       <module>appcontext</module>
       <module>spice-inject</module>
+      <module>sonatype-enunciate-template</module>
   </modules>
 
 	<build>

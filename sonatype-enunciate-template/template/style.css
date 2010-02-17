@@ -1,0 +1,321 @@
+* {
+  margin: 0; padding: 0;
+}
+
+body {
+	background:#fff url("images/bg_page.gif") repeat-x top left;
+	padding:0;
+	margin:0;
+	font-size:13px;
+	background-color: #FFF;
+}
+
+#block-menu-secondary-links { display: inline; margin: 0px; padding:0px; }
+#block-menu-secondary-links h2 { display: none; }
+#block-menu-secondary-links div.content { display: inline; }
+#block-menu-secondary-links div.content ul.menu { display: inline; margin: 0px; padding:0px; }
+#block-menu-secondary-links div.content ul.menu li { margin: 0px; padding: 0px 10px; border-left: 2px solid #CCCCCC; }
+#block-menu-secondary-links div.content ul.menu li.first { margin-left: 10px; border-left: 0px solid #CCCCCC; }
+#block-menu-secondary-links div.content ul.menu li.leaf { display: inline; }
+#block-menu-secondary-links div.content ul.menu li.leaf a { color: #999999; text-decoration: none; }
+#block-menu-secondary-links div.content ul.menu li a:hover { color: navy; }
+
+/* General Settings ***********************************************************************************************/
+
+.not-front #content-inner { padding-top: 0px; }
+.not-front #content-inner .content p { padding: 0.3em 1em; }
+
+/* Navigation Menu ************************************************************************************************/
+.primary-links { margin-top: 60px; float: right; }
+#primary { font-size:12px; font-weight: bold; }
+#primary ul li          { color:#CCCCCC; display: block; padding: 0px; float: left; list-style-type: none; }
+#primary ul li a        { color:#999999; display: block; height: 30px; line-height: 30px; padding-right: 1.0em; padding-left: 1.0em; }
+#primary ul li a:hover  { color:#19648C; text-decoration: none; }
+#primary ul li a.active { color:#333333; text-decoration: none; }
+
+/* Header & Footer ************************************************************************************************/
+#header { height: auto; }
+#header-region {
+  background: url("images/bg_banner.gif") repeat scroll 0 0;
+  height: 70px; 
+  display: block; 
+  clear: both; 
+}
+
+.not-front #header-region {
+  font-weight: bold;
+  color: #FFFFFF;
+  padding-top:15px;
+  padding-left:30px;
+  height: auto;
+  margin-bottom: 5px;
+  display: block; 
+  clear: both; 
+  }
+
+#header-region h3.title { display: none; } /* supress banner-text label */
+#header-region div.content {
+  color: #FFFFFF;
+  text-shadow: #333333 0px 0px 5px;
+  padding: 7px 30px;
+  height: 50px;
+  font-size: 17px;
+  overflow: hidden;
+  text-align: justify;
+}
+
+#footer {
+  color: #666666;
+  font-size: 0.85em;
+  font-weight: bold;
+  text-align: left;
+  border-top: 3px solid #CCC;
+  margin-top: 10px;
+  padding-top: 10px;
+  margin-bottom: 100px;
+}
+
+/*Right Sidebar ***************************************************************************************************/
+#sidebar-right { background: url("images/bg_left_sidebar.gif") repeat-y 0 0; border-bottom: 1px solid #DDD; }
+#sidebar-right-inner { padding: 15px 0px 15px 15px;}
+
+#sidebar-right ul      { padding: 0px; margin: 0px; margin-left: 10px; border-top: 1px solid #DDD; margin-bottom: 1px solid #FFF; padding-bottom: 5px; }
+#sidebar-right ul li   { padding: 0px; margin: 0px;
+  list-style: none;
+  list-style-type: none; 
+  list-style-image: none;
+  border-top: 1px solid #FFF;
+  border-bottom: 1px solid #DDD;
+}
+
+#sidebar-right ul li:hover { border-top: 1px solid #DDD; border-bottom: 1px solid #FFF; }
+#sidebar-right ul li.first { border-top: none; }
+#sidebar-right ul li a {
+  display: block;
+  height: 20px;
+  line-height: 20px;
+  padding-left: 15px;
+  color: #004E77; 
+  font-weight: bold;
+}
+#sidebar-right ul li a:hover  { color:#19648C; text-decoration: none; background: #EEF; }
+#sidebar-right ul li a.active { color:#103247; text-decoration: none; }
+
+#sidebar-right h3 { color: #103247; font-size: 1.1em; font-weight: normal; padding-top: 15px}
+
+#sidebar-right ul.menu ul.menu {
+	padding-bottom: 0px;
+}
+
+#sidebar-right ul li ul li a {	
+	font-weight: normal;
+}
+
+#sidebar-right ul li ul li ul li a {
+	font-size: 0.85em;	
+	font-weight: normal;
+}
+
+body {
+  font-size: 100%; /* Fixes exaggerated text resizing in IE6 and IE7 */
+  font-family: Verdana,Arial,Helvetica,sans-serif;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  font-size-adjust: none;
+  font-stretch: normal;
+  color:#333333;
+}
+
+a:link, a:visited {
+  color: #19648C;
+  text-decoration: none;
+}
+
+a:hover, a:active {
+  color: #103247;
+  text-decoration: underline;
+}
+
+/* Titles  */
+
+h1 {
+  font-size:1.7em;
+  line-height:1.3em;
+  margin:0.1em 0.5em 0.5em 0.5em;
+}
+
+h2 {
+  font-size: 1.3em;
+  line-height:1.3em;
+  margin:0.2em 0.2em 0.2em 0.7em;
+}
+
+h3 {
+  font-size: 1.1em;
+  line-height:1.3em;
+  margin:0.2em 0.2em 0.2em 0.9em;
+  font-weight:bold;
+}
+
+/* Lists  */
+ul, ol {
+  margin-left: 0;
+  padding-left: 2em;
+}
+
+/* tables  */
+table {
+  width: 99%;
+}
+tr.even td, tr.odd td {
+  padding: 10px 5px;
+}
+tr.even {
+  background-color: #f5f8ff;
+}
+tr.odd {
+  background-color: #fff;
+}
+
+/* Code */
+pre {
+  background-color:#efefef;
+  display:block;
+  padding:5px;
+  margin:5px 0;
+  border:1px solid #aaa;
+  font-family: "Bitstream Vera Sans Mono", "Courier New", monospace;
+}
+
+/* List Styles */
+ul          { list-style-type: disc; }
+ul ul       { list-style-type: circle; }
+ul ul ul    { list-style-type: square; }
+ul ul ul ul { list-style-type: circle; }
+ol          { list-style-type: decimal; }
+ol ol       { list-style-type: lower-alpha; }
+ol ol ol    { list-style-type: decimal; }
+
+img {
+  border: 0;
+}
+
+ul.menu {
+  list-style: none;
+  border: none;
+  text-align:left; /* LTR */
+  overflow:auto;
+}
+
+ul.menu li {
+  margin: 0 0 0 0.5em; /* LTR */
+  white-space: nowrap;
+}
+
+ul.links {
+  margin: 0;
+  padding: 0;
+}
+
+ul.links li {
+  display: inline;
+  list-style-type: none;
+  padding: 0 0.5em;
+}
+
+code {
+  background-color:#efefef;
+  display:block;
+  margin:5px 10px;
+  border:1px solid #aaa;
+  font-family: "Bitstream Vera Sans Mono", "Courier New", monospace;
+	white-space: pre;
+  overflow: auto;
+  max-height: 300px;
+}
+
+table {
+  background-color:#efefef;
+  margin:5px 10px;
+  border:1px solid #aaa;
+}
+
+table tr td {
+  vertical-align:top;
+  text-align:left;
+  padding: 3px 3px 3px 3px;
+}
+table tr th {
+  vertical-align:top;
+  text-align:left;
+  padding: 3px 3px 3px 3px;
+}
+
+.item {
+  border-top: 2px solid #aaa;
+  margin-top: 40px;
+}
+
+#page{
+  font-size: 0.875em;
+  line-height: 1.5em;
+  width:960px;  /* If you change this value, you have to change margins for content and sidebar right */
+  margin:0 auto;
+}
+
+#content {
+  width: 500px;
+  float: left;
+  margin-left: 200px; /* The width of #sidebar-left */
+  margin-right: -700px; /* Negative value of #content's width + left margin. */
+  padding: 0; /* Changing this might break the layout. Add padding or margin to #content-inner. */
+  overflow: hidden; /* hide content the overflow content */
+}
+
+.sidebar-right #content {
+  width: 685px;
+  margin-left: 0;
+  margin-right: -720px; /* Negative value of #content's width + left margin. */
+  padding-left: 15px;
+  border-left: 1px solid #CCCCCC;
+  margin-top: -5px;
+  padding-top: 10px;
+  padding-right: 15px;
+}
+
+#sidebar-right{
+  float: left;
+  width: 249px;
+  margin-top: -5px;
+  margin-left: 710px; /* Width of content + sidebar-left. */
+  margin-right: -960px; /* Negative value of #sidebar-right's width + left margin. */
+  padding: 0; /* Changing this might break the layout. Add padding or margin to #sidebar-right-inner. */
+  border-right: 1px solid #CCCCCC;
+}
+
+#navigation{
+  width: 620px;
+  height: 30px;
+  padding-top: 28px;
+  float: right;
+}
+
+#header #logo-title #logo {
+  vertical-align: baseline;
+  float: left;
+}
+
+#header-region {
+  overflow: hidden;
+}
+
+#main {
+  clear: both;
+}
+
+#footer {
+  float: none;
+  clear:both;
+  height: 20px;
+}
