@@ -2,7 +2,7 @@
   <parent>
     <artifactId>spice-parent</artifactId>
     <groupId>org.sonatype.spice</groupId>
-    <version>15-SNAPSHOT</version>
+    <version>16-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.sonatype.plugin</groupId>
@@ -25,10 +25,10 @@
         <artifactId>plexus-utils</artifactId>
         <version>1.5.8</version>
       </dependency>
-      <dependency>
-        <groupId>com.google.code.atinject</groupId>
-        <artifactId>atinject</artifactId>
-        <version>1.0.0-rev3</version>
+     <dependency>
+        <groupId>javax.inject</groupId>
+        <artifactId>javax.inject</artifactId>
+        <version>1</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

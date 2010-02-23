@@ -12,8 +12,8 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.google.code.atinject</groupId>
-      <artifactId>atinject</artifactId>
+      <groupId>javax.inject</groupId>
+      <artifactId>javax.inject</artifactId>
     </dependency>
   </dependencies>
 
