@@ -410,8 +410,14 @@ public class TemplateRepresentation extends OutputRepresentation {
             final Context context = Context.getCurrent();
 
             if (context != null) {
-                context.getLogger().log(Level.WARNING,
-                        "Unable to process the template", e);
+                if (context.getLogger().isLoggable( Level.FINE )) {
+                    context.getLogger().log(Level.FINE,
+                                            "Unable to process the template", e);    
+                }
+                else {
+                    context.getLogger().log(Level.WARNING,
+                                            "Unable to process the template: " + e.getMessage());
+                }
             }
 
             e.printStackTrace();
