@@ -27,6 +27,13 @@
     </pluginRepository>
   </pluginRepositories>
 
+  <distributionManagement>
+    <repository>
+      <id>forge-releases</id>
+      <url>http://repository.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+  </distributionManagement>
+
   <dependencies>
     <dependency>
       <groupId>org.jvnet.hudson.plugins</groupId>
@@ -37,12 +44,6 @@
       <groupId>org.schwering</groupId>
       <artifactId>irclib</artifactId>
       <version>1.10</version>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>1.7</version>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>
