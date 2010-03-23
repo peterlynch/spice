@@ -9,6 +9,7 @@ import hudson.model.Cause;
 import hudson.model.Hudson;
 import hudson.model.Project;
 import hudson.model.Result;
+import hudson.model.Cause.UpstreamCause;
 import hudson.model.Cause.UserCause;
 import hudson.plugins.im.tools.ExceptionHelper;
 import hudson.scm.ChangeLogSet;
@@ -20,8 +21,11 @@ import hudson.tasks.Publisher;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -152,9 +156,19 @@ public class IrcNotifier
             return super.configure( req, json );
         }
 
-        public List<String> getChannels()
+        public String getChannels()
         {
-            return channels;
+            StringBuilder sb = new StringBuilder();
+            for ( String c : channels )
+            {
+                if ( sb.length() != 0 )
+                {
+                    sb.append( ' ' );
+                }
+
+                sb.append( c );
+            }
+            return sb.toString();
         }
 
         public String getCommandPrefix()
@@ -377,42 +391,12 @@ public class IrcNotifier
             boolean isBroken = build.getResult().isWorseThan( Result.SUCCESS );
             boolean isBackFromBroken = build.getResult().isBetterThan( previousBuild.getResult() );
 
-            conn.doPrivmsg( "#irc-plugin-debug", "isBroken: " + isBroken );
-            conn.doPrivmsg( "#irc-plugin-debug", "isBackFromBroken: " + isBackFromBroken );
-
             if ( !isBroken && !isBackFromBroken )
             {
                 return;
             }
 
-            Set<String> relatedUsers = new LinkedHashSet<String>();
-            List<Cause> causes = build.getCauses();
-            for ( Cause cause : causes )
-            {
-                if ( cause instanceof UserCause )
-                {
-                    UserCause uCause = (UserCause) cause;
-                    relatedUsers.add( uCause.getUserName() );
-                }
-                else
-                {
-                    conn.doPrivmsg( "#irc-plugin-debug", "Unexpected cause type: '" + cause.getClass() + "'" );
-                }
-            }
-
-            ChangeLogSet<? extends Entry> changes = build.getChangeSet();
-            for ( Entry change : changes )
-            {
-                relatedUsers.add( change.getAuthor().getId() );
-            }
-
-            if ( relatedUsers.isEmpty() )
-            {
-                if ( mediator != null )
-                {
-                    relatedUsers.add( mediator );
-                }
-            }
+            Set<String> relatedUsers = getRelatedUsers( build, conn );
 
             if ( isBroken )
             {
@@ -433,6 +417,64 @@ public class IrcNotifier
 
         }
 
+        private Set<String> getRelatedUsers( AbstractBuild<?, ?> build, final IRCConnection conn )
+        {
+            Set<String> relatedUsers = new LinkedHashSet<String>();
+            List<Cause> causes = build.getCauses();
+            for ( Cause cause : causes )
+            {
+                relatedUsers.addAll( getRelatedUsers( cause, conn ) );
+            }
+
+            ChangeLogSet<? extends Entry> changes = build.getChangeSet();
+            for ( Entry change : changes )
+            {
+                relatedUsers.add( change.getAuthor().getId() );
+            }
+
+            relatedUsers.remove( "" );
+
+            return relatedUsers;
+        }
+
+        @SuppressWarnings( "unchecked" )
+        private Set<String> getRelatedUsers( Cause cause, IRCConnection conn )
+        {
+            if ( cause instanceof UserCause )
+            {
+                UserCause uCause = (UserCause) cause;
+                return Collections.singleton( uCause.getUserName() );
+            }
+            else if ( cause instanceof UpstreamCause )
+            {
+                List<Cause> upstreamCauses;
+                try
+                {
+                    Field f = UpstreamCause.class.getDeclaredField( "upstreamCauses" );
+                    f.setAccessible( true );
+                    upstreamCauses = (List<Cause>) f.get( cause );
+                }
+                catch ( Exception e )
+                {
+                    return Collections.emptySet();
+                }
+
+                Set<String> users = new HashSet<String>();
+                for ( Cause c : upstreamCauses )
+                {
+                    users.addAll( getRelatedUsers( c, conn ) );
+                }
+
+                return users;
+            }
+            else
+            {
+                conn.doPrivmsg( "#irc-plugin-debug", "Unexpected cause type! '" + cause.getClass() + "'" );
+            }
+
+            return Collections.emptySet();
+        }
+
         private void notifyBroken( AbstractBuild<?, ?> build, final IRCConnection conn, Set<String> relatedUsers )
         {
             for ( String channel : channels )
@@ -446,17 +488,26 @@ public class IrcNotifier
                     notifyUser( conn, channel, buildMsg, user );
                 }
 
-                if ( relatedUsers.size() > 1 )
+                if ( mediator != null )
                 {
-                    // mediator may need to intervention
-                    if ( mediator != null )
+                    if ( relatedUsers.size() > 1 )
                     {
+                        // mediator may need to intervention
                         String mediatorMsg =
                             "Hello " + mediator + ". The following users: " + relatedUsers
                                 + " are involded on this problem: " + buildMsg;
                         notifyUser( conn, channel, mediatorMsg, mediator );
                     }
+
+                    if ( relatedUsers.isEmpty() )
+                    {
+                        String mediatorMsg =
+                            "Hello " + mediator + ". Unable to figure out which users are involded on this problem: "
+                                + buildMsg;
+                        notifyUser( conn, channel, mediatorMsg, mediator );
+                    }
                 }
+
             }
         }
 
