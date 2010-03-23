@@ -9,14 +9,27 @@
 
   <groupId>org.sonatype.hudson.plugin</groupId>
   <artifactId>irc-hudson-plugin</artifactId>
+  <name>Irc Notification Hudson Plugin</name>
   <version>1.0-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
+  <issueManagement>
+  	<system>jira</system>
+  	<url>https://issues.sonatype.org/browse/INFR</url>
+  </issueManagement>
+  <ciManagement>
+  	<system>hudson</system>
+  	<url>http://grid.sonatype.org/ci/</url>
+  </ciManagement>
   <scm>
   	<developerConnection>scm:svn:https://svn.sonatype.org/spice/trunk/irc-hudson-plugin</developerConnection>
   </scm>
   
   <!-- get every artifact through maven.glassfish.org, which proxies all the artifacts that we need -->
+  <organization>
+  	<name>Sonatype Inc</name>
+  	<url>http://www.sonatype.com/</url>
+  </organization>
   <repositories>
     <repository>
       <id>m.g.o-public</id>
