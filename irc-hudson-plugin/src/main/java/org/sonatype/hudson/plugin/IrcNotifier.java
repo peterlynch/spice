@@ -7,10 +7,11 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Cause;
 import hudson.model.Hudson;
-import hudson.model.Project;
 import hudson.model.Result;
+import hudson.model.Run;
 import hudson.model.Cause.UpstreamCause;
 import hudson.model.Cause.UserCause;
+import hudson.plugins.im.bot.DefaultJobProvider;
 import hudson.plugins.im.tools.ExceptionHelper;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
@@ -45,6 +46,8 @@ import org.schwering.irc.lib.IRCUser;
 public class IrcNotifier
     extends Notifier
 {
+
+    private static final DefaultJobProvider JOB_PROVIDER = new DefaultJobProvider();
 
     public static class IrcBuildStepDescriptor
         extends BuildStepDescriptor<Publisher>
@@ -119,6 +122,7 @@ public class IrcNotifier
                 {
                     throw new FormException( "port field must be an Integer", "irc_publisher.port" );
                 }
+
                 commandPrefix = req.getParameter( "irc_publisher.commandPrefix" );
                 if ( commandPrefix == null || "".equals( commandPrefix.trim() ) )
                 {
@@ -126,8 +130,9 @@ public class IrcNotifier
                 }
                 else
                 {
-                    commandPrefix = commandPrefix.trim() + " ";
+                    commandPrefix = commandPrefix.trim();
                 }
+
                 channels = Arrays.asList( req.getParameter( "irc_publisher.channels" ).split( " " ) );
                 if ( channels == null || channels.isEmpty() )
                 {
@@ -417,64 +422,6 @@ public class IrcNotifier
 
         }
 
-        private Set<String> getRelatedUsers( AbstractBuild<?, ?> build, final IRCConnection conn )
-        {
-            Set<String> relatedUsers = new LinkedHashSet<String>();
-            List<Cause> causes = build.getCauses();
-            for ( Cause cause : causes )
-            {
-                relatedUsers.addAll( getRelatedUsers( cause, conn ) );
-            }
-
-            ChangeLogSet<? extends Entry> changes = build.getChangeSet();
-            for ( Entry change : changes )
-            {
-                relatedUsers.add( change.getAuthor().getId() );
-            }
-
-            relatedUsers.remove( "" );
-
-            return relatedUsers;
-        }
-
-        @SuppressWarnings( "unchecked" )
-        private Set<String> getRelatedUsers( Cause cause, IRCConnection conn )
-        {
-            if ( cause instanceof UserCause )
-            {
-                UserCause uCause = (UserCause) cause;
-                return Collections.singleton( uCause.getUserName() );
-            }
-            else if ( cause instanceof UpstreamCause )
-            {
-                List<Cause> upstreamCauses;
-                try
-                {
-                    Field f = UpstreamCause.class.getDeclaredField( "upstreamCauses" );
-                    f.setAccessible( true );
-                    upstreamCauses = (List<Cause>) f.get( cause );
-                }
-                catch ( Exception e )
-                {
-                    return Collections.emptySet();
-                }
-
-                Set<String> users = new HashSet<String>();
-                for ( Cause c : upstreamCauses )
-                {
-                    users.addAll( getRelatedUsers( c, conn ) );
-                }
-
-                return users;
-            }
-            else
-            {
-                conn.doPrivmsg( "#irc-plugin-debug", "Unexpected cause type! '" + cause.getClass() + "'" );
-            }
-
-            return Collections.emptySet();
-        }
-
         private void notifyBroken( AbstractBuild<?, ?> build, final IRCConnection conn, Set<String> relatedUsers )
         {
             for ( String channel : channels )
@@ -580,13 +527,16 @@ public class IrcNotifier
 
         if ( parsed.isList() )
         {
-            List<String> projectNames = new ArrayList<String>();
+            Set<String> projectNames = new LinkedHashSet<String>();
             projectNames.add( "Availible projects:" );
 
-            List<Project> projects = Hudson.getInstance().getProjects();
-            for ( Project project : projects )
+            List<AbstractProject> projects = JOB_PROVIDER.getAllJobs();
+            for ( AbstractProject project : projects )
             {
-                projectNames.add( project.getName() );
+                if ( project.getParent() instanceof Hudson )
+                {
+                    projectNames.add( project.getName() );
+                }
             }
             return projectNames.toArray( new String[0] );
         }
@@ -594,19 +544,97 @@ public class IrcNotifier
         if ( parsed.getProject() != null )
         {
             String name = parsed.getProject();
-            List<Project> projects = Hudson.getInstance().getProjects();
-            for ( Project project : projects )
+            List<AbstractProject> projects = JOB_PROVIDER.getAllJobs();
+            for ( AbstractProject project : projects )
             {
                 if ( name.equals( project.getName() ) )
                 {
-                    return new String[] { "Project '" + name + "' status: "
-                        + project.getLastCompletedBuild().getBuildStatusSummary().message };
+                    final Run build = project.getLastCompletedBuild();
+                    Set<String> users = getRelatedUsers( (AbstractBuild<?, ?>) build, null );
+                    StringBuilder blame = new StringBuilder();
+                    for ( String user : users )
+                    {
+                        if ( blame.length() == 0 )
+                        {
+                            blame.append( "Related users: " );
+                        }
+                        else
+                        {
+                            blame.append( ' ' );
+                        }
+
+                        blame.append( user );
+                    }
+
+                    return new String[] { "Project '" + name + "' status: " + build.getBuildStatusSummary().message,
+                        blame.toString(), "( " + Hudson.getInstance().getRootUrl() + build.getUrl() + " )" };
                 }
             }
             return new String[] { "Project '" + name + "' not found!" };
         }
 
         return new String[] { "Processed options: " + Arrays.toString( args ) };
+    }
+
+    private static Set<String> getRelatedUsers( AbstractBuild<?, ?> build, final IRCConnection conn )
+    {
+        Set<String> relatedUsers = new LinkedHashSet<String>();
+        List<Cause> causes = build.getCauses();
+        for ( Cause cause : causes )
+        {
+            relatedUsers.addAll( getRelatedUsers( cause, conn ) );
+        }
+
+        ChangeLogSet<? extends Entry> changes = build.getChangeSet();
+        for ( Entry change : changes )
+        {
+            relatedUsers.add( change.getAuthor().getId() );
+        }
+
+        relatedUsers.remove( "" );
+
+        return relatedUsers;
+    }
+
+    @SuppressWarnings( "unchecked" )
+    private static Set<String> getRelatedUsers( Cause cause, IRCConnection conn )
+    {
+        if ( cause instanceof UserCause )
+        {
+            UserCause uCause = (UserCause) cause;
+            return Collections.singleton( uCause.getUserName() );
+        }
+        else if ( cause instanceof UpstreamCause )
+        {
+            List<Cause> upstreamCauses;
+            try
+            {
+                Field f = UpstreamCause.class.getDeclaredField( "upstreamCauses" );
+                f.setAccessible( true );
+                upstreamCauses = (List<Cause>) f.get( cause );
+            }
+            catch ( Exception e )
+            {
+                return Collections.emptySet();
+            }
+
+            Set<String> users = new HashSet<String>();
+            for ( Cause c : upstreamCauses )
+            {
+                users.addAll( getRelatedUsers( c, conn ) );
+            }
+
+            return users;
+        }
+        else
+        {
+            if ( conn != null )
+            {
+                conn.doPrivmsg( "#irc-plugin-debug", "Unexpected cause type! '" + cause.getClass() + "'" );
+            }
+        }
+
+        return Collections.emptySet();
     }
 
     @Extension
