@@ -18,6 +18,7 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
+import hudson.triggers.SCMTrigger.SCMTriggerCause;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -632,6 +633,10 @@ public class IrcNotifier
             }
 
             return users;
+        }
+        else if ( cause instanceof SCMTriggerCause )
+        {
+            return Collections.emptySet();
         }
         else
         {
