@@ -8,7 +8,6 @@ import hudson.model.BuildListener;
 import hudson.model.Cause;
 import hudson.model.Hudson;
 import hudson.model.Result;
-import hudson.model.Run;
 import hudson.model.Cause.UpstreamCause;
 import hudson.model.Cause.UserCause;
 import hudson.plugins.im.bot.DefaultJobProvider;
@@ -549,25 +548,33 @@ public class IrcNotifier
             {
                 if ( name.equals( project.getName() ) )
                 {
-                    final Run build = project.getLastCompletedBuild();
-                    Set<String> users = getRelatedUsers( (AbstractBuild<?, ?>) build, null );
-                    StringBuilder blame = new StringBuilder();
-                    for ( String user : users )
-                    {
-                        if ( blame.length() == 0 )
-                        {
-                            blame.append( "Related users: " );
-                        }
-                        else
-                        {
-                            blame.append( ' ' );
-                        }
+                    List<String> result = new ArrayList<String>();
 
-                        blame.append( user );
+                    AbstractBuild<?, ?> build = (AbstractBuild<?, ?>) project.getLastCompletedBuild();
+                    result.add( "Project '" + name + "' status: " + build.getBuildStatusSummary().message );
+                    result.add( "Build URL: " + Hudson.getInstance().getRootUrl() + build.getUrl() );
+
+                    Set<String> users = getRelatedUsers( build, null );
+                    if ( !users.isEmpty() )
+                    {
+                        result.add( "Related user(s): " );
+                        for ( String user : users )
+                        {
+                            result.add( user );
+                        }
                     }
 
-                    return new String[] { "Project '" + name + "' status: " + build.getBuildStatusSummary().message,
-                        blame.toString(), "( " + Hudson.getInstance().getRootUrl() + build.getUrl() + " )" };
+                    ChangeLogSet<? extends Entry> changes = build.getChangeSet();
+                    if ( !changes.isEmptySet() )
+                    {
+                        result.add( "Changes: " );
+                        for ( Entry change : changes )
+                        {
+                            result.add( change.getMsg() );
+                        }
+                    }
+
+                    return result.toArray( new String[0] );
                 }
             }
             return new String[] { "Project '" + name + "' not found!" };
