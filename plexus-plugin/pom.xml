@@ -9,7 +9,7 @@
   <artifactId>plexus-plugin-parent</artifactId>
   <packaging>pom</packaging>
   <name>Plexus Plugin: parent</name>
-  <version>1.0.3-SNAPSHOT</version>
+  <version>1.0.3</version>
 
   <modules>
     <module>plugin-api</module>
@@ -32,4 +32,10 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+
+  <scm>
+    <connection>scm:svn:http://svn.sonatype.org/spice/tags/plexus-plugin-parent-1.0.3</connection>
+    <developerConnection>scm:svn:https://svn.sonatype.org/spice/tags/plexus-plugin-parent-1.0.3</developerConnection>
+    <url>http://svn.sonatype.org/spice/tags/plexus-plugin-parent-1.0.3</url>
+  </scm>
 </project>
