@@ -420,8 +420,6 @@ public class TemplateRepresentation extends OutputRepresentation {
                 }
             }
 
-            e.printStackTrace();
-
             throw new IOException("Template processing error. "
                     + e.getMessage());
         }
