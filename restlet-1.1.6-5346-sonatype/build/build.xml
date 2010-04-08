@@ -626,7 +626,9 @@
 			       srcdir="@{srcdir}"
 			       destdir="@{destdir}"
 			       includes="@{includes}"
-			       bootclasspath="${custombootclasspath}">
+			       bootclasspath="${custombootclasspath}"
+                   source="1.5"
+                   target="1.5">
 				<classpath refid="@{classpathref}" />
 			</javac>
 		</sequential>
