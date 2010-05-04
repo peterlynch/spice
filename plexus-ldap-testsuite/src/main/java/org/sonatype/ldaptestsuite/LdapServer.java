@@ -503,6 +503,8 @@ public class LdapServer
     {
         try
         {
+            this.doDelete( this.workingDirectory );
+
             // reconfigure the server
             this.init();
 
