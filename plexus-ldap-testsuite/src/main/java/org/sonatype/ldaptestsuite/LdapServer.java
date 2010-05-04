@@ -93,7 +93,9 @@ public class LdapServer
     private Logger logger;
 
     /** The working directory. */
-    protected File workingDirectory;
+    private File workingDirectory;
+
+    private File temporayWorkDir;
 
     /** The partitions. */
     protected List<org.sonatype.ldaptestsuite.Partition> partitions;
@@ -128,13 +130,23 @@ public class LdapServer
 
     protected List<String> additionalSchemas;
 
+    public File getWorkingDirectory()
+    {
+        if ( temporayWorkDir == null )
+        {
+            temporayWorkDir = FileUtils.createTempFile( "ldap-", "-server", workingDirectory );
+            temporayWorkDir.mkdirs();
+        }
+        return temporayWorkDir;
+    }
+
     /**
      * If there is an LDIF file with the same name as the test class but with the .ldif extension then it is read and
      * the entries it contains are added to the server. It appears as though the administor adds these entries to the
      * server.
      * 
      * @param verifyEntries whether or not all entry additions are checked to see if they were in fact correctly added
-     *        to the server
+     *            to the server
      * @return a list of entries added to the server in the order they were added
      * @throws NamingException of the load fails
      */
@@ -150,7 +162,7 @@ public class LdapServer
      * 
      * @param in the input stream containing the LDIF entries to load
      * @param verifyEntries whether or not all entry additions are checked to see if they were in fact correctly added
-     *        to the server
+     *            to the server
      * @return a list of entries added to the server in the order they were added
      * @throws NamingException of the load fails
      */
@@ -325,8 +337,8 @@ public class LdapServer
         // alreadying being in the ldap server, i don't know if thats an issue or not.
 
         // dirty hack
-        PartitionSchemaLoader schemaLoader = SchemaPartitionAccessor
-            .getSchemaLoader( (DefaultRegistries) directoryService.getRegistries() );
+        PartitionSchemaLoader schemaLoader =
+            SchemaPartitionAccessor.getSchemaLoader( (DefaultRegistries) directoryService.getRegistries() );
 
         if ( additionalSchemas != null && !additionalSchemas.isEmpty() )
         {
@@ -402,8 +414,6 @@ public class LdapServer
         schemaRoot = new InitialLdapContext( envFinal, null );
     }
 
-  
-
     public void init()
         throws InitializationException
     {
@@ -449,12 +459,12 @@ public class LdapServer
             for ( org.sonatype.ldaptestsuite.Partition partition : getPartitions() )
             {
                 try
-                {   
+                {
                     // Add partition
                     JdbmPartition jbdmPartition = new JdbmPartition();
                     jbdmPartition.setId( partition.getName() );
                     jbdmPartition.setSuffix( partition.getSuffix() );
-                    
+
                     // Create indices
                     if ( partition.getIndexedAttributes() != null && partition.getIndexedAttributes().size() > 0 )
                     {
@@ -478,7 +488,7 @@ public class LdapServer
         }
 
         // Create a working directory
-        this.directoryService.setWorkingDirectory( workingDirectory );
+        this.directoryService.setWorkingDirectory( getWorkingDirectory() );
     }
 
     // ===
@@ -493,13 +503,9 @@ public class LdapServer
     {
         try
         {
-
-
-            this.doDelete( this.workingDirectory );
-            
             // reconfigure the server
             this.init();
-            
+
             this.configureDirectoryService();
 
             directoryService.startup();
@@ -543,8 +549,8 @@ public class LdapServer
             catch ( StoppingException e1 )
             {
                 this.logger.error(
-                    "Trying to stop the LDAP Server after a startup exception failed: " + e.getMessage(),
-                    e1 );
+                                   "Trying to stop the LDAP Server after a startup exception failed: " + e.getMessage(),
+                                   e1 );
             }
 
             throw new StartingException( "Error starting embedded ApacheDS server.", e );
@@ -561,15 +567,15 @@ public class LdapServer
      * @see org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable#stop()
      */
     public void dispose()
-    {   
+    {
         try
         {
             ldapService.stop();
-            if( schemaRoot != null )
+            if ( schemaRoot != null )
             {
                 schemaRoot.close();
             }
-            
+
             for ( org.apache.directory.server.core.partition.Partition partition : this.directoryService.getPartitions() )
             {
                 try
@@ -581,13 +587,13 @@ public class LdapServer
                     e.printStackTrace();
                 }
             }
-            
+
             this.directoryService.getPartitions().clear();
-            
+
         }
         catch ( NamingException e )
         {
-           System.out.println( "Failed to close schemaRoot" );
+            System.out.println( "Failed to close schemaRoot" );
         }
         finally
         {
@@ -627,7 +633,7 @@ public class LdapServer
      * imported and will blow chunks.
      * 
      * @throws NamingException if there are problems reading the ldif file and adding those entries to the system
-     *         partition
+     *             partition
      * @param in the input stream with the ldif
      */
     protected void importLdif( InputStream in )
@@ -637,8 +643,8 @@ public class LdapServer
         {
             for ( LdifEntry ldifEntry : new LdifReader( in ) )
             {
-                rootDSE.add( new DefaultServerEntry( rootDSE.getDirectoryService().getRegistries(), ldifEntry
-                    .getEntry() ) );
+                rootDSE.add( new DefaultServerEntry( rootDSE.getDirectoryService().getRegistries(),
+                                                     ldifEntry.getEntry() ) );
             }
         }
         catch ( Exception e )
@@ -694,5 +700,5 @@ public class LdapServer
     public int getPort()
     {
         return this.port;
-    }    
+    }
 }
