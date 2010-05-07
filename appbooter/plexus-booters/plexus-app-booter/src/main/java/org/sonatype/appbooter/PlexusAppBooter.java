@@ -10,7 +10,6 @@ import org.codehaus.plexus.DefaultPlexusContainer;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.classworlds.ClassWorld;
-import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.util.StringUtils;
 import org.sonatype.appcontext.AppContext;
 import org.sonatype.appcontext.AppContextFactory;
@@ -36,6 +35,8 @@ public class PlexusAppBooter
     // ???
     public static final String DEV_MODE = "plexus.container.dev.mode";
 
+    private String[] commandLineArguments;
+
     private String name;
 
     private ClassWorld world;
@@ -53,6 +54,21 @@ public class PlexusAppBooter
     private boolean started = false;
 
     protected static final Object waitObj = new Object();
+
+    public String[] getCommandLineArguments()
+    {
+        if ( commandLineArguments == null )
+        {
+            commandLineArguments = new String[] {};
+        }
+
+        return commandLineArguments;
+    }
+
+    public void setCommandLineArguments( String[] commandLineArguments )
+    {
+        this.commandLineArguments = commandLineArguments;
+    }
 
     public String getName()
     {
@@ -138,7 +154,12 @@ public class PlexusAppBooter
         return container;
     }
 
-    protected Context createContainerContext()
+    public boolean isStarted()
+    {
+        return started;
+    }
+
+    protected AppContext createContainerContext()
         throws Exception
     {
         AppContextRequest request = appContextFactory.getDefaultAppContextRequest();
@@ -176,15 +197,14 @@ public class PlexusAppBooter
         // put in the basedir for plexus apps backward compat
         response.put( "basedir", response.getBasedir().getAbsolutePath() );
 
-        // wrap it in, to make Plexus friendly
-        return new PlexusAppContext( response );
+        return response;
     }
 
-    protected void customizeContext( Context context )
+    protected void customizeContext( AppContext context )
     {
         for ( PlexusAppBooterCustomizer customizer : getPlexusAppBooterCustomizers() )
         {
-            customizer.customizeContext( context );
+            customizer.customizeContext( this, context );
         }
     }
 
@@ -192,7 +212,7 @@ public class PlexusAppBooter
     {
         for ( PlexusAppBooterCustomizer customizer : getPlexusAppBooterCustomizers() )
         {
-            customizer.customizeContainerConfiguration( containerConfiguration );
+            customizer.customizeContainerConfiguration( this, containerConfiguration );
         }
     }
 
@@ -200,7 +220,7 @@ public class PlexusAppBooter
     {
         for ( PlexusAppBooterCustomizer customizer : getPlexusAppBooterCustomizers() )
         {
-            customizer.customizeContainer( plexusContainer );
+            customizer.customizeContainer( this, plexusContainer );
         }
     }
 
@@ -214,7 +234,7 @@ public class PlexusAppBooter
                 throw new PlexusContainerException( "Container already running!" );
             }
 
-            Context context = null;
+            AppContext context = null;
 
             try
             {
@@ -229,7 +249,7 @@ public class PlexusAppBooter
 
             ContainerConfiguration configuration =
                 new DefaultContainerConfiguration().setClassWorld( getWorld() ).setContainerConfiguration(
-                    getConfiguration().getAbsolutePath() ).setContext( context.getContextData() );
+                    getConfiguration().getAbsolutePath() ).setContext( context.getRawContext() );
 
             customizeContainerConfiguration( configuration );
 
@@ -325,7 +345,9 @@ public class PlexusAppBooter
     {
         try
         {
-            PlexusAppBooter appBooter = new PlexusAppBooter();
+            PlexusAppBooter appBooter = new PlexusAppBooter( );
+            
+            appBooter.setCommandLineArguments( args );
 
             appBooter.setWorld( classWorld );
 
@@ -342,10 +364,5 @@ public class PlexusAppBooter
     public static void main( String[] args )
     {
         main( args, null );
-    }
-
-    public boolean isStarted()
-    {
-        return started;
     }
 }

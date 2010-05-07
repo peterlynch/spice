@@ -102,6 +102,8 @@ public class PlexusAppBooterJSWListener
     {
         // Start everything up and register as a listener.
         PlexusAppBooterJSWListener jswListener = new PlexusAppBooterJSWListener();
+        
+        jswListener.setCommandLineArguments( args );
 
         jswListener.setWorld( classWorld );
 

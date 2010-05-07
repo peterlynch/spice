@@ -239,6 +239,8 @@ public class PlexusAppBooterService
         {
             PlexusAppBooterService service = new PlexusAppBooterService();
 
+            service.setCommandLineArguments( args );
+
             service.setWorld( classWorld );
 
             service.setControlPort( getControlPortFromArgs( args ) );

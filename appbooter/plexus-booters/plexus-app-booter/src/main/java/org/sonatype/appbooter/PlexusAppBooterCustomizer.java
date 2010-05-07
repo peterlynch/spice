@@ -2,13 +2,37 @@ package org.sonatype.appbooter;
 
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.PlexusContainer;
-import org.codehaus.plexus.context.Context;
+import org.sonatype.appcontext.AppContext;
 
+/**
+ * Extension points invoked during boot of Plexus container. The implementors of this interface should have
+ * parameterless constructors, and should be able to be created by customizerClass.newInstance()!
+ * 
+ * @author cstamas
+ */
 public interface PlexusAppBooterCustomizer
 {
-    void customizeContext( Context context );
+    /**
+     * Initially, the AppContext used to create PlexusContext will be passed it.
+     * 
+     * @param appBooter
+     * @param context
+     */
+    void customizeContext( PlexusAppBooter appBooter, AppContext context );
 
-    void customizeContainerConfiguration( ContainerConfiguration containerConfiguration );
+    /**
+     * Them the ContainerConfiguration is passed in for potential configuration changes/addons.
+     * 
+     * @param appBooter
+     * @param containerConfiguration
+     */
+    void customizeContainerConfiguration( PlexusAppBooter appBooter, ContainerConfiguration containerConfiguration );
 
-    void customizeContainer( PlexusContainer plexusContainer );
+    /**
+     * Finally, the created container is passed in.
+     * 
+     * @param appBooter
+     * @param plexusContainer
+     */
+    void customizeContainer( PlexusAppBooter appBooter, PlexusContainer plexusContainer );
 }
