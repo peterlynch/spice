@@ -249,7 +249,7 @@ public class PlexusAppBooter
 
             ContainerConfiguration configuration =
                 new DefaultContainerConfiguration().setClassWorld( getWorld() ).setContainerConfiguration(
-                    getConfiguration().getAbsolutePath() ).setContext( context.getRawContext() );
+                    getConfiguration().getAbsolutePath() ).setContext( context );
 
             customizeContainerConfiguration( configuration );
 
