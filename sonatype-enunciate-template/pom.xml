@@ -6,7 +6,7 @@
   <parent>
     <artifactId>spice-parent</artifactId>
     <groupId>org.sonatype.spice</groupId>
-    <version>16-SNAPSHOT</version>
+    <version>16</version>
   </parent>
 
   <groupId>org.sonatype.templates</groupId>
