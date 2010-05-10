@@ -12,7 +12,7 @@
 
   <groupId>org.sonatype.buup</groupId>
   <artifactId>buup</artifactId>
-  <version>1.0</version>
+  <version>1.1-SNAPSHOT</version>
 
   <packaging>pom</packaging>
 
@@ -79,10 +79,4 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-
-  <scm>
-    <connection>scm:svn:http://svn.sonatype.org/spice/tags/buup-1.0</connection>
-    <developerConnection>scm:svn:https://svn.sonatype.org/spice/tags/buup-1.0</developerConnection>
-    <url>http://svn.sonatype.org/spice/tags/buup-1.0</url>
-  </scm>
 </project>
