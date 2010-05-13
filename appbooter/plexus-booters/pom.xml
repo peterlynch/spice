@@ -17,7 +17,6 @@
   <modules>
     <module>plexus-app-booter</module>
     <module>plexus-jsw-app-booter</module>
-    <module>plexus-bundle-booter</module>
     <module>plexus-forked-app-booter</module>
   </modules>
   
