@@ -18,16 +18,20 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A place we can store and query data, based on data type and timestamp
+ * Timeline serves as a place to persist and retrieve series-kind of data.
+ * 
+ * @author cstamas
  */
 public interface Timeline
 {
     /**
-     * Configure it before use
+     * Component has to be configured before first use.
+     * 
      * @param config
      */
-    void configure( TimelineConfiguration config ) throws TimelineException;
-    
+    void configure( TimelineConfiguration config )
+        throws TimelineException;
+
     void add( String type, String subType, Map<String, String> data );
 
     void addAll( String type, String subType, Collection<Map<String, String>> datas );
@@ -55,11 +59,11 @@ public interface Timeline
     List<Map<String, String>> retrieve( long fromTs, int count, Set<String> types );
 
     List<Map<String, String>> retrieve( long fromTs, int count, Set<String> types, Set<String> subtypes,
-        TimelineFilter filter );
+                                        TimelineFilter filter );
 
     List<Map<String, String>> retrieve( int fromItem, int count, Set<String> types );
 
     List<Map<String, String>> retrieve( int fromItem, int count, Set<String> types, Set<String> subtypes,
-        TimelineFilter filter );
+                                        TimelineFilter filter );
 
 }

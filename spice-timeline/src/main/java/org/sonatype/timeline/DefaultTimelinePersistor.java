@@ -29,13 +29,16 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.sonatype.timeline.proto.TimeLineRecordProtos;
 
 /**
+ * Default implementation.
+ * 
  * @author juven
  */
 @Component( role = TimelinePersistor.class )
 public class DefaultTimelinePersistor
     implements TimelinePersistor
 {
-    public static final String DATA_FILE_NAME_PATTERN = "^timeline\\.\\d{4}-\\d{2}-\\d{2}\\.\\d{2}-\\d{2}-\\d{2}\\.dat$";
+    public static final String DATA_FILE_NAME_PATTERN =
+        "^timeline\\.\\d{4}-\\d{2}-\\d{2}\\.\\d{2}-\\d{2}-\\d{2}\\.dat$";
 
     private int rollingInterval;
 
@@ -45,28 +48,23 @@ public class DefaultTimelinePersistor
 
     private File lastRolledFile;
 
-    public void configure( File persistDirectory )
+    public void configure( TimelineConfiguration configuration )
     {
-        configure( persistDirectory, DEFAULT_ROLLING_INTERVAL );
-    }
-
-    public void configure( File persistDirectory, int rollingInterval )
-    {
-        this.persistDirectory = persistDirectory;
+        this.persistDirectory = configuration.getPersistDirectory();
 
         if ( !this.persistDirectory.exists() )
         {
             this.persistDirectory.mkdirs();
         }
 
-        this.rollingInterval = rollingInterval;
+        this.rollingInterval = configuration.getPersistRollingInterval();
     }
 
     public void persist( TimelineRecord record )
         throws TimelineException
     {
         verify( record );
-        
+
         OutputStream out = null;
 
         synchronized ( this )
@@ -223,7 +221,7 @@ public class DefaultTimelinePersistor
 
         return new TimelineRecord( rec.getTimestamp(), rec.getType(), rec.getSubType(), dataMap );
     }
-    
+
     private void verify( TimelineRecord record )
         throws TimelineException
     {

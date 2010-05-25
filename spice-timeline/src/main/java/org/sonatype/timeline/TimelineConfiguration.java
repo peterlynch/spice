@@ -14,6 +14,11 @@ package org.sonatype.timeline;
 
 import java.io.File;
 
+/**
+ * Timeline configuration, that configures the Timeline Component.
+ * 
+ * @author cstamas
+ */
 public class TimelineConfiguration
 {
     private File persistDirectory;
@@ -22,12 +27,22 @@ public class TimelineConfiguration
 
     private int persistRollingInterval;
 
-    /**
-     * 
-     * @param persistDirectory
-     * @param indexDirectory
-     * @param persistRollingInterval
-     */
+    public TimelineConfiguration( File baseDirectory )
+    {
+        this( new File( baseDirectory, "persist" ), new File( baseDirectory, "index" ),
+            TimelinePersistor.DEFAULT_ROLLING_INTERVAL );
+    }
+
+    public TimelineConfiguration( File baseDirectory, int persistRollingInterval )
+    {
+        this( new File( baseDirectory, "persist" ), new File( baseDirectory, "index" ), persistRollingInterval );
+    }
+
+    public TimelineConfiguration( File persistDirectory, File indexDirectory )
+    {
+        this( persistDirectory, indexDirectory, TimelinePersistor.DEFAULT_ROLLING_INTERVAL );
+    }
+
     public TimelineConfiguration( File persistDirectory, File indexDirectory, int persistRollingInterval )
     {
         this.persistDirectory = persistDirectory;
@@ -35,16 +50,6 @@ public class TimelineConfiguration
         this.indexDirectory = indexDirectory;
 
         this.persistRollingInterval = persistRollingInterval;
-    }
-
-    /**
-     * 
-     * @param persistDirectory
-     * @param indexDirectory
-     */
-    public TimelineConfiguration( File persistDirectory, File indexDirectory )
-    {
-        this( persistDirectory, indexDirectory, TimelinePersistor.DEFAULT_ROLLING_INTERVAL );
     }
 
     public File getPersistDirectory()
@@ -76,5 +81,4 @@ public class TimelineConfiguration
     {
         this.persistRollingInterval = persistRollingInterval;
     }
-
 }

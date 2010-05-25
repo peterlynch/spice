@@ -40,7 +40,10 @@ public class TimelineIndexerTest
 
         cleanDirectory( indexDirectory );
 
-        indexer.configure( indexDirectory );
+        TimelineConfiguration config =
+            new TimelineConfiguration( null, indexDirectory, TimelinePersistor.DEFAULT_ROLLING_INTERVAL );
+
+        indexer.configure( config );
     }
 
     public void testIndexOneRecord()
@@ -73,14 +76,10 @@ public class TimelineIndexerTest
     public void testSearchByTime()
         throws Exception
     {
-        TimelineRecord rec1 = createTimelineRecord();
-        rec1.setTimestamp( 1000000L );
-        TimelineRecord rec2 = createTimelineRecord();
-        rec2.setTimestamp( 2000000L );
-        TimelineRecord rec3 = createTimelineRecord();
-        rec3.setTimestamp( 3000000L );
-        TimelineRecord rec4 = createTimelineRecord();
-        rec4.setTimestamp( 4000000L );
+        TimelineRecord rec1 = createTimelineRecord( 1000000L );
+        TimelineRecord rec2 = createTimelineRecord( 2000000L );
+        TimelineRecord rec3 = createTimelineRecord( 3000000L );
+        TimelineRecord rec4 = createTimelineRecord( 4000000L );
         indexer.add( rec1 );
         indexer.add( rec2 );
         indexer.add( rec3 );
@@ -95,14 +94,10 @@ public class TimelineIndexerTest
     public void testSearchByType()
         throws Exception
     {
-        TimelineRecord rec1 = createTimelineRecord();
-        rec1.setType( "typeA" );
-        TimelineRecord rec2 = createTimelineRecord();
-        rec2.setType( "typeB" );
-        TimelineRecord rec3 = createTimelineRecord();
-        rec3.setType( "typeB" );
-        TimelineRecord rec4 = createTimelineRecord();
-        rec4.setType( "typeC" );
+        TimelineRecord rec1 = createTimelineRecord( "typeA" );
+        TimelineRecord rec2 = createTimelineRecord( "typeB" );
+        TimelineRecord rec3 = createTimelineRecord( "typeB" );
+        TimelineRecord rec4 = createTimelineRecord( "typeC" );
         indexer.add( rec1 );
         indexer.add( rec2 );
         indexer.add( rec3 );
@@ -134,14 +129,10 @@ public class TimelineIndexerTest
     public void testSearchBySubType()
         throws Exception
     {
-        TimelineRecord rec1 = createTimelineRecord();
-        rec1.setSubType( "subA" );
-        TimelineRecord rec2 = createTimelineRecord();
-        rec2.setSubType( "subB" );
-        TimelineRecord rec3 = createTimelineRecord();
-        rec3.setSubType( "subB" );
-        TimelineRecord rec4 = createTimelineRecord();
-        rec4.setSubType( "subC" );
+        TimelineRecord rec1 = createTimelineRecord( "type", "subA" );
+        TimelineRecord rec2 = createTimelineRecord( "type", "subB" );
+        TimelineRecord rec3 = createTimelineRecord( "type", "subB" );
+        TimelineRecord rec4 = createTimelineRecord( "type", "subC" );
         indexer.add( rec1 );
         indexer.add( rec2 );
         indexer.add( rec3 );
@@ -173,18 +164,10 @@ public class TimelineIndexerTest
     public void testSearchByTypeAndSubType()
         throws Exception
     {
-        TimelineRecord rec1 = createTimelineRecord();
-        rec1.setType( "typeA" );
-        rec1.setSubType( "subX" );
-        TimelineRecord rec2 = createTimelineRecord();
-        rec2.setType( "typeB" );
-        rec2.setSubType( "subX" );
-        TimelineRecord rec3 = createTimelineRecord();
-        rec3.setType( "typeB" );
-        rec3.setSubType( "subY" );
-        TimelineRecord rec4 = createTimelineRecord();
-        rec4.setType( "typeA" );
-        rec4.setSubType( "subX" );
+        TimelineRecord rec1 = createTimelineRecord( "typeA", "subX" );
+        TimelineRecord rec2 = createTimelineRecord( "typeB", "subX" );
+        TimelineRecord rec3 = createTimelineRecord( "typeB", "subY" );
+        TimelineRecord rec4 = createTimelineRecord( "typeA", "subX" );
         indexer.add( rec1 );
         indexer.add( rec2 );
         indexer.add( rec3 );
@@ -274,17 +257,13 @@ public class TimelineIndexerTest
     public void testSearchResultOrderByTime()
         throws Exception
     {
-        TimelineRecord rec1 = createTimelineRecord();
-        rec1.setTimestamp( 1000000L );
+        TimelineRecord rec1 = createTimelineRecord( 1000000L );
         rec1.getData().put( "t", "1" );
-        TimelineRecord rec2 = createTimelineRecord();
-        rec2.setTimestamp( 2000000L );
+        TimelineRecord rec2 = createTimelineRecord( 2000000L );
         rec2.getData().put( "t", "2" );
-        TimelineRecord rec3 = createTimelineRecord();
-        rec3.setTimestamp( 3000000L );
+        TimelineRecord rec3 = createTimelineRecord( 3000000L );
         rec3.getData().put( "t", "3" );
-        TimelineRecord rec4 = createTimelineRecord();
-        rec4.setTimestamp( 4000000L );
+        TimelineRecord rec4 = createTimelineRecord( 4000000L );
         rec4.getData().put( "t", "4" );
 
         indexer.add( rec2 );
@@ -304,17 +283,13 @@ public class TimelineIndexerTest
     public void testPurgeByTime()
         throws Exception
     {
-        TimelineRecord rec1 = createTimelineRecord();
-        rec1.setTimestamp( 1000000L );
+        TimelineRecord rec1 = createTimelineRecord( 1000000L );
         rec1.getData().put( "t", "1" );
-        TimelineRecord rec2 = createTimelineRecord();
-        rec2.setTimestamp( 2000000L );
+        TimelineRecord rec2 = createTimelineRecord( 2000000L );
         rec2.getData().put( "t", "2" );
-        TimelineRecord rec3 = createTimelineRecord();
-        rec3.setTimestamp( 3000000L );
+        TimelineRecord rec3 = createTimelineRecord( 3000000L );
         rec3.getData().put( "t", "3" );
-        TimelineRecord rec4 = createTimelineRecord();
-        rec4.setTimestamp( 4000000L );
+        TimelineRecord rec4 = createTimelineRecord( 4000000L );
         rec4.getData().put( "t", "4" );
 
         indexer.add( rec2 );
@@ -334,14 +309,10 @@ public class TimelineIndexerTest
     public void testPurgeByType()
         throws Exception
     {
-        TimelineRecord rec1 = createTimelineRecord();
-        rec1.setType( "typeA" );
-        TimelineRecord rec2 = createTimelineRecord();
-        rec2.setType( "typeB" );
-        TimelineRecord rec3 = createTimelineRecord();
-        rec3.setType( "typeB" );
-        TimelineRecord rec4 = createTimelineRecord();
-        rec4.setType( "typeC" );
+        TimelineRecord rec1 = createTimelineRecord( "typeA" );
+        TimelineRecord rec2 = createTimelineRecord( "typeB" );
+        TimelineRecord rec3 = createTimelineRecord( "typeB" );
+        TimelineRecord rec4 = createTimelineRecord( "typeC" );
         indexer.add( rec1 );
         indexer.add( rec2 );
         indexer.add( rec3 );
@@ -381,14 +352,10 @@ public class TimelineIndexerTest
     public void testPurgeBySubType()
         throws Exception
     {
-        TimelineRecord rec1 = createTimelineRecord();
-        rec1.setSubType( "typeA" );
-        TimelineRecord rec2 = createTimelineRecord();
-        rec2.setSubType( "typeB" );
-        TimelineRecord rec3 = createTimelineRecord();
-        rec3.setSubType( "typeB" );
-        TimelineRecord rec4 = createTimelineRecord();
-        rec4.setSubType( "typeC" );
+        TimelineRecord rec1 = createTimelineRecord( "type", "typeA" );
+        TimelineRecord rec2 = createTimelineRecord( "type", "typeB" );
+        TimelineRecord rec3 = createTimelineRecord( "type", "typeB" );
+        TimelineRecord rec4 = createTimelineRecord( "type", "typeC" );
         indexer.add( rec1 );
         indexer.add( rec2 );
         indexer.add( rec3 );
@@ -428,21 +395,11 @@ public class TimelineIndexerTest
     public void testPurgeByTypeAndSubType()
         throws Exception
     {
-        TimelineRecord rec1 = createTimelineRecord();
-        rec1.setType( "typeA" );
-        rec1.setSubType( "subX" );
-        TimelineRecord rec2 = createTimelineRecord();
-        rec2.setType( "typeB" );
-        rec2.setSubType( "subX" );
-        TimelineRecord rec3 = createTimelineRecord();
-        rec3.setType( "typeB" );
-        rec3.setSubType( "subY" );
-        TimelineRecord rec4 = createTimelineRecord();
-        rec4.setType( "typeA" );
-        rec4.setSubType( "subX" );
-        TimelineRecord rec5 = createTimelineRecord();
-        rec5.setType( "typeC" );
-        rec5.setSubType( "subY" );
+        TimelineRecord rec1 = createTimelineRecord( "typeA", "subX" );
+        TimelineRecord rec2 = createTimelineRecord( "typeB", "subX" );
+        TimelineRecord rec3 = createTimelineRecord( "typeB", "subY" );
+        TimelineRecord rec4 = createTimelineRecord( "typeA", "subX" );
+        TimelineRecord rec5 = createTimelineRecord( "typeC", "subY" );
         indexer.add( rec1 );
         indexer.add( rec2 );
         indexer.add( rec3 );
@@ -500,8 +457,7 @@ public class TimelineIndexerTest
 
         for ( int i = 0; i < 30; i++ )
         {
-            TimelineRecord rec = createTimelineRecord();
-            rec.setTimestamp( 10000000L - i * 60000 );
+            TimelineRecord rec = createTimelineRecord( 10000000L - i * 60000 );
             rec.getData().put( key, "" + i );
 
             indexer.add( rec );
@@ -595,8 +551,7 @@ public class TimelineIndexerTest
 
         for ( int i = 0; i < 30; i++ )
         {
-            TimelineRecord rec = createTimelineRecord();
-            rec.setTimestamp( 10000000L - i * 60000 );
+            TimelineRecord rec = createTimelineRecord( 10000000L - i * 60000 );
             rec.getData().put( key, "" + i );
 
             indexer.add( rec );

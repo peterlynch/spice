@@ -15,31 +15,30 @@ package org.sonatype.timeline;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Class used internally as base "record" that carries user data.
+ * 
+ * @author cstamas
+ */
 public class TimelineRecord
 {
-    private long timestamp;
+    private final long timestamp;
 
-    private String type;
+    private final String type;
 
-    private String subType;
+    private final String subType;
 
-    private Map<String, String> data;
+    private final Map<String, String> data;
 
-    public TimelineRecord( long timestamp, String type, String subType, Map<String, String> data )
+    public TimelineRecord( final long timestamp, final String type, final String subType, final Map<String, String> data )
     {
         this.timestamp = timestamp;
 
-        this.type = type;
+        this.type = type == null ? "" : type;
 
-        this.subType = subType;
+        this.subType = subType == null ? "" : subType;
 
-        this.data = data;
-
-        this.type = this.type == null ? "" : this.type;
-
-        this.subType = this.subType == null ? "" : this.subType;
-
-        this.data = this.data == null ? new HashMap<String, String>() : this.data;
+        this.data = data == null ? new HashMap<String, String>() : data;
     }
 
     public long getTimestamp()
@@ -47,19 +46,9 @@ public class TimelineRecord
         return timestamp;
     }
 
-    public void setTimestamp( long timestamp )
-    {
-        this.timestamp = timestamp;
-    }
-
     public String getType()
     {
         return type;
-    }
-
-    public void setType( String type )
-    {
-        this.type = type;
     }
 
     public String getSubType()
@@ -67,19 +56,8 @@ public class TimelineRecord
         return subType;
     }
 
-    public void setSubType( String subType )
-    {
-        this.subType = subType;
-    }
-
     public Map<String, String> getData()
     {
         return data;
     }
-
-    public void setData( Map<String, String> data )
-    {
-        this.data = data;
-    }
-
 }
