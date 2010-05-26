@@ -13,7 +13,6 @@
 package org.sonatype.timeline;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,8 +25,6 @@ public class TimelinePersistorTest
 {
     protected File persistDirectory;
 
-    protected TimelineConfiguration configuration;
-
     @Override
     public void setUp()
         throws Exception
@@ -38,9 +35,7 @@ public class TimelinePersistorTest
 
         cleanDirectory( persistDirectory );
 
-        this.configuration = new TimelineConfiguration( persistDirectory, null );
-
-        persistor.configure( configuration );
+        persistor.configure( persistDirectory );
     }
 
     public void testPersistSingleRecord()
@@ -50,7 +45,7 @@ public class TimelinePersistorTest
 
         persistor.persist( record );
 
-        List<TimelineRecord> results = toList( persistor.readAll() );
+        List<TimelineRecord> results = persistor.readAll();
 
         assertEquals( 1, results.size() );
         assertEquals( record.getTimestamp(), results.get( 0 ).getTimestamp() );
@@ -69,7 +64,11 @@ public class TimelinePersistorTest
         data1.put( "k1", "v1" );
         data1.put( "k2", "v2" );
 
-        TimelineRecord record1 = createTimelineRecord( timestamp1, type1, subType1, data1 );
+        TimelineRecord record1 = createTimelineRecord();
+        record1.setTimestamp( timestamp1 );
+        record1.setType( type1 );
+        record1.setSubType( subType1 );
+        record1.setData( data1 );
 
         long timestamp2 = System.currentTimeMillis();
         String type2 = "type2";
@@ -78,12 +77,16 @@ public class TimelinePersistorTest
         data2.put( "k21", "v21" );
         data2.put( "k22", "v22" );
 
-        TimelineRecord record2 = createTimelineRecord( timestamp2, type2, subType2, data2 );
+        TimelineRecord record2 = createTimelineRecord();
+        record2.setTimestamp( timestamp2 );
+        record2.setType( type2 );
+        record2.setSubType( subType2 );
+        record2.setData( data2 );
 
         persistor.persist( record1 );
         persistor.persist( record2 );
 
-        List<TimelineRecord> results = toList( persistor.readAll() );
+        List<TimelineRecord> results = persistor.readAll();
 
         assertEquals( 2, results.size() );
 
@@ -108,13 +111,13 @@ public class TimelinePersistorTest
             persistor.persist( createTimelineRecord() );
         }
 
-        assertEquals( count, toList( persistor.readAll() ).size() );
+        assertEquals( count, persistor.readAll().size() );
     }
 
     public void testRolling()
         throws Exception
     {
-        persistor.configure( new TimelineConfiguration( persistDirectory, persistDirectory, 1 ) );
+        persistor.configure( persistDirectory, 1 );
 
         persistor.persist( createTimelineRecord() );
         persistor.persist( createTimelineRecord() );
@@ -125,7 +128,7 @@ public class TimelinePersistorTest
 
         assertEquals( 2, persistDirectory.listFiles().length );
 
-        assertEquals( 3, toList( persistor.readAll() ).size() );
+        assertEquals( 3, persistor.readAll().size() );
     }
 
     public void testIllegalDataFile()
@@ -137,9 +140,9 @@ public class TimelinePersistorTest
 
         FileUtils.fileWrite( badFile.getAbsolutePath(), "some bad data" );
 
-        assertEquals( 1, toList( persistor.readAll() ).size() );
+        assertEquals( 1, persistor.readAll().size() );
     }
-
+    
     public void testDataKeyNull()
         throws Exception
     {
@@ -177,7 +180,7 @@ public class TimelinePersistorTest
             // expected
         }
     }
-
+    
     public void testDataKeyEmpty()
         throws Exception
     {
@@ -197,7 +200,7 @@ public class TimelinePersistorTest
 
         persistor.persist( record );
     }
-
+    
     public void testSubTypeNull()
         throws Exception
     {
@@ -207,7 +210,7 @@ public class TimelinePersistorTest
 
         persistor.persist( record );
     }
-
+    
     public void testTypeNull()
         throws Exception
     {
@@ -217,33 +220,12 @@ public class TimelinePersistorTest
 
         persistor.persist( record );
     }
-
+    
     public void testDataNull()
         throws Exception
     {
         TimelineRecord record = new TimelineRecord( System.currentTimeMillis(), "type", "subType", null );
 
         persistor.persist( record );
-    }
-
-    // ==
-
-    /**
-     * This gathers all elements into a list. Usable for testing only, since this will try to keep all records in
-     * memory! Use this only in UTs!!! You've been warned.
-     * 
-     * @param iterable
-     * @return
-     */
-    protected List<TimelineRecord> toList( Iterable<TimelineRecord> iterable )
-    {
-        ArrayList<TimelineRecord> result = new ArrayList<TimelineRecord>();
-
-        for ( TimelineRecord rec : iterable )
-        {
-            result.add( rec );
-        }
-
-        return result;
     }
 }

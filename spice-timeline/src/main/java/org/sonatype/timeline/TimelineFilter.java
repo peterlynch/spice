@@ -14,11 +14,6 @@ package org.sonatype.timeline;
 
 import java.util.Map;
 
-/**
- * Filter that filters returned timeline records before they are returned to requester.
- * 
- * @author cstamas
- */
 public interface TimelineFilter
 {
     boolean accept( Map<String, String> hit );

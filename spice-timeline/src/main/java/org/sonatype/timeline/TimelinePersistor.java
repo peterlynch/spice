@@ -12,39 +12,30 @@
  */
 package org.sonatype.timeline;
 
+import java.io.File;
+import java.util.List;
+
 /**
- * Timeline persistor, that persists the timeline records. This component should not be used by users, see Timeline for
- * that.
+ * Persist the TimelineRecord
  * 
  * @author juven
- * @author cstamas
  */
 public interface TimelinePersistor
 {
     public static final int DEFAULT_ROLLING_INTERVAL = 60 * 60 * 24;
+    
+    void configure( File persistDirectory );
 
     /**
-     * Configures the persistor. It sets where to persist.
-     * 
-     * @param persistDirectory
+     * TimelinePersistor must be configured before being used.
+     * @param persistDirectory the place to put the persistent file
+     * @param rollingInterval the interval for rolling the persistent file (seconds)
      */
-    void configure( TimelineConfiguration config );
-
-    /**
-     * Saves one timeline record to persistent store.
-     * 
-     * @param record
-     * @throws TimelineException
-     */
+    public void configure( File persistDirectory, int rollingInterval );
+    
     void persist( TimelineRecord record )
         throws TimelineException;
 
-    /**
-     * Reads up all records, but using iterator (to keep small memory footprint).
-     * 
-     * @return
-     * @throws TimelineException
-     */
-    Iterable<TimelineRecord> readAll()
+    List<TimelineRecord> readAll()
         throws TimelineException;
 }

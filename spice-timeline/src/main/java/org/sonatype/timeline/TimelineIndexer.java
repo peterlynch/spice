@@ -12,43 +12,17 @@
  */
 package org.sonatype.timeline;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Timeline indexer, that adds timeline records to the index to make them quickly retrievable. This component should not
- * be used by users, see Timeline for that.
- * 
- * @author cstamas
- */
 public interface TimelineIndexer
 {
-    /**
-     * Configures this component.
-     * 
-     * @param configuration
-     * @throws TimelineException
-     */
-    void configure( TimelineConfiguration configuration )
+    void configure( File indexDirectory )
         throws TimelineException;
 
-    /**
-     * Adds one record to timeline index.
-     * 
-     * @param record
-     * @throws TimelineException
-     */
     void add( TimelineRecord record )
-        throws TimelineException;
-
-    /**
-     * Adds batch of timeline records.
-     * 
-     * @param records
-     * @throws TimelineException
-     */
-    void add( Iterable<TimelineRecord> records )
         throws TimelineException;
 
     /**
@@ -64,7 +38,7 @@ public interface TimelineIndexer
      * @return search result, ordered by timestamp (the minimum unit is minute)
      */
     List<Map<String, String>> retrieve( long fromTime, long toTime, Set<String> types, Set<String> subTypes, int from,
-                                        int count, TimelineFilter filter )
+        int count, TimelineFilter filter )
         throws TimelineException;
 
     /**

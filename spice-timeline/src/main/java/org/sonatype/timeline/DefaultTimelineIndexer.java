@@ -12,6 +12,7 @@
  */
 package org.sonatype.timeline;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,22 +24,20 @@ import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Collector;
+import org.apache.lucene.search.ConstantScoreRangeQuery;
+import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.search.TopFieldDocs;
 import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
@@ -57,7 +56,7 @@ public class DefaultTimelineIndexer
 
     private static final String SUBTYPE = "_2";
 
-    private FSDirectory directory;
+    private Directory directory;
 
     private IndexReader indexReader;
 
@@ -65,7 +64,7 @@ public class DefaultTimelineIndexer
 
     private IndexSearcher indexSearcher;
 
-    public void configure( TimelineConfiguration configuration )
+    public void configure( File indexDirectory )
         throws TimelineException
     {
         try
@@ -74,30 +73,24 @@ public class DefaultTimelineIndexer
 
             synchronized ( this )
             {
-                if ( directory != null
-                    && !directory.getFile().getAbsolutePath().equals(
-                        configuration.getIndexDirectory().getAbsolutePath() ) )
+                if ( directory != null )
                 {
                     directory.close();
+                }
 
-                    directory = FSDirectory.open( configuration.getIndexDirectory() );
-                }
-                else if ( directory == null )
-                {
-                    directory = FSDirectory.open( configuration.getIndexDirectory() );
-                }
+                directory = FSDirectory.getDirectory( indexDirectory );
 
                 if ( IndexReader.indexExists( directory ) )
                 {
-                    if ( IndexWriter.isLocked( directory ) )
+                    if ( IndexReader.isLocked( directory ) )
                     {
-                        IndexWriter.unlock( directory );
+                        IndexReader.unlock( directory );
                     }
 
                     newIndex = false;
                 }
 
-                indexWriter = new IndexWriter( directory, new KeywordAnalyzer(), newIndex, MaxFieldLength.LIMITED );
+                indexWriter = new IndexWriter( indexDirectory, new KeywordAnalyzer(), newIndex );
 
                 closeIndexWriter();
             }
@@ -139,7 +132,7 @@ public class DefaultTimelineIndexer
     {
         if ( indexWriter == null )
         {
-            indexWriter = new IndexWriter( directory, new KeywordAnalyzer(), false, MaxFieldLength.UNLIMITED );
+            indexWriter = new IndexWriter( directory, new KeywordAnalyzer(), false );
         }
 
         return indexWriter;
@@ -150,7 +143,7 @@ public class DefaultTimelineIndexer
     {
         if ( indexWriter != null )
         {
-            indexWriter.commit();
+            indexWriter.flush();
 
             indexWriter.close();
 
@@ -221,8 +214,6 @@ public class DefaultTimelineIndexer
                 writer = getIndexWriter();
 
                 writer.addDocument( createDocument( record ) );
-                
-                writer.commit();
 
                 closeIndexWriter();
             }
@@ -233,30 +224,20 @@ public class DefaultTimelineIndexer
         }
     }
 
-    public void add( Iterable<TimelineRecord> records )
-        throws TimelineException
-    {
-        // TODO: implement batch add!
-        for ( TimelineRecord record : records )
-        {
-            add( record );
-        }
-    }
-
     private Document createDocument( TimelineRecord record )
     {
         Document doc = new Document();
 
         doc.add( new Field( TIMESTAMP, DateTools.timeToString( record.getTimestamp(), DateTools.Resolution.MINUTE ),
-            Field.Store.NO, Field.Index.NOT_ANALYZED ) );
+                            Field.Store.NO, Field.Index.UN_TOKENIZED ) );
 
-        doc.add( new Field( TYPE, record.getType(), Field.Store.NO, Field.Index.NOT_ANALYZED ) );
+        doc.add( new Field( TYPE, record.getType(), Field.Store.NO, Field.Index.UN_TOKENIZED ) );
 
-        doc.add( new Field( SUBTYPE, record.getSubType(), Field.Store.NO, Field.Index.NOT_ANALYZED ) );
+        doc.add( new Field( SUBTYPE, record.getSubType(), Field.Store.NO, Field.Index.UN_TOKENIZED ) );
 
         for ( String key : record.getData().keySet() )
         {
-            doc.add( new Field( key, record.getData().get( key ), Field.Store.YES, Field.Index.NOT_ANALYZED ) );
+            doc.add( new Field( key, record.getData().get( key ), Field.Store.YES, Field.Index.UN_TOKENIZED ) );
         }
 
         return doc;
@@ -266,15 +247,17 @@ public class DefaultTimelineIndexer
     {
         if ( isEmptySet( types ) && isEmptySet( subTypes ) )
         {
-            return new TermRangeQuery( TIMESTAMP, DateTools.timeToString( from, DateTools.Resolution.MINUTE ),
-                DateTools.timeToString( to, DateTools.Resolution.MINUTE ), true, true );
+            return new ConstantScoreRangeQuery( TIMESTAMP, DateTools.timeToString( from, DateTools.Resolution.MINUTE ),
+                                                DateTools.timeToString( to, DateTools.Resolution.MINUTE ), true, true );
         }
         else
         {
             BooleanQuery result = new BooleanQuery();
 
-            result.add( new TermRangeQuery( TIMESTAMP, DateTools.timeToString( from, DateTools.Resolution.MINUTE ),
-                DateTools.timeToString( to, DateTools.Resolution.MINUTE ), true, true ), Occur.MUST );
+            result.add( new ConstantScoreRangeQuery( TIMESTAMP, DateTools.timeToString( from,
+                                                                                        DateTools.Resolution.MINUTE ),
+                                                     DateTools.timeToString( to, DateTools.Resolution.MINUTE ), true,
+                                                     true ), Occur.MUST );
 
             if ( !isEmptySet( types ) )
             {
@@ -330,7 +313,8 @@ public class DefaultTimelineIndexer
 
                 TopFieldDocs topDocs =
                     getIndexSearcher().search( buildQuery( fromTime, toTime, types, subTypes ), null,
-                        searcher.maxDoc(), new Sort( new SortField( TIMESTAMP, SortField.LONG, true ) ) );
+                                               searcher.maxDoc(),
+                                               new Sort( new SortField( TIMESTAMP, SortField.LONG, true ) ) );
 
                 for ( int i = 0; i < topDocs.scoreDocs.length; i++ )
                 {
@@ -370,11 +354,12 @@ public class DefaultTimelineIndexer
         return result;
     }
 
+    @SuppressWarnings( "unchecked" )
     private Map<String, String> buildData( Document doc )
     {
         Map<String, String> result = new HashMap<String, String>();
 
-        for ( Fieldable field : doc.getFields() )
+        for ( Field field : (List<Field>) doc.getFields() )
         {
             if ( !field.name().startsWith( "_" ) )
             {
@@ -391,24 +376,23 @@ public class DefaultTimelineIndexer
         {
             synchronized ( this )
             {
-                IndexWriter writer = getIndexWriter();
+                closeIndexWriter();
 
-                if ( writer.maxDoc() == 0 )
+                IndexSearcher searcher = getIndexSearcher();
+
+                if ( searcher.maxDoc() == 0 )
                 {
                     closeIndexReaderAndSearcher();
 
                     return 0;
                 }
 
-                Query query = buildQuery( fromTime, toTime, types, subTypes );
+                Hits hits = searcher.search( buildQuery( fromTime, toTime, types, subTypes ) );
 
-                DocCounter docCounter = new DocCounter();
-
-                getIndexSearcher().search( query, docCounter );
-
-                writer.deleteDocuments( query );
-
-                writer.commit();
+                for ( int i = 0; i < hits.length(); i++ )
+                {
+                    searcher.getIndexReader().deleteDocument( hits.id( i ) );
+                }
 
                 closeIndexReaderAndSearcher();
 
@@ -416,50 +400,12 @@ public class DefaultTimelineIndexer
 
                 closeIndexWriter();
 
-                return docCounter.getDocCount();
+                return hits.length();
             }
         }
         catch ( IOException e )
         {
             throw new TimelineException( "Failed to purge records from the timeline index!", e );
-        }
-    }
-
-    // ==
-
-    public static class DocCounter
-        extends Collector
-    {
-        private int docCount;
-
-        @Override
-        public boolean acceptsDocsOutOfOrder()
-        {
-            return true;
-        }
-
-        @Override
-        public void collect( int doc )
-            throws IOException
-        {
-            docCount++;
-        }
-
-        @Override
-        public void setNextReader( IndexReader reader, int docBase )
-            throws IOException
-        {
-        }
-
-        @Override
-        public void setScorer( Scorer scorer )
-            throws IOException
-        {
-        }
-
-        public int getDocCount()
-        {
-            return docCount;
         }
     }
 }

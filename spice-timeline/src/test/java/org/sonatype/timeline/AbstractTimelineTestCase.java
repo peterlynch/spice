@@ -53,41 +53,11 @@ public abstract class AbstractTimelineTestCase
 
     protected TimelineRecord createTimelineRecord()
     {
-        return createTimelineRecord( System.currentTimeMillis() );
-    }
-
-    protected TimelineRecord createTimelineRecord( long ts )
-    {
-        return createTimelineRecord( ts, "type" );
-    }
-
-    protected TimelineRecord createTimelineRecord( long ts, String type )
-    {
-        return createTimelineRecord( ts, type, "subType" );
-    }
-
-    protected TimelineRecord createTimelineRecord( String type )
-    {
-        return createTimelineRecord( System.currentTimeMillis(), type, "subType" );
-    }
-
-    protected TimelineRecord createTimelineRecord( String type, String subType )
-    {
-        return createTimelineRecord( System.currentTimeMillis(), type, subType );
-    }
-
-    protected TimelineRecord createTimelineRecord( long ts, String type, String subType )
-    {
         Map<String, String> data = new HashMap<String, String>();
         data.put( "k1", "v1" );
         data.put( "k2", "v2" );
         data.put( "k3", "v3" );
-        
-        return createTimelineRecord( ts, type, subType, data );
-    }
 
-    protected TimelineRecord createTimelineRecord( long ts, String type, String subType, Map<String, String> data )
-    {
-        return new TimelineRecord( ts, type, subType, data );
+        return new TimelineRecord( System.currentTimeMillis(), "type", "subType", data );
     }
 }

@@ -12,15 +12,8 @@
  */
 package org.sonatype.timeline;
 
-import java.io.IOException;
-
-/**
- * General exception, almost certain it covers some IO issue and is fatal.
- * 
- * @author cstamas
- */
 public class TimelineException
-    extends IOException
+    extends Exception
 {
     private static final long serialVersionUID = -6910542365717001247L;
 

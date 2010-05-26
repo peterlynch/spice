@@ -42,11 +42,11 @@ public class DefaultTimeline
     {
         this.configuration = config;
 
-        persistor.configure( config );
+        persistor.configure( config.getPersistDirectory(), config.getPersistRollingInterval() );
 
         try
         {
-            indexer.configure( config );
+            indexer.configure( config.getIndexDirectory() );
         }
         catch ( TimelineException e )
         {
@@ -76,9 +76,12 @@ public class DefaultTimeline
                 + configuration.getIndexDirectory().getAbsolutePath(), e );
         }
 
-        indexer.configure( configuration );
+        indexer.configure( configuration.getIndexDirectory() );
 
-        indexer.add( persistor.readAll() );
+        for ( TimelineRecord record : persistor.readAll() )
+        {
+            indexer.add( record );
+        }
     }
 
     public void add( long timestamp, String type, String subType, Map<String, String> data )
@@ -209,7 +212,7 @@ public class DefaultTimeline
     }
 
     public List<Map<String, String>> retrieve( long fromTs, int count, Set<String> types, Set<String> subTypes,
-                                               TimelineFilter filter )
+        TimelineFilter filter )
     {
         return retrieve( fromTs, System.currentTimeMillis(), types, subTypes, 0, count, filter );
     }
@@ -220,13 +223,13 @@ public class DefaultTimeline
     }
 
     public List<Map<String, String>> retrieve( int fromItem, int count, Set<String> types, Set<String> subTypes,
-                                               TimelineFilter filter )
+        TimelineFilter filter )
     {
         return retrieve( 0L, System.currentTimeMillis(), types, subTypes, fromItem, count, filter );
     }
 
     private List<Map<String, String>> retrieve( long fromTime, long toTime, Set<String> types, Set<String> subTypes,
-                                                int from, int count, TimelineFilter filter )
+        int from, int count, TimelineFilter filter )
     {
         try
         {
@@ -265,7 +268,7 @@ public class DefaultTimeline
     }
 
     public List<Map<String, String>> retrieveNewest( int count, Set<String> types, Set<String> subTypes,
-                                                     TimelineFilter filter )
+        TimelineFilter filter )
     {
         return retrieve( 0L, System.currentTimeMillis(), types, subTypes, 0, count, filter );
     }
