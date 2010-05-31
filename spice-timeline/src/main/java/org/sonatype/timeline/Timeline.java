@@ -13,7 +13,6 @@
 package org.sonatype.timeline;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -24,10 +23,12 @@ public interface Timeline
 {
     /**
      * Configure it before use
+     * 
      * @param config
      */
-    void configure( TimelineConfiguration config ) throws TimelineException;
-    
+    void configure( TimelineConfiguration config )
+        throws TimelineException;
+
     void add( String type, String subType, Map<String, String> data );
 
     void addAll( String type, String subType, Collection<Map<String, String>> datas );
@@ -48,18 +49,16 @@ public interface Timeline
 
     int purgeOlderThan( long timestamp, Set<String> types, Set<String> subTypes, TimelineFilter filter );
 
-    List<Map<String, String>> retrieveNewest( int count, Set<String> types );
+    TimelineResult retrieveNewest( int count, Set<String> types );
 
-    List<Map<String, String>> retrieveNewest( int count, Set<String> types, Set<String> subtypes, TimelineFilter filter );
+    TimelineResult retrieveNewest( int count, Set<String> types, Set<String> subtypes, TimelineFilter filter );
 
-    List<Map<String, String>> retrieve( long fromTs, int count, Set<String> types );
+    TimelineResult retrieve( long fromTs, int count, Set<String> types );
 
-    List<Map<String, String>> retrieve( long fromTs, int count, Set<String> types, Set<String> subtypes,
-        TimelineFilter filter );
+    TimelineResult retrieve( long fromTs, int count, Set<String> types, Set<String> subtypes, TimelineFilter filter );
 
-    List<Map<String, String>> retrieve( int fromItem, int count, Set<String> types );
+    TimelineResult retrieve( int fromItem, int count, Set<String> types );
 
-    List<Map<String, String>> retrieve( int fromItem, int count, Set<String> types, Set<String> subtypes,
-        TimelineFilter filter );
+    TimelineResult retrieve( int fromItem, int count, Set<String> types, Set<String> subtypes, TimelineFilter filter );
 
 }

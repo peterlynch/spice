@@ -15,7 +15,6 @@ package org.sonatype.timeline;
 import java.io.File;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.codehaus.plexus.PlexusTestCase;
@@ -40,7 +39,7 @@ public class TimelineIndexerTest
 
         cleanDirectory( indexDirectory );
 
-        indexer.configure( indexDirectory );
+        indexer.configure( new TimelineConfiguration( null, indexDirectory ) );
     }
 
     public void testIndexOneRecord()
@@ -51,10 +50,11 @@ public class TimelineIndexerTest
 
         Set<String> types = new HashSet<String>();
         types.add( "type" );
-        List<Map<String, String>> results = indexer.retrieve( 0, System.currentTimeMillis(), types, null, 0, 100, null );
+        List<TimelineRecord> results =
+            asList( indexer.retrieve( 0, System.currentTimeMillis(), types, null, 0, 100, null ) );
 
         assertEquals( 1, results.size() );
-        assertEquals( record.getData(), results.get( 0 ) );
+        assertEquals( record.getData(), results.get( 0 ).getData() );
     }
 
     public void testIndexMutipleRecords()
@@ -65,7 +65,8 @@ public class TimelineIndexerTest
             indexer.add( createTimelineRecord() );
         }
 
-        List<Map<String, String>> results = indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null );
+        List<TimelineRecord> results =
+            asList( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ) );
 
         assertEquals( 10, results.size() );
     }
@@ -86,10 +87,10 @@ public class TimelineIndexerTest
         indexer.add( rec3 );
         indexer.add( rec4 );
 
-        assertEquals( 4, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
-        assertEquals( 3, indexer.retrieve( 0, 3500000L, null, null, 0, 100, null ).size() );
-        assertEquals( 2, indexer.retrieve( 1500000L, 3500000L, null, null, 0, 100, null ).size() );
-        assertEquals( 0, indexer.retrieve( 4500000L, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
+        assertEquals( 4, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ) ) );
+        assertEquals( 3, sizeOf( indexer.retrieve( 0, 3500000L, null, null, 0, 100, null ) ) );
+        assertEquals( 2, sizeOf( indexer.retrieve( 1500000L, 3500000L, null, null, 0, 100, null ) ) );
+        assertEquals( 0, sizeOf( indexer.retrieve( 4500000L, System.currentTimeMillis(), null, null, 0, 100, null ) ) );
     }
 
     public void testSearchByType()
@@ -111,24 +112,24 @@ public class TimelineIndexerTest
         Set<String> types = new HashSet<String>();
 
         types.add( "typeA" );
-        assertEquals( 1, indexer.retrieve( 0, System.currentTimeMillis(), types, null, 0, 100, null ).size() );
+        assertEquals( 1, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), types, null, 0, 100, null ) ) );
         types.clear();
         types.add( "typeB" );
-        assertEquals( 2, indexer.retrieve( 0, System.currentTimeMillis(), types, null, 0, 100, null ).size() );
+        assertEquals( 2, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), types, null, 0, 100, null ) ) );
         types.clear();
         types.add( "typeA" );
         types.add( "typeB" );
-        assertEquals( 3, indexer.retrieve( 0, System.currentTimeMillis(), types, null, 0, 100, null ).size() );
+        assertEquals( 3, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), types, null, 0, 100, null ) ) );
         types.clear();
         types.add( "typeA" );
         types.add( "typeB" );
         types.add( "typeC" );
-        assertEquals( 4, indexer.retrieve( 0, System.currentTimeMillis(), types, null, 0, 100, null ).size() );
+        assertEquals( 4, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), types, null, 0, 100, null ) ) );
         types.clear();
-        assertEquals( 4, indexer.retrieve( 0, System.currentTimeMillis(), types, null, 0, 100, null ).size() );
+        assertEquals( 4, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), types, null, 0, 100, null ) ) );
         types.clear();
         types.add( "typeX" );
-        assertEquals( 0, indexer.retrieve( 0, System.currentTimeMillis(), types, null, 0, 100, null ).size() );
+        assertEquals( 0, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), types, null, 0, 100, null ) ) );
     }
 
     public void testSearchBySubType()
@@ -150,24 +151,24 @@ public class TimelineIndexerTest
         Set<String> subTypes = new HashSet<String>();
 
         subTypes.add( "subA" );
-        assertEquals( 1, indexer.retrieve( 0, System.currentTimeMillis(), null, subTypes, 0, 100, null ).size() );
+        assertEquals( 1, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, subTypes, 0, 100, null ) ) );
         subTypes.clear();
         subTypes.add( "subB" );
-        assertEquals( 2, indexer.retrieve( 0, System.currentTimeMillis(), null, subTypes, 0, 100, null ).size() );
+        assertEquals( 2, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, subTypes, 0, 100, null ) ) );
         subTypes.clear();
         subTypes.add( "subA" );
         subTypes.add( "subB" );
-        assertEquals( 3, indexer.retrieve( 0, System.currentTimeMillis(), null, subTypes, 0, 100, null ).size() );
+        assertEquals( 3, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, subTypes, 0, 100, null ) ) );
         subTypes.clear();
         subTypes.add( "subA" );
         subTypes.add( "subB" );
         subTypes.add( "subC" );
-        assertEquals( 4, indexer.retrieve( 0, System.currentTimeMillis(), null, subTypes, 0, 100, null ).size() );
+        assertEquals( 4, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, subTypes, 0, 100, null ) ) );
         subTypes.clear();
-        assertEquals( 4, indexer.retrieve( 0, System.currentTimeMillis(), null, subTypes, 0, 100, null ).size() );
+        assertEquals( 4, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, subTypes, 0, 100, null ) ) );
         subTypes.clear();
         subTypes.add( "subX" );
-        assertEquals( 0, indexer.retrieve( 0, System.currentTimeMillis(), null, subTypes, 0, 100, null ).size() );
+        assertEquals( 0, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, subTypes, 0, 100, null ) ) );
     }
 
     public void testSearchByTypeAndSubType()
@@ -195,32 +196,32 @@ public class TimelineIndexerTest
 
         types.add( "typeA" );
         subTypes.add( "subX" );
-        assertEquals( 2, indexer.retrieve( 0, System.currentTimeMillis(), types, subTypes, 0, 100, null ).size() );
+        assertEquals( 2, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), types, subTypes, 0, 100, null ) ) );
 
         types.clear();
         subTypes.clear();
         types.add( "typeB" );
         subTypes.add( "subX" );
-        assertEquals( 1, indexer.retrieve( 0, System.currentTimeMillis(), types, subTypes, 0, 100, null ).size() );
+        assertEquals( 1, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), types, subTypes, 0, 100, null ) ) );
 
         types.clear();
         subTypes.clear();
         types.add( "typeA" );
         types.add( "typeB" );
         subTypes.add( "subX" );
-        assertEquals( 3, indexer.retrieve( 0, System.currentTimeMillis(), types, subTypes, 0, 100, null ).size() );
+        assertEquals( 3, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), types, subTypes, 0, 100, null ) ) );
 
         types.clear();
         subTypes.clear();
         types.add( "typeA" );
         subTypes.add( "subY" );
-        assertEquals( 0, indexer.retrieve( 0, System.currentTimeMillis(), types, subTypes, 0, 100, null ).size() );
+        assertEquals( 0, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), types, subTypes, 0, 100, null ) ) );
 
         types.clear();
         subTypes.clear();
         types.add( "typeB" );
         subTypes.add( "subY" );
-        assertEquals( 1, indexer.retrieve( 0, System.currentTimeMillis(), types, subTypes, 0, 100, null ).size() );
+        assertEquals( 1, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), types, subTypes, 0, 100, null ) ) );
 
         types.clear();
         subTypes.clear();
@@ -228,7 +229,7 @@ public class TimelineIndexerTest
         types.add( "typeB" );
         subTypes.add( "subX" );
         subTypes.add( "subY" );
-        assertEquals( 4, indexer.retrieve( 0, System.currentTimeMillis(), types, subTypes, 0, 100, null ).size() );
+        assertEquals( 4, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), types, subTypes, 0, 100, null ) ) );
     }
 
     public void testSearchByCount()
@@ -240,15 +241,15 @@ public class TimelineIndexerTest
         }
 
         int count = 50;
-        assertEquals( count, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, count, null ).size() );
+        assertEquals( count, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, count, null ) ) );
         count = 49;
-        assertEquals( count, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, count, null ).size() );
+        assertEquals( count, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, count, null ) ) );
         count = 25;
-        assertEquals( count, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, count, null ).size() );
+        assertEquals( count, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, count, null ) ) );
         count = 0;
-        assertEquals( count, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, count, null ).size() );
+        assertEquals( count, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, count, null ) ) );
         count = 1;
-        assertEquals( count, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, count, null ).size() );
+        assertEquals( count, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, count, null ) ) );
     }
 
     public void testSearchByFrom()
@@ -260,15 +261,20 @@ public class TimelineIndexerTest
         }
 
         int from = 49;
-        assertEquals( 50 - from, indexer.retrieve( 0, System.currentTimeMillis(), null, null, from, 1000, null ).size() );
+        assertEquals( 50 - from,
+            sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, null, from, 1000, null ) ) );
         from = 1;
-        assertEquals( 50 - from, indexer.retrieve( 0, System.currentTimeMillis(), null, null, from, 1000, null ).size() );
+        assertEquals( 50 - from,
+            sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, null, from, 1000, null ) ) );
         from = 25;
-        assertEquals( 50 - from, indexer.retrieve( 0, System.currentTimeMillis(), null, null, from, 1000, null ).size() );
+        assertEquals( 50 - from,
+            sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, null, from, 1000, null ) ) );
         from = 0;
-        assertEquals( 50 - from, indexer.retrieve( 0, System.currentTimeMillis(), null, null, from, 1000, null ).size() );
+        assertEquals( 50 - from,
+            sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, null, from, 1000, null ) ) );
         from = 50;
-        assertEquals( 50 - from, indexer.retrieve( 0, System.currentTimeMillis(), null, null, from, 1000, null ).size() );
+        assertEquals( 50 - from,
+            sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, null, from, 1000, null ) ) );
     }
 
     public void testSearchResultOrderByTime()
@@ -292,13 +298,14 @@ public class TimelineIndexerTest
         indexer.add( rec4 );
         indexer.add( rec3 );
 
-        List<Map<String, String>> results = indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null );
+        List<TimelineRecord> results =
+            asList( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ) );
 
         assertEquals( 4, results.size() );
-        assertEquals( "4", results.get( 0 ).get( "t" ) );
-        assertEquals( "3", results.get( 1 ).get( "t" ) );
-        assertEquals( "2", results.get( 2 ).get( "t" ) );
-        assertEquals( "1", results.get( 3 ).get( "t" ) );
+        assertEquals( "4", results.get( 0 ).getData().get( "t" ) );
+        assertEquals( "3", results.get( 1 ).getData().get( "t" ) );
+        assertEquals( "2", results.get( 2 ).getData().get( "t" ) );
+        assertEquals( "1", results.get( 3 ).getData().get( "t" ) );
     }
 
     public void testPurgeByTime()
@@ -323,12 +330,13 @@ public class TimelineIndexerTest
         indexer.add( rec3 );
 
         assertEquals( 2, indexer.purge( 1500000L, 3500000L, null, null ) );
-        List<Map<String, String>> results = indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null );
+        List<TimelineRecord> results =
+            asList( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ) );
         assertEquals( 2, results.size() );
-        assertEquals( "4", results.get( 0 ).get( "t" ) );
-        assertEquals( "1", results.get( 1 ).get( "t" ) );
+        assertEquals( "4", results.get( 0 ).getData().get( "t" ) );
+        assertEquals( "1", results.get( 1 ).getData().get( "t" ) );
         assertEquals( 2, indexer.purge( 0, 4500000L, null, null ) );
-        assertEquals( 0, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
+        assertEquals( 0, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ) ) );
     }
 
     public void testPurgeByType()
@@ -350,13 +358,13 @@ public class TimelineIndexerTest
         Set<String> types = new HashSet<String>();
         types.add( "typeA" );
         assertEquals( 1, indexer.purge( 0, System.currentTimeMillis(), types, null ) );
-        assertEquals( 3, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
+        assertEquals( 3, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ) ) );
 
         indexer.add( rec1 );
         types.clear();
         types.add( "typeB" );
         assertEquals( 2, indexer.purge( 0, System.currentTimeMillis(), types, null ) );
-        assertEquals( 2, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
+        assertEquals( 2, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ) ) );
 
         indexer.add( rec2 );
         indexer.add( rec3 );
@@ -364,12 +372,12 @@ public class TimelineIndexerTest
         types.add( "typeB" );
         types.add( "typeC" );
         assertEquals( 3, indexer.purge( 0, System.currentTimeMillis(), types, null ) );
-        assertEquals( 1, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
+        assertEquals( 1, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ) ) );
 
         types.clear();
         types.add( "typeA" );
         assertEquals( 1, indexer.purge( 0, System.currentTimeMillis(), types, null ) );
-        assertEquals( 0, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
+        assertEquals( 0, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ) ) );
 
         types.clear();
         types.add( "typeA" );
@@ -397,13 +405,13 @@ public class TimelineIndexerTest
         Set<String> subTypes = new HashSet<String>();
         subTypes.add( "typeA" );
         assertEquals( 1, indexer.purge( 0, System.currentTimeMillis(), null, subTypes ) );
-        assertEquals( 3, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
+        assertEquals( 3, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ) ) );
 
         indexer.add( rec1 );
         subTypes.clear();
         subTypes.add( "typeB" );
         assertEquals( 2, indexer.purge( 0, System.currentTimeMillis(), null, subTypes ) );
-        assertEquals( 2, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
+        assertEquals( 2, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ) ) );
 
         indexer.add( rec2 );
         indexer.add( rec3 );
@@ -411,12 +419,12 @@ public class TimelineIndexerTest
         subTypes.add( "typeB" );
         subTypes.add( "typeC" );
         assertEquals( 3, indexer.purge( 0, System.currentTimeMillis(), null, subTypes ) );
-        assertEquals( 1, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
+        assertEquals( 1, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ) ) );
 
         subTypes.clear();
         subTypes.add( "typeA" );
         assertEquals( 1, indexer.purge( 0, System.currentTimeMillis(), null, subTypes ) );
-        assertEquals( 0, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
+        assertEquals( 0, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ) ) );
 
         subTypes.clear();
         subTypes.add( "typeA" );
@@ -454,7 +462,7 @@ public class TimelineIndexerTest
         types.add( "typeA" );
         subTypes.add( "subX" );
         assertEquals( 2, indexer.purge( 0, System.currentTimeMillis(), types, subTypes ) );
-        assertEquals( 3, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
+        assertEquals( 3, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ) ) );
 
         indexer.add( rec1 );
         indexer.add( rec4 );
@@ -464,7 +472,7 @@ public class TimelineIndexerTest
         types.add( "typeB" );
         subTypes.add( "subX" );
         assertEquals( 3, indexer.purge( 0, System.currentTimeMillis(), types, subTypes ) );
-        assertEquals( 2, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
+        assertEquals( 2, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ) ) );
 
         indexer.add( rec1 );
         indexer.add( rec2 );
@@ -476,7 +484,7 @@ public class TimelineIndexerTest
         subTypes.add( "subX" );
         subTypes.add( "subY" );
         assertEquals( 4, indexer.purge( 0, System.currentTimeMillis(), types, subTypes ) );
-        assertEquals( 1, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
+        assertEquals( 1, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ) ) );
 
         indexer.add( rec1 );
         indexer.add( rec2 );
@@ -490,7 +498,7 @@ public class TimelineIndexerTest
         subTypes.add( "subX" );
         subTypes.add( "subY" );
         assertEquals( 5, indexer.purge( 0, System.currentTimeMillis(), types, subTypes ) );
-        assertEquals( 0, indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ).size() );
+        assertEquals( 0, sizeOf( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, null ) ) );
     }
 
     public void testSearchWithPagination()
@@ -506,23 +514,23 @@ public class TimelineIndexerTest
 
             indexer.add( rec );
         }
-        List<Map<String, String>> results;
-        results = indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 10, null );
+        List<TimelineRecord> results;
+        results = asList( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 10, null ) );
         assertEquals( 10, results.size() );
-        assertEquals( "0", results.get( 0 ).get( key ) );
-        assertEquals( "9", results.get( 9 ).get( key ) );
+        assertEquals( "0", results.get( 0 ).getData().get( key ) );
+        assertEquals( "9", results.get( 9 ).getData().get( key ) );
 
-        results = indexer.retrieve( 0, System.currentTimeMillis(), null, null, 10, 10, null );
+        results = asList( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 10, 10, null ) );
         assertEquals( 10, results.size() );
-        assertEquals( "10", results.get( 0 ).get( key ) );
-        assertEquals( "19", results.get( 9 ).get( key ) );
+        assertEquals( "10", results.get( 0 ).getData().get( key ) );
+        assertEquals( "19", results.get( 9 ).getData().get( key ) );
 
-        results = indexer.retrieve( 0, System.currentTimeMillis(), null, null, 20, 10, null );
+        results = asList( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 20, 10, null ) );
         assertEquals( 10, results.size() );
-        assertEquals( "20", results.get( 0 ).get( key ) );
-        assertEquals( "29", results.get( 9 ).get( key ) );
+        assertEquals( "20", results.get( 0 ).getData().get( key ) );
+        assertEquals( "29", results.get( 9 ).getData().get( key ) );
 
-        results = indexer.retrieve( 0, System.currentTimeMillis(), null, null, 30, 10, null );
+        results = asList( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 30, 10, null ) );
         assertEquals( 0, results.size() );
     }
 
@@ -546,45 +554,45 @@ public class TimelineIndexerTest
         indexer.add( rec4 );
         indexer.add( rec5 );
 
-        List<Map<String, String>> results;
+        List<TimelineRecord> results;
 
-        results = indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, new TimelineFilter()
+        results = asList( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, new TimelineFilter()
         {
-            public boolean accept( Map<String, String> hit )
+            public boolean accept( TimelineRecord hit )
             {
-                if ( hit.containsKey( "key" ) )
+                if ( hit.getData().containsKey( "key" ) )
                 {
                     return true;
                 }
                 return false;
             }
-        } );
+        } ) );
         assertEquals( 4, results.size() );
 
-        results = indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, new TimelineFilter()
+        results = asList( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, new TimelineFilter()
         {
-            public boolean accept( Map<String, String> hit )
+            public boolean accept( TimelineRecord hit )
             {
-                if ( hit.containsKey( "key" ) && hit.get( "key" ).startsWith( "a" ) )
+                if ( hit.getData().containsKey( "key" ) && hit.getData().get( "key" ).startsWith( "a" ) )
                 {
                     return true;
                 }
                 return false;
             }
-        } );
+        } ) );
         assertEquals( 3, results.size() );
 
-        results = indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, new TimelineFilter()
+        results = asList( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 100, new TimelineFilter()
         {
-            public boolean accept( Map<String, String> hit )
+            public boolean accept( TimelineRecord hit )
             {
-                if ( hit.containsKey( "key" ) && hit.get( "key" ).startsWith( "b" ) )
+                if ( hit.getData().containsKey( "key" ) && hit.getData().get( "key" ).startsWith( "b" ) )
                 {
                     return true;
                 }
                 return false;
             }
-        } );
+        } ) );
         assertEquals( 1, results.size() );
     }
 
@@ -604,11 +612,11 @@ public class TimelineIndexerTest
 
         TimelineFilter filter = new TimelineFilter()
         {
-            public boolean accept( Map<String, String> hit )
+            public boolean accept( TimelineRecord hit )
             {
-                if ( hit.containsKey( "count" ) )
+                if ( hit.getData().containsKey( "count" ) )
                 {
-                    int v = Integer.parseInt( hit.get( "count" ) );
+                    int v = Integer.parseInt( hit.getData().get( "count" ) );
 
                     if ( v % 2 == 0 )
                     {
@@ -623,15 +631,15 @@ public class TimelineIndexerTest
 
         };
 
-        List<Map<String, String>> results;
-        results = indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 10, filter );
+        List<TimelineRecord> results;
+        results = asList( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 0, 10, filter ) );
         assertEquals( 10, results.size() );
-        assertEquals( "0", results.get( 0 ).get( key ) );
-        assertEquals( "18", results.get( 9 ).get( key ) );
+        assertEquals( "0", results.get( 0 ).getData().get( key ) );
+        assertEquals( "18", results.get( 9 ).getData().get( key ) );
 
-        results = indexer.retrieve( 0, System.currentTimeMillis(), null, null, 10, 10, filter );
+        results = asList( indexer.retrieve( 0, System.currentTimeMillis(), null, null, 10, 10, filter ) );
         assertEquals( 5, results.size() );
-        assertEquals( "20", results.get( 0 ).get( key ) );
-        assertEquals( "28", results.get( 4 ).get( key ) );
+        assertEquals( "20", results.get( 0 ).getData().get( key ) );
+        assertEquals( "28", results.get( 4 ).getData().get( key ) );
     }
 }

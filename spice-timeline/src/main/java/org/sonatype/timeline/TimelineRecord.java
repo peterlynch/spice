@@ -29,17 +29,11 @@ public class TimelineRecord
     {
         this.timestamp = timestamp;
 
-        this.type = type;
+        this.type = type == null ? "" : type;
 
-        this.subType = subType;
+        this.subType = subType == null ? "" : subType;
 
-        this.data = data;
-
-        this.type = this.type == null ? "" : this.type;
-
-        this.subType = this.subType == null ? "" : this.subType;
-
-        this.data = this.data == null ? new HashMap<String, String>() : this.data;
+        this.data = data == null ? new HashMap<String, String>() : data;
     }
 
     public long getTimestamp()

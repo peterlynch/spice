@@ -13,9 +13,9 @@
 package org.sonatype.timeline.filter;
 
 import java.util.List;
-import java.util.Map;
 
 import org.sonatype.timeline.TimelineFilter;
+import org.sonatype.timeline.TimelineRecord;
 
 public class AndTimelineFilter
     extends MultiTimelineFilter
@@ -30,7 +30,7 @@ public class AndTimelineFilter
         super( terms );
     }
 
-    public boolean accept( Map<String, String> hit )
+    public boolean accept( TimelineRecord hit )
     {
         for ( TimelineFilter term : getTerms() )
         {

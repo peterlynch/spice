@@ -2,7 +2,8 @@
 	<parent>
 		<artifactId>spice-parent</artifactId>
 		<groupId>org.sonatype.spice</groupId>
-		<version>15</version>
+		<version>16</version>
+		<relativePath />
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.sonatype.spice</groupId>

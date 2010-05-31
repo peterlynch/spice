@@ -12,10 +12,10 @@
  */
 package org.sonatype.timeline;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,7 +64,7 @@ public class DefaultTimelineIndexer
 
     private IndexSearcher indexSearcher;
 
-    public void configure( File indexDirectory )
+    public void configure( TimelineConfiguration configuration )
         throws TimelineException
     {
         try
@@ -78,7 +78,7 @@ public class DefaultTimelineIndexer
                     directory.close();
                 }
 
-                directory = FSDirectory.getDirectory( indexDirectory );
+                directory = FSDirectory.getDirectory( configuration.getIndexDirectory() );
 
                 if ( IndexReader.indexExists( directory ) )
                 {
@@ -90,7 +90,7 @@ public class DefaultTimelineIndexer
                     newIndex = false;
                 }
 
-                indexWriter = new IndexWriter( indexDirectory, new KeywordAnalyzer(), newIndex );
+                indexWriter = new IndexWriter( configuration.getIndexDirectory(), new KeywordAnalyzer(), newIndex );
 
                 closeIndexWriter();
             }
@@ -224,12 +224,37 @@ public class DefaultTimelineIndexer
         }
     }
 
+    public void addAll( TimelineResult res )
+        throws TimelineException
+    {
+        IndexWriter writer = null;
+
+        try
+        {
+            synchronized ( this )
+            {
+                writer = getIndexWriter();
+
+                for ( TimelineRecord rec : res )
+                {
+                    writer.addDocument( createDocument( rec ) );
+                }
+
+                closeIndexWriter();
+            }
+        }
+        catch ( IOException e )
+        {
+            throw new TimelineException( "Fail to add a record to the timeline index", e );
+        }
+    }
+
     private Document createDocument( TimelineRecord record )
     {
         Document doc = new Document();
 
         doc.add( new Field( TIMESTAMP, DateTools.timeToString( record.getTimestamp(), DateTools.Resolution.MINUTE ),
-                            Field.Store.NO, Field.Index.UN_TOKENIZED ) );
+            Field.Store.NO, Field.Index.UN_TOKENIZED ) );
 
         doc.add( new Field( TYPE, record.getType(), Field.Store.NO, Field.Index.UN_TOKENIZED ) );
 
@@ -248,16 +273,15 @@ public class DefaultTimelineIndexer
         if ( isEmptySet( types ) && isEmptySet( subTypes ) )
         {
             return new ConstantScoreRangeQuery( TIMESTAMP, DateTools.timeToString( from, DateTools.Resolution.MINUTE ),
-                                                DateTools.timeToString( to, DateTools.Resolution.MINUTE ), true, true );
+                DateTools.timeToString( to, DateTools.Resolution.MINUTE ), true, true );
         }
         else
         {
             BooleanQuery result = new BooleanQuery();
 
             result.add( new ConstantScoreRangeQuery( TIMESTAMP, DateTools.timeToString( from,
-                                                                                        DateTools.Resolution.MINUTE ),
-                                                     DateTools.timeToString( to, DateTools.Resolution.MINUTE ), true,
-                                                     true ), Occur.MUST );
+                DateTools.Resolution.MINUTE ), DateTools.timeToString( to, DateTools.Resolution.MINUTE ), true, true ),
+                Occur.MUST );
 
             if ( !isEmptySet( types ) )
             {
@@ -290,11 +314,11 @@ public class DefaultTimelineIndexer
         return set == null || set.size() == 0;
     }
 
-    public List<Map<String, String>> retrieve( long fromTime, long toTime, Set<String> types, Set<String> subTypes,
-                                               int from, int count, TimelineFilter filter )
+    public TimelineResult retrieve( long fromTime, long toTime, Set<String> types, Set<String> subTypes, int from,
+                                    int count, TimelineFilter filter )
         throws TimelineException
     {
-        List<Map<String, String>> result = new ArrayList<Map<String, String>>();
+        List<TimelineRecord> result = new ArrayList<TimelineRecord>();
 
         int NumberToSkip = from;
 
@@ -308,13 +332,12 @@ public class DefaultTimelineIndexer
                 {
                     closeIndexReaderAndSearcher();
 
-                    return result;
+                    return TimelineResult.EMPTY_RESULT;
                 }
 
                 TopFieldDocs topDocs =
                     getIndexSearcher().search( buildQuery( fromTime, toTime, types, subTypes ), null,
-                                               searcher.maxDoc(),
-                                               new Sort( new SortField( TIMESTAMP, SortField.LONG, true ) ) );
+                        searcher.maxDoc(), new Sort( new SortField( TIMESTAMP, SortField.LONG, true ) ) );
 
                 for ( int i = 0; i < topDocs.scoreDocs.length; i++ )
                 {
@@ -325,7 +348,7 @@ public class DefaultTimelineIndexer
 
                     Document doc = getIndexSearcher().doc( topDocs.scoreDocs[i].doc );
 
-                    Map<String, String> data = buildData( doc );
+                    TimelineRecord data = buildData( doc );
 
                     if ( filter != null && !filter.accept( data ) )
                     {
@@ -351,21 +374,55 @@ public class DefaultTimelineIndexer
             throw new TimelineException( "Failed to retrieve records from the timeline index!", e );
         }
 
-        return result;
+        return new IndexerTimelineResult( result.iterator() );
+    }
+
+    public static class IndexerTimelineResult
+        extends TimelineResult
+    {
+        private final Iterator<TimelineRecord> records;
+
+        public IndexerTimelineResult( Iterator<TimelineRecord> records )
+        {
+            this.records = records;
+        }
+
+        @Override
+        protected TimelineRecord fetchNextRecord()
+        {
+            if ( records.hasNext() )
+            {
+                return records.next();
+            }
+            else
+            {
+                return null;
+            }
+        }
+
     }
 
     @SuppressWarnings( "unchecked" )
-    private Map<String, String> buildData( Document doc )
+    private TimelineRecord buildData( Document doc )
     {
-        Map<String, String> result = new HashMap<String, String>();
+        long timestamp = -1;
+
+        String type = null;
+
+        String subType = null;
+
+        Map<String, String> data = new HashMap<String, String>();
+
+        TimelineRecord result = new TimelineRecord( timestamp, type, subType, data );
 
         for ( Field field : (List<Field>) doc.getFields() )
         {
             if ( !field.name().startsWith( "_" ) )
             {
-                result.put( field.name(), field.stringValue() );
+                data.put( field.name(), field.stringValue() );
             }
         }
+
         return result;
     }
 

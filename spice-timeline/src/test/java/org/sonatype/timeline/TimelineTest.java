@@ -60,10 +60,10 @@ public class TimelineTest
 
         Set<String> types = new HashSet<String>();
         types.add( "typeA" );
-        List<Map<String, String>> results = timeline.retrieveNewest( 10, types );
+        List<TimelineRecord> results = asList( timeline.retrieveNewest( 10, types ) );
 
         assertEquals( 1, results.size() );
-        assertEquals( data, results.get( 0 ) );
+        assertEquals( data, results.get( 0 ).getData() );
     }
 
     public void testPurge()
@@ -80,23 +80,21 @@ public class TimelineTest
         timeline.add( 3000000L, type, null, data );
         timeline.add( 4000000L, type, null, data );
 
-        assertEquals( 4, timeline.retrieve( 0, 10, null ).size() );
+        assertEquals( 4, sizeOf( timeline.retrieve( 0, 10, null ) ) );
         assertEquals( 3, timeline.purgeOlderThan( 3500000L ) );
-        assertEquals( 1, timeline.retrieve( 0, 10, null ).size() );
+        assertEquals( 1, sizeOf( timeline.retrieve( 0, 10, null ) ) );
         assertEquals( 1, timeline.purgeAll() );
-        assertEquals( 0, timeline.retrieve( 0, 10, null ).size() );
+        assertEquals( 0, sizeOf( timeline.retrieve( 0, 10, null ) ) );
     }
 
     public void testRepairIndexCouldNotRead()
         throws Exception
     {
         // here we use data produced by testSimpleAddAndRetrieve(), but the index file is crashed (manually edited)
-        File crashedPersistDir = new File(
-            PlexusTestCase.getBasedir(),
-            "target/test-classes/crashed-could-not-read/persist" );
-        File carshedIndexDir = new File(
-            PlexusTestCase.getBasedir(),
-            "target/test-classes/crashed-could-not-read/index" );
+        File crashedPersistDir =
+            new File( PlexusTestCase.getBasedir(), "target/test-classes/crashed-could-not-read/persist" );
+        File carshedIndexDir =
+            new File( PlexusTestCase.getBasedir(), "target/test-classes/crashed-could-not-read/index" );
         FileUtils.copyDirectoryStructure( crashedPersistDir, persistDirectory );
         FileUtils.copyDirectoryStructure( carshedIndexDir, indexDirectory );
 
@@ -109,39 +107,35 @@ public class TimelineTest
 
         Set<String> types = new HashSet<String>();
         types.add( "typeA" );
-        List<Map<String, String>> results = timeline.retrieveNewest( 10, types );
+        List<TimelineRecord> results = asList( timeline.retrieveNewest( 10, types ) );
 
         assertEquals( 1, results.size() );
-        assertEquals( data, results.get( 0 ) );
+        assertEquals( data, results.get( 0 ).getData() );
     }
 
     public void testRepairIndexCouldNotRetrieve()
         throws Exception
     {
-        File crashedPersistDir = new File(
-            PlexusTestCase.getBasedir(),
-            "target/test-classes/crashed-could-not-retrieve/persist" );
-        File carshedIndexDir = new File(
-            PlexusTestCase.getBasedir(),
-            "target/test-classes/crashed-could-not-retrieve/index" );
+        File crashedPersistDir =
+            new File( PlexusTestCase.getBasedir(), "target/test-classes/crashed-could-not-retrieve/persist" );
+        File carshedIndexDir =
+            new File( PlexusTestCase.getBasedir(), "target/test-classes/crashed-could-not-retrieve/index" );
         FileUtils.copyDirectoryStructure( crashedPersistDir, persistDirectory );
         FileUtils.copyDirectoryStructure( carshedIndexDir, indexDirectory );
 
         timeline.configure( new TimelineConfiguration( persistDirectory, indexDirectory ) );
 
-        assertTrue( timeline.retrieveNewest( 10, null ).size() > 0 );
+        assertTrue( sizeOf( timeline.retrieveNewest( 10, null ) ) > 0 );
     }
 
     public void testRepairIndexCouldNotAdd()
         throws Exception
     {
         File persistDir = new File( PlexusTestCase.getBasedir(), "target/test-classes/crashed-could-not-add/persist" );
-        File goodIndexDir = new File(
-            PlexusTestCase.getBasedir(),
-            "target/test-classes/crashed-could-not-add/index-good" );
-        File crashedIndexDir = new File(
-            PlexusTestCase.getBasedir(),
-            "target/test-classes/crashed-could-not-add/index-broken" );
+        File goodIndexDir =
+            new File( PlexusTestCase.getBasedir(), "target/test-classes/crashed-could-not-add/index-good" );
+        File crashedIndexDir =
+            new File( PlexusTestCase.getBasedir(), "target/test-classes/crashed-could-not-add/index-broken" );
         FileUtils.copyDirectoryStructure( persistDir, persistDirectory );
         FileUtils.copyDirectoryStructure( goodIndexDir, indexDirectory );
 
@@ -162,12 +156,10 @@ public class TimelineTest
         throws Exception
     {
         File persistDir = new File( PlexusTestCase.getBasedir(), "target/test-classes/crashed-could-not-purge/persist" );
-        File goodIndexDir = new File(
-            PlexusTestCase.getBasedir(),
-            "target/test-classes/crashed-could-not-purge/index-good" );
-        File crashedIndexDir = new File(
-            PlexusTestCase.getBasedir(),
-            "target/test-classes/crashed-could-not-purge/index-broken" );
+        File goodIndexDir =
+            new File( PlexusTestCase.getBasedir(), "target/test-classes/crashed-could-not-purge/index-good" );
+        File crashedIndexDir =
+            new File( PlexusTestCase.getBasedir(), "target/test-classes/crashed-could-not-purge/index-broken" );
         FileUtils.copyDirectoryStructure( persistDir, persistDirectory );
         FileUtils.copyDirectoryStructure( goodIndexDir, indexDirectory );
 

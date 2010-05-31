@@ -22,6 +22,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -35,7 +36,8 @@ import org.sonatype.timeline.proto.TimeLineRecordProtos;
 public class DefaultTimelinePersistor
     implements TimelinePersistor
 {
-    public static final String DATA_FILE_NAME_PATTERN = "^timeline\\.\\d{4}-\\d{2}-\\d{2}\\.\\d{2}-\\d{2}-\\d{2}\\.dat$";
+    public static final String DATA_FILE_NAME_PATTERN =
+        "^timeline\\.\\d{4}-\\d{2}-\\d{2}\\.\\d{2}-\\d{2}-\\d{2}\\.dat$";
 
     private int rollingInterval;
 
@@ -45,28 +47,23 @@ public class DefaultTimelinePersistor
 
     private File lastRolledFile;
 
-    public void configure( File persistDirectory )
+    public void configure( TimelineConfiguration config )
     {
-        configure( persistDirectory, DEFAULT_ROLLING_INTERVAL );
-    }
-
-    public void configure( File persistDirectory, int rollingInterval )
-    {
-        this.persistDirectory = persistDirectory;
+        this.persistDirectory = config.getPersistDirectory();
 
         if ( !this.persistDirectory.exists() )
         {
             this.persistDirectory.mkdirs();
         }
 
-        this.rollingInterval = rollingInterval;
+        this.rollingInterval = config.getPersistRollingInterval();
     }
 
     public void persist( TimelineRecord record )
         throws TimelineException
     {
         verify( record );
-        
+
         OutputStream out = null;
 
         synchronized ( this )
@@ -102,68 +99,123 @@ public class DefaultTimelinePersistor
         }
     }
 
-    private List<TimelineRecord> readFile( File file )
+    public TimelineResult readAll()
         throws TimelineException
     {
-        List<TimelineRecord> result = new ArrayList<TimelineRecord>();
+        return new PersistorTimelineResult( persistDirectory.listFiles() );
+    }
 
-        synchronized ( this )
+    private static class PersistorTimelineResult
+        extends TimelineResult
+    {
+        private final File[] fromFiles;
+
+        private int filePtr;
+
+        private Iterator<TimelineRecord> currentIterator;
+
+        public PersistorTimelineResult( File[] files )
         {
-            InputStream in = null;
+            this.fromFiles = files;
 
-            try
+            this.filePtr = 0;
+
+            this.currentIterator = null;
+        }
+
+        @Override
+        protected TimelineRecord fetchNextRecord()
+        {
+            if ( currentIterator != null && currentIterator.hasNext() )
             {
-                in = new FileInputStream( file );
-
-                while ( in.available() > 0 )
+                return currentIterator.next();
+            }
+            else if ( filePtr >= fromFiles.length )
+            {
+                // no more
+                return null;
+            }
+            else
+            {
+                try
                 {
-                    int length = in.read();
+                    currentIterator = readFile( fromFiles[filePtr] );
 
-                    byte[] bytes = new byte[length];
-
-                    in.read( bytes, 0, length );
-
-                    result.add( fromProto( TimeLineRecordProtos.TimeLineRecord.parseFrom( bytes ) ) );
+                    filePtr++;
+                }
+                catch ( TimelineException e )
+                {
+                    // skip it?
+                    // throw new IllegalStateException( "Cannot fetch next iterator from file: " + fromFiles[filePtr], e );
+                    filePtr++;
                 }
 
-            }
-            catch ( Exception e )
-            {
-                throw new TimelineException( "Failed to read timeline record from data file!", e );
-            }
-            finally
-            {
-                if ( in != null )
-                {
-                    try
-                    {
-                        in.close();
-                    }
-                    catch ( IOException e )
-                    {
-                    }
-                }
+                return fetchNextRecord();
             }
         }
 
-        return result;
-    }
-
-    public List<TimelineRecord> readAll()
-        throws TimelineException
-    {
-        List<TimelineRecord> result = new ArrayList<TimelineRecord>();
-
-        for ( File file : persistDirectory.listFiles() )
+        private Iterator<TimelineRecord> readFile( File file )
+            throws TimelineException
         {
-            if ( file.getName().matches( DATA_FILE_NAME_PATTERN ) )
+            List<TimelineRecord> result = new ArrayList<TimelineRecord>();
+
+            synchronized ( this )
             {
-                result.addAll( readFile( file ) );
+                InputStream in = null;
+
+                try
+                {
+                    in = new FileInputStream( file );
+
+                    while ( in.available() > 0 )
+                    {
+                        int length = in.read();
+
+                        byte[] bytes = new byte[length];
+
+                        in.read( bytes, 0, length );
+
+                        result.add( fromProto( TimeLineRecordProtos.TimeLineRecord.parseFrom( bytes ) ) );
+                    }
+
+                }
+                catch ( Exception e )
+                {
+                    throw new TimelineException( "Failed to read timeline record from data file!", e );
+                }
+                finally
+                {
+                    if ( in != null )
+                    {
+                        try
+                        {
+                            in.close();
+                        }
+                        catch ( IOException e )
+                        {
+                        }
+                    }
+                }
             }
+
+            return result.iterator();
         }
 
-        return result;
+        private TimelineRecord fromProto( TimeLineRecordProtos.TimeLineRecord rec )
+        {
+            Map<String, String> dataMap = new HashMap<String, String>();
+
+            for ( TimeLineRecordProtos.TimeLineRecord.Data data : rec.getDataList() )
+            {
+                dataMap.put( data.getKey(), data.getValue() );
+            }
+
+            return new TimelineRecord( rec.getTimestamp(), rec.getType(), rec.getSubType(), dataMap );
+        }
+
     }
+
+    // ==
 
     private File getDataFile()
         throws IOException
@@ -212,18 +264,6 @@ public class DefaultTimelinePersistor
         return builder.build();
     }
 
-    private TimelineRecord fromProto( TimeLineRecordProtos.TimeLineRecord rec )
-    {
-        Map<String, String> dataMap = new HashMap<String, String>();
-
-        for ( TimeLineRecordProtos.TimeLineRecord.Data data : rec.getDataList() )
-        {
-            dataMap.put( data.getKey(), data.getValue() );
-        }
-
-        return new TimelineRecord( rec.getTimestamp(), rec.getType(), rec.getSubType(), dataMap );
-    }
-    
     private void verify( TimelineRecord record )
         throws TimelineException
     {

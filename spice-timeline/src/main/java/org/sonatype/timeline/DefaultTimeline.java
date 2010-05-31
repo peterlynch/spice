@@ -13,9 +13,7 @@
 package org.sonatype.timeline;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,11 +40,11 @@ public class DefaultTimeline
     {
         this.configuration = config;
 
-        persistor.configure( config.getPersistDirectory(), config.getPersistRollingInterval() );
+        persistor.configure( config );
 
         try
         {
-            indexer.configure( config.getIndexDirectory() );
+            indexer.configure( config );
         }
         catch ( TimelineException e )
         {
@@ -76,12 +74,9 @@ public class DefaultTimeline
                 + configuration.getIndexDirectory().getAbsolutePath(), e );
         }
 
-        indexer.configure( configuration.getIndexDirectory() );
+        indexer.configure( configuration );
 
-        for ( TimelineRecord record : persistor.readAll() )
-        {
-            indexer.add( record );
-        }
+        indexer.addAll( persistor.readAll() );
     }
 
     public void add( long timestamp, String type, String subType, Map<String, String> data )
@@ -206,30 +201,30 @@ public class DefaultTimeline
         return purge( 0L, timestamp, types, subTypes );
     }
 
-    public List<Map<String, String>> retrieve( long fromTs, int count, Set<String> types )
+    public TimelineResult retrieve( long fromTs, int count, Set<String> types )
     {
         return retrieve( fromTs, count, types, null, null );
     }
 
-    public List<Map<String, String>> retrieve( long fromTs, int count, Set<String> types, Set<String> subTypes,
-        TimelineFilter filter )
+    public TimelineResult retrieve( long fromTs, int count, Set<String> types, Set<String> subTypes,
+                                    TimelineFilter filter )
     {
         return retrieve( fromTs, System.currentTimeMillis(), types, subTypes, 0, count, filter );
     }
 
-    public List<Map<String, String>> retrieve( int fromItem, int count, Set<String> types )
+    public TimelineResult retrieve( int fromItem, int count, Set<String> types )
     {
         return retrieve( fromItem, count, types, null, null );
     }
 
-    public List<Map<String, String>> retrieve( int fromItem, int count, Set<String> types, Set<String> subTypes,
-        TimelineFilter filter )
+    public TimelineResult retrieve( int fromItem, int count, Set<String> types, Set<String> subTypes,
+                                    TimelineFilter filter )
     {
         return retrieve( 0L, System.currentTimeMillis(), types, subTypes, fromItem, count, filter );
     }
 
-    private List<Map<String, String>> retrieve( long fromTime, long toTime, Set<String> types, Set<String> subTypes,
-        int from, int count, TimelineFilter filter )
+    private TimelineResult retrieve( long fromTime, long toTime, Set<String> types, Set<String> subTypes, int from,
+                                     int count, TimelineFilter filter )
     {
         try
         {
@@ -258,17 +253,16 @@ public class DefaultTimeline
         {
             getLogger().warn( "Unable to retrieve data from timeline!", e );
 
-            return new ArrayList<Map<String, String>>();
+            return TimelineResult.EMPTY_RESULT;
         }
     }
 
-    public List<Map<String, String>> retrieveNewest( int count, Set<String> types )
+    public TimelineResult retrieveNewest( int count, Set<String> types )
     {
         return retrieveNewest( count, types, null, null );
     }
 
-    public List<Map<String, String>> retrieveNewest( int count, Set<String> types, Set<String> subTypes,
-        TimelineFilter filter )
+    public TimelineResult retrieveNewest( int count, Set<String> types, Set<String> subTypes, TimelineFilter filter )
     {
         return retrieve( 0L, System.currentTimeMillis(), types, subTypes, 0, count, filter );
     }

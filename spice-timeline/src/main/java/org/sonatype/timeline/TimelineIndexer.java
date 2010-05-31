@@ -12,17 +12,17 @@
  */
 package org.sonatype.timeline;
 
-import java.io.File;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 public interface TimelineIndexer
 {
-    void configure( File indexDirectory )
+    void configure( TimelineConfiguration config )
         throws TimelineException;
 
     void add( TimelineRecord record )
+        throws TimelineException;
+
+    void addAll( TimelineResult records )
         throws TimelineException;
 
     /**
@@ -37,8 +37,8 @@ public interface TimelineIndexer
      * @param filter used to filter the result
      * @return search result, ordered by timestamp (the minimum unit is minute)
      */
-    List<Map<String, String>> retrieve( long fromTime, long toTime, Set<String> types, Set<String> subTypes, int from,
-        int count, TimelineFilter filter )
+    TimelineResult retrieve( long fromTime, long toTime, Set<String> types, Set<String> subTypes, int from, int count,
+                             TimelineFilter filter )
         throws TimelineException;
 
     /**

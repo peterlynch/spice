@@ -12,9 +12,6 @@
  */
 package org.sonatype.timeline;
 
-import java.io.File;
-import java.util.List;
-
 /**
  * Persist the TimelineRecord
  * 
@@ -23,19 +20,13 @@ import java.util.List;
 public interface TimelinePersistor
 {
     public static final int DEFAULT_ROLLING_INTERVAL = 60 * 60 * 24;
-    
-    void configure( File persistDirectory );
 
-    /**
-     * TimelinePersistor must be configured before being used.
-     * @param persistDirectory the place to put the persistent file
-     * @param rollingInterval the interval for rolling the persistent file (seconds)
-     */
-    public void configure( File persistDirectory, int rollingInterval );
-    
+    void configure( TimelineConfiguration config )
+        throws TimelineException;
+
     void persist( TimelineRecord record )
         throws TimelineException;
 
-    List<TimelineRecord> readAll()
+    TimelineResult readAll()
         throws TimelineException;
 }

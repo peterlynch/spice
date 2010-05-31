@@ -35,7 +35,7 @@ public class TimelinePersistorTest
 
         cleanDirectory( persistDirectory );
 
-        persistor.configure( persistDirectory );
+        persistor.configure( new TimelineConfiguration( persistDirectory, null ) );
     }
 
     public void testPersistSingleRecord()
@@ -45,7 +45,7 @@ public class TimelinePersistorTest
 
         persistor.persist( record );
 
-        List<TimelineRecord> results = persistor.readAll();
+        List<TimelineRecord> results = asList( persistor.readAll() );
 
         assertEquals( 1, results.size() );
         assertEquals( record.getTimestamp(), results.get( 0 ).getTimestamp() );
@@ -86,7 +86,7 @@ public class TimelinePersistorTest
         persistor.persist( record1 );
         persistor.persist( record2 );
 
-        List<TimelineRecord> results = persistor.readAll();
+        List<TimelineRecord> results = asList( persistor.readAll() );
 
         assertEquals( 2, results.size() );
 
@@ -111,13 +111,13 @@ public class TimelinePersistorTest
             persistor.persist( createTimelineRecord() );
         }
 
-        assertEquals( count, persistor.readAll().size() );
+        assertEquals( count, sizeOf( persistor.readAll() ) );
     }
 
     public void testRolling()
         throws Exception
     {
-        persistor.configure( persistDirectory, 1 );
+        persistor.configure( new TimelineConfiguration( persistDirectory, null, 1 ) );
 
         persistor.persist( createTimelineRecord() );
         persistor.persist( createTimelineRecord() );
@@ -128,7 +128,7 @@ public class TimelinePersistorTest
 
         assertEquals( 2, persistDirectory.listFiles().length );
 
-        assertEquals( 3, persistor.readAll().size() );
+        assertEquals( 3, sizeOf( persistor.readAll() ) );
     }
 
     public void testIllegalDataFile()
@@ -140,9 +140,9 @@ public class TimelinePersistorTest
 
         FileUtils.fileWrite( badFile.getAbsolutePath(), "some bad data" );
 
-        assertEquals( 1, persistor.readAll().size() );
+        assertEquals( 1, sizeOf( persistor.readAll() ) );
     }
-    
+
     public void testDataKeyNull()
         throws Exception
     {
@@ -180,7 +180,7 @@ public class TimelinePersistorTest
             // expected
         }
     }
-    
+
     public void testDataKeyEmpty()
         throws Exception
     {
@@ -200,7 +200,7 @@ public class TimelinePersistorTest
 
         persistor.persist( record );
     }
-    
+
     public void testSubTypeNull()
         throws Exception
     {
@@ -210,7 +210,7 @@ public class TimelinePersistorTest
 
         persistor.persist( record );
     }
-    
+
     public void testTypeNull()
         throws Exception
     {
@@ -220,7 +220,7 @@ public class TimelinePersistorTest
 
         persistor.persist( record );
     }
-    
+
     public void testDataNull()
         throws Exception
     {

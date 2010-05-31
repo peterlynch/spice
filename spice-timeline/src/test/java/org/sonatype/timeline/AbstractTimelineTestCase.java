@@ -13,7 +13,9 @@
 package org.sonatype.timeline;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.codehaus.plexus.PlexusTestCase;
@@ -59,5 +61,35 @@ public abstract class AbstractTimelineTestCase
         data.put( "k3", "v3" );
 
         return new TimelineRecord( System.currentTimeMillis(), "type", "subType", data );
+    }
+
+    /**
+     * Handy method that does what was done before: keeps all in memory, but this is usable for small amount of data,
+     * like these in UT.
+     * 
+     * @param result
+     * @return
+     */
+    protected List<TimelineRecord> asList( TimelineResult result )
+    {
+        ArrayList<TimelineRecord> records = new ArrayList<TimelineRecord>();
+
+        for ( TimelineRecord rec : result )
+        {
+            records.add( rec );
+        }
+
+        return records;
+    }
+
+    /**
+     * Shortcut method to get the size of result.
+     * 
+     * @param result
+     * @return
+     */
+    protected int sizeOf( TimelineResult result )
+    {
+        return asList( result ).size();
     }
 }
