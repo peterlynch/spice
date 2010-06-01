@@ -13,6 +13,7 @@
 package org.sonatype.timeline;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -24,6 +25,7 @@ import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.DateTools.Resolution;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
@@ -55,6 +57,8 @@ public class DefaultTimelineIndexer
     private static final String TYPE = "_1";
 
     private static final String SUBTYPE = "_2";
+
+    private static final Resolution TIMELINE_RESOLUTION = Resolution.SECOND;
 
     private Directory directory;
 
@@ -253,12 +257,12 @@ public class DefaultTimelineIndexer
     {
         Document doc = new Document();
 
-        doc.add( new Field( TIMESTAMP, DateTools.timeToString( record.getTimestamp(), DateTools.Resolution.MINUTE ),
-            Field.Store.NO, Field.Index.UN_TOKENIZED ) );
+        doc.add( new Field( TIMESTAMP, DateTools.timeToString( record.getTimestamp(), TIMELINE_RESOLUTION ),
+            Field.Store.YES, Field.Index.UN_TOKENIZED ) );
 
-        doc.add( new Field( TYPE, record.getType(), Field.Store.NO, Field.Index.UN_TOKENIZED ) );
+        doc.add( new Field( TYPE, record.getType(), Field.Store.YES, Field.Index.UN_TOKENIZED ) );
 
-        doc.add( new Field( SUBTYPE, record.getSubType(), Field.Store.NO, Field.Index.UN_TOKENIZED ) );
+        doc.add( new Field( SUBTYPE, record.getSubType(), Field.Store.YES, Field.Index.UN_TOKENIZED ) );
 
         for ( String key : record.getData().keySet() )
         {
@@ -272,16 +276,15 @@ public class DefaultTimelineIndexer
     {
         if ( isEmptySet( types ) && isEmptySet( subTypes ) )
         {
-            return new ConstantScoreRangeQuery( TIMESTAMP, DateTools.timeToString( from, DateTools.Resolution.MINUTE ),
-                DateTools.timeToString( to, DateTools.Resolution.MINUTE ), true, true );
+            return new ConstantScoreRangeQuery( TIMESTAMP, DateTools.timeToString( from, TIMELINE_RESOLUTION ),
+                DateTools.timeToString( to, TIMELINE_RESOLUTION ), true, true );
         }
         else
         {
             BooleanQuery result = new BooleanQuery();
 
-            result.add( new ConstantScoreRangeQuery( TIMESTAMP, DateTools.timeToString( from,
-                DateTools.Resolution.MINUTE ), DateTools.timeToString( to, DateTools.Resolution.MINUTE ), true, true ),
-                Occur.MUST );
+            result.add( new ConstantScoreRangeQuery( TIMESTAMP, DateTools.timeToString( from, TIMELINE_RESOLUTION ),
+                DateTools.timeToString( to, TIMELINE_RESOLUTION ), true, true ), Occur.MUST );
 
             if ( !isEmptySet( types ) )
             {
@@ -408,9 +411,24 @@ public class DefaultTimelineIndexer
     {
         long timestamp = -1;
 
-        String type = null;
+        String tsString = doc.get( TIMESTAMP );
 
-        String subType = null;
+        if ( tsString != null )
+        {
+            // legacy indexes will have nulls here
+            try
+            {
+                timestamp = DateTools.stringToTime( doc.get( TIMESTAMP ) );
+            }
+            catch ( ParseException e )
+            {
+                // leave it -1
+            }
+        }
+
+        String type = doc.get( TYPE );
+
+        String subType = doc.get( SUBTYPE );
 
         Map<String, String> data = new HashMap<String, String>();
 
