@@ -356,6 +356,7 @@ public class DefaultTimelineIndexer
                     }
 
                     // skip the unneeded stuff
+                    // Warning: this means we skip the needed FILTERED stuff out!
                     if ( NumberToSkip > 0 )
                     {
                         NumberToSkip--;

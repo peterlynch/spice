@@ -63,7 +63,7 @@ public abstract class TimelineResult
 
     public void remove()
     {
-        throw new UnsupportedOperationException( "This opeation is not supported on TimelineResult!" );
+        throw new UnsupportedOperationException( "This operation is not supported on TimelineResult!" );
     }
 
     // ==
