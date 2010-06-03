@@ -16,7 +16,7 @@
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
 					<archive>
-						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+						<manifestFile>${project.basedir}/META-INF/MANIFEST.MF</manifestFile>
 					</archive>
 				</configuration>
 			</plugin>
@@ -42,6 +42,9 @@
 						</goals>
 					</execution>
 				</executions>
+                <configuration>
+                   <manifestLocation>META-INF</manifestLocation>
+                </configuration>
 			</plugin>
 	      <plugin>
 	        <groupId>org.maven.ide.eclipse</groupId>
