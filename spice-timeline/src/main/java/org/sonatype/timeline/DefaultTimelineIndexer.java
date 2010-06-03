@@ -14,9 +14,7 @@ package org.sonatype.timeline;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,9 +27,9 @@ import org.apache.lucene.document.DateTools.Resolution;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.ConstantScoreRangeQuery;
-import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
@@ -86,15 +84,17 @@ public class DefaultTimelineIndexer
 
                 if ( IndexReader.indexExists( directory ) )
                 {
-                    if ( IndexReader.isLocked( directory ) )
+                    if ( IndexWriter.isLocked( directory ) )
                     {
-                        IndexReader.unlock( directory );
+                        IndexWriter.unlock( directory );
                     }
 
                     newIndex = false;
                 }
 
-                indexWriter = new IndexWriter( configuration.getIndexDirectory(), new KeywordAnalyzer(), newIndex );
+                indexWriter =
+                    new IndexWriter( configuration.getIndexDirectory(), new KeywordAnalyzer(), newIndex,
+                        MaxFieldLength.LIMITED );
 
                 closeIndexWriter();
             }
@@ -136,7 +136,7 @@ public class DefaultTimelineIndexer
     {
         if ( indexWriter == null )
         {
-            indexWriter = new IndexWriter( directory, new KeywordAnalyzer(), false );
+            indexWriter = new IndexWriter( directory, new KeywordAnalyzer(), false, MaxFieldLength.LIMITED );
         }
 
         return indexWriter;
@@ -147,7 +147,7 @@ public class DefaultTimelineIndexer
     {
         if ( indexWriter != null )
         {
-            indexWriter.flush();
+            indexWriter.commit();
 
             indexWriter.close();
 
@@ -155,35 +155,54 @@ public class DefaultTimelineIndexer
         }
     }
 
-    protected IndexReader getIndexReader()
+    protected IndexReader getIndexReader( boolean readOnly )
         throws IOException
     {
-        if ( indexReader == null || !indexReader.isCurrent() )
+        if ( readOnly )
         {
-            if ( indexReader != null )
-            {
-                indexReader.close();
-            }
-            indexReader = IndexReader.open( directory );
+            // just "fire and forget", always create one
+            return IndexReader.open( directory, readOnly );
         }
-        return indexReader;
+        else
+        {
+            if ( indexReader == null || !indexReader.isCurrent() )
+            {
+                if ( indexReader != null )
+                {
+                    indexReader.close();
+                }
+
+                indexReader = IndexReader.open( directory, readOnly );
+            }
+            return indexReader;
+        }
     }
 
-    protected IndexSearcher getIndexSearcher()
+    protected IndexSearcher getIndexSearcher( boolean readOnly )
         throws IOException
     {
-        if ( indexSearcher == null || getIndexReader() != indexSearcher.getIndexReader() )
+        if ( readOnly )
         {
-            if ( indexSearcher != null )
-            {
-                indexSearcher.close();
-
-                // the reader was supplied explicitly
-                indexSearcher.getIndexReader().close();
-            }
-            indexSearcher = new IndexSearcher( getIndexReader() );
+            // just "fire and forget", always create one
+            return new IndexSearcher( getIndexReader( readOnly ) );
         }
-        return indexSearcher;
+        else
+        {
+            if ( indexSearcher == null || getIndexReader( readOnly ) != indexSearcher.getIndexReader() )
+            {
+                if ( indexSearcher != null )
+                {
+                    indexSearcher.close();
+
+                    // the reader was supplied explicitly
+                    indexSearcher.getIndexReader().close();
+                }
+
+                indexSearcher = new IndexSearcher( getIndexReader( readOnly ) );
+            }
+
+            return indexSearcher;
+        }
     }
 
     protected void closeIndexReaderAndSearcher()
@@ -258,15 +277,15 @@ public class DefaultTimelineIndexer
         Document doc = new Document();
 
         doc.add( new Field( TIMESTAMP, DateTools.timeToString( record.getTimestamp(), TIMELINE_RESOLUTION ),
-            Field.Store.YES, Field.Index.UN_TOKENIZED ) );
+            Field.Store.YES, Field.Index.NOT_ANALYZED ) );
 
-        doc.add( new Field( TYPE, record.getType(), Field.Store.YES, Field.Index.UN_TOKENIZED ) );
+        doc.add( new Field( TYPE, record.getType(), Field.Store.YES, Field.Index.NOT_ANALYZED ) );
 
-        doc.add( new Field( SUBTYPE, record.getSubType(), Field.Store.YES, Field.Index.UN_TOKENIZED ) );
+        doc.add( new Field( SUBTYPE, record.getSubType(), Field.Store.YES, Field.Index.NOT_ANALYZED ) );
 
         for ( String key : record.getData().keySet() )
         {
-            doc.add( new Field( key, record.getData().get( key ), Field.Store.YES, Field.Index.UN_TOKENIZED ) );
+            doc.add( new Field( key, record.getData().get( key ), Field.Store.YES, Field.Index.NOT_ANALYZED ) );
         }
 
         return doc;
@@ -321,130 +340,193 @@ public class DefaultTimelineIndexer
                                     int count, TimelineFilter filter )
         throws TimelineException
     {
-        List<TimelineRecord> result = new ArrayList<TimelineRecord>();
-
-        int NumberToSkip = from;
-
         try
         {
             synchronized ( this )
             {
-                IndexSearcher searcher = getIndexSearcher();
+                IndexSearcher searcher = getIndexSearcher( true );
 
                 if ( searcher.maxDoc() == 0 )
                 {
-                    closeIndexReaderAndSearcher();
+                    searcher.close();
+
+                    searcher.getIndexReader().close();
 
                     return TimelineResult.EMPTY_RESULT;
                 }
 
                 TopFieldDocs topDocs =
-                    getIndexSearcher().search( buildQuery( fromTime, toTime, types, subTypes ), null,
-                        searcher.maxDoc(), new Sort( new SortField( TIMESTAMP, SortField.LONG, true ) ) );
+                    searcher.search( buildQuery( fromTime, toTime, types, subTypes ), null, searcher.maxDoc(),
+                        new Sort( new SortField( TIMESTAMP, SortField.LONG, true ) ) );
 
-                for ( int i = 0; i < topDocs.scoreDocs.length; i++ )
+                if ( topDocs.scoreDocs.length == 0 )
                 {
-                    if ( result.size() == count )
-                    {
-                        break;
-                    }
+                    searcher.close();
 
-                    Document doc = getIndexSearcher().doc( topDocs.scoreDocs[i].doc );
+                    searcher.getIndexReader().close();
 
-                    TimelineRecord data = buildData( doc );
-
-                    if ( filter != null && !filter.accept( data ) )
-                    {
-                        continue;
-                    }
-
-                    // skip the unneeded stuff
-                    // Warning: this means we skip the needed FILTERED stuff out!
-                    if ( NumberToSkip > 0 )
-                    {
-                        NumberToSkip--;
-
-                        continue;
-                    }
-
-                    result.add( data );
+                    return TimelineResult.EMPTY_RESULT;
                 }
 
-                closeIndexReaderAndSearcher();
+                return new IndexerTimelineResult( searcher, topDocs, filter, from, count );
             }
         }
         catch ( IOException e )
         {
             throw new TimelineException( "Failed to retrieve records from the timeline index!", e );
         }
-
-        return new IndexerTimelineResult( result.iterator() );
     }
 
     public static class IndexerTimelineResult
         extends TimelineResult
     {
-        private final Iterator<TimelineRecord> records;
+        private IndexSearcher searcher;
 
-        public IndexerTimelineResult( Iterator<TimelineRecord> records )
+        private TopFieldDocs hits;
+
+        private TimelineFilter filter;
+
+        private int docNumberToSkip;
+
+        private int docNumberToReturn;
+
+        private int i;
+
+        private int returned;
+
+        public IndexerTimelineResult( final IndexSearcher searcher, final TopFieldDocs hits,
+                                      final TimelineFilter filter, final int docNumberToSkip,
+                                      final int docNumberToReturn )
         {
-            this.records = records;
+            this.searcher = searcher;
+
+            this.hits = hits;
+
+            this.filter = filter;
+
+            this.docNumberToSkip = docNumberToSkip;
+
+            this.docNumberToReturn = docNumberToReturn;
+
+            this.i = 0;
+
+            this.returned = 0;
+        }
+
+        protected void close()
+        {
+            if ( searcher != null )
+            {
+                try
+                {
+                    searcher.close();
+                }
+                catch ( IOException e )
+                {
+                    // hum hum
+                }
+
+                try
+                {
+                    searcher.getIndexReader().close();
+                }
+                catch ( IOException e )
+                {
+                    // uh oh
+                }
+
+                searcher = null;
+            }
+        }
+
+        public void finalize()
+            throws Throwable
+        {
+            super.finalize();
+
+            close();
         }
 
         @Override
         protected TimelineRecord fetchNextRecord()
         {
-            if ( records.hasNext() )
+            if ( i >= hits.scoreDocs.length || returned >= docNumberToReturn )
             {
-                return records.next();
+                close();
+
+                return null;
             }
-            else
+
+            try
+            {
+                Document doc = searcher.doc( hits.scoreDocs[i++].doc );
+
+                TimelineRecord data = buildData( doc );
+
+                if ( filter != null && !filter.accept( data ) )
+                {
+                    return fetchNextRecord();
+                }
+
+                // skip the unneeded stuff
+                // Warning: this means we skip the needed FILTERED stuff out!
+                if ( docNumberToSkip > 0 )
+                {
+                    docNumberToSkip--;
+
+                    return fetchNextRecord();
+                }
+
+                returned++;
+
+                return data;
+            }
+            catch ( IOException e )
             {
                 return null;
             }
         }
 
-    }
-
-    @SuppressWarnings( "unchecked" )
-    private TimelineRecord buildData( Document doc )
-    {
-        long timestamp = -1;
-
-        String tsString = doc.get( TIMESTAMP );
-
-        if ( tsString != null )
+        @SuppressWarnings( "unchecked" )
+        protected TimelineRecord buildData( Document doc )
         {
+            long timestamp = -1;
+
+            String tsString = doc.get( TIMESTAMP );
+
+            if ( tsString != null )
+            {
+                // legacy indexes will have nulls here
+                try
+                {
+                    timestamp = DateTools.stringToTime( tsString );
+                }
+                catch ( ParseException e )
+                {
+                    // leave it -1
+                }
+            }
+
             // legacy indexes will have nulls here
-            try
+            String type = doc.get( TYPE );
+
+            // legacy indexes will have nulls here
+            String subType = doc.get( SUBTYPE );
+
+            Map<String, String> data = new HashMap<String, String>();
+
+            TimelineRecord result = new TimelineRecord( timestamp, type, subType, data );
+
+            for ( Field field : (List<Field>) doc.getFields() )
             {
-                timestamp = DateTools.stringToTime( tsString );
+                if ( !field.name().startsWith( "_" ) )
+                {
+                    data.put( field.name(), field.stringValue() );
+                }
             }
-            catch ( ParseException e )
-            {
-                // leave it -1
-            }
+
+            return result;
         }
-
-        // legacy indexes will have nulls here
-        String type = doc.get( TYPE );
-
-        // legacy indexes will have nulls here
-        String subType = doc.get( SUBTYPE );
-
-        Map<String, String> data = new HashMap<String, String>();
-
-        TimelineRecord result = new TimelineRecord( timestamp, type, subType, data );
-
-        for ( Field field : (List<Field>) doc.getFields() )
-        {
-            if ( !field.name().startsWith( "_" ) )
-            {
-                data.put( field.name(), field.stringValue() );
-            }
-        }
-
-        return result;
     }
 
     public int purge( long fromTime, long toTime, Set<String> types, Set<String> subTypes )
@@ -456,7 +538,7 @@ public class DefaultTimelineIndexer
             {
                 closeIndexWriter();
 
-                IndexSearcher searcher = getIndexSearcher();
+                IndexSearcher searcher = getIndexSearcher( false );
 
                 if ( searcher.maxDoc() == 0 )
                 {
@@ -465,11 +547,13 @@ public class DefaultTimelineIndexer
                     return 0;
                 }
 
-                Hits hits = searcher.search( buildQuery( fromTime, toTime, types, subTypes ) );
+                TopFieldDocs topDocs =
+                    searcher.search( buildQuery( fromTime, toTime, types, subTypes ), null, searcher.maxDoc(),
+                        new Sort( new SortField( TIMESTAMP, SortField.LONG, true ) ) );
 
-                for ( int i = 0; i < hits.length(); i++ )
+                for ( int i = 0; i < topDocs.scoreDocs.length; i++ )
                 {
-                    searcher.getIndexReader().deleteDocument( hits.id( i ) );
+                    searcher.getIndexReader().deleteDocument( topDocs.scoreDocs[i].doc );
                 }
 
                 closeIndexReaderAndSearcher();
@@ -478,7 +562,7 @@ public class DefaultTimelineIndexer
 
                 closeIndexWriter();
 
-                return hits.length();
+                return topDocs.scoreDocs.length;
             }
         }
         catch ( IOException e )
