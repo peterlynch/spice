@@ -418,7 +418,7 @@ public class DefaultTimelineIndexer
             // legacy indexes will have nulls here
             try
             {
-                timestamp = DateTools.stringToTime( doc.get( TIMESTAMP ) );
+                timestamp = DateTools.stringToTime( tsString );
             }
             catch ( ParseException e )
             {
@@ -426,8 +426,10 @@ public class DefaultTimelineIndexer
             }
         }
 
+        // legacy indexes will have nulls here
         String type = doc.get( TYPE );
 
+        // legacy indexes will have nulls here
         String subType = doc.get( SUBTYPE );
 
         Map<String, String> data = new HashMap<String, String>();
