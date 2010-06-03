@@ -51,13 +51,30 @@ public class Interpolator {
 		writeXML(replaceVariable(variables, readXML()));
 	}
 
+	private String expandDefaultValue(String value) {
+		if (value == null)
+			return null;
+		Pattern p = Pattern.compile("@([^@]*)@");
+		Matcher m = p.matcher(value);
+		StringBuffer sb = new StringBuffer();
+		while(m.find()) {
+			String newValue = System.getProperty(m.group(1));
+			if (newValue != null)
+				m.appendReplacement(sb, newValue);	
+		}
+		m.appendTail(sb);
+		return sb.toString();
+	}
+	
 	private Map<String, Variable> extractVariables(final StringBuffer in) {
 		Map<String, Variable> vars = new HashMap<String, Variable>();
 		Pattern p = Pattern.compile("%%([^%]*)%%");
 		Matcher m = p.matcher(in);
 		while(m.find()) {
 			String[] segments = m.group(1).split("\\|");
-			Variable newVar = new Variable(segments);
+			if (vars.get(segments[0]) != null)
+				continue;
+			Variable newVar = new Variable(segments[0], (segments.length > 1) ? expandDefaultValue(segments[1]) : null, (segments.length >= 2 && segments[2] != null) ? segments[2] : null );
 			vars.put(segments[0],newVar);
 			String persistedValue = userFilledValues.getProperty(segments[0]);
 			if (persistedValue != null)
