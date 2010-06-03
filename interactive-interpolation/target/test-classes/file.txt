@@ -1,6 +1,0 @@
-Here is a nice %%file|defaultValue|descriptionVar1%% that is
-very
-	<nicely>
-	%%formatted%%
-	
-and that is always closed %%file%%

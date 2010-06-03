@@ -1,6 +1,0 @@
-Here is a nice %%var1%% that is
-very
-	<nicely>
-	%%formatted%%
-	
-and that is always closed %%var1%%
