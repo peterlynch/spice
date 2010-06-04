@@ -17,7 +17,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A storage we can store and query timestamped data, based on data type and timestamp.
+ * A storage we can store and query timestamped data, based on data type and timestamp. Note: this interface will be
+ * shaved off to make it thinner, see NexusTimelime what happened there. Currently, we have a LOT of misleading methods,
+ * and most of them are unused.
  * 
  * @author cstamas
  */
