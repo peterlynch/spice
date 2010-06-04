@@ -27,9 +27,9 @@ public class Interpolator {
 
 	public Interpolator(File pathToSettingsXML, File pathToUserValues) {
 		if (pathToSettingsXML == null)
-			new IllegalArgumentException("Path to settings.xml can't be null");
+			throw new IllegalArgumentException("Path to settings.xml can't be null");
 		if (!(pathToSettingsXML.exists() && pathToSettingsXML.isFile() && pathToSettingsXML.canRead()))
-			new IllegalStateException("The file " + pathToSettingsXML.getAbsolutePath() + " cannot be read.");
+			throw new IllegalStateException("The file " + pathToSettingsXML.getAbsolutePath() + " cannot be read.");
 
 		settingsXml = pathToSettingsXML;
 		userValues = pathToUserValues;
