@@ -39,7 +39,7 @@ public class TestUserValuePersistence extends TestCase {
 		System.setProperty("my.sys.prop", "ANOTHERVALUE");
 		File toReplaceInto = new File(new File(getClass().getResource("/extractVariable").toURI()), "file.txt");
 		Interpolator i = new Interpolator(toReplaceInto, null);
-		assertEquals(3, i.getVariables().size());
+		assertEquals(7, i.getVariables().size());
 		Collection<Variable> v = i.getVariables();
 		for (Variable variable : v) {
 			if(variable.getName().equals("file")) {
@@ -52,6 +52,17 @@ public class TestUserValuePersistence extends TestCase {
 			}
 			if (variable.getName().equals("varSysProperty")) {
 				assertEquals("ANOTHERVALUE/foobar", variable.getDefaultValue());
+			}
+			if (variable.getName().equals("varWithNoDefaultNoDescription")) {
+				assertNull(variable.getDescription());
+				assertNull(variable.getDefaultValue());
+			}
+			if (variable.getName().equals("varWithDefaultNoDescription")) {
+				assertNull(variable.getDescription());
+				assertEquals("default", variable.getDefaultValue());
+			}
+			if (variable.getName().equals("varWithNoDefaultButWithDescription")) {
+				assertEquals("description", variable.getDescription());
 			}
 		}
 	}

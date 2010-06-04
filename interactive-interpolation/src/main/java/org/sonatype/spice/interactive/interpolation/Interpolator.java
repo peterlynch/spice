@@ -74,7 +74,7 @@ public class Interpolator {
 			String[] segments = m.group(1).split("\\|");
 			if (vars.get(segments[0]) != null)
 				continue;
-			Variable newVar = new Variable(segments[0], (segments.length > 1) ? expandDefaultValue(segments[1]) : null, (segments.length >= 2 && segments[2] != null) ? segments[2] : null );
+			Variable newVar = new Variable(segments[0], (segments.length > 1) ? expandDefaultValue(segments[1]) : null, (segments.length > 2 && segments[2] != null) ? segments[2] : null );
 			vars.put(segments[0],newVar);
 			String persistedValue = userFilledValues.getProperty(segments[0]);
 			if (persistedValue != null)
