@@ -102,8 +102,9 @@ public class Interpolator {
 		if (userValues == null)
 			return;
 		if (!userValues.exists()) {
-			if (!userValues.getParentFile().mkdirs())
-				return;
+            File m2 = userValues.getParentFile();
+            if ( !m2.exists() && !m2.mkdirs() )
+                return;
 		}
 		
 		//Store the new values for the variables in the property file
