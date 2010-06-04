@@ -98,7 +98,7 @@ public class Interpolator {
 		while(m.find()) {
 			String newValue = replaceMap.get(m.group(1).split("\\|")[0]).getValue();
 			if (newValue != null)
-				m.appendReplacement(sb, newValue);	
+				m.appendReplacement(sb, Matcher.quoteReplacement(newValue));	
 		}
 		m.appendTail(sb);
 		return sb;
