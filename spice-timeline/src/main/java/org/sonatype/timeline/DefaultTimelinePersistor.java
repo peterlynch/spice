@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
+import org.codehaus.plexus.logging.Logger;
 import org.sonatype.timeline.proto.TimeLineRecordProtos;
 
 /**
@@ -39,6 +41,9 @@ public class DefaultTimelinePersistor
     public static final String DATA_FILE_NAME_PATTERN =
         "^timeline\\.\\d{4}-\\d{2}-\\d{2}\\.\\d{2}-\\d{2}-\\d{2}\\.dat$";
 
+    @Requirement
+    private Logger logger;
+
     private int rollingInterval;
 
     private File persistDirectory;
@@ -46,6 +51,11 @@ public class DefaultTimelinePersistor
     private long lastRolledTimestamp = 0L;
 
     private File lastRolledFile;
+    
+    protected Logger getLogger()
+    {
+        return logger;
+    }
 
     public void configure( TimelineConfiguration config )
     {

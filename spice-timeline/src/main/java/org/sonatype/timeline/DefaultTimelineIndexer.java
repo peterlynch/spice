@@ -40,14 +40,14 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.codehaus.plexus.component.annotations.Component;
-import org.codehaus.plexus.logging.AbstractLogEnabled;
+import org.codehaus.plexus.component.annotations.Requirement;
+import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StartingException;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StoppingException;
 
 @Component( role = TimelineIndexer.class )
 public class DefaultTimelineIndexer
-    extends AbstractLogEnabled
     implements TimelineIndexer, Startable
 {
     private static final String TIMESTAMP = "_t";
@@ -58,6 +58,9 @@ public class DefaultTimelineIndexer
 
     private static final Resolution TIMELINE_RESOLUTION = Resolution.SECOND;
 
+    @Requirement
+    private Logger logger;
+
     private Directory directory;
 
     private IndexReader indexReader;
@@ -65,6 +68,11 @@ public class DefaultTimelineIndexer
     private IndexWriter indexWriter;
 
     private IndexSearcher indexSearcher;
+
+    protected Logger getLogger()
+    {
+        return logger;
+    }
 
     public void configure( TimelineConfiguration configuration )
         throws TimelineException
@@ -483,6 +491,8 @@ public class DefaultTimelineIndexer
             }
             catch ( IOException e )
             {
+                close();
+
                 return null;
             }
         }

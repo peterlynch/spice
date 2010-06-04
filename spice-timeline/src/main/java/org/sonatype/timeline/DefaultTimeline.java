@@ -19,14 +19,16 @@ import java.util.Set;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.codehaus.plexus.logging.AbstractLogEnabled;
+import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.util.FileUtils;
 
 @Component( role = Timeline.class )
 public class DefaultTimeline
-    extends AbstractLogEnabled
     implements Timeline
 {
+    @Requirement
+    private Logger logger;
+    
     @Requirement
     private TimelinePersistor persistor;
 
@@ -34,6 +36,11 @@ public class DefaultTimeline
     private TimelineIndexer indexer;
 
     private TimelineConfiguration configuration;
+    
+    protected Logger getLogger()
+    {
+        return logger;
+    }
 
     public void configure( TimelineConfiguration config )
         throws TimelineException

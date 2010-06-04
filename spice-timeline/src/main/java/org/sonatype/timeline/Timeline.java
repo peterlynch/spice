@@ -17,7 +17,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A place we can store and query data, based on data type and timestamp
+ * A storage we can store and query timestamped data, based on data type and timestamp.
+ * 
+ * @author cstamas
  */
 public interface Timeline
 {
