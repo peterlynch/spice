@@ -60,6 +60,7 @@ public class TestUserValuePersistence extends TestCase {
 			if (variable.getName().equals("varWithDefaultNoDescription")) {
 				assertNull(variable.getDescription());
 				assertEquals("default", variable.getDefaultValue());
+				assertEquals("default", variable.getValue());
 			}
 			if (variable.getName().equals("varWithNoDefaultButWithDescription")) {
 				assertEquals("description", variable.getDescription());
