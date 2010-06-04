@@ -26,13 +26,13 @@ public class TestUserValuePersistence extends TestCase {
 		Collection<Variable> vars = i.getVariables();
 		for (Variable variable : vars) {
 			if (variable.getName().equals("file"))
-				variable.setValue("NEWVALUE");
+				variable.setValue("c:\\foo\\bar");
 		}
 
 		i.replaceVariables();
 		i.saveUserValues();
 		
-		assertPropertyFileContains(userStorage, "file", "NEWVALUE");
+		assertPropertyFileContains(userStorage, "file", "c:\\foo\\bar");
 	}
 	
 	public void testExtractVariable() throws URISyntaxException {
