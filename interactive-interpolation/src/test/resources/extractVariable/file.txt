@@ -2,5 +2,8 @@ Here is a nice %%file|defaultValue|descriptionVar1%% that is
 very
 	<nicely>
 	%%formatted%%
-	%%varSysProperty|@my.sys.prop@/foobar|description%%
-and that is always closed %%file%%
+	%%varSysProperty|@my.sys.prop@/foobar%%
+	%%varWithNoDefaultNoDescription||%%
+	%%varWithDefaultNoDescription|default%%
+	%%varWithNoDefaultButWithDescription||description%%
+and %%anotherFile%% that is always closed %%file%%
