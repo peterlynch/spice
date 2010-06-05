@@ -98,7 +98,7 @@ public class Interpolator {
 		while(m.find()) {
 			String newValue = replaceMap.get(m.group(1).split("\\|")[0]).getValue();
 			if (newValue != null)
-				m.appendReplacement(sb, Matcher.quoteReplacement(newValue));	
+				m.appendReplacement(sb, Matcher.quoteReplacement(escape(newValue)));	
 		}
 		m.appendTail(sb);
 		return sb;
@@ -190,4 +190,57 @@ public class Interpolator {
 		}
 	}
 
+	private String escape(String txt) {
+		StringBuffer buffer = null;
+		for (int i = 0; i < txt.length(); ++i) {
+			String replace;
+			char c = txt.charAt(i);
+			switch (c) {
+				case '<' :
+					replace = "&lt;"; //$NON-NLS-1$
+					break;
+				case '>' :
+					replace = "&gt;"; //$NON-NLS-1$
+					break;
+				case '"' :
+					replace = "&quot;"; //$NON-NLS-1$
+					break;
+				case '\'' :
+					replace = "&apos;"; //$NON-NLS-1$
+					break;
+				case '&' :
+					replace = "&amp;"; //$NON-NLS-1$
+					break;
+				case '\t' :
+					replace = "&#x9;"; //$NON-NLS-1$
+					break;
+				case '\n' :
+					replace = "&#xA;"; //$NON-NLS-1$
+					break;
+				case '\r' :
+					replace = "&#xD;"; //$NON-NLS-1$
+					break;
+				default :
+					// this is the set of legal xml scharacters in unicode excluding high surrogates since they cannot be represented with a char
+					// see http://www.w3.org/TR/REC-xml/#charsets
+					if ((c >= '\u0020' && c <= '\uD7FF') || (c >= '\uE000' && c <= '\uFFFD')) {
+						if (buffer != null)
+							buffer.append(c);
+						continue;
+					}
+					replace = Character.isWhitespace(c) ? " " : null; //$NON-NLS-1$
+			}
+			if (buffer == null) {
+				buffer = new StringBuffer(txt.length() + 16);
+				buffer.append(txt.substring(0, i));
+			}
+			if (replace != null)
+				buffer.append(replace);
+		}
+
+		if (buffer == null)
+			return txt;
+
+		return buffer.toString();
+	}
 }

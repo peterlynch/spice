@@ -27,11 +27,14 @@ public class TestUserValuePersistence extends TestCase {
 		for (Variable variable : vars) {
 			if (variable.getName().equals("file"))
 				variable.setValue("c:\\foo\\bar");
+			if (variable.getName().equals("varContainingXMLChars"))
+				variable.setValue("<Value with XML characters>");
 		}
 
 		i.replaceVariables();
 		i.saveUserValues();
 		
+		assertTrue(readXML(toReplaceInto).toString().contains("&lt;Value with XML characters&gt"));
 		assertPropertyFileContains(userStorage, "file", "c:\\foo\\bar");
 	}
 	

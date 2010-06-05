@@ -2,5 +2,5 @@ Here is a nice %%file|defaultValue|descriptionVar1%% that is
 very
 	<nicely>
 	%%formatted%%
-	
+	%%varContainingXMLChars%%
 and that is always closed %%file%%
