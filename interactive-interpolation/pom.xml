@@ -81,7 +81,7 @@
 	
 	<profiles>
 		<profile>
-			<id>release</id>
+			<id>sign</id>
 			<activation>
 				<property>
 					<name>jarsigner.alias</name>
