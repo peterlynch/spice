@@ -69,6 +69,8 @@ public class DefaultTimelineIndexer
 
     private IndexSearcher indexSearcher;
 
+    private IndexSearcher readOnlyIndexSearcher;
+
     protected Logger getLogger()
     {
         return logger;
@@ -163,27 +165,20 @@ public class DefaultTimelineIndexer
         }
     }
 
-    protected IndexReader getIndexReader( boolean readOnly )
+    protected IndexReader getIndexReader()
         throws IOException
     {
-        if ( readOnly )
+        if ( indexReader == null || !indexReader.isCurrent() )
         {
-            // just "fire and forget", always create one
-            return IndexReader.open( directory, readOnly );
-        }
-        else
-        {
-            if ( indexReader == null || !indexReader.isCurrent() )
+            if ( indexReader != null )
             {
-                if ( indexReader != null )
-                {
-                    indexReader.close();
-                }
-
-                indexReader = IndexReader.open( directory, readOnly );
+                indexReader.close();
             }
-            return indexReader;
+
+            indexReader = IndexReader.open( directory, false );
         }
+
+        return indexReader;
     }
 
     protected IndexSearcher getIndexSearcher( boolean readOnly )
@@ -191,12 +186,24 @@ public class DefaultTimelineIndexer
     {
         if ( readOnly )
         {
-            // just "fire and forget", always create one
-            return new IndexSearcher( getIndexReader( readOnly ) );
+            if ( readOnlyIndexSearcher == null || !readOnlyIndexSearcher.getIndexReader().isCurrent() )
+            {
+                if ( readOnlyIndexSearcher != null )
+                {
+                    readOnlyIndexSearcher.close();
+
+                    // the reader was supplied explicitly
+                    readOnlyIndexSearcher.getIndexReader().close();
+                }
+
+                readOnlyIndexSearcher = new IndexSearcher( IndexReader.open( directory, true ) );
+            }
+
+            return readOnlyIndexSearcher;
         }
         else
         {
-            if ( indexSearcher == null || getIndexReader( readOnly ) != indexSearcher.getIndexReader() )
+            if ( indexSearcher == null || !indexSearcher.getIndexReader().isCurrent() )
             {
                 if ( indexSearcher != null )
                 {
@@ -206,7 +213,7 @@ public class DefaultTimelineIndexer
                     indexSearcher.getIndexReader().close();
                 }
 
-                indexSearcher = new IndexSearcher( getIndexReader( readOnly ) );
+                indexSearcher = new IndexSearcher( getIndexReader() );
             }
 
             return indexSearcher;
@@ -356,10 +363,6 @@ public class DefaultTimelineIndexer
 
                 if ( searcher.maxDoc() == 0 )
                 {
-                    searcher.close();
-
-                    searcher.getIndexReader().close();
-
                     return TimelineResult.EMPTY_RESULT;
                 }
 
@@ -369,10 +372,6 @@ public class DefaultTimelineIndexer
 
                 if ( topDocs.scoreDocs.length == 0 )
                 {
-                    searcher.close();
-
-                    searcher.getIndexReader().close();
-
                     return TimelineResult.EMPTY_RESULT;
                 }
 
@@ -421,47 +420,11 @@ public class DefaultTimelineIndexer
             this.returned = 0;
         }
 
-        protected void close()
-        {
-            if ( searcher != null )
-            {
-                try
-                {
-                    searcher.close();
-                }
-                catch ( IOException e )
-                {
-                    // hum hum
-                }
-
-                try
-                {
-                    searcher.getIndexReader().close();
-                }
-                catch ( IOException e )
-                {
-                    // uh oh
-                }
-
-                searcher = null;
-            }
-        }
-
-        public void finalize()
-            throws Throwable
-        {
-            super.finalize();
-
-            close();
-        }
-
         @Override
         protected TimelineRecord fetchNextRecord()
         {
             if ( i >= hits.scoreDocs.length || returned >= docNumberToReturn )
             {
-                close();
-
                 return null;
             }
 
@@ -491,8 +454,6 @@ public class DefaultTimelineIndexer
             }
             catch ( IOException e )
             {
-                close();
-
                 return null;
             }
         }
