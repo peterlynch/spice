@@ -232,6 +232,15 @@ public class DefaultTimelineIndexer
             indexSearcher = null;
         }
 
+        if ( readOnlyIndexSearcher != null )
+        {
+            readOnlyIndexSearcher.getIndexReader().close();
+
+            readOnlyIndexSearcher.close();
+
+            readOnlyIndexSearcher = null;
+        }
+
         if ( indexReader != null )
         {
             indexReader.close();
