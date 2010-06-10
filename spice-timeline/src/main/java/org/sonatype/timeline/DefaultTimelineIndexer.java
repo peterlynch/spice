@@ -69,7 +69,8 @@ public class DefaultTimelineIndexer
 
     private IndexSearcher indexSearcher;
 
-    private IndexSearcher readOnlyIndexSearcher;
+    // disabled for now
+    // private IndexSearcher readOnlyIndexSearcher;
 
     protected Logger getLogger()
     {
@@ -184,40 +185,40 @@ public class DefaultTimelineIndexer
     protected IndexSearcher getIndexSearcher( boolean readOnly )
         throws IOException
     {
-        if ( readOnly )
+        // if ( readOnly )
+        // {
+        // if ( readOnlyIndexSearcher == null || !readOnlyIndexSearcher.getIndexReader().isCurrent() )
+        // {
+        // if ( readOnlyIndexSearcher != null )
+        // {
+        // readOnlyIndexSearcher.close();
+        //
+        // // the reader was supplied explicitly
+        // readOnlyIndexSearcher.getIndexReader().close();
+        // }
+        //
+        // readOnlyIndexSearcher = new IndexSearcher( IndexReader.open( directory, true ) );
+        // }
+        //
+        // return readOnlyIndexSearcher;
+        // }
+        // else
+        // {
+        if ( indexSearcher == null || getIndexReader() != indexSearcher.getIndexReader() )
         {
-            if ( readOnlyIndexSearcher == null || !readOnlyIndexSearcher.getIndexReader().isCurrent() )
+            if ( indexSearcher != null )
             {
-                if ( readOnlyIndexSearcher != null )
-                {
-                    readOnlyIndexSearcher.close();
+                indexSearcher.close();
 
-                    // the reader was supplied explicitly
-                    readOnlyIndexSearcher.getIndexReader().close();
-                }
-
-                readOnlyIndexSearcher = new IndexSearcher( IndexReader.open( directory, true ) );
+                // the reader was supplied explicitly
+                indexSearcher.getIndexReader().close();
             }
 
-            return readOnlyIndexSearcher;
+            indexSearcher = new IndexSearcher( getIndexReader() );
         }
-        else
-        {
-            if ( indexSearcher == null || !indexSearcher.getIndexReader().isCurrent() )
-            {
-                if ( indexSearcher != null )
-                {
-                    indexSearcher.close();
 
-                    // the reader was supplied explicitly
-                    indexSearcher.getIndexReader().close();
-                }
-
-                indexSearcher = new IndexSearcher( getIndexReader() );
-            }
-
-            return indexSearcher;
-        }
+        return indexSearcher;
+        // }
     }
 
     protected void closeIndexReaderAndSearcher()
@@ -232,14 +233,14 @@ public class DefaultTimelineIndexer
             indexSearcher = null;
         }
 
-        if ( readOnlyIndexSearcher != null )
-        {
-            readOnlyIndexSearcher.getIndexReader().close();
-
-            readOnlyIndexSearcher.close();
-
-            readOnlyIndexSearcher = null;
-        }
+//        if ( readOnlyIndexSearcher != null )
+//        {
+//            readOnlyIndexSearcher.getIndexReader().close();
+//
+//            readOnlyIndexSearcher.close();
+//
+//            readOnlyIndexSearcher = null;
+//        }
 
         if ( indexReader != null )
         {
