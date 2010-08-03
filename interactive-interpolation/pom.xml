@@ -46,6 +46,7 @@
                    <manifestLocation>META-INF</manifestLocation>
                    <instructions>
                      <Bundle-Version>$(replace;$(project.version);-SNAPSHOT;.$(tstamp;yyyyMMdd-HHmm))</Bundle-Version>
+                     <Bundle-Vendor>Sonatype, Inc.</Bundle-Vendor>
                    </instructions>
                 </configuration>
 			</plugin>
