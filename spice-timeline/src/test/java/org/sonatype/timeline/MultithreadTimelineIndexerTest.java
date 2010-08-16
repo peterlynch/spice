@@ -79,6 +79,9 @@ public class MultithreadTimelineIndexerTest
         dt5.interrupt();
         dt6.interrupt();
 
+        // let the searchers run for more
+        Thread.sleep( 1000 );
+
         // stop them nicely (to pick up last dt thread changes)
         st1.stopAndJoin();
         st2.stopAndJoin();
