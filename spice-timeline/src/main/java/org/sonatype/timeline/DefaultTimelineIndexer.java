@@ -19,15 +19,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.lucene.analysis.KeywordAnalyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.DateTools;
+import org.apache.lucene.document.DateTools.Resolution;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.DateTools.Resolution;
+import org.apache.lucene.index.ExtendedIndexWriter;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.ConstantScoreRangeQuery;
 import org.apache.lucene.search.IndexSearcher;
@@ -36,7 +38,6 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopFieldDocs;
-import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.codehaus.plexus.component.annotations.Component;
@@ -65,12 +66,11 @@ public class DefaultTimelineIndexer
 
     private IndexReader indexReader;
 
-    private IndexWriter indexWriter;
+    private ExtendedIndexWriter indexWriter;
 
     private IndexSearcher indexSearcher;
 
-    // disabled for now
-    // private IndexSearcher readOnlyIndexSearcher;
+    private Object indexLock = new Object();
 
     protected Logger getLogger()
     {
@@ -104,8 +104,7 @@ public class DefaultTimelineIndexer
                 }
 
                 indexWriter =
-                    new IndexWriter( configuration.getIndexDirectory(), new KeywordAnalyzer(), newIndex,
-                        MaxFieldLength.LIMITED );
+                    new ExtendedIndexWriter( directory, new StandardAnalyzer(), newIndex, MaxFieldLength.LIMITED );
 
                 closeIndexWriter();
             }
@@ -145,108 +144,107 @@ public class DefaultTimelineIndexer
     protected IndexWriter getIndexWriter()
         throws IOException
     {
-        if ( indexWriter == null )
+        synchronized ( indexLock )
         {
-            indexWriter = new IndexWriter( directory, new KeywordAnalyzer(), false, MaxFieldLength.LIMITED );
-        }
+            if ( indexWriter == null )
+            {
+                indexWriter =
+                    new ExtendedIndexWriter( directory, new StandardAnalyzer(), false, MaxFieldLength.LIMITED );
+            }
 
-        return indexWriter;
+            return indexWriter;
+        }
     }
 
     protected void closeIndexWriter()
         throws IOException
     {
-        if ( indexWriter != null )
+        synchronized ( indexLock )
         {
-            indexWriter.commit();
+            if ( indexWriter != null )
+            {
+                indexWriter.commit();
 
-            indexWriter.close();
+                indexWriter.close();
 
-            indexWriter = null;
+                indexWriter = null;
+            }
+        }
+    }
+
+    protected boolean isIndexWriterDirty()
+    {
+        if ( indexWriter == null )
+        {
+            return false;
+        }
+        else
+        {
+            return indexWriter.hasUncommitedChanges();
         }
     }
 
     protected IndexReader getIndexReader()
         throws IOException
     {
-        if ( indexReader == null || !indexReader.isCurrent() )
+        synchronized ( indexLock )
         {
-            if ( indexReader != null )
+            if ( indexReader == null || ( !indexReader.isCurrent() && !isIndexWriterDirty() ) )
             {
-                indexReader.close();
+                if ( indexReader != null )
+                {
+                    indexReader.close();
+                }
+
+                indexReader = IndexReader.open( directory );
             }
 
-            indexReader = IndexReader.open( directory, false );
+            return indexReader;
         }
-
-        return indexReader;
     }
 
-    protected IndexSearcher getIndexSearcher( boolean readOnly )
+    protected IndexSearcher getIndexSearcher()
         throws IOException
     {
-        // if ( readOnly )
-        // {
-        // if ( readOnlyIndexSearcher == null || !readOnlyIndexSearcher.getIndexReader().isCurrent() )
-        // {
-        // if ( readOnlyIndexSearcher != null )
-        // {
-        // readOnlyIndexSearcher.close();
-        //
-        // // the reader was supplied explicitly
-        // readOnlyIndexSearcher.getIndexReader().close();
-        // }
-        //
-        // readOnlyIndexSearcher = new IndexSearcher( IndexReader.open( directory, true ) );
-        // }
-        //
-        // return readOnlyIndexSearcher;
-        // }
-        // else
-        // {
-        if ( indexSearcher == null || getIndexReader() != indexSearcher.getIndexReader() )
+        synchronized ( indexLock )
         {
-            if ( indexSearcher != null )
+            if ( indexSearcher == null || getIndexReader() != indexSearcher.getIndexReader() )
             {
-                indexSearcher.close();
+                if ( indexSearcher != null )
+                {
+                    indexSearcher.close();
 
-                // the reader was supplied explicitly
-                indexSearcher.getIndexReader().close();
+                    // the reader was supplied explicitly
+                    indexSearcher.getIndexReader().close();
+                }
+
+                indexSearcher = new IndexSearcher( getIndexReader() );
             }
 
-            indexSearcher = new IndexSearcher( getIndexReader() );
+            return indexSearcher;
         }
-
-        return indexSearcher;
-        // }
     }
 
     protected void closeIndexReaderAndSearcher()
         throws IOException
     {
-        if ( indexSearcher != null )
+        synchronized ( indexLock )
         {
-            indexSearcher.getIndexReader().close();
+            if ( indexSearcher != null )
+            {
+                indexSearcher.getIndexReader().close();
 
-            indexSearcher.close();
+                indexSearcher.close();
 
-            indexSearcher = null;
-        }
+                indexSearcher = null;
+            }
 
-//        if ( readOnlyIndexSearcher != null )
-//        {
-//            readOnlyIndexSearcher.getIndexReader().close();
-//
-//            readOnlyIndexSearcher.close();
-//
-//            readOnlyIndexSearcher = null;
-//        }
+            if ( indexReader != null )
+            {
+                indexReader.close();
 
-        if ( indexReader != null )
-        {
-            indexReader.close();
-
-            indexReader = null;
+                indexReader = null;
+            }
         }
     }
 
@@ -263,7 +261,7 @@ public class DefaultTimelineIndexer
 
                 writer.addDocument( createDocument( record ) );
 
-                closeIndexWriter();
+                writer.commit();
             }
         }
         catch ( IOException e )
@@ -288,7 +286,7 @@ public class DefaultTimelineIndexer
                     writer.addDocument( createDocument( rec ) );
                 }
 
-                closeIndexWriter();
+                writer.commit();
             }
         }
         catch ( IOException e )
@@ -310,7 +308,7 @@ public class DefaultTimelineIndexer
 
         for ( String key : record.getData().keySet() )
         {
-            doc.add( new Field( key, record.getData().get( key ), Field.Store.YES, Field.Index.NOT_ANALYZED ) );
+            doc.add( new Field( key, record.getData().get( key ), Field.Store.YES, Field.Index.ANALYZED ) );
         }
 
         return doc;
@@ -352,6 +350,7 @@ public class DefaultTimelineIndexer
 
                 result.add( subTypeQ, Occur.MUST );
             }
+
             return result;
         }
     }
@@ -369,7 +368,7 @@ public class DefaultTimelineIndexer
         {
             synchronized ( this )
             {
-                IndexSearcher searcher = getIndexSearcher( true );
+                IndexSearcher searcher = getIndexSearcher();
 
                 if ( searcher.maxDoc() == 0 )
                 {
@@ -428,6 +427,12 @@ public class DefaultTimelineIndexer
             this.i = 0;
 
             this.returned = 0;
+        }
+
+        // for testing
+        protected int getLength()
+        {
+            return hits.scoreDocs.length;
         }
 
         @Override
@@ -517,31 +522,32 @@ public class DefaultTimelineIndexer
         {
             synchronized ( this )
             {
-                closeIndexWriter();
-
-                IndexSearcher searcher = getIndexSearcher( false );
+                IndexSearcher searcher = getIndexSearcher();
 
                 if ( searcher.maxDoc() == 0 )
                 {
-                    closeIndexReaderAndSearcher();
-
                     return 0;
                 }
 
-                TopFieldDocs topDocs =
-                    searcher.search( buildQuery( fromTime, toTime, types, subTypes ), null, searcher.maxDoc(),
-                        new Sort( new SortField( TIMESTAMP, SortField.LONG, true ) ) );
+                Query q = buildQuery( fromTime, toTime, types, subTypes );
 
-                for ( int i = 0; i < topDocs.scoreDocs.length; i++ )
+                // just to know how many will we delete, will not actually load 'em up
+                TopFieldDocs topDocs =
+                    searcher.search( q, null, searcher.maxDoc(), new Sort( new SortField( TIMESTAMP, SortField.LONG,
+                        true ) ) );
+
+                if ( topDocs.scoreDocs.length == 0 )
                 {
-                    searcher.getIndexReader().deleteDocument( topDocs.scoreDocs[i].doc );
+                    return 0;
                 }
 
-                closeIndexReaderAndSearcher();
+                IndexWriter writer = getIndexWriter();
 
-                getIndexWriter().optimize();
+                writer.deleteDocuments( q );
 
-                closeIndexWriter();
+                writer.optimize();
+
+                writer.commit();
 
                 return topDocs.scoreDocs.length;
             }
