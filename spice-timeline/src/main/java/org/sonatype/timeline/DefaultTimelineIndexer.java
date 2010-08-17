@@ -126,13 +126,16 @@ public class DefaultTimelineIndexer
     {
         try
         {
-            closeIndexWriter();
-
-            closeIndexReaderAndSearcher();
-
-            if ( directory != null )
+            synchronized ( this )
             {
-                directory.close();
+                closeIndexWriter();
+
+                closeIndexReaderAndSearcher();
+
+                if ( directory != null )
+                {
+                    directory.close();
+                }
             }
         }
         catch ( IOException e )
