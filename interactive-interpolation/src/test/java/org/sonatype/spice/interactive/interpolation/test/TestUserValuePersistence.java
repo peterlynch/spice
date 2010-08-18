@@ -7,9 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Properties;
-import java.util.Map.Entry;
 
 import junit.framework.TestCase;
 
