@@ -87,6 +87,10 @@ public class DefaultTimelineIndexer
 
             synchronized ( this )
             {
+                closeIndexWriter();
+
+                closeIndexReaderAndSearcher();
+
                 if ( directory != null )
                 {
                     directory.close();
@@ -106,13 +110,15 @@ public class DefaultTimelineIndexer
 
                 indexWriter =
                     new ExtendedIndexWriter( directory, new StandardAnalyzer(), newIndex, MaxFieldLength.LIMITED );
+                
+                indexWriter.setMergeScheduler( new SerialMergeScheduler() );
 
                 closeIndexWriter();
             }
         }
         catch ( Exception e )
         {
-            throw new TimelineException( "Fail to configure timeline index!", e );
+            throw new TimelineException( "Failed to configure timeline index!", e );
         }
 
     }
@@ -129,9 +135,9 @@ public class DefaultTimelineIndexer
         {
             synchronized ( this )
             {
-                closeIndexReaderAndSearcher();
-
                 closeIndexWriter();
+                
+                closeIndexReaderAndSearcher();
 
                 if ( directory != null )
                 {
