@@ -28,6 +28,7 @@ import org.apache.lucene.index.ExtendedIndexWriter;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
+import org.apache.lucene.index.SerialMergeScheduler;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
@@ -128,9 +129,9 @@ public class DefaultTimelineIndexer
         {
             synchronized ( this )
             {
-                closeIndexWriter();
-
                 closeIndexReaderAndSearcher();
+
+                closeIndexWriter();
 
                 if ( directory != null )
                 {
@@ -153,6 +154,10 @@ public class DefaultTimelineIndexer
             {
                 indexWriter =
                     new ExtendedIndexWriter( directory, new StandardAnalyzer(), false, MaxFieldLength.LIMITED );
+
+                indexWriter.setRAMBufferSizeMB( 2 );
+
+                indexWriter.setMergeScheduler( new SerialMergeScheduler() );
             }
 
             return indexWriter;
@@ -548,9 +553,9 @@ public class DefaultTimelineIndexer
 
                 writer.deleteDocuments( q );
 
-                writer.optimize();
-
                 writer.commit();
+
+                writer.optimize();
 
                 return topDocs.scoreDocs.length;
             }
