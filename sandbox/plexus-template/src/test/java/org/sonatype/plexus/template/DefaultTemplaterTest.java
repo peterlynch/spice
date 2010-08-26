@@ -74,6 +74,6 @@ public class DefaultTemplaterTest
         Writer writer = new StringWriter();
         File template = new File( getBasedir(), "src/test/templates/file-template.txt" );
         templater.renderTemplate( template.getAbsolutePath(), context, writer );
-        assertEquals( "the company is sonatype", writer.toString() );
+        assertEquals( "the company is sonatypex", writer.toString() );
     }
 }
