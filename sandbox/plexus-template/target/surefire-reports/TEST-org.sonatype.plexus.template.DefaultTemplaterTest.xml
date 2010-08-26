@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite failures="0" time="0.362" errors="0" skipped="0" tests="3" name="org.sonatype.plexus.template.DefaultTemplaterTest">
+  <properties>
+    <property name="java.vendor" value="Apple Inc."/>
+    <property name="localRepository" value="/Users/jvanzyl/.m2/repository"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Server Compiler"/>
+    <property name="env.SECURITYSESSIONID" value="30346f"/>
+    <property name="os.name" value="Mac OS X"/>
+    <property name="sun.boot.class.path" value="/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Classes/jsfd.jar:/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Classes/classes.jar:/System/Library/Frameworks/JavaVM.framework/Frameworks/JavaRuntimeSupport.framework/Resources/Java/JavaRuntimeSupport.jar:/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Classes/ui.jar:/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Classes/laf.jar:/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Classes/sunrsasign.jar:/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Classes/jsse.jar:/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Classes/jce.jar:/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Classes/charsets.jar"/>
+    <property name="env.TMPDIR" value="/var/folders/KN/KN77RpurFOKe0AarLihTdE+++TI/-Tmp-/"/>
+    <property name="env.PWD" value="/Users/jvanzyl/js/spice/sandbox/plexus-template"/>
+    <property name="env.LANG" value="en_US.UTF-8"/>
+    <property name="java.vm.specification.vendor" value="Sun Microsystems Inc."/>
+    <property name="java.runtime.version" value="1.6.0_20-b02-279-10M3065"/>
+    <property name="env.Apple_PubSub_Socket_Render" value="/tmp/launch-t2lj89/Render"/>
+    <property name="env.DISPLAY" value="/tmp/launch-9IjCRl/org.x:0"/>
+    <property name="user.name" value="jvanzyl"/>
+    <property name="env._" value="/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Home/bin/java"/>
+    <property name="env.USER" value="jvanzyl"/>
+    <property name="env.HISTCONTROL" value="ignorespace"/>
+    <property name="env.SHELL" value="/bin/bash"/>
+    <property name="env.__CF_USER_TEXT_ENCODING" value="0x1F5:0:0"/>
+    <property name="awt.nativeDoubleBuffering" value="true"/>
+    <property name="env.PATH" value="/Users/jvanzyl/m2/bin:/Users/jvanzyl/m2/bin:/Users/jvanzyl/bin:/opt/local/bin:/opt/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/X11/bin"/>
+    <property name="user.language" value="en"/>
+    <property name="sun.boot.library.path" value="/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Libraries"/>
+    <property name="classworlds.conf" value="/Users/jvanzyl/m2/bin/m2.conf"/>
+    <property name="java.version" value="1.6.0_20"/>
+    <property name="user.timezone" value=""/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="http.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="java.endorsed.dirs" value="/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Home/lib/endorsed"/>
+    <property name="sun.cpu.isalist" value=""/>
+    <property name="sun.jnu.encoding" value="MacRoman"/>
+    <property name="file.encoding.pkg" value="sun.io"/>
+    <property name="env.SHLVL" value="3"/>
+    <property name="file.separator" value="/"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="java.class.version" value="50.0"/>
+    <property name="user.country" value="US"/>
+    <property name="java.home" value="/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Home"/>
+    <property name="java.vm.info" value="mixed mode"/>
+    <property name="env.LOGNAME" value="jvanzyl"/>
+    <property name="os.version" value="10.6.4"/>
+    <property name="env.TERM_PROGRAM_VERSION" value="273"/>
+    <property name="path.separator" value=":"/>
+    <property name="java.vm.version" value="16.3-b01-279"/>
+    <property name="env.JAVA_MAIN_CLASS_31459" value="org.codehaus.plexus.classworlds.launcher.Launcher"/>
+    <property name="java.awt.printerjob" value="apple.awt.CPrinterJob"/>
+    <property name="env.TERM" value="ansi"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="awt.toolkit" value="apple.awt.CToolkit"/>
+    <property name="socksNonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="user.home" value="/Users/jvanzyl"/>
+    <property name="java.specification.vendor" value="Sun Microsystems Inc."/>
+    <property name="env.TERM_PROGRAM" value="Apple_Terminal"/>
+    <property name="env.M2_HOME" value="/Users/jvanzyl/m2"/>
+    <property name="java.library.path" value=".:/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java"/>
+    <property name="java.vendor.url" value="http://www.apple.com/"/>
+    <property name="java.vm.vendor" value="Apple Inc."/>
+    <property name="gopherProxySet" value="false"/>
+    <property name="maven.home" value="/Users/jvanzyl/m2"/>
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
+    <property name="java.class.path" value="/Users/jvanzyl/m2/boot/plexus-classworlds-2.2.3.jar"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="java.vm.specification.version" value="1.0"/>
+    <property name="env.MC_TMPDIR" value="/var/folders/KN/KN77RpurFOKe0AarLihTdE+++TI/-Tmp-/mc-jvanzyl"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="sun.os.patch.level" value="unknown"/>
+    <property name="env.HOME" value="/Users/jvanzyl"/>
+    <property name="surefire.test.class.path" value="/Users/jvanzyl/js/spice/sandbox/plexus-template/target/test-classes:/Users/jvanzyl/js/spice/sandbox/plexus-template/target/classes:/Users/jvanzyl/.m2/repository/junit/junit/3.8.1/junit-3.8.1.jar:/Users/jvanzyl/.m2/repository/org/codehaus/plexus/plexus-container-default/1.0-beta-3.0.1/plexus-container-default-1.0-beta-3.0.1.jar:/Users/jvanzyl/.m2/repository/org/codehaus/plexus/plexus-utils/1.5.5/plexus-utils-1.5.5.jar:/Users/jvanzyl/.m2/repository/org/codehaus/plexus/plexus-classworlds/1.3/plexus-classworlds-1.3.jar:/Users/jvanzyl/.m2/repository/org/apache/xbean/xbean-reflect/3.4/xbean-reflect-3.4.jar:/Users/jvanzyl/.m2/repository/com/google/code/google-collections/google-collect/snapshot-20080530/google-collect-snapshot-20080530.jar:/Users/jvanzyl/.m2/repository/org/apache/velocity/velocity/1.5/velocity-1.5.jar:/Users/jvanzyl/.m2/repository/commons-collections/commons-collections/3.1/commons-collections-3.1.jar:/Users/jvanzyl/.m2/repository/commons-lang/commons-lang/2.1/commons-lang-2.1.jar:/Users/jvanzyl/.m2/repository/oro/oro/2.0.8/oro-2.0.8.jar:/Users/jvanzyl/.m2/repository/org/codehaus/plexus/plexus-component-annotations/1.0-beta-3.0.1/plexus-component-annotations-1.0-beta-3.0.1.jar:/Users/jvanzyl/.m2/repository/org/apache/maven/maven-plugin-api/2.0.9/maven-plugin-api-2.0.9.jar:"/>
+    <property name="java.io.tmpdir" value="/var/folders/KN/KN77RpurFOKe0AarLihTdE+++TI/-Tmp-/"/>
+    <property name="java.vendor.url.bug" value="http://bugreport.apple.com/"/>
+    <property name="env.SSH_AUTH_SOCK" value="/tmp/launch-5JCY2z/Listeners"/>
+    <property name="env.COMMAND_MODE" value="unix2003"/>
+    <property name="mrj.build" value="10M3065"/>
+    <property name="java.awt.graphicsenv" value="apple.awt.CGraphicsEnvironment"/>
+    <property name="os.arch" value="x86_64"/>
+    <property name="java.ext.dirs" value="/Library/Java/Extensions:/System/Library/Java/Extensions:/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Home/lib/ext"/>
+    <property name="user.dir" value="/Users/jvanzyl/js/spice/sandbox/plexus-template"/>
+    <property name="mrj.version" value="1060.1.6.0_20-279"/>
+    <property name="line.separator" value="
+"/>
+    <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM"/>
+    <property name="env.MC_SID" value="17467"/>
+    <property name="basedir" value="/Users/jvanzyl/js/spice/sandbox/plexus-template"/>
+    <property name="file.encoding" value="MacRoman"/>
+    <property name="java.specification.version" value="1.6"/>
+  </properties>
+  <testcase time="0.314" classname="org.sonatype.plexus.template.DefaultTemplaterTest" name="testTemplaterWithMemoryTemplateLoader"/>
+  <testcase time="0.013" classname="org.sonatype.plexus.template.DefaultTemplaterTest" name="testTemplaterWithClassLoaderTemplateLoader"/>
+  <testcase time="0.013" classname="org.sonatype.plexus.template.DefaultTemplaterTest" name="testTemplaterWithFileTemplateLoader"/>
+</testsuite>

@@ -14,7 +14,7 @@ package org.sonatype.plexus.template;
 
 public class Template
 {
-    private String source;
+    private xString source;
     private String target;
     private String perms;
     

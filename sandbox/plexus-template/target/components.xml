@@ -1,0 +1,10 @@
+<component-set>
+  <components>
+    <component>
+      <role>org.sonatype.plexus.template.Templater</role>
+      <role-hint>default</role-hint>
+      <implementation>org.sonatype.plexus.template.VelocityTemplater</implementation>
+      <isolated-realm>false</isolated-realm>
+    </component>
+  </components>
+</component-set>
