@@ -222,6 +222,12 @@ public class DefaultTimelinePersistor
 
             return new TimelineRecord( rec.getTimestamp(), rec.getType(), rec.getSubType(), dataMap );
         }
+        
+        @Override
+        protected void doRelease()
+            throws IOException
+        {
+        }
 
     }
 

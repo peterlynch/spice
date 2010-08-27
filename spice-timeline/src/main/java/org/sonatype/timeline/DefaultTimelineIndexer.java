@@ -65,11 +65,7 @@ public class DefaultTimelineIndexer
 
     private Directory directory;
 
-    private IndexReader indexReader;
-
     private ExtendedIndexWriter indexWriter;
-
-    private IndexSearcher indexSearcher;
 
     private Object indexLock = new Object();
 
@@ -88,8 +84,6 @@ public class DefaultTimelineIndexer
             synchronized ( this )
             {
                 closeIndexWriter();
-
-                closeIndexReaderAndSearcher();
 
                 if ( directory != null )
                 {
@@ -110,7 +104,7 @@ public class DefaultTimelineIndexer
 
                 indexWriter =
                     new ExtendedIndexWriter( directory, new StandardAnalyzer(), newIndex, MaxFieldLength.LIMITED );
-                
+
                 indexWriter.setMergeScheduler( new SerialMergeScheduler() );
 
                 closeIndexWriter();
@@ -136,8 +130,6 @@ public class DefaultTimelineIndexer
             synchronized ( this )
             {
                 closeIndexWriter();
-                
-                closeIndexReaderAndSearcher();
 
                 if ( directory != null )
                 {
@@ -198,68 +190,10 @@ public class DefaultTimelineIndexer
         }
     }
 
-    protected IndexReader getIndexReader()
-        throws IOException
-    {
-        synchronized ( indexLock )
-        {
-            if ( indexReader == null || ( !indexReader.isCurrent() && !isIndexWriterDirty() ) )
-            {
-                if ( indexReader != null )
-                {
-                    indexReader.close();
-                }
-
-                indexReader = IndexReader.open( directory );
-            }
-
-            return indexReader;
-        }
-    }
-
     protected IndexSearcher getIndexSearcher()
         throws IOException
     {
-        synchronized ( indexLock )
-        {
-            if ( indexSearcher == null || getIndexReader() != indexSearcher.getIndexReader() )
-            {
-                if ( indexSearcher != null )
-                {
-                    indexSearcher.close();
-
-                    // the reader was supplied explicitly
-                    indexSearcher.getIndexReader().close();
-                }
-
-                indexSearcher = new IndexSearcher( getIndexReader() );
-            }
-
-            return indexSearcher;
-        }
-    }
-
-    protected void closeIndexReaderAndSearcher()
-        throws IOException
-    {
-        synchronized ( indexLock )
-        {
-            if ( indexSearcher != null )
-            {
-                indexSearcher.getIndexReader().close();
-
-                indexSearcher.close();
-
-                indexSearcher = null;
-            }
-
-            if ( indexReader != null )
-            {
-                indexReader.close();
-
-                indexReader = null;
-            }
-        }
+        return new IndexSearcher( directory );
     }
 
     public void add( TimelineRecord record )
@@ -314,7 +248,7 @@ public class DefaultTimelineIndexer
         Document doc = new Document();
 
         doc.add( new Field( TIMESTAMP, DateTools.timeToString( record.getTimestamp(), TIMELINE_RESOLUTION ),
-            Field.Store.YES, Field.Index.NOT_ANALYZED ) );
+                            Field.Store.YES, Field.Index.NOT_ANALYZED ) );
 
         doc.add( new Field( TYPE, record.getType(), Field.Store.YES, Field.Index.NOT_ANALYZED ) );
 
@@ -333,14 +267,15 @@ public class DefaultTimelineIndexer
         if ( isEmptySet( types ) && isEmptySet( subTypes ) )
         {
             return new ConstantScoreRangeQuery( TIMESTAMP, DateTools.timeToString( from, TIMELINE_RESOLUTION ),
-                DateTools.timeToString( to, TIMELINE_RESOLUTION ), true, true );
+                                                DateTools.timeToString( to, TIMELINE_RESOLUTION ), true, true );
         }
         else
         {
             BooleanQuery result = new BooleanQuery();
 
             result.add( new ConstantScoreRangeQuery( TIMESTAMP, DateTools.timeToString( from, TIMELINE_RESOLUTION ),
-                DateTools.timeToString( to, TIMELINE_RESOLUTION ), true, true ), Occur.MUST );
+                                                     DateTools.timeToString( to, TIMELINE_RESOLUTION ), true, true ),
+                        Occur.MUST );
 
             if ( !isEmptySet( types ) )
             {
@@ -378,32 +313,49 @@ public class DefaultTimelineIndexer
                                     int count, TimelineFilter filter )
         throws TimelineException
     {
+        IndexSearcher searcher = null;
+
+        boolean cleanup = true;
+
         try
         {
-            synchronized ( this )
+            searcher = getIndexSearcher();
+
+            if ( searcher.maxDoc() == 0 )
             {
-                IndexSearcher searcher = getIndexSearcher();
-
-                if ( searcher.maxDoc() == 0 )
-                {
-                    return TimelineResult.EMPTY_RESULT;
-                }
-
-                TopFieldDocs topDocs =
-                    searcher.search( buildQuery( fromTime, toTime, types, subTypes ), null, searcher.maxDoc(),
-                        new Sort( new SortField( TIMESTAMP, SortField.LONG, true ) ) );
-
-                if ( topDocs.scoreDocs.length == 0 )
-                {
-                    return TimelineResult.EMPTY_RESULT;
-                }
-
-                return new IndexerTimelineResult( searcher, topDocs, filter, from, count );
+                return TimelineResult.EMPTY_RESULT;
             }
+
+            TopFieldDocs topDocs =
+                searcher.search( buildQuery( fromTime, toTime, types, subTypes ), null, searcher.maxDoc(),
+                                 new Sort( new SortField( TIMESTAMP, SortField.LONG, true ) ) );
+
+            if ( topDocs.scoreDocs.length == 0 )
+            {
+                return TimelineResult.EMPTY_RESULT;
+            }
+
+            cleanup = false;
+            return new IndexerTimelineResult( searcher, topDocs, filter, from, count );
         }
         catch ( IOException e )
         {
             throw new TimelineException( "Failed to retrieve records from the timeline index!", e );
+        }
+        finally
+        {
+            if ( searcher != null && cleanup )
+            {
+                try
+                {
+                    searcher.close();
+                }
+                catch ( IOException e )
+                {
+                    // failure closing
+                    getLogger().error( "Unable to close searcher", e );
+                }
+            }
         }
     }
 
@@ -527,16 +479,29 @@ public class DefaultTimelineIndexer
 
             return result;
         }
+
+        @Override
+        protected void doRelease()
+            throws IOException
+        {
+            if ( searcher != null )
+            {
+                searcher.close();
+                searcher = null;
+            }
+        }
     }
 
     public int purge( long fromTime, long toTime, Set<String> types, Set<String> subTypes )
         throws TimelineException
     {
+        IndexSearcher searcher = null;
+
         try
         {
             synchronized ( this )
             {
-                IndexSearcher searcher = getIndexSearcher();
+                searcher = getIndexSearcher();
 
                 if ( searcher.maxDoc() == 0 )
                 {
@@ -548,7 +513,7 @@ public class DefaultTimelineIndexer
                 // just to know how many will we delete, will not actually load 'em up
                 TopFieldDocs topDocs =
                     searcher.search( q, null, searcher.maxDoc(), new Sort( new SortField( TIMESTAMP, SortField.LONG,
-                        true ) ) );
+                                                                                          true ) ) );
 
                 if ( topDocs.scoreDocs.length == 0 )
                 {
@@ -569,6 +534,20 @@ public class DefaultTimelineIndexer
         catch ( IOException e )
         {
             throw new TimelineException( "Failed to purge records from the timeline index!", e );
+        }
+        finally
+        {
+            if ( searcher != null )
+            {
+                try
+                {
+                    searcher.close();
+                }
+                catch ( IOException e )
+                {
+                    getLogger().error( "Unable to close searcher", e );
+                }
+            }
         }
     }
 }

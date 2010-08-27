@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 
 import org.codehaus.plexus.PlexusTestCase;
@@ -17,6 +19,18 @@ public class MultithreadTimelineIndexerTest
     protected File indexDirectory;
 
     protected static final Random rnd = new Random();
+
+    // number of deploy threads (and search threads) to launch
+    protected static final int THREAD_COUNT = 10;
+
+    // max time the deploy threads will sleep between adding to timeline
+    protected static final long MAX_DEPLOY_SLEEP_TIME = 100;
+
+    // max time the search threads will sleep between searches
+    protected static final long MAX_SEARCH_SLEEP_TIME = 500;
+
+    // time to sleep between starting threads, and stopping them
+    protected static final long SLEEP_TIME = THREAD_COUNT * MAX_DEPLOY_SLEEP_TIME * 10;
 
     @Override
     public void setUp()
@@ -35,70 +49,67 @@ public class MultithreadTimelineIndexerTest
         throws Exception
     {
         // nexus has deploys and searches happening same time
-        // so start 6 deployer (content change in nexus) threads and 2 searcher (RSS fetching) threads
+        // so start 20 deployer (content change in nexus) threads and 10 searcher (RSS fetching) threads
 
-        DeployerThread dt1 =
-            new DeployerThread( indexer, new TimelineRecord( System.currentTimeMillis(), "DT1", "1",
-                new HashMap<String, String>() ) );
-        DeployerThread dt2 =
-            new DeployerThread( indexer, new TimelineRecord( System.currentTimeMillis(), "DT2", "1",
-                new HashMap<String, String>() ) );
-        DeployerThread dt3 =
-            new DeployerThread( indexer, new TimelineRecord( System.currentTimeMillis(), "DT3", "1",
-                new HashMap<String, String>() ) );
-        DeployerThread dt4 =
-            new DeployerThread( indexer, new TimelineRecord( System.currentTimeMillis(), "DT4", "1",
-                new HashMap<String, String>() ) );
-        DeployerThread dt5 =
-            new DeployerThread( indexer, new TimelineRecord( System.currentTimeMillis(), "DT5", "1",
-                new HashMap<String, String>() ) );
-        DeployerThread dt6 =
-            new DeployerThread( indexer, new TimelineRecord( System.currentTimeMillis(), "DT6", "1",
-                new HashMap<String, String>() ) );
+        List<DeployerThread> deployerThreads = new ArrayList<DeployerThread>();
 
-        SearcherThread st1 = new SearcherThread( indexer, "DT1" );
-        SearcherThread st2 = new SearcherThread( indexer, "DT3" );
+        for ( int i = 0; i < THREAD_COUNT; i++ )
+        {
+            deployerThreads.add( new DeployerThread( indexer, new TimelineRecord( System.currentTimeMillis(), "DT" + i,
+                                                                                  "1", new HashMap<String, String>() ) ) );
+        }
 
-        dt1.start();
-        dt2.start();
-        dt3.start();
-        dt4.start();
-        dt5.start();
-        dt6.start();
+        List<SearcherThread> searcherThreads = new ArrayList<SearcherThread>();
 
-        st1.start();
-        st2.start();
+        for ( int i = 0; i < THREAD_COUNT; i++ )
+        {
+            searcherThreads.add( new SearcherThread( indexer, "DT" + ( i ) ) );
+        }
 
-        Thread.sleep( 20000 );
+        for ( DeployerThread thread : deployerThreads )
+        {
+            thread.start();
+        }
+
+        for ( SearcherThread thread : searcherThreads )
+        {
+            thread.start();
+        }
+
+        Thread.sleep( SLEEP_TIME );
 
         // kill'em
-        dt1.interrupt();
-        dt2.interrupt();
-        dt3.interrupt();
-        dt4.interrupt();
-        dt5.interrupt();
-        dt6.interrupt();
+        for ( DeployerThread thread : deployerThreads )
+        {
+            thread.stopAndJoin();
+        }
 
         // let the searchers run for more
-        Thread.sleep( 1000 );
+        Thread.sleep( MAX_SEARCH_SLEEP_TIME );
 
         // stop them nicely (to pick up last dt thread changes)
-        st1.stopAndJoin();
-        st2.stopAndJoin();
+        for ( SearcherThread thread : searcherThreads )
+        {
+            thread.stopAndJoin();
+        }
 
-        assertEquals( "DT1 is not fine!", null, unravelThrowable( dt1.getLastException() ) );
-        assertEquals( "DT2 is not fine!", null, unravelThrowable( dt2.getLastException() ) );
-        assertEquals( "DT3 is not fine!", null, unravelThrowable( dt3.getLastException() ) );
-        assertEquals( "DT4 is not fine!", null, unravelThrowable( dt4.getLastException() ) );
-        assertEquals( "DT5 is not fine!", null, unravelThrowable( dt5.getLastException() ) );
-        assertEquals( "DT6 is not fine!", null, unravelThrowable( dt6.getLastException() ) );
+        for ( DeployerThread thread : deployerThreads )
+        {
+            assertEquals( thread.getTimelineRecord().getType() + " deployer is not fine!", null,
+                          unravelThrowable( thread.getLastException() ) );
+        }
 
-        assertEquals( "ST1 is not fine!", null, unravelThrowable( st1.getLastException() ) );
-        assertEquals( "ST2 is not fine!", null, unravelThrowable( st2.getLastException() ) );
+        for ( SearcherThread thread : searcherThreads )
+        {
+            assertEquals( thread.getTypeToSearchFor() + " searcher is not fine!", null,
+                          unravelThrowable( thread.getLastException() ) );
+        }
 
-        // correctness check
-        assertEquals( "Added should equal to found ones", dt1.getAdded(), st1.getLastCount() );
-        assertEquals( "Added should equal to found ones", dt3.getAdded(), st2.getLastCount() );
+        for ( int i = 0; i < THREAD_COUNT; i++ )
+        {
+            assertEquals( "Added should equal to found ones", deployerThreads.get( i ).getAdded(),
+                          searcherThreads.get( i ).getLastCount() );
+        }
     }
 
     protected String unravelThrowable( Throwable e )
@@ -130,6 +141,8 @@ public class MultithreadTimelineIndexerTest
 
         private Throwable ex;
 
+        private boolean running;
+
         public DeployerThread( TimelineIndexer timelineIndexer, TimelineRecord timelineRecord )
         {
             this.timelineIndexer = timelineIndexer;
@@ -139,13 +152,23 @@ public class MultithreadTimelineIndexerTest
             this.added = 0;
 
             this.ex = null;
+
+            this.running = true;
+        }
+
+        public void stopAndJoin()
+            throws InterruptedException
+        {
+            this.running = false;
+
+            join();
         }
 
         public void run()
         {
             try
             {
-                while ( true )
+                while ( running )
                 {
                     timelineRecord.setTimestamp( System.currentTimeMillis() );
 
@@ -153,7 +176,7 @@ public class MultithreadTimelineIndexerTest
 
                     added++;
 
-                    sleep( Math.abs( rnd.nextLong() ) % 500 );
+                    sleep( Math.abs( rnd.nextLong() ) % MAX_DEPLOY_SLEEP_TIME );
                 }
             }
             catch ( InterruptedException e )
@@ -174,6 +197,11 @@ public class MultithreadTimelineIndexerTest
         public Throwable getLastException()
         {
             return ex;
+        }
+
+        public TimelineRecord getTimelineRecord()
+        {
+            return timelineRecord;
         }
     }
 
@@ -215,27 +243,36 @@ public class MultithreadTimelineIndexerTest
                 // this is needed to have proper "ending", and pick up all the latest changes when stopping
                 do
                 {
-                    sleep( Math.abs( rnd.nextLong() ) % 500 );
+                    sleep( Math.abs( rnd.nextLong() ) % MAX_SEARCH_SLEEP_TIME );
 
                     TimelineResult result =
                         timelineIndexer.retrieve( 0L, System.currentTimeMillis(),
-                            Collections.singleton( typeToSearchFor ), null, 0, Integer.MAX_VALUE, null );
+                                                  Collections.singleton( typeToSearchFor ), null, 0, Integer.MAX_VALUE,
+                                                  null );
 
-                    if ( result instanceof IndexerTimelineResult )
+                    try
                     {
-                        if ( lastCount <= ( (IndexerTimelineResult) result ).getLength() )
+
+                        if ( result instanceof IndexerTimelineResult )
                         {
-                            // all fine
-                            lastCount = ( (IndexerTimelineResult) result ).getLength();
+                            if ( lastCount <= ( (IndexerTimelineResult) result ).getLength() )
+                            {
+                                // all fine
+                                lastCount = ( (IndexerTimelineResult) result ).getLength();
+                            }
+                            else
+                            {
+                                throw new IllegalStateException( "We got error!" );
+                            }
                         }
                         else
                         {
-                            throw new IllegalStateException( "We got error!" );
+                            // is empty still
                         }
                     }
-                    else
+                    finally
                     {
-                        // is empty still
+                        result.release();
                     }
                 }
                 while ( running );
@@ -258,6 +295,11 @@ public class MultithreadTimelineIndexerTest
         public Throwable getLastException()
         {
             return ex;
+        }
+
+        public String getTypeToSearchFor()
+        {
+            return typeToSearchFor;
         }
     }
 }

@@ -1,5 +1,6 @@
 package org.sonatype.timeline;
 
+import java.io.IOException;
 import java.util.Iterator;
 
 public abstract class TimelineResult
@@ -11,6 +12,12 @@ public abstract class TimelineResult
         public TimelineRecord fetchNextRecord()
         {
             return null;
+        }
+        
+        @Override
+        protected void doRelease()
+            throws IOException
+        {   
         }
     };
 
@@ -65,8 +72,17 @@ public abstract class TimelineResult
     {
         throw new UnsupportedOperationException( "This operation is not supported on TimelineResult!" );
     }
+    
+    public void release()
+        throws IOException
+    {
+        doRelease();
+    }
 
     // ==
 
     protected abstract TimelineRecord fetchNextRecord();
+    
+    protected abstract void doRelease()
+        throws IOException;
 }

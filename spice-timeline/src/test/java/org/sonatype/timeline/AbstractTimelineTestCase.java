@@ -13,6 +13,7 @@
 package org.sonatype.timeline;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -71,6 +72,7 @@ public abstract class AbstractTimelineTestCase
      * @return
      */
     protected List<TimelineRecord> asList( TimelineResult result )
+        throws IOException
     {
         ArrayList<TimelineRecord> records = new ArrayList<TimelineRecord>();
 
@@ -78,6 +80,8 @@ public abstract class AbstractTimelineTestCase
         {
             records.add( rec );
         }
+        
+        result.release();
 
         return records;
     }
@@ -89,6 +93,7 @@ public abstract class AbstractTimelineTestCase
      * @return
      */
     protected int sizeOf( TimelineResult result )
+        throws IOException
     {
         return asList( result ).size();
     }
