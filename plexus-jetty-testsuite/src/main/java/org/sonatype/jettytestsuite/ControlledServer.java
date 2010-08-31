@@ -162,7 +162,12 @@ public class ControlledServer
 
     public List<String> addServer( String contextName, final File content )
     {
-        FileServerServlet servlet = new FileServerServlet( content );
+        return this.addServer( contextName, content, -1 );
+    }
+
+    public List<String> addServer( String contextName, final File content, final int speedLimit )
+    {
+        FileServerServlet servlet = new FileServerServlet( content, speedLimit );
         context.addServlet( new ServletHolder( servlet ), "/" + contextName + "/*" );
         return servlet.getAccessedUrls();
     }
@@ -173,5 +178,6 @@ public class ControlledServer
         context.addServlet( new ServletHolder( servlet ), "/" + contextName + "/*" );
         return servlet.getAccessedUrls();
     }
+
 
 }

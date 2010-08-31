@@ -19,7 +19,7 @@ public class UnstableFileServerServlet
 
     public UnstableFileServerServlet( int numberOfTries, int returnCode, File content )
     {
-        super( content );
+        super( content, -1 );
         this.numberOfTries = numberOfTries;
         this.returnCode = returnCode;
     }

@@ -19,9 +19,12 @@ public class FileServerServlet
 
     private File content;
 
-    public FileServerServlet( File content )
+    private int speed = -1;
+
+    public FileServerServlet( File content, int speedLimit )
     {
         this.content = content;
+        this.speed = speedLimit;
     }
 
     @Override
@@ -46,7 +49,28 @@ public class FileServerServlet
 
         InputStream input = new FileInputStream( file );
         OutputStream output = res.getOutputStream();
-        IOUtil.copy( input, output );
+        if ( speed == -1 )
+        {
+            IOUtil.copy( input, output );
+        }
+        else
+        {
+            final byte[] buffer = new byte[1024 * speed];
+            int n = 0;
+            while ( -1 != ( n = input.read( buffer ) ) )
+            {
+                try
+                {
+                    Thread.sleep( 800 );
+                }
+                catch ( InterruptedException e )
+                {
+                    // ignore
+                }
+
+                output.write( buffer, 0, n );
+            }
+        }
         IOUtil.close( input );
         IOUtil.close( output );
     }
