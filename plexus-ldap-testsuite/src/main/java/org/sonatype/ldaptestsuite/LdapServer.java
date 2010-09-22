@@ -602,9 +602,6 @@ public class LdapServer
         {
             ldapService.getSocketAcceptor().unbindAll();
 
-            ldapService = null;
-            schemaRoot = null;
-
             try
             {
                 sysRoot = null;
