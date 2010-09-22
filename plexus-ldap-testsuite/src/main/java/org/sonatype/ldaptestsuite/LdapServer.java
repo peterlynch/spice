@@ -572,7 +572,6 @@ public class LdapServer
         try
         {
             ldapService.stop();
-            ldapService.getSocketAcceptor().unbindAll();
             if ( schemaRoot != null )
             {
                 try
@@ -601,6 +600,8 @@ public class LdapServer
         }
         finally
         {
+            ldapService.getSocketAcceptor().unbindAll();
+
             ldapService = null;
             schemaRoot = null;
 
