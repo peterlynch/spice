@@ -551,8 +551,7 @@ public class LdapServer
             catch ( StoppingException e1 )
             {
                 this.logger.error(
-                                   "Trying to stop the LDAP Server after a startup exception failed: " + e.getMessage(),
-                                   e1 );
+                    "Trying to stop the LDAP Server after a startup exception failed: " + e.getMessage(), e1 );
             }
 
             throw new StartingException( "Error starting embedded ApacheDS server.", e );
@@ -573,9 +572,17 @@ public class LdapServer
         try
         {
             ldapService.stop();
+            ldapService.getSocketAcceptor().unbindAll();
             if ( schemaRoot != null )
             {
-                schemaRoot.close();
+                try
+                {
+                    schemaRoot.close();
+                }
+                catch ( NamingException e )
+                {
+                    System.out.println( "Failed to close schemaRoot" );
+                }
             }
 
             for ( org.apache.directory.server.core.partition.Partition partition : this.directoryService.getPartitions() )
@@ -591,14 +598,12 @@ public class LdapServer
             }
 
             this.directoryService.getPartitions().clear();
-
-        }
-        catch ( NamingException e )
-        {
-            System.out.println( "Failed to close schemaRoot" );
         }
         finally
         {
+            ldapService = null;
+            schemaRoot = null;
+
             try
             {
                 sysRoot = null;
@@ -646,7 +651,7 @@ public class LdapServer
             for ( LdifEntry ldifEntry : new LdifReader( in ) )
             {
                 rootDSE.add( new DefaultServerEntry( rootDSE.getDirectoryService().getRegistries(),
-                                                     ldifEntry.getEntry() ) );
+                    ldifEntry.getEntry() ) );
             }
         }
         catch ( Exception e )
