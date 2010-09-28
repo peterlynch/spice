@@ -24,7 +24,6 @@ import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.DateTools.Resolution;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.index.ExtendedIndexWriter;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
@@ -47,6 +46,7 @@ import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Startable;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StartingException;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.StoppingException;
+import org.sonatype.timeline.lucene.TimelineIndexWriter;
 
 @Component( role = TimelineIndexer.class )
 public class DefaultTimelineIndexer
@@ -65,7 +65,7 @@ public class DefaultTimelineIndexer
 
     private Directory directory;
 
-    private ExtendedIndexWriter indexWriter;
+    private TimelineIndexWriter indexWriter;
 
     private Object indexLock = new Object();
 
@@ -103,7 +103,7 @@ public class DefaultTimelineIndexer
                 }
 
                 indexWriter =
-                    new ExtendedIndexWriter( directory, new StandardAnalyzer(), newIndex, MaxFieldLength.LIMITED );
+                    new TimelineIndexWriter( directory, new StandardAnalyzer(), newIndex, MaxFieldLength.LIMITED );
 
                 indexWriter.setMergeScheduler( new SerialMergeScheduler() );
 
@@ -151,7 +151,7 @@ public class DefaultTimelineIndexer
             if ( indexWriter == null )
             {
                 indexWriter =
-                    new ExtendedIndexWriter( directory, new StandardAnalyzer(), false, MaxFieldLength.LIMITED );
+                    new TimelineIndexWriter( directory, new StandardAnalyzer(), false, MaxFieldLength.LIMITED );
 
                 indexWriter.setRAMBufferSizeMB( 2 );
 
