@@ -79,7 +79,7 @@ public class Interpolator {
 			if (segments.length > 1)
 				defaultValue = expandDefaultValue(segments[1]);
 			
-			Variable newVar = new Variable(segments[0], defaultValue, (segments.length > 2 && segments[2] != null) ? segments[2] : null );
+			Variable newVar = new Variable(segments[0], defaultValue, (segments.length > 2 && segments[2] != null) ? segments[2] : null, (segments.length > 3 && segments[3] != null) ? segments[3] : null );
 			vars.put(segments[0],newVar);
 			String persistedValue = userFilledValues.getProperty(segments[0]);
 			if (persistedValue != null)
@@ -116,7 +116,7 @@ public class Interpolator {
 		
 		//Store the new values for the variables in the property file
 		for (Variable variable : variables.values()) {
-			if (variable.getValue() != null)
+			if ((! Variable.PASSWORD.equalsIgnoreCase(variable.getType())) && variable.getValue() != null)
 				userFilledValues.setProperty(variable.getName(), variable.getValue());
 		}
 		

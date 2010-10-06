@@ -7,3 +7,5 @@ very
 	%%varWithDefaultNoDescription|default%%
 	%%varWithNoDefaultButWithDescription||description%%
 and %%anotherFile%% that is always closed %%file%%
+%%pwdVar|default|description|password%%
+%%pwdVar2|||password%%

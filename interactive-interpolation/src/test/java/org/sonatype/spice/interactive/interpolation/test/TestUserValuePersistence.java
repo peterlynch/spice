@@ -22,6 +22,7 @@ public class TestUserValuePersistence extends TestCase {
 		
 		Interpolator i = new Interpolator(toReplaceInto, userStorage);
 		Collection<Variable> vars = i.getVariables();
+		assertEquals(3, vars.size());
 		for (Variable variable : vars) {
 			if (variable.getName().equals("file"))
 				variable.setValue("c:\\foo\\bar");
@@ -40,7 +41,7 @@ public class TestUserValuePersistence extends TestCase {
 		System.setProperty("my.sys.prop", "ANOTHERVALUE");
 		File toReplaceInto = new File(new File(getClass().getResource("/extractVariable").toURI()), "file.txt");
 		Interpolator i = new Interpolator(toReplaceInto, null);
-		assertEquals(7, i.getVariables().size());
+		assertEquals(9, i.getVariables().size());
 		Collection<Variable> v = i.getVariables();
 		for (Variable variable : v) {
 			if(variable.getName().equals("file")) {
@@ -65,6 +66,14 @@ public class TestUserValuePersistence extends TestCase {
 			}
 			if (variable.getName().equals("varWithNoDefaultButWithDescription")) {
 				assertEquals("description", variable.getDescription());
+			}
+			if (variable.getName().equals("pwdVar")) {
+				assertEquals("default", variable.getDefaultValue());
+				assertEquals("description", variable.getDescription());
+				assertEquals("password", variable.getType());
+			}
+			if (variable.getName().equals("pwdVar2")) {
+				assertEquals("password", variable.getType());
 			}
 		}
 	}
@@ -102,6 +111,51 @@ public class TestUserValuePersistence extends TestCase {
 			fail("Expected value " + value + "could not be found in "
 					+ f.getAbsolutePath());
 		}
+	}
+
+	private void assertPropertyFileDoesNotContain(File f, String key) {
+		Properties p = new Properties();
+		FileInputStream is = null;
+		try {
+			try {
+				is = new FileInputStream(f);
+				p.load(is);
+				assertNull( p.getProperty(key) );
+			} finally {
+				is.close();
+			}
+		} catch (IOException e) {
+			fail("Problem looking up the key " + key + " in "
+					+ f.getAbsolutePath());
+		}
+	}
+	
+	public void testPasswordNotPersisted() throws URISyntaxException {
+		File toReplaceInto = new File(new File(getClass().getResource("/password").toURI()), "file.txt");
+		File userStorage = new File(new File(getClass().getResource("/password").toURI()), "values.properties");
+		
+		Interpolator i = new Interpolator(toReplaceInto, userStorage);
+		for (Variable variable : i.getVariables()) {
+			if(variable.getName().equals("pwdVar")) {
+				assertTrue(Variable.PASSWORD.equalsIgnoreCase(variable.getType()));
+				variable.setValue("MySecretPassword");
+			}
+			if(variable.getName().equals("randomVar")) {
+				assertFalse(Variable.PASSWORD.equalsIgnoreCase(variable.getType()));
+				variable.setValue("randomValue");
+			}
+		}
+		i.replaceVariables();
+		i.saveUserValues();
+		
+		//Validate replacement
+		String modified = readXML(toReplaceInto).toString();
+		assertTrue(modified.contains("randomValue"));
+		assertTrue(modified.contains("MySecretPassword"));
+
+		//Validate that we have not persisted the pwd value in the file
+		assertPropertyFileDoesNotContain(userStorage, "pwdVar");
+		assertPropertyFileContains(userStorage, "randomVar", "randomValue");
 	}
 	
 	private StringBuffer readXML(File settingsXml) {
