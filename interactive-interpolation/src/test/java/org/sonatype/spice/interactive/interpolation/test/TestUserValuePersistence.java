@@ -140,36 +140,6 @@ public class TestUserValuePersistence extends TestCase {
 		}
 	}
 	
-    public void testPasswordNotPersisted()
-        throws Exception
-    {
-		File toReplaceInto = new File(new File(getClass().getResource("/password").toURI()), "file.txt");
-		File userStorage = new File(new File(getClass().getResource("/password").toURI()), "values.properties");
-		
-		Interpolator i = new Interpolator(toReplaceInto, userStorage);
-		for (Variable variable : i.getVariables()) {
-			if(variable.getName().equals("pwdVar")) {
-				assertTrue(Variable.PASSWORD.equalsIgnoreCase(variable.getType()));
-				variable.setValue("MySecretPassword");
-			}
-			if(variable.getName().equals("randomVar")) {
-				assertFalse(Variable.PASSWORD.equalsIgnoreCase(variable.getType()));
-				variable.setValue("randomValue");
-			}
-		}
-		i.replaceVariables();
-		i.saveUserValues();
-		
-		//Validate replacement
-		String modified = readXML(toReplaceInto).toString();
-		assertTrue(modified.contains("randomValue"));
-		assertTrue(modified.contains("MySecretPassword"));
-
-		//Validate that we have not persisted the pwd value in the file
-		assertPropertyFileDoesNotContain(userStorage, "pwdVar");
-		assertPropertyFileContains(userStorage, "randomVar", "randomValue");
-	}
-	
     private StringBuffer readXML( File settingsXml )
         throws IOException
     {

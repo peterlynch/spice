@@ -116,7 +116,7 @@ public class Interpolator {
 		
 		//Store the new values for the variables in the property file
 		for (Variable variable : variables.values()) {
-			if ((! Variable.PASSWORD.equalsIgnoreCase(variable.getType())) && variable.getValue() != null)
+			if (variable.getValue() != null)
 				userFilledValues.setProperty(variable.getName(), variable.getValue());
 		}
 		
