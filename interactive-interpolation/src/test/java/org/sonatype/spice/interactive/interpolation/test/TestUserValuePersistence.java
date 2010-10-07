@@ -18,6 +18,7 @@ public class TestUserValuePersistence extends TestCase {
 	
 	public void testUserValuePersistence() throws IOException, URISyntaxException {
 		File userStorage = File.createTempFile(getName(), ".properties");
+        userStorage.deleteOnExit();
 		File toReplaceInto = new File(new File(getClass().getResource("/interactive").toURI()), "file.txt");
 		
 		Interpolator i = new Interpolator(toReplaceInto, userStorage);
@@ -25,9 +26,13 @@ public class TestUserValuePersistence extends TestCase {
 		assertEquals(3, vars.size());
 		for (Variable variable : vars) {
 			if (variable.getName().equals("file"))
+            {
 				variable.setValue("c:\\foo\\bar");
+            }
 			if (variable.getName().equals("varContainingXMLChars"))
+            {
 				variable.setValue("<Value with XML characters>");
+            }
 		}
 
 		i.replaceVariables();
@@ -78,7 +83,9 @@ public class TestUserValuePersistence extends TestCase {
 		}
 	}
 	
-	public void testReplacementFromFile() throws URISyntaxException {
+    public void testReplacementFromFile()
+        throws Exception
+    {
 		File toReplaceInto = new File(new File(getClass().getResource("/prefilled").toURI()), "file.txt");
 		File userStorage = new File(new File(getClass().getResource("/prefilled").toURI()), "values.properties");
 		
@@ -98,39 +105,44 @@ public class TestUserValuePersistence extends TestCase {
 	
 	private void assertPropertyFileContains(File f, String key, String value) {
 		Properties p = new Properties();
-		FileInputStream is = null;
 		try {
+            FileInputStream is = new FileInputStream( f );
 			try {
-				is = new FileInputStream(f);
 				p.load(is);
 				assertEquals(value, p.getProperty(key));
 			} finally {
-				is.close();
+                if ( is != null )
+                {
+                    is.close();
+                }
 			}
 		} catch (IOException e) {
-			fail("Expected value " + value + "could not be found in "
-					+ f.getAbsolutePath());
+            throw new RuntimeException( "Expected value " + value + "could not be found in " + f.getAbsolutePath(), e );
 		}
 	}
 
 	private void assertPropertyFileDoesNotContain(File f, String key) {
 		Properties p = new Properties();
-		FileInputStream is = null;
 		try {
-			try {
-				is = new FileInputStream(f);
+            FileInputStream is = new FileInputStream( f );
+            try
+            {
 				p.load(is);
 				assertNull( p.getProperty(key) );
 			} finally {
-				is.close();
+                if ( is != null )
+                {
+                    is.close();
+                }
 			}
 		} catch (IOException e) {
-			fail("Problem looking up the key " + key + " in "
-					+ f.getAbsolutePath());
+            throw new RuntimeException( "Problem looking up the key " + key + " in " + f.getAbsolutePath(), e );
 		}
 	}
 	
-	public void testPasswordNotPersisted() throws URISyntaxException {
+    public void testPasswordNotPersisted()
+        throws Exception
+    {
 		File toReplaceInto = new File(new File(getClass().getResource("/password").toURI()), "file.txt");
 		File userStorage = new File(new File(getClass().getResource("/password").toURI()), "values.properties");
 		
@@ -158,23 +170,26 @@ public class TestUserValuePersistence extends TestCase {
 		assertPropertyFileContains(userStorage, "randomVar", "randomValue");
 	}
 	
-	private StringBuffer readXML(File settingsXml) {
-		StringBuffer buffer = new StringBuffer((int) settingsXml.length());
-		BufferedReader reader = null;
-		try {
-			try {
-				reader = new BufferedReader(new FileReader(settingsXml));
-				String line = null;
-				while ((line = reader.readLine()) != null) {
-					buffer.append(line).append('\n');
-				}
-			} finally {
-				if (reader != null)
-					reader.close();
-			}
-		} catch(IOException e) {
-			e.printStackTrace();
-		}
-		return buffer;
-	}
+    private StringBuffer readXML( File settingsXml )
+        throws IOException
+    {
+        StringBuffer buffer = new StringBuffer( (int) settingsXml.length() );
+        BufferedReader reader = new BufferedReader( new FileReader( settingsXml ) );
+        try
+        {
+            String line = null;
+            while ( ( line = reader.readLine() ) != null )
+            {
+                buffer.append( line ).append( '\n' );
+            }
+        }
+        finally
+        {
+            if ( reader != null )
+            {
+                reader.close();
+            }
+        }
+        return buffer;
+    }
 }
