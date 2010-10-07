@@ -121,25 +121,6 @@ public class TestUserValuePersistence extends TestCase {
 		}
 	}
 
-	private void assertPropertyFileDoesNotContain(File f, String key) {
-		Properties p = new Properties();
-		try {
-            FileInputStream is = new FileInputStream( f );
-            try
-            {
-				p.load(is);
-				assertNull( p.getProperty(key) );
-			} finally {
-                if ( is != null )
-                {
-                    is.close();
-                }
-			}
-		} catch (IOException e) {
-            throw new RuntimeException( "Problem looking up the key " + key + " in " + f.getAbsolutePath(), e );
-		}
-	}
-	
     private StringBuffer readXML( File settingsXml )
         throws IOException
     {
