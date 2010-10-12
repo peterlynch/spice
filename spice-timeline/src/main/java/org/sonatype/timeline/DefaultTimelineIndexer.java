@@ -248,7 +248,7 @@ public class DefaultTimelineIndexer
         Document doc = new Document();
 
         doc.add( new Field( TIMESTAMP, DateTools.timeToString( record.getTimestamp(), TIMELINE_RESOLUTION ),
-                            Field.Store.YES, Field.Index.NOT_ANALYZED ) );
+            Field.Store.YES, Field.Index.NOT_ANALYZED ) );
 
         doc.add( new Field( TYPE, record.getType(), Field.Store.YES, Field.Index.NOT_ANALYZED ) );
 
@@ -267,15 +267,14 @@ public class DefaultTimelineIndexer
         if ( isEmptySet( types ) && isEmptySet( subTypes ) )
         {
             return new ConstantScoreRangeQuery( TIMESTAMP, DateTools.timeToString( from, TIMELINE_RESOLUTION ),
-                                                DateTools.timeToString( to, TIMELINE_RESOLUTION ), true, true );
+                DateTools.timeToString( to, TIMELINE_RESOLUTION ), true, true );
         }
         else
         {
             BooleanQuery result = new BooleanQuery();
 
             result.add( new ConstantScoreRangeQuery( TIMESTAMP, DateTools.timeToString( from, TIMELINE_RESOLUTION ),
-                                                     DateTools.timeToString( to, TIMELINE_RESOLUTION ), true, true ),
-                        Occur.MUST );
+                DateTools.timeToString( to, TIMELINE_RESOLUTION ), true, true ), Occur.MUST );
 
             if ( !isEmptySet( types ) )
             {
@@ -327,8 +326,8 @@ public class DefaultTimelineIndexer
             }
 
             TopFieldDocs topDocs =
-                searcher.search( buildQuery( fromTime, toTime, types, subTypes ), null, searcher.maxDoc(),
-                                 new Sort( new SortField( TIMESTAMP, SortField.LONG, true ) ) );
+                searcher.search( buildQuery( fromTime, toTime, types, subTypes ), null, searcher.maxDoc(), new Sort(
+                    new SortField( TIMESTAMP, SortField.LONG, true ) ) );
 
             if ( topDocs.scoreDocs.length == 0 )
             {
@@ -404,38 +403,47 @@ public class DefaultTimelineIndexer
         @Override
         protected TimelineRecord fetchNextRecord()
         {
-            if ( i >= hits.scoreDocs.length || returned >= docNumberToReturn )
+            Document doc;
+
+            TimelineRecord data;
+
+            while ( true )
             {
-                return null;
-            }
-
-            try
-            {
-                Document doc = searcher.doc( hits.scoreDocs[i++].doc );
-
-                TimelineRecord data = buildData( doc );
-
-                if ( filter != null && !filter.accept( data ) )
+                if ( i >= hits.scoreDocs.length || returned >= docNumberToReturn )
                 {
-                    return fetchNextRecord();
+                    return null;
                 }
 
-                // skip the unneeded stuff
-                // Warning: this means we skip the needed FILTERED stuff out!
-                if ( docNumberToSkip > 0 )
+                try
                 {
-                    docNumberToSkip--;
+                    doc = searcher.doc( hits.scoreDocs[i++].doc );
 
-                    return fetchNextRecord();
+                    data = buildData( doc );
+
+                    if ( filter != null && !filter.accept( data ) )
+                    {
+                        data = null;
+
+                        continue;
+                    }
+
+                    // skip the unneeded stuff
+                    // Warning: this means we skip the needed FILTERED stuff out!
+                    if ( docNumberToSkip > 0 )
+                    {
+                        docNumberToSkip--;
+
+                        continue;
+                    }
+
+                    returned++;
+
+                    return data;
                 }
-
-                returned++;
-
-                return data;
-            }
-            catch ( IOException e )
-            {
-                return null;
+                catch ( IOException e )
+                {
+                    return null;
+                }
             }
         }
 
@@ -513,7 +521,7 @@ public class DefaultTimelineIndexer
                 // just to know how many will we delete, will not actually load 'em up
                 TopFieldDocs topDocs =
                     searcher.search( q, null, searcher.maxDoc(), new Sort( new SortField( TIMESTAMP, SortField.LONG,
-                                                                                          true ) ) );
+                        true ) ) );
 
                 if ( topDocs.scoreDocs.length == 0 )
                 {
