@@ -44,7 +44,7 @@ under the License.
     <maven.version>3.0-SNAPSHOT</maven.version>
     <mercury.mp3.version>${project.version}</mercury.mp3.version>
 
-    <jetty.version>6.1.15.rc2</jetty.version>
+    <jetty.version>6.1.23</jetty.version>
 
     <plexus.version>1.0-beta-3.0.6</plexus.version>
     
