@@ -26,7 +26,7 @@ See the Apache License Version 2.0 for the specific language governing permissio
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
-      <version>1.5.8</version>
+      <version>3.0.16</version>
     </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
