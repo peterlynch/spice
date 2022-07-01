@@ -173,7 +173,7 @@ under the License.
     <modelloVersion>1.0.1</modelloVersion>
     <plexusInterpolationVersion>1.11</plexusInterpolationVersion>
     <plexusPluginManagerVersion>1.0-alpha-1</plexusPluginManagerVersion>
-    <plexusUtilsVersion>1.5.15</plexusUtilsVersion>
+    <plexusUtilsVersion>3.0.16</plexusUtilsVersion>
     <plexusVersion>1.0.0</plexusVersion>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <securityDispatcherVersion>1.2</securityDispatcherVersion>
