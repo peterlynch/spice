@@ -22,7 +22,7 @@
     <distMgmtReleasesUrl>dav:http://localhost:8081/nexus/content/repositories/releases</distMgmtReleasesUrl>
     
     <plexus.container.version>1.0-beta-3.0.1</plexus.container.version>
-    <plexus.utild.version>1.5.5</plexus.utild.version>
+    <plexus.utild.version>3.0.16</plexus.utild.version>
     
   </properties>
   
